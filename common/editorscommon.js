@@ -684,7 +684,7 @@
 			-1 !== contentTypes.indexOf("application/vnd.ms-powerpoint.slideshow.macroEnabled.main+xml") ||
 			-1 !== contentTypes.indexOf("application/vnd.ms-powerpoint.template.macroEnabled.main+xml");
 	}
-	function openFileCommand(docId, binUrl, changesUrl, changesToken, Signature, callback)
+	function openFileCommand(docId, binUrl, changesUrl, changesDirectUrl, changesToken, Signature, callback)
 	{
 		var nError = Asc.c_oAscError.ID.No, oResult = new OpenFileResult(), bEndLoadFile = false, bEndLoadChanges = false;
 		var onEndOpen = function ()
@@ -726,6 +726,38 @@
 				}, "arraybuffer");
 		}
 
+		if(changesDirectUrl)
+		{
+			oZipImages = {};
+			AscCommon.loadFileContent(changesDirectUrl, function (httpRequest) {
+				if (httpRequest && httpRequest.response) {
+					let data = httpRequest.response;
+					oResult.changes = [];
+					if (window.nativeZlibEngine.open(data)) {
+						window.nativeZlibEngine.files.forEach(function(path){
+							let data = window.nativeZlibEngine.getFile(path);
+							if (data) {
+								if (path.endsWith('.json')) {
+									let text = AscCommon.UTF8ArrayToString(data, 0, data.length);
+									oResult.changes[parseInt(path.slice('changes'.length))] = JSON.parse(text);
+								} else {
+									oZipImages[path] = data;
+								}
+							}
+						});
+						window.nativeZlibEngine.close();
+					} else {
+						nError = Asc.c_oAscError.ID.Unknown;
+					}
+					bEndLoadChanges = true;
+					onEndOpen();
+				} else {
+					bEndLoadChanges = true;
+					nError = Asc.c_oAscError.ID.DownloadError;
+					onEndOpen();
+				}
+			}, "arraybuffer");
+		}
 		if (changesUrl)
 		{
 			oZipImages = {};

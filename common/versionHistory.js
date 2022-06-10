@@ -92,6 +92,9 @@
   asc_CVersionHistory.prototype.asc_setUrlChanges = function(val) {
     this.urlChanges = val;
   };
+  asc_CVersionHistory.prototype.asc_setDirectUrlChanges = function(val) {
+    this.directUrlChanges = val;
+  };
   asc_CVersionHistory.prototype.asc_setCurrentChangeId = function(val) {
     this.currentChangeId = val;
   };

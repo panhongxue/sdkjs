@@ -4637,6 +4637,7 @@
 	function asc_CDocInfo() {
 		this.Id = null;
 		this.Url = null;
+		this.DirectUrl = null;
 		this.Title = null;
 		this.Format = null;
 		this.VKey = null;
@@ -4667,6 +4668,12 @@
 	};
 	prot.put_Url = prot.asc_putUrl = function (v) {
 		this.Url = v;
+	};
+	prot.get_DirectUrl = prot.asc_getDirectUrl = function () {
+		return this.DirectUrl;
+	};
+	prot.put_DirectUrl = prot.asc_putDirectUrl = function (v) {
+		this.DirectUrl = v;
 	};
 	prot.get_Title = prot.asc_getTitle = function () {
 		return this.Title;

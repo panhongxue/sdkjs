@@ -4558,7 +4558,7 @@
 				ctx.RemoveClipRect();
 			}
 		} else {
-			ctx.AddClipRect(x1, y1, w, h);
+			//ctx.AddClipRect(x1, y1, w, h);
 			if (this._getCellCF(cfIterator, c, row, col, Asc.ECfType.iconSet) /*&& AscCommon.align_Left === ct.cellHA*/) {
 				var iconSize = AscCommon.AscBrowser.convertToRetinaValue(getCFIconSize(font.getSize()) * this.getZoom(), true);
 				//TODO оставляю отступ 0, пересмотреть!
@@ -4594,8 +4594,81 @@
 					}
 				}
 			}
-			this.stringRender.restoreInternalState(ct.state).render(drawingCtx, textX, textY, textW, color);
-			ctx.RemoveClipRect();
+
+            AscFormat.ExecuteNoHistory(function() {
+
+                let oShape = new AscFormat.CShape();
+                oShape.setTxBody(AscFormat.CreateTextBodyFromString("", this, oShape));
+                let oContent = oShape.txBody.content;
+                let oParagraph = oContent.Content[0];
+                oParagraph.Reset(0, 0, 1000, 1000, 0);
+                oParagraph.MoveCursorToStartPos();
+                let aChars = ct.state.chars;
+                let oRun = new AscWord.ParaRun(oParagraph);
+                let oParaPr = new CParaPr();
+                oParagraph.Pr = oParaPr;
+                let oTextPr = new CTextPr();
+                let oCharProps = ct.state.charProps[0];
+                if(oCharProps) {
+                    let oFont = oCharProps.font;
+                    if(oFont) {
+                        if(oFont.fn) {
+                            oTextPr.FontFamily = { Name : oFont.fn, Index : -1 };
+                            oTextPr.RFonts.SetAll(oFont.fn);
+                        }
+                        oTextPr.FontSize = oFont.fs;
+                        oTextPr.Strikeout  = oFont.s;
+                        oTextPr.Underline  = oFont.u;
+                        oTextPr.Bold  = oFont.b;
+                        let oColor = oFont.c;
+                        if(oColor) {
+                            oTextPr.Unifill = AscFormat.CreateUnfilFromRGB(oColor.getR(), oColor.getG(), oColor.getB());
+                        }
+                    }
+                    oRun.Set_Pr(oTextPr);
+                }
+
+                let nCharPos = 0;
+                for (let nIdx = 0; nIdx < aChars.length; nIdx++)
+                {
+                    let nCharCode = aChars[nIdx];
+
+                    if (9 === nCharCode) // \t
+                        oRun.AddToContent(nCharPos++, new AscWord.CRunTab(), true);
+                    else if (10 === nCharCode) // \n
+                        oRun.AddToContent(nCharPos++, new AscWord.CRunBreak(AscWord.break_Line), true);
+                    else if (13 === nCharCode) // \r
+                        continue;
+                    else if (AscCommon.IsSpace(nCharCode)) // space
+                        oRun.AddToContent(nCharPos++, new AscWord.CRunSpace(nCharCode), true);
+                    else
+                        oRun.AddToContent(nCharPos++, new AscWord.CRunText(nCharCode), true);
+                }
+                oParagraph.Add_ToContent(0, oRun);
+                oParagraph.Recalculate_Page(0);
+
+                let oGraphics;
+                if(drawingCtx instanceof AscCommonExcel.CPdfPrinter) {
+                    oGraphics = drawingCtx;
+                }
+                else {
+                    oGraphics = new AscCommon.CGraphics();
+                    let oDrawingCtx = this.stringRender.drawingCtx;
+                    let oCanvas = oDrawingCtx.canvas;
+                    oGraphics.init(oDrawingCtx.ctx, oCanvas.width, oCanvas.height, 25.4 * oCanvas.width / oDrawingCtx.ppiX, 25.4 * oCanvas.height / oDrawingCtx.ppiY);
+                    oGraphics.m_oFontManager = AscCommon.g_fontManager;
+
+                    oGraphics.m_oCoordTransform.tx = textX;
+                    oGraphics.m_oCoordTransform.ty = textY;
+                }
+                oGraphics.SaveGrState();
+                oGraphics.transform(1,0,0,1,0,0);
+                oParagraph.Draw(0, oGraphics);
+                oGraphics.RestoreGrState();
+            }, this, []);
+
+			//this.stringRender.restoreInternalState(ct.state).render(drawingCtx, textX, textY, textW, color);
+			//ctx.RemoveClipRect();
 		}
 
 

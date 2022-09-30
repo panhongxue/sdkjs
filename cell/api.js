@@ -119,8 +119,8 @@ var editor;
     this.frozenPaneBorderType = Asc.c_oAscFrozenPaneBorderType.shadow;
 
 	  // Styles sizes
-      this.styleThumbnailWidth = 112;
-	  this.styleThumbnailHeight = 40;
+      this.styleThumbnailWidth = 100;
+	  this.styleThumbnailHeight = 20;
 
     this.formulasList = null;	// Список всех формул
 
@@ -562,6 +562,9 @@ var editor;
 			var _options = new Asc.asc_CDownloadOptions(Asc.c_oAscFileType.TXT);
 			_options.isNaturalDownload = true;
 			_options.isGetTextFromUrl = true;
+			if (document.url) {
+				_options.errorDirect = Asc.c_oAscError.ID.DirectUrl;
+			}
 			this.downloadAs(Asc.c_oAscAsyncAction.DownloadAs, _options);
 		}
 	};
@@ -1326,6 +1329,9 @@ var editor;
       return History.Have_Changes();
     }
     return false;
+  };
+  spreadsheet_api.prototype.isDocumentModified = function() {
+    return this.asc_isDocumentModified();
   };
 
   // Actions and callbacks interface
@@ -2356,6 +2362,12 @@ var editor;
         t.syncCollaborativeChanges();
       }
     };
+	this.CoAuthoringApi.onChangesIndex = function(changesIndex)
+	{
+		if (t.isLiveViewer() && changesIndex >= 0) {
+			//todo
+		}
+	};
     this.CoAuthoringApi.onRecalcLocks = function(excelAdditionalInfo) {
       if (!excelAdditionalInfo) {
         return;
@@ -2385,6 +2397,16 @@ var editor;
         t.wb.Update_ForeignCursor(e[e.length - 1]['cursor'], e[e.length - 1]['user'], true, e[e.length - 1]['useridoriginal']);
       }
     };
+	  this.CoAuthoringApi.onParticipantsChangedOrigin     = function(users)
+	  {
+		  let m_bIsCollaborativeWithLiveViewer = users && -1 !== users.findIndex(function(element) {
+				  return !!element['isLiveViewer'];
+			  });
+		  t.collaborativeEditing.m_bIsCollaborativeWithLiveViewer = m_bIsCollaborativeWithLiveViewer;
+		  if (t.isDocumentLoadComplete && m_bIsCollaborativeWithLiveViewer) {
+			  AscCommon.History.Clear();
+		  }
+	  };
   };
 
   spreadsheet_api.prototype._onSaveChanges = function(recalcIndexColumns, recalcIndexRows, isAfterAskSave) {
@@ -3944,6 +3966,7 @@ var editor;
     this.isEditOleMode = true;
     this.isChartEditor = false;
     this.isFromSheetEditor = oOleObjectInfo["isFromSheetEditor"];
+    const oDocumentImageUrls = oOleObjectInfo["documentImageUrls"];
     this.asc_CloseFile();
     this.fAfterLoad = function () {
         const nImageWidth = oOleObjectInfo["imageWidth"];
@@ -3953,8 +3976,11 @@ var editor;
         }
         oThis.wb.scrollToOleSize();
         oThis.wb.onOleEditorReady();
+        delete oThis.imagesFromGeneralEditor;
         oThis.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Open);
     }
+
+    this.imagesFromGeneralEditor = oDocumentImageUrls;
     this.openDocument(oFile);
     };
   /**
@@ -3970,7 +3996,7 @@ var editor;
 
     oBinaryInfo["binary"] = sCleanBinaryData;
     oBinaryInfo["base64Image"] = sDataUrl;
-    oBinaryInfo["isFromSheetEditor"] =this.isFromSheetEditor;
+    oBinaryInfo["isFromSheetEditor"] = this.isFromSheetEditor;
     if (this.saveImageCoefficients) {
         oBinaryInfo["widthCoefficient"] = this.saveImageCoefficients.widthCoefficient;
         oBinaryInfo["heightCoefficient"] = this.saveImageCoefficients.heightCoefficient;
@@ -4488,6 +4514,9 @@ var editor;
 	if (!this.canEdit()) {
 	  return;
 	}
+    if (this.isFrameEditor() && !AscCommon.isNullOrEmptyString(props.ImageUrl)) {
+        props.ImageUrl = null;
+    }
     var ws = this.wb.getWorksheet();
     var fReplaceCallback = null, sImageUrl = null, sToken = undefined;
     if(!AscCommon.isNullOrEmptyString(props.ImageUrl)){
@@ -7659,6 +7688,23 @@ var editor;
 		}
 	};
 
+	spreadsheet_api.prototype.onWorksheetChange = function(props) {
+		var ws = this.GetActiveSheet();
+		var range;
+		if (Array.isArray(props)) {
+			// todo сделать получение листа ещё
+			var arr = props.length <= 1 ? null : props.map(function(r){
+				return ws.worksheet.getRange3(r.r1, r.c1, r.r2, r.c2);
+			})
+			range = this.GetRangeByNumber(ws.worksheet, props[0].r1, props[0].c1, props[0].r2, props[0].c2, arr);
+
+		} else {
+			// todo сделать получение листа ещё
+			range = this.GetRangeByNumber(ws.worksheet, props.r1, props.c1, props.r2, props.c2);
+		}
+		this.sendEvent('onWorksheetChange', range);
+	};
+
   /*
    * Export
    * -----------------------------------------------------------------------------
@@ -7712,6 +7758,7 @@ var editor;
   prot["asc_getCoreProps"] = prot.asc_getCoreProps;
   prot["asc_setCoreProps"] = prot.asc_setCoreProps;
   prot["asc_isDocumentModified"] = prot.asc_isDocumentModified;
+  prot["isDocumentModified"] = prot.isDocumentModified;
   prot["asc_isDocumentCanSave"] = prot.asc_isDocumentCanSave;
   prot["asc_getCanUndo"] = prot.asc_getCanUndo;
   prot["asc_getCanRedo"] = prot.asc_getCanRedo;
@@ -8186,6 +8233,7 @@ var editor;
   prot["asc_setDate1904"] = prot.asc_setDate1904;
   prot["asc_getDate1904"] = prot.asc_getDate1904;
 
+  prot["onWorksheetChange"] = prot.onWorksheetChange;  
 
 
   prot["asc_addCellWatches"]               = prot.asc_addCellWatches;

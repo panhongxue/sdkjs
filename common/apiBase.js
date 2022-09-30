@@ -395,7 +395,7 @@
 		return null;
 	};
 	baseEditorsApi.prototype.isFrameEditor = function () {
-		return !!(this.isChartEditor || this.isOleEditor);
+		return !!(this.isChartEditor ||  this.isEditOleMode); // TODO: solve the confusion
 	};
 	baseEditorsApi.prototype.asc_setCoreProps                = function(oProps)
 	{
@@ -964,7 +964,7 @@
             window.g_asc_plugins.onPluginEvent("onDocumentContentReady");
 
         if (c_oEditorId.Spreadsheet === this.editorId) {
-			this.onUpdateDocumentModified(this.asc_isDocumentModified());
+			this.onUpdateDocumentModified(this.isDocumentModified());
 		}
 
 		if (this.DocInfo)
@@ -1398,7 +1398,11 @@
 			if (t.VersionHistory && t.VersionHistory.isRequested) {
 				var error = AscCommon.getDisconnectErrorCode(t.isDocumentLoadComplete, data["code"]);
 				var level = t.isDocumentLoadComplete ? Asc.c_oAscError.Level.NoCritical : Asc.c_oAscError.Level.Critical;
-				t.sendEvent('asc_onError', error, level);
+				if (Asc.c_oAscError.ID.UpdateVersion === error && !t.isDocumentModified()) {
+					t.sendEvent("asc_onDocumentUpdateVersion", function() {});
+				} else {
+					t.sendEvent('asc_onError', error, level);
+				}
 			} else {
 				t.VersionHistory = null;
 				t.sendEvent('asc_onExpiredToken');
@@ -1434,7 +1438,11 @@
 				var error = AscCommon.getDisconnectErrorCode(t.isDocumentLoadComplete, opt_closeCode);
 				var level = t.isDocumentLoadComplete ? Asc.c_oAscError.Level.NoCritical : Asc.c_oAscError.Level.Critical;
 				t.setViewModeDisconnect(AscCommon.getEnableDownloadByCloseCode(opt_closeCode));
-				t.sendEvent('asc_onError', error, level);
+				if (Asc.c_oAscError.ID.UpdateVersion === error && !t.isDocumentModified()) {
+					t.sendEvent("asc_onDocumentUpdateVersion", function() {});
+				} else {
+					t.sendEvent('asc_onError', error, level);
+				}
 			} else if (!t.isRestrictionView()) {
 				t.sync_StartAction(Asc.c_oAscAsyncActionType.Information, Asc.c_oAscAsyncAction.Disconnect);
 				t.asc_addRestriction(Asc.c_oAscRestrictionType.View);
@@ -1955,6 +1963,7 @@
 	};
 	baseEditorsApi.prototype.asc_addImage                        = function(obj)
 	{
+		if (this.isFrameEditor()) return; //TODO: Fix in 7.2.1
 		var t = this;
         if (this.WordControl) // после показа диалога может не прийти mouseUp
         	this.WordControl.m_bIsMouseLock = false;
@@ -3811,6 +3820,12 @@
 	{
 	};
 	//---------------------------------------------------------search-----------------------------------------------------
+	baseEditorsApi.prototype.asc_findText = function(oProps, isNext, callback)
+	{
+	};
+	baseEditorsApi.prototype.asc_endFindText = function()
+	{
+	};
 	baseEditorsApi.prototype.sync_setSearchCurrent = function(nCurrent, nOverallCount)
 	{
 	};

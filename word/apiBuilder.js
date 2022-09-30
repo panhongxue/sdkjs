@@ -3816,10 +3816,6 @@
 	 * @typedef {"entireCaption" | "labelNumber" | "captionText" | "pageNum" | "aboveBelow"} captionRefTo
 	 */
 
-	/**
-	 * Available caption labels.
-	 * @typedef {"Equation" | "Figure" | "Table"} CaptionLabel
-	 */
 	//------------------------------------------------------End Cross-reference types--------------------------------------------------
 
 	/**
@@ -3863,6 +3859,62 @@
 	/**
      * Possible values for the caption label.
      * @typedef {("Table" | "Equation" | "Figure")} CaptionLabel
+	 * **/
+
+	/**
+	 * Table of contents properties.
+	 * @typedef {Object} TocPr
+	 * @property {boolean} [ShowPageNums=true] - whether to show page numbers.
+	 * @property {boolean} [RightAlgn=true] - whether to right align page numbers.
+	 * @property {TocLeader} [LeaderType="dot"] - leader type.
+	 * @property {boolean} [FormatAsLinks=true] - whether format table of contents as links..
+	 * @property {TocBuildFromPr} [BuildFrom={OutlineLvls=9}] - build table of contents from (outline levels or specified styles).
+	 * @property {TocStyle} [TocStyle="standard"] - table of contents style type.
+	 */
+
+	/**
+	 * Table of figures properties.
+	 * @typedef {Object} TofPr
+	 * @property {boolean} [ShowPageNums=true] - whether to show page numbers.
+	 * @property {boolean} [RightAlgn=true] - whether to right align page numbers.
+	 * @property {TocLeader} [LeaderType="dot"] - leader type.
+	 * @property {boolean} [FormatAsLinks=true] - whether format table of contents as links.
+	 * @property {CaptionLabel | string} [BuildFrom="Figure"] - build table of figures by specified caption label or used paragraph style name (ex. "Heading 1").
+	 * @property {boolean} [LabelNumber=true] - whether to include label and number.
+	 * @property {TofStyle} [TofStyle="distinctive"] - table of figures style type.
+	 */
+
+	/**
+	 * Table of contents build from propertie.
+	 * @typedef {Object} TocBuildFromPr
+	 * @property {number} [OutlineLvls=9] - maximum levels in table of figures
+	 * @property {TocStyleLvl[]} StylesLvls - levels for styles (ex. [{Name: "Heading 1", Lvl: 2}, {Name: "Heading 2", Lvl: 3}]).
+	 * Note: if StylesLvls.length > 0 then OutlineLvls propertie will be ignore.
+	 */
+
+	/**
+	 * Table of contents style lvl.
+	 * @typedef {Object} TocStyleLvl
+	 * @property {string} Name - name of style. (ex. "Heading 1")
+	 * @property {number} Lvl - level which will be apply for style in TOC
+	 */
+
+	/**
+	 * **"dot"**       - "......."
+	 * **"dash"**      - "-------"
+	 * **"underline"** - "_______"
+     * Possible values for the table of contents leader.
+     * @typedef {("dot" | "dash" | "underline" | "none")} TocLeader
+	 * **/
+
+	/**
+     * Possible values for the style of table of contents.
+     * @typedef {("simple" | "online" | "standard" | "modern" | "classic")} TocStyle
+	 * **/
+
+	/**
+     * Possible values for the style of table of contents.
+     * @typedef {("simple" | "online" | "classic" | "distinctive" | "centered" | "formal")} TofStyle
 	 * **/
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -5390,13 +5442,17 @@
 			{
 				var isAnswer     = !oReport[sUserName][nIndex].Top;
 				var oCommentData = oReport[sUserName][nIndex].Data;
+				var nDateUTC     = parseInt(oCommentData.m_sOOTime);
+				if (isNaN(nDateUTC))
+					nDateUTC = 0;
 
 				if (isAnswer)
 				{
 					oResult[sUserName].push({
 						"IsAnswer"       : true,
 						"CommentMessage" : oCommentData.GetText(),
-						"Date"           : oCommentData.GetDateTime()
+						"Date"           : oCommentData.GetDateTime(),
+						"DateUTC"        : nDateUTC
 					});
 				}
 				else
@@ -5406,6 +5462,7 @@
 						"IsAnswer"       : false,
 						"CommentMessage" : oCommentData.GetText(),
 						"Date"           : oCommentData.GetDateTime(),
+						"DateUTC"        : nDateUTC,
 						"QuoteText"      : sQuoteText,
 						"IsSolved"       : oCommentData.IsSolved()
 					});
@@ -5845,39 +5902,17 @@
 		oProps.SetText(sText);
 		oProps.SetMatchCase(isMatchCase);
 
-		var foundItems 		= [];
-		var arrApiRanges	= [];
-		var docSearchEngine	= this.Document.Search(oProps);
+		let searchEngine = this.Document.Search(oProps);
+		let mapElements  = searchEngine.GetElementsMap();
 
-		var docSearchEngineElementsLenght = 0;
-		for (var FoundId in docSearchEngine.Elements)
-			docSearchEngineElementsLenght++;
-
-		for (var Index = 1; Index <= docSearchEngineElementsLenght; Index++)
-			foundItems.push(docSearchEngine.Elements[Index]);
-
-		for (var Index1 = 0; Index1 < foundItems.length; Index1++)
+		let apiRanges = [];
+		for (let paraId in mapElements)
 		{
-			for (var Index2 = Index1 + 1; Index2 < foundItems.length; Index2++)
-			{
-				if (foundItems[Index1].Id === foundItems[Index2].Id)
-				{
-					foundItems.splice(Index2, 1);
-					Index2--;
-				}
-			}
+			let paragraph = new ApiParagraph(mapElements[paraId]);
+			apiRanges = apiRanges.concat(paragraph.Search(sText, isMatchCase));
 		}
 
-		for (var para in foundItems)
-		{
-			var oParagraph			= new ApiParagraph(foundItems[para]);
-			var arrOfParaApiRanges	= oParagraph.Search(oProps);
-
-			for (var itemRange = 0; itemRange < arrOfParaApiRanges.length; itemRange++)	
-				arrApiRanges.push(arrOfParaApiRanges[itemRange]);
-		}
-
-		return arrApiRanges;
+		return apiRanges;
 	};
 	/**
 	 * Converts a document to Markdown.
@@ -6232,7 +6267,7 @@
 	 * Returns all caption paragraphs of the specified type from the current document.
 	 * @memberof ApiDocument
 	 * @typeofeditors ["CDE"]
-	 * @param {CaptionLabel | string} sCaption - caption label ("Equation", "Figure", "Table" or another caption label).
+	 * @param {CaptionLabel | string} sCaption - The caption label ("Equation", "Figure", "Table" or another caption label).
 	 * @returns {ApiParagraph[]}
 	 */
 	ApiDocument.prototype.GetAllCaptionParagraphs = function(sCaption) 
@@ -6331,7 +6366,7 @@
 	/**
 	 * Replaces the current image with an image specified.
 	 * @typeofeditors ["CDE"]
-	 * @memberof ApiPresentation
+	 * @memberof ApiDocument
 	 * @param {string} sImageUrl - The image source where the image to be inserted should be taken from (currently, only internet URL or Base64 encoded images are supported).
 	 * @param {EMU} Width - The image width in English measure units.
 	 * @param {EMU} Height - The image height in English measure units.
@@ -6417,6 +6452,236 @@
 			return null;
 
 		return new ApiDocumentContent(oResult);
+	};
+
+	/**
+	 * Sets the highlight to the content controls in the document.
+	 * @memberof ApiDocument
+	 * @param {byte} r - Red color component value.
+	 * @param {byte} g - Green color component value.
+	 * @param {byte} b - Blue color component value.
+	 * @param {boolean} [bNone=false] - Defines that highlight will not be set.
+	 * @typeofeditors ["CDE"]
+	 */
+	ApiDocument.prototype.SetControlsHighlight = function(r, g, b, bNone)
+	{
+		if (bNone === true)
+			this.Document.SetSdtGlobalShowHighlight(false);
+		else
+		{
+			this.Document.SetSdtGlobalShowHighlight(true);
+			this.Document.SetSdtGlobalColor(r, g, b);
+		}
+	};
+
+	/**
+	 * Adds a table of content.
+	 * Note: replaces existing table of contents.
+	 * @memberof ApiDocument
+	 * @typeofeditors ["CDE"]
+	 * @param {TocPr} [oTocPr={}] - table of contents properties.
+	 */
+	ApiDocument.prototype.AddTableOfContents = function(oTocPr)
+	{
+		if (typeof(oTocPr) !== "object")
+			oTocPr = {};
+
+		if (!oTocPr["BuildFrom"])
+			oTocPr["BuildFrom"] = {"OutlineLvls": 9};
+
+		let oTargetPr = new Asc.CTableOfContentsPr();
+		oTargetPr.PageNumbers = typeof(oTocPr["ShowPageNums"]) == "boolean" ? oTocPr["ShowPageNums"] : true;
+		oTargetPr.RightTab = typeof(oTocPr["RightAlgn"]) == "boolean" ? oTocPr["RightAlgn"] : true;
+		oTargetPr.Hyperlink = typeof(oTocPr["FormatAsLinks"]) == "boolean" ? oTocPr["FormatAsLinks"] : true;
+
+		if (oTocPr["LeaderType"] == null)
+			oTocPr["LeaderType"] = "dot";
+		switch (oTocPr["LeaderType"])
+		{
+			case "dot":
+				oTargetPr.TabLeader = 0;
+				break;
+			case "dash":
+				oTargetPr.TabLeader = 2;
+				break;
+			case "underline":
+				oTargetPr.TabLeader = 5;
+				break;
+			case "none":
+				oTargetPr.TabLeader = 4;
+				break;
+		}
+
+		if (Array.isArray(oTocPr["BuildFrom"]["StylesLvls"]) && oTocPr["BuildFrom"]["StylesLvls"].length > 0)
+		{
+			oTargetPr.Styles = oTocPr["BuildFrom"]["StylesLvls"];
+			oTargetPr.OutlineEnd = -1;
+			oTargetPr.OutlineStart = -1;
+		}
+		else if (oTocPr["BuildFrom"]["OutlineLvls"] >= 1 && oTocPr["BuildFrom"]["OutlineLvls"] <= 9)
+		{
+			oTargetPr.OutlineEnd = oTocPr["BuildFrom"]["OutlineLvls"];
+		}
+
+		if (oTocPr["TocStyle"] == null)
+			oTocPr["TocStyle"] = "standard";
+		switch (oTocPr["TocStyle"])
+		{
+			case "simple":
+				oTargetPr.StylesType = 1;
+				break;
+			case "online":
+				oTargetPr.StylesType = 5;
+				break;
+			case "standard":
+				oTargetPr.StylesType = 2;
+				break;
+			case "modern":
+				oTargetPr.StylesType = 3;
+				break;
+			case "classic":
+				oTargetPr.StylesType = 4;
+				break;
+		}
+
+		var oTOC = this.Document.GetTableOfContents();
+		if (oTOC instanceof AscCommonWord.CBlockLevelSdt && oTOC.IsBuiltInUnique())
+		{
+			var oInnerTOC = oTOC.GetInnerTableOfContents();
+			oTOC = oInnerTOC;
+			if (!oTOC)
+				return;
+
+			var oStyles = this.Document.GetStyles();
+			var nStylesType = oTargetPr.get_StylesType();
+			var isNeedChangeStyles = (Asc.c_oAscTOCStylesType.Current !== nStylesType && nStylesType !== oStyles.GetTOCStylesType());
+
+			oTOC.SelectField();
+			if (isNeedChangeStyles)
+				oStyles.SetTOCStylesType(nStylesType);
+
+			oTOC.SetPr(oTargetPr);
+			oTOC.Update();
+			return;
+		}
+
+		this.Document.AddTableOfContents(null, oTargetPr, undefined);
+	};
+
+	/**
+	 * Adds a table of figures.
+	 * @memberof ApiDocument
+	 * @typeofeditors ["CDE"]
+	 * @param {TofPr} [oTofPr={}] - table of figures properties.
+	 * Note: oTofPr will be fill by default properties if undefined.
+	 * @param {boolean} [bReplace=true] - replaces current selected table of figures instead of adding.
+	 * @returns {boolean}
+	 */
+	ApiDocument.prototype.AddTableOfFigures = function(oTofPr, bReplace)
+	{
+		if (typeof(oTofPr) !== "object")
+			oTofPr = {};
+		if (typeof(bReplace) !== "boolean")
+			bReplace = true;
+
+		let oTargetPr = new Asc.CTableOfContentsPr();
+		oTargetPr.PageNumbers = typeof(oTofPr["ShowPageNums"]) == "boolean" ? oTofPr["ShowPageNums"] : true;
+		oTargetPr.RightTab = typeof(oTofPr["RightAlgn"]) == "boolean" ? oTofPr["RightAlgn"] : true;
+		oTargetPr.Hyperlink = typeof(oTofPr["FormatAsLinks"]) == "boolean" ? oTofPr["FormatAsLinks"] : true;
+		oTargetPr.IsIncludeLabelAndNumber = typeof(oTofPr["LabelNumber"]) == "boolean" ? oTofPr["LabelNumber"] : true;
+		oTargetPr.OutlineEnd = -1;
+		oTargetPr.OutlineStart = -1;
+
+
+		if (oTofPr["LeaderType"] == null)
+			oTofPr["LeaderType"] = "dot";
+		switch (oTofPr["LeaderType"])
+		{
+			case "dot":
+				oTargetPr.TabLeader = 0;
+				break;
+			case "dash":
+				oTargetPr.TabLeader = 2;
+				break;
+			case "underline":
+				oTargetPr.TabLeader = 5;
+				break;
+			case "none":
+				oTargetPr.TabLeader = 4;
+				break;
+		}
+
+		if (typeof(oTofPr["BuildFrom"]) !== "string")
+			oTofPr["BuildFrom"] = "Figure";
+
+		let aStyles = this.Document.GetAllUsedParagraphStyles();
+		let isUsedStyle = false;
+		for (var i = 0; i < aStyles.length; i++)
+		{
+			if (aStyles[i].Name == oTofPr["BuildFrom"])
+			{
+				isUsedStyle = true;
+				break;
+			}
+		}
+
+		if (isUsedStyle)
+		{
+			oTargetPr.Styles = [{ Name: oTofPr["BuildFrom"], Lvl: undefined }];
+			oTargetPr.Caption = null;
+		}
+		else
+			oTargetPr.Caption = oTofPr["BuildFrom"];
+
+		if (oTofPr["TofStyle"] == null)
+			oTofPr["TofStyle"] = "distinctive";
+		switch (oTofPr["TofStyle"])
+		{
+			case "simple":
+				oTargetPr.StylesType = 5;
+				break;
+			case "online":
+				oTargetPr.StylesType = 6;
+				break;
+			case "classic":
+				oTargetPr.StylesType = 1;
+				break;
+			case "distinctive":
+				oTargetPr.StylesType = 2;
+				break;
+			case "centered":
+				oTargetPr.StylesType = 3;
+				break;
+			case "formal":
+				oTargetPr.StyleType = 4;
+				break;
+		}
+
+		let aTOF = this.Document.GetAllTablesOfFigures(true);
+		let oTOFToReplace = null;
+		if(aTOF.length > 0)
+		{
+			oTOFToReplace = aTOF[0];
+		}
+
+		if (oTOFToReplace && bReplace)
+		{
+			oTOFToReplace.SelectFieldValue();
+			oTargetPr.ComplexField = oTOFToReplace;
+
+			var oStyles     = this.Document.GetStyles();
+			var nStylesType = oTargetPr.get_StylesType();
+			var isNeedChangeStyles = (Asc.c_oAscTOFStylesType.Current !== nStylesType && nStylesType !== oStyles.GetTOFStyleType());
+			if (isNeedChangeStyles)
+				oStyles.SetTOFStyleType(nStylesType);
+
+			oTOFToReplace.SetPr(oTargetPr);
+			oTOFToReplace.Update();
+		}
+		else
+			this.Document.AddTableOfFigures(oTargetPr);
+
+		return true;
 	};
 	//------------------------------------------------------------------------------------------------------------------
 	//
@@ -7451,9 +7716,10 @@
 
 		for (var Index = ParaPosition.length - 1; Index >= 1; Index--)
 		{
-			if (ParaPosition[Index].Class)
-				if (ParaPosition[Index].Class instanceof CBlockLevelSdt)
-					return new ApiBlockLvlSdt(ParaPosition[Index].Class);
+			if (ParaPosition[Index].Class && ParaPosition[Index].Class.Parent && ParaPosition[Index].Class.Parent instanceof CBlockLevelSdt)
+			{
+				return new ApiBlockLvlSdt(ParaPosition[Index].Class.Parent);
+			}
 		}
 
 		return null;
@@ -7673,32 +7939,18 @@
 		if (isMatchCase === undefined)
 			isMatchCase = false;
 
-		var arrApiRanges	= [];
-		var Api				= editor; 
-		var oDocument		= Api.GetDocument();
-		var SearchEngine;
-		let oProps = new AscCommon.CSearchSettings();
+		let oDocument = private_GetLogicDocument();
+		let oProps    = new AscCommon.CSearchSettings();
 		oProps.SetText(sText);
 		oProps.SetMatchCase(!!isMatchCase);
+		oDocument.Search(oProps);
 
-		if (!oDocument.Document.SearchEngine.Compare(oProps))
-		{
-			SearchEngine		= new AscCommonWord.CDocumentSearch();
-			SearchEngine.Set(oProps);
-			this.Paragraph.Search(SearchEngine, 0)
-		}
-		else
-		{
-			SearchEngine = oDocument.Document.SearchEngine;
-			this.Paragraph.Search(SearchEngine, 0)
-		}
-
-		var SearchResults	= this.Paragraph.SearchResults;
-
+		var SearchResults = this.Paragraph.SearchResults;
+		let arrApiRanges  = [];
 		for (var FoundId in SearchResults)
 		{
-			var StartSearchContentPos	= SearchResults[FoundId].StartPos;
-			var EndSearchContentPos		= SearchResults[FoundId].EndPos;
+			var StartSearchContentPos = SearchResults[FoundId].StartPos;
+			var EndSearchContentPos   = SearchResults[FoundId].EndPos;
 
 			var StartChar	= this.Paragraph.ConvertParaContentPosToRangePos(StartSearchContentPos);
 			var EndChar		= this.Paragraph.ConvertParaContentPosToRangePos(EndSearchContentPos);
@@ -8045,7 +8297,7 @@
 	 * The paragraph must be in the document.
 	 * @memberof ApiParagraph
 	 * @typeofeditors ["CDE"]
-	 * @param {CaptionLabel | string} sCaption - caption label ("Equation", "Figure", "Table" or another caption label).
+	 * @param {CaptionLabel | string} sCaption - The caption label ("Equation", "Figure", "Table" or another caption label).
 	 * @param {captionRefTo} sRefType - The text or numeric value of a caption reference you want to insert.
 	 * @param {ApiParagraph} oParaTo - The caption paragraph to be referred to (must be in the document).
 	 * @param {boolean} [bLink=true] - Specifies if the reference will be inserted as a hyperlink.
@@ -8535,7 +8787,7 @@
         {
             if (RunPosition[Index].Class)
             {
-                if (RunPosition[Index].Class instanceof CBlockLevelSdt)
+                if (RunPosition[Index].Class.Parent && RunPosition[Index].Class.Parent instanceof CBlockLevelSdt)
                     return new ApiBlockLvlSdt(RunPosition[Index].Class);
                 else if (RunPosition[Index].Class instanceof CInlineLevelSdt)
                     return new ApiInlineLvlSdt(RunPosition[Index].Class);
@@ -9147,7 +9399,10 @@
 				this.Section.Set_Footer_Default(oFooter);
 		}
 
-		return new ApiDocumentContent(oFooter.Get_DocumentContent());
+		if (oFooter)
+			return new ApiDocumentContent(oFooter.Get_DocumentContent());
+		
+		return null;
 	};
 	/**
 	 * Removes the footer of the specified type from the current section. After removal, the footer will be inherited from 
@@ -9792,9 +10047,8 @@
 
         for (var Index = TablePosition.length - 1; Index >= 1; Index--)
         {
-            if (TablePosition[Index].Class)
-                if (TablePosition[Index].Class instanceof CBlockLevelSdt)
-                    return new ApiBlockLvlSdt(TablePosition[Index].Class);
+            if (TablePosition[Index].Class && TablePosition[Index].Class.Parent && TablePosition[Index].Class.Parent instanceof CBlockLevelSdt)
+				return new ApiBlockLvlSdt(TablePosition[Index].Class.Parent);
         }
 
         return null;
@@ -10288,7 +10542,7 @@
 			tempCell 			= this.GetCell(curCell);
 			tempStartGridCol	= this.Row.GetCellInfo(curCell).StartGridCol;
 			tempGridSpan		= tempCell.Cell.GetGridSpan();
-			tempVMergeCount		= oTable.Table.Internal_GetVertMergeCount2(this.GetIndex(), tempStartGridCol, tempGridSpan);
+			tempVMergeCount		= oTable.Table.Internal_GetVertMergeCountUp(this.GetIndex(), tempStartGridCol, tempGridSpan);
 
 			if (tempVMergeCount > 1)
 			{
@@ -10322,7 +10576,7 @@
 			tempCell 			= this.Row.GetCell(curCell);
 			tempStartGridCol	= this.Row.GetCellInfo(curCell).StartGridCol;
 			tempGridSpan		= tempCell.GetGridSpan();
-			tempVMergeCount		= oTable.Table.Internal_GetVertMergeCount2(this.GetIndex(), tempStartGridCol, tempGridSpan);
+			tempVMergeCount		= oTable.Table.Internal_GetVertMergeCountUp(this.GetIndex(), tempStartGridCol, tempGridSpan);
 
 			if (tempVMergeCount > 1)
 			{
@@ -10376,7 +10630,7 @@
 			tempCell 			= this.GetCell(curCell);
 			tempStartGridCol	= this.Row.GetCellInfo(curCell).StartGridCol;
 			tempGridSpan		= tempCell.Cell.GetGridSpan();
-			tempVMergeCount		= oTable.Table.Internal_GetVertMergeCount2(this.GetIndex(), tempStartGridCol, tempGridSpan);
+			tempVMergeCount		= oTable.Table.Internal_GetVertMergeCountUp(this.GetIndex(), tempStartGridCol, tempGridSpan);
 
 			if (tempVMergeCount > 1)
 			{
@@ -10416,7 +10670,7 @@
 			tempCell 			= this.GetCell(curCell);
 			tempStartGridCol	= this.Row.GetCellInfo(curCell).StartGridCol;
 			tempGridSpan		= tempCell.Cell.GetGridSpan();
-			tempVMergeCount		= oTable.Table.Internal_GetVertMergeCount2(this.GetIndex(), tempStartGridCol, tempGridSpan);
+			tempVMergeCount		= oTable.Table.Internal_GetVertMergeCountUp(this.GetIndex(), tempStartGridCol, tempGridSpan);
 
 			if (tempVMergeCount > 1)
 			{
@@ -14321,7 +14575,7 @@
 	ApiChart.prototype.SetXValues = function(aValues)
 	{
 		if (this.Chart.isScatterChartType())
-			return this.Chart.SetValuesToXDataPoints(aValues);
+			return this.Chart.SetXValuesToDataPoints(aValues);
 		return false;
 	};
 
@@ -15636,9 +15890,8 @@
 
 		for (var Index = documentPos.length - 1; Index >= 1; Index--)
 		{
-			if (documentPos[Index].Class)
-				if (documentPos[Index].Class instanceof CBlockLevelSdt)
-					return new ApiBlockLvlSdt(documentPos[Index].Class);
+			if (documentPos[Index].Class && documentPos[Index].Class.Parent && documentPos[Index].Class.Parent instanceof CBlockLevelSdt)
+				return new ApiBlockLvlSdt(documentPos[Index].Class.Parent);
 		}
 
 		return null;
@@ -15895,6 +16148,52 @@
 		}
 
 		return false;
+	};
+
+	/**
+	 * Sets the background color to the current sdt.
+	 * @memberof ApiBlockLvlSdt
+	 * @param {byte} r - Red color component value.
+	 * @param {byte} g - Green color component value.
+	 * @param {byte} b - Blue color component value.
+	 * @param {boolean} bNone - Defines that background color will not be set.
+	 * @typeofeditors ["CDE"]
+	 * @returns {boolean}
+	 */
+	ApiBlockLvlSdt.prototype.SetBackgroundColor = function(r, g, b, bNone)
+	{
+		var oFormPr = this.Sdt.GetFormPr().Copy();
+		
+		let oUnifill = new AscFormat.CUniFill();
+		oUnifill.setFill(new AscFormat.CSolidFill());
+		oUnifill.fill.setColor(new AscFormat.CUniColor());
+		oUnifill.fill.color.setColor(new AscFormat.CRGBColor());
+
+		if (r >=0 && g >=0 && b >=0)
+			oUnifill.fill.color.color.setColor(r, g, b);
+		else
+			return false;
+
+		oFormPr.Shd = new CDocumentShd();
+		oFormPr.Shd.Set_FromObject({
+			Value: bNone ? Asc.c_oAscShd.Clear : Asc.c_oAscShd.Clear,
+			Color: {
+				r: r,
+				g: g,
+				b: b,
+				Auto: false
+			},
+			Fill: {
+				r: r,
+				g: g,
+				b: b,
+				Auto: false
+			},
+			Unifill: oUnifill
+		});
+
+		this.Sdt.SetFormPr(oFormPr);
+		return true;
 	};
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -17508,6 +17807,7 @@
 	ApiDocument.prototype["GetAllBookmarksNames"]        = ApiDocument.prototype.GetAllBookmarksNames;
 	ApiDocument.prototype["AddFootnote"]                 = ApiDocument.prototype.AddFootnote;
 	ApiDocument.prototype["AddEndnote"]                  = ApiDocument.prototype.AddEndnote;
+	ApiDocument.prototype["SetControlsHighlight"]        = ApiDocument.prototype.SetControlsHighlight;
 	
 	ApiDocument.prototype["GetSelectedDrawings"]         = ApiDocument.prototype.GetSelectedDrawings;
 	ApiDocument.prototype["ReplaceCurrentImage"]         = ApiDocument.prototype.ReplaceCurrentImage;
@@ -17518,6 +17818,8 @@
 	ApiDocument.prototype["ToJSON"]                  = ApiDocument.prototype.ToJSON;
 	ApiDocument.prototype["UpdateAllTOC"]		     = ApiDocument.prototype.UpdateAllTOC;
 	ApiDocument.prototype["UpdateAllTOF"]		     = ApiDocument.prototype.UpdateAllTOF;
+	ApiDocument.prototype["AddTableOfContents"]		 = ApiDocument.prototype.AddTableOfContents;
+	ApiDocument.prototype["AddTableOfFigures"]		 = ApiDocument.prototype.AddTableOfFigures;
 
 	ApiDocument.prototype["GetAllForms"]             = ApiDocument.prototype.GetAllForms;
 	ApiDocument.prototype["ClearAllFields"]          = ApiDocument.prototype.ClearAllFields;

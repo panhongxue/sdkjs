@@ -1288,6 +1288,26 @@
 			var oResult = new AscCommon.asc_CAscEditorPermissions();
 			oResult.setLicenseType(res);
 			t.sendEvent('asc_onLicenseChanged', oResult);
+
+			let ls_get_callback = function(isTimeout, response) {
+				if(isTimeout || !response) {
+					console.log('ls_get_callback error');
+				} else {
+					console.log('ls_get_callback response:'+response);
+				}
+			};
+			let ls_set_callback = function(isTimeout, response) {
+				if(isTimeout || !response) {
+					console.log('ls_set_callback error');
+				} else {
+					if (!t.CoAuthoringApi.callPRC({'type': 'ls.get', 'key': 'key'}, Asc.c_nCommonRequestTime, ls_get_callback)) {
+						ls_get_callback(false, undefined);
+					}
+				}
+			};
+			if (!t.CoAuthoringApi.callPRC({'type': 'ls.set', 'key': 'key', 'value': 'value'}, Asc.c_nCommonRequestTime, ls_set_callback)) {
+				ls_set_callback(false, undefined);
+			}
 		};
 		this.CoAuthoringApi.onWarning                 = function(code)
 		{

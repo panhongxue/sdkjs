@@ -1928,7 +1928,7 @@ function CDocument(DrawingDocument, isMainLogicDocument)
 
     this.CheckEmptyElementsOnSelection = true; // При выделении проверять или нет пустой параграф в конце/начале выделения.
 
-    this.Numbering = new CNumbering();
+    this.Numbering = new AscWord.CNumbering();
     this.Styles    = new CStyles();
     this.Styles.Set_LogicDocument(this);
 
@@ -2773,6 +2773,7 @@ CDocument.prototype.FinalizeAction = function(isCheckEmptyAction)
 	this.Action.Redraw.Start    = undefined;
 	this.Action.Redraw.End      = undefined;
 	this.Action.Additional      = {};
+	this.Api.checkChangesSize();
 };
 CDocument.prototype.private_CheckAdditionalOnFinalize = function()
 {
@@ -12551,12 +12552,7 @@ CDocument.prototype.CheckTextFormFormatOnBlur = function(oForm)
 
 		if (this.CollaborativeEditing.Is_SingleUser() || !this.CollaborativeEditing.Is_Fast())
 		{
-			let arrChanges = [];
-			while (oForm === this.History.GetLastPointFormFilling())
-			{
-				arrChanges = arrChanges.concat(this.History.Undo());
-			}
-
+			let arrChanges = this.History.UndoFormFilling(oForm);
 			if (arrChanges.length)
 				this.RecalculateByChanges(arrChanges);
 		}
@@ -13551,6 +13547,13 @@ CDocument.prototype.private_DocumentIsSelectionLocked = function(CheckType)
 			if (this.Core)
 			{
 				this.Core.Lock.Check(this.Core.Get_Id());
+			}
+		}
+		else if (AscCommon.changestype_DocumentProtection === CheckType)
+		{
+			if (this.Settings.DocumentProtection)
+			{
+				this.Settings.DocumentProtection.Lock.Check(this.Settings.DocumentProtection.Get_Id());
 			}
 		}
 		else if (AscCommon.changestype_Document_Settings === CheckType)
@@ -16668,6 +16671,13 @@ CDocument.prototype.IsSpecialFormsSettingsDefault = function()
 {
 	return this.Settings.SpecialFormsSettings.IsDefault();
 };
+CDocument.prototype.SetProtection = function(props)
+{
+	if (this.Settings.DocumentProtection) {
+		this.Settings.DocumentProtection.setProps(props);
+	}
+};
+
 CDocument.prototype.GetDocumentLayout = function()
 {
 	return this.Layout;
@@ -28263,7 +28273,7 @@ CDocumentNumberingInfoCounter.prototype.CheckNum = function(oNum)
  * Класс для рассчета значение номера для нумерации заданного параграфа
  * @param oPara {Paragraph}
  * @param oNumPr {CNumPr}
- * @param oNumbering {CNumbering}
+ * @param oNumbering {AscWord.CNumbering}
  * @constructor
  */
 function CDocumentNumberingInfoEngine(oPara, oNumPr, oNumbering)
@@ -28583,7 +28593,7 @@ CDocumentFootnotesRangeEngine.prototype.IsCheckEndnotes = function()
  * Класс для поиска подходящей нумерации в документе
  * @param oParagraph {Paragraph}
  * @param oNumPr {CNumPr}
- * @param oNumbering {CNumbering}
+ * @param oNumbering {AscWord.CNumbering}
  */
 function CDocumentNumberingContinueEngine(oParagraph, oNumPr, oNumbering)
 {

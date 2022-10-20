@@ -1754,6 +1754,10 @@ background-repeat: no-repeat;\
                     {
                         editor.sendEvent("asc_onLockCore", true);
                     }
+					else if(Class instanceof AscCommonWord.CDocProtect)
+					{
+						editor.sendEvent("asc_onLockDocumentProtection", true);
+					}
 					// Теперь обновлять состояние необходимо, чтобы обновить локи в режиме рецензирования.
 					t.WordControl.m_oLogicDocument.UpdateInterface(undefined, true);
 				}
@@ -1861,6 +1865,17 @@ background-repeat: no-repeat;\
 						else
 						{
 							editor.sendEvent("asc_onLockCore", false);
+						}
+					}
+					else if(Class instanceof AscCommonWord.CDocProtect)
+					{
+						if (NewType !== locktype_Mine && NewType !== locktype_None)
+						{
+							editor.sendEvent("asc_onLockDocumentProtection", true);
+						}
+						else
+						{
+							editor.sendEvent("asc_onLockDocumentProtection", false);
 						}
 					}
 				}
@@ -3238,7 +3253,7 @@ background-repeat: no-repeat;\
 	{
 		if (null != this.WordControl.m_oDrawingDocument.m_oDocumentRenderer)
 		{
-			this.WordControl.m_oDrawingDocument.m_oDocumentRenderer.SearchResults.IsSearch = false;
+			this.WordControl.m_oDrawingDocument.m_oDocumentRenderer.SearchResults.IsSearch = bIsEnabled;
 			this.WordControl.OnUpdateOverlay();
 		}
 	};
@@ -3251,6 +3266,7 @@ background-repeat: no-repeat;\
 
 		if (null != this.WordControl.m_oDrawingDocument.m_oDocumentRenderer)
 		{
+			this.WordControl.m_oDrawingDocument.m_oDocumentRenderer.SearchResults.IsSearch = true;
 			oProps.SetText(oProps.GetText().trim());
 			oViewer = this.WordControl.m_oDrawingDocument.m_oDocumentRenderer;
 			isAsync = (true === oViewer.findText(oProps.GetText(), oProps.IsMatchCase(), oProps.IsWholeWords(), isNext, this.sync_setSearchCurrent)) ? true : false;
@@ -3295,11 +3311,16 @@ background-repeat: no-repeat;\
 	};
 	asc_docs_api.prototype.asc_endFindText = function()
 	{
-		let logicDocument = this.private_GetLogicDocument();
-		if (!logicDocument)
-			return;
-
-		return logicDocument.ClearSearch();
+		let oLogicDocument = this.private_GetLogicDocument();
+		if (oLogicDocument && oLogicDocument.SearchEngine)
+		{
+			return oLogicDocument.ClearSearch();
+		}
+		else if (this.isDocumentRenderer())
+		{
+			this.WordControl.m_oDrawingDocument.m_oDocumentRenderer.file.SearchResults.IsSearch = false;
+			this.WordControl.m_oDrawingDocument.m_oDocumentRenderer.file.onUpdateOverlay();
+		}
 	};
 	asc_docs_api.prototype.asc_replaceText = function(oProps, replaceWith, isReplaceAll)
 	{
@@ -7589,7 +7610,7 @@ background-repeat: no-repeat;\
 
 	asc_docs_api.prototype.getGraphicController = function () {
 		var document = this.private_GetLogicDocument();
-		return document && document.DrawingObjects;
+		return document && document.DrawingsController;
 	};
 
 	asc_docs_api.prototype.ChangeColorScheme            = function(sSchemeName)
@@ -10611,6 +10632,33 @@ background-repeat: no-repeat;\
 		let oManager = this.private_GetFormsManager();
 		return oManager ? oManager.GetAllKeys({RadioGroup : true}) : [];
 	};
+	asc_docs_api.prototype.asc_GetFormKeysByType = function(type)
+	{
+		let formManager = this.private_GetFormsManager();
+		if (!formManager)
+			return [];
+
+		let pr = {};
+		switch (type)
+		{
+			case Asc.c_oAscContentControlSpecificType.Picture:
+				pr.Picture = true;
+				break;
+			case Asc.c_oAscContentControlSpecificType.CheckBox:
+				pr.CheckBox = true;
+				break;
+			case Asc.c_oAscContentControlSpecificType.Complex:
+				pr.Complex = true;
+				break;
+			default:
+				pr.Text         = true;
+				pr.ComboBox     = true;
+				pr.DropDownList = true;
+				break;
+		}
+
+		return formManager.GetAllKeys(pr);
+	};
 	asc_docs_api.prototype.asc_ClearAllSpecialForms = function()
 	{
 		var oLogicDocument = this.private_GetLogicDocument();
@@ -10790,6 +10838,14 @@ background-repeat: no-repeat;\
 
 		if (window.g_asc_plugins)
 			window.g_asc_plugins.onPluginEvent("onBlurContentControl", oControl.GetContentControlPr().GetEventObject());
+	};
+	asc_docs_api.prototype.asc_GetAllFormsData = function()
+	{
+		let formManager = this.private_GetFormsManager();
+		if (!formManager)
+			return {};
+
+		return formManager.GetAllFormsData();
 	};
 
 	asc_docs_api.prototype.asc_UncheckContentControlButtons = function()
@@ -11488,6 +11544,22 @@ background-repeat: no-repeat;\
 	{
 		return ["#,##0", "#,##0.00", "$#,##0.00;($#,##0.00)", "0", "0%", "0.00", "0.00%"];
 	};
+	asc_docs_api.prototype.asc_HaveFields = function(isInSelection)
+	{
+		let logicDocument = this.private_GetLogicDocument();
+		if (!logicDocument)
+			return false;
+
+		return (logicDocument.GetAllFields(isInSelection).length > 0);
+	};
+	asc_docs_api.prototype.asc_UpdateFields = function(isInSelection)
+	{
+		let logicDocument = this.private_GetLogicDocument();
+		if (!logicDocument)
+			return false;
+
+		return logicDocument.UpdateFields(isInSelection);
+	};
 
 	asc_docs_api.prototype.asc_ParseTableFormulaInstrLine = function(sInstrLine)
 	{
@@ -11973,6 +12045,20 @@ background-repeat: no-repeat;\
 			}
 		});
 	};
+
+	asc_docs_api.prototype.getDrawingObjects = function () {
+		const oController = this.getGraphicController();
+		if (oController) {
+			return oController.DrawingObjects;
+		}
+	};
+
+	asc_docs_api.prototype.getDrawingDocument = function () {
+		const oLogicDocument = this.private_GetLogicDocument();
+		return oLogicDocument.GetDrawingDocument();
+	}
+	asc_docs_api.prototype.getLogicDocument = asc_docs_api.prototype.private_GetLogicDocument;
+
 	asc_docs_api.prototype.asc_CompareDocumentFile_local = function (oOptions) {
 		var t = this;
 		window["AscDesktopEditor"]["OpenFilenameDialog"]("word", false, function(_file){
@@ -12828,6 +12914,125 @@ background-repeat: no-repeat;\
 		return oDocument.PutImageToSelection(sImageSrc, nWidth, nHeight);
 	};
 
+	asc_docs_api.prototype.asc_getDocumentProtection = function () {
+		let oDocument = this.private_GetLogicDocument();
+		if (!oDocument) {
+			return;
+		}
+
+		var docProtection = oDocument.Settings && oDocument.Settings.DocumentProtection;
+		if (docProtection) {
+			return docProtection.Copy();
+		}
+	};
+
+	asc_docs_api.prototype.asc_setDocumentProtection = function (props) {
+		//props -> CDocProtect
+
+		// Проверка глобального лока
+		if (AscCommon.CollaborativeEditing.Get_GlobalLock()) {
+			return;
+		}
+
+		let oDocument = this.private_GetLogicDocument();
+		if (!oDocument) {
+			return;
+		}
+		var t = this;
+
+		var calculatedHashValue;
+		var callback = function (res) {
+			t.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction);
+
+			if (res) {
+				if(false === oDocument.Document_Is_SelectionLocked(AscCommon.changestype_DocumentProtection, null, null, true))
+				{
+					oDocument.StartAction(AscDFH.historydescription_Document_DocumentProtection);
+
+					props.saltValue = salt;
+					props.spinCount = spinCount;
+					props.cryptAlgorithmSid = alg;
+					props.hashValue = calculatedHashValue;
+					props.enforcement = props.edit !== Asc.c_oAscEDocProtect.None;
+
+					oDocument.SetProtection(props);
+					oDocument.UpdateInterface();
+					oDocument.FinalizeAction();
+					t.sendEvent("asc_onChangeDocumentProtection");
+				}
+			} else {
+				t.sendEvent("asc_onError", c_oAscError.ID.PasswordIsNotCorrect, c_oAscError.Level.NoCritical);
+			}
+		};
+
+		var password = props.temporaryPassword;
+		props.temporaryPassword = null;
+		var documentProtection = oDocument.Settings.DocumentProtection;
+		var salt, alg, spinCount;
+		if (password !== "" && password != null) {
+			if (documentProtection) {
+				salt = documentProtection.saltValue;
+				spinCount =  documentProtection.spinCount;
+				alg = documentProtection.cryptAlgorithmSid;
+			}
+
+			if (!salt || !spinCount) {
+				var params = AscCommon.generateHashParams();
+				salt = params.saltValue;
+				spinCount = params.spinCount;
+			}
+
+			if (!alg) {
+				alg = AscCommon.c_oSerCryptAlgorithmSid.SHA_512;
+			}
+		}
+
+		var checkPassword = function (hash, doNotCheckPassword) {
+			if (doNotCheckPassword) {
+				callback(true);
+			} else {
+				if (props != null && props.edit != null && props.edit !== Asc.c_oAscEDocProtect.None) {
+					//устанавливаем защиту
+					calculatedHashValue = hash && hash[0] ? hash[0] : null;
+					callback(true);
+				} else {
+					//пробуем снять защиту
+					if (documentProtection && hash && (hash[0] === documentProtection.hashValue || hash[1] === documentProtection.hashValue)) {
+						callback(true);
+					} else {
+						//неверный пароль
+						t.sendEvent("asc_onError", c_oAscError.ID.PasswordIsNotCorrect, c_oAscError.Level.NoCritical);
+						t.sendEvent("asc_onChangeDocumentProtection");
+						t.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction);
+					}
+				}
+			}
+		};
+
+		this.sync_StartAction(Asc.c_oAscAsyncActionType.BlockInteraction);
+		if (password != null) {
+			if (password === "") {
+				checkPassword([""]);
+			} else {
+				//перед тем, как сгенерировать хэш, мс предварительно преобразовывает пароль
+				//в мс подходит как преобразованные пароль, так и не преобразованный
+				//т.е. если сгенерировать вручную хэш из непреобразованного пароля и положить в xml, то документ можно будет разблокировать по первоначальному паролю
+				var hashPassword = AscCommon.prepareWordPassword(password);
+				var hashArr = [];
+				if (hashPassword) {
+					hashArr.push({password: hashPassword, salt: salt, spinCount: spinCount, alg: AscCommon.fromModelCryptAlgorithmSid(alg)});
+				}
+				hashArr.push({password: password, salt: salt, spinCount: spinCount, alg: AscCommon.fromModelCryptAlgorithmSid(alg)});
+				AscCommon.calculateProtectHash(hashArr, checkPassword);
+			}
+		} else {
+			checkPassword(null, true);
+		}
+
+		return true;
+	};
+
+
 	//-------------------------------------------------------------export---------------------------------------------------
 	window['Asc']                                                       = window['Asc'] || {};
 	CAscSection.prototype['get_PageWidth']                              = CAscSection.prototype.get_PageWidth;
@@ -13438,6 +13643,7 @@ background-repeat: no-repeat;\
 	asc_docs_api.prototype['asc_GetPictureFormKeys']                    = asc_docs_api.prototype.asc_GetPictureFormKeys;
 	asc_docs_api.prototype['asc_GetCheckBoxFormKeys']                   = asc_docs_api.prototype.asc_GetCheckBoxFormKeys;
 	asc_docs_api.prototype['asc_GetRadioButtonGroupKeys']               = asc_docs_api.prototype.asc_GetRadioButtonGroupKeys;
+	asc_docs_api.prototype['asc_GetFormKeysByType']                     = asc_docs_api.prototype.asc_GetFormKeysByType;
 	asc_docs_api.prototype['asc_ClearAllSpecialForms']                  = asc_docs_api.prototype.asc_ClearAllSpecialForms;
 	asc_docs_api.prototype['asc_SetSpecialFormsHighlightColor']         = asc_docs_api.prototype.asc_SetSpecialFormsHighlightColor;
 	asc_docs_api.prototype['asc_GetSpecialFormsHighlightColor']         = asc_docs_api.prototype.asc_GetSpecialFormsHighlightColor;
@@ -13450,6 +13656,7 @@ background-repeat: no-repeat;\
 	asc_docs_api.prototype['asc_SetFixedForm']                          = asc_docs_api.prototype.asc_SetFixedForm;
 	asc_docs_api.prototype['asc_IsHighlightRequiredFields']             = asc_docs_api.prototype.asc_IsHighlightRequiredFields;
 	asc_docs_api.prototype['asc_SetHighlightRequiredFields']            = asc_docs_api.prototype.asc_SetHighlightRequiredFields;
+	asc_docs_api.prototype['asc_GetAllFormsData']                       = asc_docs_api.prototype.asc_GetAllFormsData;
 
 	asc_docs_api.prototype['asc_BeginViewModeInReview']                 = asc_docs_api.prototype.asc_BeginViewModeInReview;
 	asc_docs_api.prototype['asc_EndViewModeInReview']                   = asc_docs_api.prototype.asc_EndViewModeInReview;
@@ -13485,6 +13692,8 @@ background-repeat: no-repeat;\
 	asc_docs_api.prototype['asc_GetTableFormulaFormats']                = asc_docs_api.prototype.asc_GetTableFormulaFormats;
 	asc_docs_api.prototype['asc_ParseTableFormulaInstrLine']            = asc_docs_api.prototype.asc_ParseTableFormulaInstrLine;
 	asc_docs_api.prototype['asc_CreateInstructionLine']                 = asc_docs_api.prototype.asc_CreateInstructionLine;
+	asc_docs_api.prototype['asc_HaveFields']                            = asc_docs_api.prototype.asc_HaveFields;
+	asc_docs_api.prototype['asc_UpdateFields']                          = asc_docs_api.prototype.asc_UpdateFields;
 
 	asc_docs_api.prototype["asc_addDateTime"]                           = asc_docs_api.prototype.asc_addDateTime;
 
@@ -13588,6 +13797,8 @@ background-repeat: no-repeat;\
 	asc_docs_api.prototype["asc_editPointsGeometry"] 					= asc_docs_api.prototype.asc_editPointsGeometry;
 	asc_docs_api.prototype["asc_getTableStylesPreviews"] 				= asc_docs_api.prototype.asc_getTableStylesPreviews;
 	asc_docs_api.prototype["asc_generateTableStylesPreviews"] 		    = asc_docs_api.prototype.asc_generateTableStylesPreviews;
+	asc_docs_api.prototype["asc_getDocumentProtection"] 		        = asc_docs_api.prototype.asc_getDocumentProtection;
+	asc_docs_api.prototype["asc_setDocumentProtection"] 		        = asc_docs_api.prototype.asc_setDocumentProtection;
 
 	CDocInfoProp.prototype['get_PageCount']             = CDocInfoProp.prototype.get_PageCount;
 	CDocInfoProp.prototype['put_PageCount']             = CDocInfoProp.prototype.put_PageCount;

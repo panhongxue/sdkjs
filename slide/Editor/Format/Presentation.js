@@ -7189,7 +7189,106 @@ CPresentation.prototype.EnterText = function (codePoints) {
     }
     return bRetValue;
 };
+CPresentation.prototype.CorrectEnterText = function(oldValue, newValue) {
+    if (undefined === oldValue
+        || null === oldValue
+        || (Array.isArray(oldValue) && !oldValue.length))
+        return this.EnterText(newValue);
 
+
+
+    let oController = this.GetCurrentController();
+    if(!oController) {
+        return false;
+    }
+    let oDocContent = oController.getTargetDocContent(false, false);
+    if(!oDocContent) {
+        return false;
+    }
+    if (oDocContent.IsSelectionUse())
+        return false;
+
+    let newCodePoints = typeof(newValue) === "string" ? newValue.codePointsArray() : newValue;
+    let oldCodePoints = typeof(oldValue) === "string" ? oldValue.codePointsArray() : oldValue;
+
+
+    if (!Array.isArray(oldCodePoints))
+        oldCodePoints = [oldCodePoints];
+
+    let paragraph = oDocContent.GetCurrentParagraph();
+    if (!paragraph)
+        return false;
+
+    let contentPos = paragraph.GetContentPosition(false, false);
+    let run, inRunPos;
+    for (let index = contentPos.length - 1; index >= 0; --index)
+    {
+        if (contentPos[index].Class instanceof AscWord.CRun)
+        {
+            run      = contentPos[index].Class;
+            inRunPos = contentPos[index].Position;
+            break;
+        }
+    }
+
+    if (!run)
+        return false;
+
+    if (!this.History.CheckAsYouTypeEnterText(run, inRunPos, oldCodePoints[oldCodePoints.length - 1]))
+        return false;
+
+    if (undefined === newCodePoints || null === newCodePoints)
+        newCodePoints = [];
+    else if (!Array.isArray(newCodePoints))
+        newCodePoints = [newCodePoints];
+
+    let oldText = "";
+    for (let index = 0, count = oldCodePoints.length; index < count; ++index)
+    {
+        oldText += String.fromCodePoint(oldCodePoints[index]);
+    }
+
+
+    let state = {};
+    oController.Save_DocumentStateBeforeLoadChanges(state);
+
+    let maxShifts = oldCodePoints.length;
+    let selectedText;
+    while (maxShifts >= 0)
+    {
+        this.MoveCursorLeft(true, false);
+        selectedText = this.GetSelectedText(true);
+
+        if (!selectedText || selectedText === oldText)
+            break;
+
+        maxShifts--;
+    }
+
+    if (selectedText !== oldText || this.IsSelectionLocked(AscCommon.changestype_Drawing_Props, null, true))
+    {
+
+        oController.resetSelection()
+        oController.loadDocumentStateAfterLoadChanges(state, this.CurPage);
+        return false;
+    }
+
+    this.StartAction(AscDFH.historydescription_Document_CorrectEnterText);
+
+    this.DrawingDocument.TargetStart();
+    this.DrawingDocument.TargetShow();
+
+    oDocContent.Remove(1, true, false, true);
+
+    for (let index = 0, count = newCodePoints.length; index < count; ++index)
+    {
+        let codePoint = newCodePoints[index];
+        this.AddToParagraph(AscCommon.IsSpace(codePoint) ? new AscWord.CRunSpace(codePoint) : new AscWord.CRunText(codePoint));
+    }
+    this.UpdateSelection();
+    this.FinalizeAction();
+    return true;
+};
 CPresentation.prototype.OnKeyPress = function (e) {
 
     let Code;
@@ -9363,8 +9462,13 @@ CPresentation.prototype.InsertContent2 = function (aContents, nIndex) {
 };
 
 CPresentation.prototype.InsertContent = function (Content) {
-    var bInsert = false;
-    var selected_slides = this.GetSelectedSlides(), i;
+    let bInsert = false;
+    let selected_slides = this.GetSelectedSlides(), i;
+    let oThumbnails = editor.WordControl.Thumbnails;
+    let nNeedFocusType = null;
+    if(oThumbnails) {
+        nNeedFocusType = oThumbnails.FocusObjType;
+    }
     if (Content.SlideObjects.length > 0) {
         var las_slide_index = selected_slides.length > 0 ? selected_slides[selected_slides.length - 1] : -1;
 
@@ -9379,7 +9483,7 @@ CPresentation.prototype.InsertContent = function (Content) {
         this.FocusOnNotes = false;
         this.CheckEmptyPlaceholderNotes();
         bInsert = true;
-
+        nNeedFocusType = FOCUS_OBJECT_THUMBNAILS;
     } else if (this.Slides[this.CurPage]) {
         if (Content.Drawings.length > 0) {
             if (this.FocusOnNotes && Content.Drawings.length === 1 && Content.Drawings[0].Drawing instanceof AscFormat.CGraphicFrame
@@ -9410,6 +9514,7 @@ CPresentation.prototype.InsertContent = function (Content) {
                 PresentSelContent.DocContent = oSelectedContent;
                 this.InsertContent(PresentSelContent);
                 this.Check_CursorMoveRight();
+                nNeedFocusType = FOCUS_OBJECT_MAIN;
                 return true;
             } else {
                 this.FocusOnNotes = false;
@@ -9489,12 +9594,14 @@ CPresentation.prototype.InsertContent = function (Content) {
                         }
                         this.Slides[this.CurPage].graphicObjects.selectObject(oSp, 0);
                         bInsert = true;
+                        nNeedFocusType = FOCUS_OBJECT_MAIN;
                     }
                 }
                 if (Content.DocContent && Content.DocContent.Elements.length > 0) {
                     var shape = this.CreateAndAddShapeFromSelectedContent(Content.DocContent);
                     this.Slides[this.CurPage].graphicObjects.selectObject(shape, 0);
                     bInsert = true;
+                    nNeedFocusType = FOCUS_OBJECT_MAIN;
                 }
             }
         } else if (Content.DocContent) {
@@ -9514,16 +9621,21 @@ CPresentation.prototype.InsertContent = function (Content) {
                     }
                     var oTargetTextObject = AscFormat.getTargetTextObject(this.Slides[this.CurPage].graphicObjects);
                     oTargetTextObject && oTargetTextObject.checkExtentsByDocContent && oTargetTextObject.checkExtentsByDocContent();
-                    bInsert = true;
                 } else {
                     this.FocusOnNotes = false;
                     var shape = this.CreateAndAddShapeFromSelectedContent(Content.DocContent);
                     this.Slides[this.CurPage].graphicObjects.resetSelection();
                     this.Slides[this.CurPage].graphicObjects.selectObject(shape, 0);
                     this.CheckEmptyPlaceholderNotes();
-                    bInsert = true;
                 }
+                bInsert = true;
+                nNeedFocusType = FOCUS_OBJECT_MAIN;
             }
+        }
+    }
+    if(bInsert && oThumbnails) {
+        if(oThumbnails.FocusObjType !== nNeedFocusType) {
+            oThumbnails.SetFocusElement(nNeedFocusType);
         }
     }
     return bInsert;
@@ -9745,6 +9857,17 @@ CPresentation.prototype.Refresh_RecalcData2 = function (Data) {
         case AscDFH.historyitem_ViewPrGridSpacing:
         case AscDFH.historyitem_ViewPrSlideViewerPr: {
             History.RecalcData_Add({Type: AscDFH.historyitem_recalctype_Drawing, All: true});
+            break;
+        }
+        case AscDFH.historyitem_ThemeSetFontScheme: {
+            for(let nSlide = 0; nSlide < Data.aIndexes.length; ++nSlide) {
+                let nSldIdx = Data.aIndexes[nSlide];
+                let oSlide = this.Slides[nSldIdx];
+                if(oSlide) {
+                    oSlide.checkSlideTheme();
+                    oSlide.addToRecalculate();
+                }
+            }
             break;
         }
     }
@@ -11410,6 +11533,7 @@ CPresentation.prototype.StartAction = function (nDescription) {
 };
 CPresentation.prototype.FinalizeAction = function () {
     this.Recalculate();
+    this.Api.checkChangesSize();
 };
 
 CPresentation.prototype.IsSplitPageBreakAndParaMark = function() {
@@ -11693,10 +11817,10 @@ function collectSelectedObjects(aSpTree, aCollectArray, bRecursive, oIdMap, bSou
                         oCopy.rot = oSp.rot;
                         AscFormat.CheckSpPrXfrm(oCopy, true);
                     }
-                    oCopy.convertFromSmartArt();
+                    oCopy.convertFromSmartArt(true);
                 } else {
                     oCopy = oSp.getCopyWithSourceFormatting();
-                    oCopy.convertFromSmartArt();
+                    oCopy.convertFromSmartArt(true);
                     oCopy.setParent(oSp.parent);
                 }
 

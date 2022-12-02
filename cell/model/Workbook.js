@@ -3059,6 +3059,7 @@
 	};
 	Workbook.prototype.SerializeHistory = function(){
 		var aRes = [];
+		var aRes2 = [];
 		//соединяем изменения, которые были до приема данных с теми, что получились после.
 
 		var t, j, length2;
@@ -3080,12 +3081,13 @@
 					} else {
 						this._SerializeHistory(oMemory, item, aRes);
 					}
+					aRes2.push(item);
 				}
 			}
 			this.aCollaborativeActions = [];
 			this.snapshot = this._getSnapshot();
 		}
-		return aRes;
+		return [aRes, aRes2];
 	};
 	Workbook.prototype._getSnapshot = function() {
 		var wb = new Workbook(new AscCommonExcel.asc_CHandlersList(), this.oApi);
@@ -4731,11 +4733,11 @@
 		var res = null;
 		for (var i = 0; i < this.externalReferences.length; i++) {
 			if (this.externalReferences[i].getAscLink) {
-				if (!res) {
-					res = [];
-				}
-				res.push(this.externalReferences[i].getAscLink());
+			if (!res) {
+				res = [];
 			}
+				res.push(this.externalReferences[i].getAscLink());
+		}
 		}
 		return res;
 	};
@@ -5213,6 +5215,7 @@
 		
 		this.userProtectedRanges = [];
 		this.timelines = [];
+		AscCommon.g_oTableId.Add(this, this.Id);
 	}
 
 	Worksheet.prototype.getCompiledStyle = function (row, col, opt_cell, opt_styleComponents) {
@@ -6134,7 +6137,7 @@
 				wb.setActive(nNewIndex);
 				if (!wb.bUndoChanges && !wb.bRedoChanges) {
 					wb.handlers && wb.handlers.trigger("undoRedoHideSheet", nNewIndex);
-				}
+			}
 			}
 			History.Create_NewPoint();
 			History.Add(AscCommonExcel.g_oUndoRedoWorksheet, AscCH.historyitem_Worksheet_Hide, this.getId(), null, new UndoRedoData_FromTo(bOldHidden, hidden));
@@ -8356,7 +8359,7 @@
 		this.workbook.updateSparklineCache(this.sName, ranges);
 		// ToDo do not update conditional formatting on hidden sheet
 		if (ranges && ranges.length) {
-			this.setDirtyConditionalFormatting(new AscCommonExcel.MultiplyRange(ranges));
+		this.setDirtyConditionalFormatting(new AscCommonExcel.MultiplyRange(ranges));
 		}
 		//this.workbook.handlers.trigger("toggleAutoCorrectOptions", null,true);
 	};
@@ -8632,8 +8635,8 @@
 		range._setPropertyNoEmpty(null, null, function(cell) {
 			if (cell.isFormula()) {
 				if (!cell.formulaParsed.ref || (cell.formulaParsed.ref && cell.formulaParsed.checkFirstCellArray(cell))) {
-					formulas.push(needReturnCellProps ? {f: cell.getFormulaParsed(), c: cell.nCol, r: cell.nRow} : cell.getFormulaParsed());
-				}
+				formulas.push(needReturnCellProps ? {f: cell.getFormulaParsed(), c: cell.nCol, r: cell.nRow} : cell.getFormulaParsed());
+			}
 			}
 		});
 		for (var i = 0; i < this.TableParts.length; ++i) {
@@ -8902,7 +8905,7 @@
 				let caption;
 				if (1 === colFields.length && AscCommonExcel.st_VALUES === colFields[0].asc_getIndex()) {
 					caption = pivotTable.dataCaption || AscCommon.translateManager.getValue(AscCommonExcel.DATA_CAPTION)
-				} else {
+			} else {
 					caption = pivotTable.colHeaderCaption || AscCommon.translateManager.getValue(AscCommonExcel.COL_HEADER_CAPTION);
 				}
 				this._updatePivotTableSetCellValue(cells, caption);
@@ -8929,7 +8932,7 @@
 					field: index
 				});
 				cells.setStyle(formatting);
-			}
+		}
 			// update topRight pivot area formats
 			const pivotTableLenC = pivotRange.c2 - pivotRange.c1;
 			const lenC = pivotTableLenC - location.firstDataCol - colFields.length + 1;
@@ -10426,7 +10429,7 @@
 					if (cell.getNumFormat().isDateTimeFormat()) {
 						tempDate++;
 					} else {
-						tempDigit++;
+					tempDigit++;
 					}
 				} else {
 					tempText++;
@@ -10468,7 +10471,7 @@
 			res.date = true;
 			res.text = false;
 		} else {
-			res.text = tempDigit <= tempText;
+		res.text = tempDigit <= tempText;
 		}
 
 		return res;
@@ -13399,8 +13402,10 @@
 		var DataNew = null;
 		if(History.Is_On())
 			DataNew = this.getValueData();
-		if(History.Is_On() && false == DataOld.isEqual(DataNew))
-			History.Add(AscCommonExcel.g_oUndoRedoCell, AscCH.historyitem_Cell_ChangeValue, this.ws.getId(), new Asc.Range(this.nCol, this.nRow, this.nCol, this.nRow), new UndoRedoData_CellSimpleData(this.nRow, this.nCol, DataOld, DataNew));
+		if(History.Is_On() && false == DataOld.isEqual(DataNew)) {
+			History.Add(new AscDFH.CChangesCellValueChange(this.ws, DataOld, DataNew, new AscDFH.CCellCoordsWritable(this.nRow, this.nCol)));
+		}
+			// History.Add(AscCommonExcel.g_oUndoRedoCell, AscCH.historyitem_Cell_ChangeValue, this.ws.getId(), new Asc.Range(this.nCol, this.nRow, this.nCol, this.nRow), new UndoRedoData_CellSimpleData(this.nRow, this.nCol, DataOld, DataNew));
 		//todo не должны удаляться ссылки, если сделать merge ее части.
 		if(this.isNullTextString())
 		{
@@ -15808,7 +15813,7 @@
 			if (pushOnlyFirstMergedCell) {
 				let merged = t.worksheet.getMergedByCell(cell.nRow, cell.nCol);
 				if (!merged || (merged && merged.r1 === cell.nRow && merged.c1 === cell.nCol)) {
-					cell.setValue2(array);
+			cell.setValue2(array);
 				}
 			} else {
 				cell.setValue2(array);
@@ -18994,8 +18999,8 @@
 										aInputTimePeriod = _getAInputTimePeriod(aInputTimePeriodList, nInputTimePeriod, nPrevInputTimePeriod, sValue, sNextValue);
 										if (aInputTimePeriod) {
 											calcTimePeriodValues();
-										}
 									}
+								}
 								}
 								if(null != oCell.xfs && null != oCell.xfs.num && null != oCell.xfs.num.getFormat()){
 									var numFormat = oNumFormatCache.get(oCell.xfs.num.getFormat());
@@ -19114,7 +19119,7 @@
 										let nIndexDay = nCurValue % aTimePeriods.length;
 										if (nIndexDay < 0) {
 											oCellValue.text = aReverseTimePeriods[~nIndexDay];
-										} else {
+									} else {
 											oCellValue.text = aTimePeriods[nIndexDay];
 										}
 										oCellValue.type = CellValueType.String;

@@ -955,11 +955,31 @@ var editor;
     return result;
   };
 
+	spreadsheet_api.prototype.sync_CanUndoCallback = function(bCanUndo) {
+		this.handlers.trigger("asc_onCanUndoChanged", bCanUndo);
+
+	};
+	spreadsheet_api.prototype.sync_CanRedoCallback = function(bCanRedo) {
+		this.handlers.trigger("asc_onCanRedoChanged", bCanRedo);
+	};
+	spreadsheet_api.prototype.CheckChangedDocument = function() {
+		// if (true === History.Have_Changes())
+		// {
+		// 	// дублирование евента. когда будет undo-redo - тогда
+		// 	// эти евенты начнут отличаться
+		// 	this.SetDocumentModified(true);
+		// }
+		// else
+		// {
+		// 	this.SetDocumentModified(false);
+		// }
+
+		this._onUpdateDocumentCanSave();
+	};
   spreadsheet_api.prototype.asc_Undo = function() {
     if (!this.canUndoRedoByRestrictions())
       return;
     this.wb.undo();
-    this.wb.restoreFocus();
   };
 
   spreadsheet_api.prototype.asc_Redo = function() {
@@ -2563,7 +2583,7 @@ var editor;
   /////////////////////////////////////////////////////////////////////////
   spreadsheet_api.prototype._coAuthoringInitEnd = function() {
     var t = this;
-    this.collaborativeEditing = new AscCommonExcel.CCollaborativeEditing(/*handlers*/{
+    this.collaborativeEditing = this.CollaborativeEditing = new AscCommonExcel.CCollaborativeEditing(/*handlers*/{
       "askLock": function() {
         t.CoAuthoringApi.askLock.apply(t.CoAuthoringApi, arguments);
       },
@@ -2872,7 +2892,9 @@ var editor;
 
   spreadsheet_api.prototype._onSaveChanges = function(recalcIndexColumns, recalcIndexRows, isAfterAskSave) {
     if (this.isDocumentLoadComplete) {
-      var arrChanges = this.wbModel.SerializeHistory();
+		let ser = this.wbModel.SerializeHistory();
+      var arrChanges = ser[0];
+      var arrChanges2 = ser[1];
       var deleteIndex = History.GetDeleteIndex();
       var excelAdditionalInfo = null;
       var bCollaborative = this.collaborativeEditing.getCollaborativeEditing();
@@ -2896,6 +2918,7 @@ var editor;
               excelAdditionalInfo["UserShortId"] = this.DocInfo.get_UserId();
               excelAdditionalInfo["CursorInfo"] = this.wb.getCursorInfo();
           }
+		  this.collaborativeEditing.CoHistory.AddOwnChanges(arrChanges2, deleteIndex);
         this.CoAuthoringApi.saveChanges(arrChanges, deleteIndex, excelAdditionalInfo, this.canUnlockDocument2, bCollaborative);
         History.CanNotAddChanges = true;
       } else {
@@ -3358,7 +3381,18 @@ var editor;
 			}
 		};
 		// Пересылаем свои изменения
-		this.collaborativeEditing.sendChanges(this.IsUserSave, true);
+		if (this.forceSaveUndoRequest)
+		{
+			// AscCommon.CollaborativeEditing.Set_GlobalLock(false);
+			// AscCommon.CollaborativeEditing.Undo();
+			this.collaborativeEditing.Set_GlobalLock(false);
+			this.collaborativeEditing.Undo();
+			this.forceSaveUndoRequest = false;
+		}
+		else
+		{
+			this.collaborativeEditing.sendChanges(this.IsUserSave, true);
+		}
 	};
 
   spreadsheet_api.prototype._isLockedSparkline = function (id, callback) {
@@ -6461,7 +6495,9 @@ var editor;
 		  return;
         }
 
-		if (this.isLiveViewer()) {
+		if (this.CollaborativeEditing.Is_Fast() && !this.CollaborativeEditing.Is_SingleUser()) {
+			this.wb.Continue_FastCollaborativeEditing();
+		} else if (this.isLiveViewer()) {
 			if (this.collaborativeEditing.haveOtherChanges()) {
 				this.collaborativeEditing.applyChanges();
 			}

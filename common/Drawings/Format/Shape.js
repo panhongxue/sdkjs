@@ -1044,6 +1044,7 @@ function SetXfrmFromMetrics(oDrawing, metrics)
 
 
 
+	const TEXT_RECT_ERROR = 0.01;
 
 function CShape()
 {
@@ -1179,7 +1180,7 @@ CShape.prototype.convertToWord = function (document) {
 };
 
 CShape.prototype.convertToPPTX = function (drawingDocument, worksheet, bIsAddMath) {
-    var c = new CShape();
+    let c = new CShape();
     c.setWordShape(false);
     c.setBDeleted(false);
     c.setWorksheet(worksheet);
@@ -1194,21 +1195,26 @@ CShape.prototype.convertToPPTX = function (drawingDocument, worksheet, bIsAddMat
         c.setStyle(this.style.createDuplicate());
     }
     if (this.textBoxContent) {
-        var tx_body = new AscFormat.CTextBody();
+        let tx_body = new AscFormat.CTextBody();
         tx_body.setParent(c);
         if (this.bodyPr) {
             tx_body.setBodyPr(this.bodyPr.createDuplicate());
         }
-        var new_content = new AscFormat.CDrawingDocContent(tx_body, drawingDocument, 0, 0, 0, 0, false, false, true);
-        new_content.Internal_Content_RemoveAll();
-        var paragraphs = this.textBoxContent.Content;
-
-        var index = 0;
-        for (var i = 0; i < paragraphs.length; ++i) {
-            var cur_par = paragraphs[i];
-            if (cur_par instanceof Paragraph) {
-                var new_paragraph = ConvertParagraphToPPTX(cur_par, drawingDocument, new_content, bIsAddMath);
-                new_content.Internal_Content_Add(index++, new_paragraph, false);
+        let new_content = new AscFormat.CDrawingDocContent(tx_body, drawingDocument, 0, 0, 0, 0, false, false, true);
+        let aContent = this.textBoxContent.Content;
+        let aNewParagraphs = [];
+        for (let nIdx = 0; nIdx < aContent.length; ++nIdx) {
+            let oCurElement = aContent[nIdx];
+            if (oCurElement instanceof AscCommonWord.Paragraph) {
+                let oParagraph = ConvertParagraphToPPTX(oCurElement, drawingDocument, new_content, bIsAddMath);
+                aNewParagraphs.push(oParagraph);
+            }
+        }
+        if(aNewParagraphs.length > 0) {
+            new_content.Internal_Content_RemoveAll();
+            for (let nIdx = 0; nIdx < aNewParagraphs.length; ++nIdx) {
+                let oParagraph = aNewParagraphs[nIdx];
+                new_content.Internal_Content_Add(nIdx, oParagraph, false);
             }
         }
         tx_body.setContent(new_content);
@@ -4166,7 +4172,7 @@ CShape.prototype.recalculateDocContent = function(oDocContent, oBodyPr)
                }
                default:
                {
-                   penW/=2.0;
+                   penW /= 2.0;
                    break;
                }
            }
@@ -4226,15 +4232,15 @@ CShape.prototype.recalculateDocContent = function(oDocContent, oBodyPr)
         {
             if(dMaxWidthRec < w && (!this.bWordShape && !this.bCheckAutoFitFlag))
             {
-                oDocContent.RecalculateContent(w, h, nStartPage);
-                oRet.w = w + 0.001;
+                oRet.w = w + TEXT_RECT_ERROR;
+	            oDocContent.RecalculateContent(oRet.w, h, nStartPage);
                 oRet.contentH = oDocContent.GetSummaryHeight();
                 oRet.h = oRet.contentH;
             }
             else
             {
-                oDocContent.RecalculateContent(dMaxWidthRec, h, nStartPage);
-                oRet.w = dMaxWidthRec + 0.001;
+                oRet.w = dMaxWidthRec + TEXT_RECT_ERROR;
+	            oDocContent.RecalculateContent(oRet.w, h, nStartPage);
                 oRet.contentH = oDocContent.GetSummaryHeight();
                 oRet.h = oRet.contentH;
             }
@@ -4247,15 +4253,15 @@ CShape.prototype.recalculateDocContent = function(oDocContent, oBodyPr)
         {
             if(dMaxWidthRec < h && !this.bWordShape)
             {
-                oDocContent.RecalculateContent( h, h, nStartPage);
-                oRet.w = h + 0.001;
+	            oRet.w = h + TEXT_RECT_ERROR;
+                oDocContent.RecalculateContent( oRet.w, h, nStartPage);
                 oRet.contentH = oDocContent.GetSummaryHeight();
                 oRet.h = oRet.contentH;
             }
             else
             {
-                oDocContent.RecalculateContent(dMaxWidthRec, h, nStartPage);
-                oRet.w = dMaxWidthRec + 0.001;
+	            oRet.w = dMaxWidthRec + TEXT_RECT_ERROR;
+                oDocContent.RecalculateContent(oRet.w, h, nStartPage);
                 oRet.contentH = oDocContent.GetSummaryHeight();
                 oRet.h = oRet.contentH;
             }
@@ -4271,15 +4277,15 @@ CShape.prototype.recalculateDocContent = function(oDocContent, oBodyPr)
         {
             if(!(oBodyPr.vert === AscFormat.nVertTTvert || oBodyPr.vert === AscFormat.nVertTTvert270 || oBodyPr.vert === AscFormat.nVertTTeaVert))
             {
-                oRet.w = w + 0.001;
-                oRet.h = h + 0.001;
+                oRet.w = w + TEXT_RECT_ERROR;
+                oRet.h = h + TEXT_RECT_ERROR;
                 oRet.correctW = l_ins + r_ins;
                 oRet.correctH = t_ins + b_ins;
             }
             else
             {
-                oRet.w = h + 0.001;
-                oRet.h = w + 0.001;
+                oRet.w = h + TEXT_RECT_ERROR;
+                oRet.h = w + TEXT_RECT_ERROR;
                 oRet.correctW = t_ins + b_ins;
                 oRet.correctH = l_ins + r_ins;
             }
@@ -4291,15 +4297,15 @@ CShape.prototype.recalculateDocContent = function(oDocContent, oBodyPr)
             {
                 if(!(oBodyPr.vert === AscFormat.nVertTTvert || oBodyPr.vert === AscFormat.nVertTTvert270 || oBodyPr.vert === AscFormat.nVertTTeaVert))
                 {
-                    oRet.w = w + 0.001;
-                    oRet.h = h + 0.001;
+                    oRet.w = w + TEXT_RECT_ERROR;
+                    oRet.h = h + TEXT_RECT_ERROR;
                     oRet.correctW = l_ins + r_ins;
                     oRet.correctH = t_ins + b_ins;
                 }
                 else
                 {
-                    oRet.w = h + 0.001;
-                    oRet.h = w + 0.001;
+                    oRet.w = h + TEXT_RECT_ERROR;
+                    oRet.h = w + TEXT_RECT_ERROR;
                     oRet.correctW = t_ins + b_ins;
                     oRet.correctH = l_ins + r_ins;
                 }
@@ -4308,15 +4314,15 @@ CShape.prototype.recalculateDocContent = function(oDocContent, oBodyPr)
             {
                 if(!(oBodyPr.vert === AscFormat.nVertTTvert || oBodyPr.vert === AscFormat.nVertTTvert270 || oBodyPr.vert === AscFormat.nVertTTeaVert))
                 {
-                    oRet.w = h + 0.001;
-                    oRet.h = w + 0.001;
+                    oRet.w = h + TEXT_RECT_ERROR;
+                    oRet.h = w + TEXT_RECT_ERROR;
                     oRet.correctW = t_ins + b_ins;
                     oRet.correctH = l_ins + r_ins;
                 }
                 else
                 {
-                    oRet.w = w + 0.001;
-                    oRet.h = h + 0.001;
+                    oRet.w = w + TEXT_RECT_ERROR;
+                    oRet.h = h + TEXT_RECT_ERROR;
                     oRet.correctW = l_ins + r_ins;
                     oRet.correctH = t_ins + b_ins;
                 }
@@ -4810,8 +4816,8 @@ CShape.prototype.checkExtentsByDocContent = function(bForce, bNeedRecalc)
         this.recalcInfo.recalcTitle =  oOldRecalcTitle;
         this.recalcInfo.bRecalculatedTitle =  bOldRecalcTitle;
         AscFormat.CheckSpPrXfrm(this, true);
-        this.spPr.xfrm.setExtX(this.extX + 0.001);
-        this.spPr.xfrm.setExtY(this.extY + 0.001);
+        this.spPr.xfrm.setExtX(this.extX + TEXT_RECT_ERROR);
+        this.spPr.xfrm.setExtY(this.extY + TEXT_RECT_ERROR);
         if(!this.bWordShape || this.group)
         {
             this.spPr.xfrm.setOffX(this.x);
@@ -5496,14 +5502,6 @@ CShape.prototype.draw = function (graphics, transform, transformText, pageIndex,
         var shape_drawer = new AscCommon.CShapeDrawer();
         shape_drawer.fromShape2(this, graphics, geometry);
         shape_drawer.draw(geometry);
-    }
-    if (graphics.isSmartArtPreviewDrawer && this.isActiveBlipFillPlaceholder()) {
-        const cx = this.spPr.xfrm.extX / 2;
-        const cy = this.spPr.xfrm.extY / 2;
-        if (graphics.imagePlaceholder) {
-            const img = graphics.imagePlaceholder;
-            graphics.drawImage2(img, cx - graphics.placeholderSize / 2, cy - graphics.placeholderSize / 2, graphics.placeholderSize, graphics.placeholderSize);
-        }
     }
 
     if (!graphics.isSmartArtPreviewDrawer && !this.bWordShape && this.isEmptyPlaceholder() && !(this.parent && this.parent.kind === AscFormat.TYPE_KIND.NOTES) && !(this.pen && this.pen.Fill && this.pen.Fill.fill && !(this.pen.Fill.fill instanceof AscFormat.CNoFill)) && graphics.IsNoDrawingEmptyPlaceholder !== true  && !AscCommon.IsShapeToImageConverter)

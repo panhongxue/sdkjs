@@ -718,26 +718,39 @@ ParaRun.prototype.private_CheckTrackRevisionsBeforeAdd = function(oNewRun)
  */
 ParaRun.prototype.private_CheckTextScriptBeforeAdd = function(oNewRun, oItem)
 {
-	if (!oItem)
-		return null;
+	if (!oItem || !oItem.IsText())
+		return oNewRun;
+
+	let script = oItem.GetScript();
+	if (AscFonts.HB_SCRIPT.HB_SCRIPT_INHERITED === script || AscFonts.HB_SCRIPT.HB_SCRIPT_COMMON === script)
+		return oNewRun;
 
 	let oPr = this.Pr;
 
 	// TODO: Когда будет обрабатывать RTL добавить тут
 	let isAddRTL = false, isRemoveRTL = false;
 
-	let isAddCS    = (oItem.IsText() && AscCommon.IsComplexScript(oItem.GetCodePoint()) && !oPr.CS);
-	let isRemoveCS = (oItem.IsText() && !AscCommon.IsComplexScript(oItem.GetCodePoint()) && oPr.CS);
+	let isAddCS    = (AscCommon.IsComplexScript(oItem.GetCodePoint()) && !oPr.CS);
+	let isRemoveCS = (!AscCommon.IsComplexScript(oItem.GetCodePoint()) && oPr.CS);
 
 	if (!oNewRun
 		&& (isAddCS || isRemoveCS || isAddRTL || isRemoveRTL))
 	{
-		oNewRun = this.private_SplitRunInCurPos();
+		let runToApply;
+		if (this.IsOnlyCommonTextScript())
+		{
+			runToApply = this;
+		}
+		else
+		{
+			oNewRun    = this.private_SplitRunInCurPos();
+			runToApply = oNewRun;
+		}
 
 		if (isAddCS)
-			oNewRun.ApplyComplexScript(true);
+			runToApply.ApplyComplexScript(true);
 		else if (isRemoveCS)
-			oNewRun.ApplyComplexScript(false);
+			runToApply.ApplyComplexScript(false);
 	}
 
 	return oNewRun;
@@ -973,6 +986,29 @@ ParaRun.prototype.CheckRunBeforeAdd = function(oItem)
 		oNewRun.Make_ThisElementCurrent();
 
 	return oNewRun;
+};
+/**
+ * Специальная функция проверяет, что в ране присутствуют текстовые элементы только из общих скриптов (т.е. не
+ * принадлижащие какой-то конкретной пиьменности). Если текстовых элементов нет вообще, то вернется false
+ * @returns {boolean}
+ */
+ParaRun.prototype.IsOnlyCommonTextScript = function()
+{
+	let isCommonScript = false;
+	for (let index = 0, count = this.Content.length; index < count; ++index)
+	{
+		let item = this.Content[index];
+		if (item.IsText())
+		{
+			let script = item.GetScript();
+			if (AscFonts.HB_SCRIPT.HB_SCRIPT_INHERITED === script || AscFonts.HB_SCRIPT.HB_SCRIPT_COMMON === script)
+				isCommonScript = true;
+			else
+				return false;
+		}
+	}
+
+	return isCommonScript;
 };
 /**
  * Проверяем, предзназначен ли данный ран чисто для математических формул.
@@ -1721,6 +1757,9 @@ ParaRun.prototype.Add_ToContent = function(Pos, Item, UpdatePosition)
 
 ParaRun.prototype.Remove_FromContent = function(Pos, Count, UpdatePosition)
 {
+	if (Count <= 0)
+		return;
+
 	if (this.GetTextForm() && this.GetTextForm().IsComb())
 		this.RecalcInfo.Measure = true;
 
@@ -7695,7 +7734,7 @@ ParaRun.prototype.Get_LeftPos = function(SearchPos, ContentPos, Depth, UseConten
 			isHiddenCF   = SearchPos.IsHiddenComplexField();
 		}
 
-		if (CurPos >= 0 && (isFieldCode || isHiddenCF || (Item.IsDiacriticalSymbol && Item.IsDiacriticalSymbol())))
+		if (CurPos >= 0 && (isFieldCode || isHiddenCF))
 			continue;
 
 		if (CurPos < 0 || (!(para_Drawing === Item.Type && false === Item.Is_Inline() && false === SearchPos.IsCheckAnchors()) && !((para_FootnoteReference === Item.Type || para_EndnoteReference === Item.Type) && true === Item.IsCustomMarkFollows())))
@@ -7752,9 +7791,6 @@ ParaRun.prototype.Get_RightPos = function(SearchPos, ContentPos, Depth, UseConte
 
 		if (CurPos > Count)
 			break;
-
-		if (this.Content[CurPos] && this.Content[CurPos].IsDiacriticalSymbol && this.Content[CurPos].IsDiacriticalSymbol())
-			continue;
 
 		// Минимальное значение CurPos = 1, т.к. мы начинаем со значния >= 0 и добавляем 1
 		var Item     = this.private_CheckInstrText(this.Content[CurPos - 1]);

@@ -35,7 +35,7 @@
 (function (window, builder) {
 	function checkFormat(value) {
 		if (value.getTime){
-			return new AscCommonExcel.cNumber(new Asc.cDate(value.getTime()).getExcelDate());
+			return new AscCommonExcel.cNumber(new Asc.cDate(value.getTime()).getExcelDateWithTime(true));
 		} else {
 			return new AscCommonExcel.cString(value + '');
 		}
@@ -49,6 +49,7 @@
 	 * @property {Array} Sheets - Returns the Sheets collection that represents all the sheets in the active workbook.
 	 * @property {ApiWorksheet} ActiveSheet - Returns an object that represents the active sheet.
 	 * @property {ApiRange} Selection - Returns an object that represents the selected range.
+	 * @property {ApiComment[]} Comments - Returns an array of ApiComment objects.
 	 */
 	var Api = window["Asc"]["spreadsheet_api"];
 
@@ -56,7 +57,7 @@
  	* The callback function which is called when the specified range of the current sheet changes.
  	* <note>Please note that the event is not called for the undo/redo operations.</note>
 	* @event Api#onWorksheetChange
-	* @property {ApiRange} range - The modified range represented as the ApiRange object.
+	* @param {ApiRange} range - The modified range represented as the ApiRange object.
  	*/
 
 	/**
@@ -123,6 +124,7 @@
 	 * @property {ApiComment | null} Comments - Returns the ApiComment collection that represents all the comments from the specified worksheet.
 	 * @property {'xlDownward' | 'xlHorizontal' | 'xlUpward' | 'xlVertical'} Orientation - Sets an angle to the current cell range.
 	 * @property {ApiAreas} Areas - Returns a collection of the areas.
+	 * @property {ApiCharacters} Characters - Returns a Characters object that represents a range of characters within the object text. Use the Characters object to format characters within a text string.
 	 */
 	function ApiRange(range, areas) {
 		this.range = range;
@@ -279,9 +281,9 @@
 	 * @constructor
 	 * @property {string} Text - Returns the text from the first cell in range.
 	 */
-	function ApiComment(comment, ws) {
+	function ApiComment(comment, wb) {
 		this.Comment = comment;
-		this.WS = ws;
+		this.WB = wb;
 	}
 
 	/**
@@ -296,6 +298,38 @@
 		for (var i = 0; i < items.length; i++) {
 			this.Items.push(new ApiRange(items[i]));
 		}
+	}
+
+	/**
+	 * Class representing characters in an object that contains text.
+	 * @constructor
+	 * @property {number} Count - Returns a value that represents the number of objects in the collection.
+	 * @property {ApiRange} Parent - Returns the parent object for the specified object.
+	 * @property {Array} Caption - Returns or sets a String value that represents the text of this range of characters.
+	 * @property {Array} Text - Returns or sets the text for the specified object.
+	 * @property {ApiRange} Font - Returns a Font object that represents the font of the specified object.
+	 */
+	function ApiCharacters(options, parent) {
+		this._options = options;
+		this._parent = parent;
+	}
+
+	/**
+	 * Class contains the font attributes (font name, font size, color, and so on) for an object.
+	 * @constructor
+	 * @property {ApiCharacters} Parent - Returns the parent object for the specified object.
+	 * @property {boolean || null} Bold - Returns or sets the bold property to the text characters.
+	 * @property {boolean || null} Italic - Returns or sets the italic property to the text characters.
+	 * @property {number || null} Size - Returns or sets size property to the text characters.
+	 * @property {boolean || null} Strikethrough - Returns or sets the strikethrough property to the text characters.
+	 * @property {string || null} Underline - Returns or sets the type of underline applied to the font.
+	 * @property {boolean || null} Subscript - Returns or sets the subscript property to the text characters.
+	 * @property {boolean || null} Superscript - Returns or sets the superscript property to the text characters.
+	 * @property {string || null} Name - Returns or sets the font name property to the text characters.
+	 * @property {ApiColor || null} Color - Returns or sets the font color property to the text characters.
+	 */
+	function ApiFont(object) {
+		this._object = object;
 	}
 
 	/**
@@ -779,6 +813,25 @@
 	Api.prototype["detachEvent"] = Api.prototype.detachEvent;
 
 	/**
+	 * Returns an array of ApiComment objects.
+	 * @memberof Api
+	 * @typeofeditors ["CSE"]
+	 * @returns {ApiComment[]}
+	 */
+	Api.prototype.GetComments = function () {
+		var comments = [];
+		for (var i = 0; i < this.wbModel.aComments.length; i++) {
+			comments.push(new ApiComment(this.wbModel.aComments[i], this.wb));
+		}
+		return comments;
+	};
+	Object.defineProperty(Api.prototype, "Comments", {
+		get: function () {
+			return this.GetComments();
+		}
+	});
+
+	/**
 	 * Returns the state of sheet visibility.
 	 * @memberof ApiWorksheet
 	 * @typeofeditors ["CSE"]
@@ -863,22 +916,41 @@
 	 * @typeofeditors ["CSE"]
 	 * @param {number} row - The row number or the cell number (if only row is defined).
 	 * @param {number} col - The column number.
-	 * @returns {ApiRange}
+	 * @returns {ApiRange || Error}
 	 */
 	ApiWorksheet.prototype.GetCells = function (row, col) {
-		if (row) row--;
-		if (typeof col !== "undefined" && typeof row !== "undefined") {
-			if (col) col--;
-			return new ApiRange(this.worksheet.getRange3(row, col, row, col));
-		} else if (typeof row !== "undefined") {
-			var r = (row) ?  (row / AscCommon.gc_nMaxCol0) >> 0 : row;
-			var c = (row) ? row % AscCommon.gc_nMaxCol0 : row;
-			if (r && c) c--;
-			return new ApiRange(this.worksheet.getRange3(r, c, r, c));
+		let result;
+		if (typeof col == "number" && typeof row == "number") {
+			if (col < 1 || row < 1 || col > AscCommon.gc_nMaxCol0 || row > AscCommon.gc_nMaxRow0) {
+				result = new Error('Invalid paremert "row" or "col".');
+			} else {
+				row--;
+				col--;
+				result = new ApiRange(this.worksheet.getRange3(row, col, row, col));
+			}
+		} else if (typeof row == "number") {
+			if (row < 1 || row > AscCommon.gc_nMaxRow0) {
+				result = new Error('Invalid paremert "row".');
+			} else {
+				row--
+				let r = (row) ?  (row / AscCommon.gc_nMaxCol0) >> 0 : row;
+				let c = (row) ? row % AscCommon.gc_nMaxCol0 : row;
+				if (r && c) c--;
+				result = new ApiRange(this.worksheet.getRange3(r, c, r, c));
+			}
+			
+		} else if (typeof col == "number") {
+			if (col < 1 || col > AscCommon.gc_nMaxCol0) {
+				result = new Error('Invalid paremert "col".');
+			} else {
+				col--;
+				result = new ApiRange(this.worksheet.getRange3(0, col, 0, col));
+			}
+		} else {
+			result = new ApiRange(this.worksheet.getRange3(0, 0, AscCommon.gc_nMaxRow0, AscCommon.gc_nMaxCol0));
 		}
-		else {
-			return new ApiRange(this.worksheet.getRange3(0, 0, AscCommon.gc_nMaxRow0, AscCommon.gc_nMaxCol0));
-		}
+
+		return result;
 	};
 	Object.defineProperty(ApiWorksheet.prototype, "Cells", {
 		get: function () {
@@ -1018,11 +1090,33 @@
 	 * from a single row - <b>A1:E1</b>, or cells from a single column - <b>A1:A10</b>, or cells from several rows and columns - <b>A1:E10</b>.
 	 * @memberof ApiWorksheet
 	 * @typeofeditors ["CSE"]
-	 * @param {string} sRange - The range of cells from the current sheet.
+	 * @param {string | ApiRange} Range1 - The range of cells from the current sheet.
+	 * @param {string | ApiRange} Range2 - The range of cells from the current sheet.
 	 * @returns {ApiRange | null} - returns null if such a range does not exist.
 	 */
-	ApiWorksheet.prototype.GetRange = function (sRange) {
-		var Range = this.worksheet.getRange2(sRange);
+	ApiWorksheet.prototype.GetRange = function (Range1, Range2) {
+		var Range, r1, c1, r2, c2;
+		Range1 = (Range1 instanceof ApiRange) ? Range1.range : (typeof Range1 == 'string') ? this.worksheet.getRange2(Range1) : null;
+
+		if (!Range1) {
+			return new Error('Incorrect "Range1" or it is empty.')
+		}
+		
+		Range2 = (Range2 instanceof ApiRange) ? Range2.range : (typeof Range2 == 'string') ? this.worksheet.getRange2(Range2) : null;
+
+		if (Range2) {
+			r1 = Math.min(Range1.bbox.r1, Range2.bbox.r1);
+			c1 = Math.min(Range1.bbox.c1, Range2.bbox.c1);
+			r2 = Math.max(Range1.bbox.r2, Range2.bbox.r2);
+			c2 = Math.max(Range1.bbox.c1, Range2.bbox.c2);
+		} else {
+			r1 = Range1.bbox.r1;
+			c1 = Range1.bbox.c1;
+			r2 = Range1.bbox.r2;
+			c2 = Range1.bbox.c2;
+		}
+
+		Range = this.worksheet.getRange3(r1, c1, r2, c2);
 
 		if (!Range)
 			return null;
@@ -1362,7 +1456,7 @@
 	ApiWorksheet.prototype.GetComments = function () {
 		var comments = [];
 		for (var i = 0; i < this.worksheet.aComments.length; i++) {
-			comments.push(new ApiComment(this.worksheet.aComments[i], this.worksheet.workbook.getWorksheet(this.Index)));
+			comments.push(new ApiComment(this.worksheet.aComments[i], this.worksheet.workbook.oApi.wb));
 		}
 		return comments;
 	};
@@ -1387,23 +1481,36 @@
 	 * @typeofeditors ["CSE"]
 	 * @param {string} sRange - The range where the hyperlink will be added to.
 	 * @param {string} sAddress - The link address.
+	 * @param {string} subAddress - The subaddress of the hyperlink.
 	 * @param {string} sScreenTip - The screen tip text.
 	 * @param {string} sTextToDisplay - The link text that will be displayed on the sheet.
 	 * */
-	ApiWorksheet.prototype.SetHyperlink = function (sRange, sAddress, sScreenTip, sTextToDisplay)	{
+	ApiWorksheet.prototype.SetHyperlink = function (sRange, sAddress, subAddress, sScreenTip, sTextToDisplay) {
 		var range = new ApiRange(this.worksheet.getRange2(sRange));
-		if (range && range.range.isOneCell() && sAddress) {
-			var externalLink = AscCommon.rx_allowedProtocols.test(sAddress);
+		var address;
+		if ( range && range.range.isOneCell() && (sAddress || subAddress) ) {
+			var externalLink = sAddress ? AscCommon.rx_allowedProtocols.test(sAddress) : false;
 			if (externalLink && AscCommonExcel.getFullHyperlinkLength(sAddress) > Asc.c_nMaxHyperlinkLength) {
-				return null;
+				return new Error('Incorrect "sAddress".');
 			}
-
+			if (!externalLink) {
+				address = subAddress.split("!");
+				if (address.length == 1) 
+					address.unshift(this.GetName());
+				else if (this.worksheet.workbook.getWorksheetByName(address[0]) === null)
+					return new Error('Invalid "subAddress".')
+				
+				var res = this.worksheet.workbook.oApi.asc_checkDataRange(Asc.c_oAscSelectionDialogType.FormatTable, address[1], false);
+				if (res === Asc.c_oAscError.ID.DataRangeError) {
+					return new Error('Invalid "subAddress".');
+				}
+			}
 			this.worksheet.selectionRange.assign2(range.range.bbox);
 			var  Hyperlink = new Asc.asc_CHyperlink();
 			if (sScreenTip) {
 				Hyperlink.asc_setText(sScreenTip);
 			} else {
-				Hyperlink.asc_setText(sAddress);
+				Hyperlink.asc_setText( (externalLink ? sAddress : subAddress) );
 			}
 			if (sTextToDisplay) {
 				Hyperlink.asc_setTooltip(sTextToDisplay);
@@ -1411,8 +1518,8 @@
 			if (externalLink) {
 				Hyperlink.asc_setHyperlinkUrl(sAddress);
 			} else {
-				Hyperlink.asc_setRange(sAddress);
-				Hyperlink.asc_setSheet(this.GetName());
+				Hyperlink.asc_setRange(address[1]);
+				Hyperlink.asc_setSheet(address[0]);
 			}
 			this.worksheet.workbook.oApi.wb.insertHyperlink(Hyperlink);
 		}
@@ -1681,6 +1788,26 @@
 	};
 
 	/**
+	 * Moves the sheet to another location in the workbook.
+	 * @memberof ApiWorksheet
+	 * @typeofeditors ["CSE"]
+	 * @param {ApiWorksheet} before - The sheet before which the moved sheet will be placed. You cannot specify Before if you specify After.
+	 * @param {ApiWorksheet} after - The sheet after which the moved sheet will be placed. You cannot specify After if you specify Before.
+	*/
+	ApiWorksheet.prototype.Move = function(before, after) {
+		var bb = before instanceof ApiWorksheet;
+		var ba = after instanceof ApiWorksheet;
+		if ( (bb && ba) || (!bb && !ba) )
+			return new Error('Incorrect parametrs.');
+
+		if (bb) {
+			this.worksheet.workbook.oApi.asc_moveWorksheet( before.Index, [this.Index] );
+		} else {
+			this.worksheet.workbook.oApi.asc_moveWorksheet( (after.Index + 1), [this.Index] );
+		}
+	};
+
+	/**
 	 * Specifies the cell border position.
 	 * @typedef {("DiagonalDown" | "DiagonalUp" | "Bottom" | "Left" | "Right" | "Top" | "InsideHorizontal" | "InsideVertical")} BordersIndex
 	 */
@@ -1735,7 +1862,7 @@
 	 * @returns {number}
 	 */
 	ApiRange.prototype.GetRow = function () {
-		return this.range.bbox.r1;
+		return (this.range.bbox.r1 + 1);
 	};
 	Object.defineProperty(ApiRange.prototype, "Row", {
 		get: function () {
@@ -1749,7 +1876,7 @@
 	 * @returns {number}
 	 */
 	ApiRange.prototype.GetCol = function () {
-		return this.range.bbox.c1;
+		return (this.range.bbox.c1 + 1);
 	};
 	Object.defineProperty(ApiRange.prototype, "Col", {
 		get: function () {
@@ -1835,34 +1962,63 @@
 	 * @param {Direction} direction - The direction of end in the specified range. *
 	 * @returns {ApiRange}
 	 */
-	 ApiRange.prototype.End = function (direction) {
-		var bbox = this.range.bbox;
-		var r1, c1, r2, c2;
+	ApiRange.prototype.End = function (direction) {
+		let bbox = this.range.bbox;
+		let row, col, res;
 		switch (direction) {
 			case "xlUp":
-				r1 = r2 = 0;
-				c1 = c2 = bbox.c1;
+				row = (bbox.r1 > 0 ? bbox.r1 - 1 : bbox.r1);
+				res = this.range.worksheet.getRange3(0, bbox.c1, 0, bbox.c1);
+				while (row) {
+					let cell = this.range.worksheet.getRange3(row, bbox.c1, row, bbox.c1);
+					if (cell.getValue() !== "") {
+						res = cell;
+						break;
+					}
+					row--;
+				}
 				break;
 			case "xlDown":
-				r1 = r2 = AscCommon.gc_nMaxRow0;
-				c1 = c2 = bbox.c1;
+				row = (bbox.r1 < AscCommon.gc_nMaxRow0 ? bbox.r1 + 1 : bbox.r1);
+				res = this.range.worksheet.getRange3(AscCommon.gc_nMaxRow0, bbox.c1, AscCommon.gc_nMaxRow0, bbox.c1);
+				while (row < AscCommon.gc_nMaxRow0) {
+					let cell = this.range.worksheet.getRange3(row, bbox.c1, row, bbox.c1);
+					if (cell.getValue() !== "") {
+						res = cell;
+						break;
+					}
+					row++;
+				}
 				break;
 			case "xlToRight":
-				r1 = r2 = bbox.r1;
-				c1 = c2 = AscCommon.gc_nMaxCol0;
+				col = (bbox.c1 < AscCommon.gc_nMaxCol0 ? bbox.c1 + 1 : bbox.c1);
+				res = this.range.worksheet.getRange3(bbox.r1, AscCommon.gc_nMaxCol0, bbox.r1, AscCommon.gc_nMaxCol0);
+				while (col < AscCommon.gc_nMaxCol0) {
+					let cell = this.range.worksheet.getRange3(bbox.r1, col, bbox.r1, col);
+					if (cell.getValue() !== "") {
+						res = cell;
+						break;
+					}
+					col++;
+				}
 				break;
 			case "xlToLeft":
-				r1 = r2 = bbox.r1;
-				c1 = c2 = 0;
+				col = (bbox.c1 > 0 ? bbox.c1 - 1 : bbox.c1);
+				res = this.range.worksheet.getRange3(bbox.r1, 0, bbox.r1, 0);
+				while (col) {
+					let cell = this.range.worksheet.getRange3(bbox.r1, col, bbox.r1, col);
+					if (cell.getValue() !== "") {
+						res = cell;
+						break;
+					}
+					col--;
+				}
 				break;
 			default:
-				r1 = bbox.r1;
-				c1 = bbox.c1;
-				r2 = bbox.r2;
-				c2 = bbox.c2;
+				res = this.range.worksheet.getRange3(bbox.r1, bbox.c1, bbox.r2, bbox.c2);
 				break;
 		}
-		return new ApiRange(this.range.worksheet.getRange3(r1, c1, r2, c2));
+		return new ApiRange(res);
 	};
 
 	/**
@@ -1873,20 +2029,36 @@
 	 * @param {number} col - The column number.
 	 * @returns {ApiRange}
 	 */
-	 ApiRange.prototype.GetCells = function (row, col) {
-		if (row) row--;
-		var bbox = this.range.bbox;
-		if (typeof col !== "undefined" && typeof row !== "undefined") {
-			return new ApiRange(this.range.worksheet.getRange3(row, col, row, col));
-		} else if (typeof row !== "undefined") {
-			var cellCount = bbox.c2 - bbox.c1 + 1; 
-			var r = bbox.r1 + ((row) ?  (row / cellCount) >> 0 : row);
-			var c = bbox.c1 + ((r) ? 1 : 0) + ((row) ? row % cellCount : row);
-			if (r && c) c--;
-			return new ApiRange(this.range.worksheet.getRange3(r, c, r, c));
+	ApiRange.prototype.GetCells = function (row, col) {
+		let bbox = this.range.bbox;
+		let r1, c1, result;
+		if (typeof col == "number" && typeof row == "number") {
+			row--;
+			col--
+			r1 = bbox.r1 + row;
+			c1 = bbox.c1 + col;
+		} else if (typeof row == "number") {
+			row--;
+			let cellCount = bbox.c2 - bbox.c1 + 1; 
+			r1 = bbox.r1 + ((row) ?  (row / cellCount) >> 0 : row);
+			c1 = bbox.c1 + ((r1) ? 1 : 0) + ((row) ? row % cellCount : row);
+			if (r1 && c1) c1--;
+		} else if (typeof col == "number") {
+			col--;
+			r1 = bbox.r1;
+			c1 = bbox.c1 + col;
 		} else {
-			return new ApiRange(this.range.worksheet.getRange3(bbox.r1, bbox.c1, bbox.r2, bbox.c2));
+			result = new ApiRange(this.range.worksheet.getRange3(bbox.r1, bbox.c1, bbox.r2, bbox.c2));
 		}
+
+		if (!result) {
+			if (r1 > AscCommon.gc_nMaxRow0) r1 = AscCommon.gc_nMaxRow0;
+			if (r1 < 0) r1 = 0;
+			if (c1 > AscCommon.gc_nMaxCol0) c1 = AscCommon.gc_nMaxCol0;
+			if (c1 < 0) c1 = 0;
+			result = new ApiRange(this.range.worksheet.getRange3(r1, c1, r1, c1));
+		}
+		return result;
 	};
 	Object.defineProperty(ApiRange.prototype, "Cells", {
 		get: function () {
@@ -2588,6 +2760,28 @@
 	});
 
 	/**
+	 * Returns value that represents the format code for the range.
+	 * @memberof ApiRange
+	 * @typeofeditors ["CSE"]
+	 * @returns {string | null} This property returns null if all cells in the specified range don't have the same number format.
+	 */
+	ApiRange.prototype.GetNumberFormat = function () {
+		var bbox = this.range.bbox;
+		var nCol = bbox.c2 - bbox.c1 + 1;
+		var nRow = bbox.r2 - bbox.r1 + 1;
+		var res = this.range.getNumFormatStr();
+		if ( !this.range.isOneCell() ) {
+			for (var i = 0; i < nRow; i++) {
+				for (var k = 0; k < nCol; k++) {
+					var cell = this.range.worksheet.getRange3( (bbox.r1 + i), (bbox.c1 + k), (bbox.r1 + i), (bbox.c1 + k) );
+					if ( res !== cell.getNumFormatStr() )
+						return null;
+				}
+			}
+		}
+		return res;
+	};
+	/**
 	 * Specifies whether a number in the cell should be treated like number, currency, date, time, etc. or just like text.
 	 * @memberof ApiRange
 	 * @typeofeditors ["CSE"]
@@ -2597,6 +2791,9 @@
 		this.range.setNumFormat(sFormat);
 	};
 	Object.defineProperty(ApiRange.prototype, "NumberFormat", {
+		get: function () {
+			return this.GetNumberFormat();
+		},
 		set: function (sFormat) {
 			return this.SetNumberFormat(sFormat);
 		}
@@ -2612,6 +2809,7 @@
 	 */
 	ApiRange.prototype.SetBorders = function (bordersIndex, lineStyle, oColor) {
 		var borders = new AscCommonExcel.Border();
+		borders.initDefault();
 		switch (bordersIndex) {
 			case 'DiagonalDown':
 				borders.dd = true;
@@ -2774,7 +2972,7 @@
 		}
 		var ws = this.range.worksheet.workbook.oApi.wb.getWorksheet(this.range.worksheet.getIndex());
 		var comment = ws.cellCommentator.getComment(this.range.bbox.c1, this.range.bbox.r1, false);
-		var res = comment ? new ApiComment(comment, ws) : null;
+		var res = comment ? new ApiComment(comment, this.range.worksheet.workbook.oApi.wb) : null;
 		return res;
 	};
 	Object.defineProperty(ApiRange.prototype, "Comments", {
@@ -3020,7 +3218,7 @@
 			return new Error ("Invalid destination");
 		}
 	};
-	
+
 	/**
 	 * Pastes the Range object to the specified range.
 	 * @memberof ApiRange
@@ -3038,6 +3236,217 @@
 			return new Error ("Invalid range");
 		}
 	};
+	
+	/**
+	 * Finds specific information in a range.
+	 * @memberof ApiRange
+	 * @typeofeditors ["CSE"]
+	 * @param {String | undefined} What - The data to search for.
+	 * @param {ApiRange} After - The cell after which you want the search to begin. If you don't specify this argument, the search starts after the cell in the upper-left corner of the range.
+	 * @param {String} LookIn - Can be one of the following XlFindLookIn constants: xlFormulas, xlValues.
+	 * @param {String} LookAt - Can be one of the following XlLookAt constants: xlWhole or xlPart.
+	 * @param {String} SearchOrder - Can be one of the following XlSearchOrder constants: xlByRows or xlByColumns.
+	 * @param {String} SearchDirection - Can be one of the following XlSearchDirection constants: xlNext or xlPrevious.
+	 * @param {Boolean} MatchCase - True to make the search case-sensitive. The default value is False.
+	 * @returns {ApiRange | null} - returns null if range does not contains such text.
+	 * 
+	 */
+	ApiRange.prototype.Find = function(What, After, LookIn, LookAt, SearchOrder, SearchDirection, MatchCase) {
+		if (typeof What === 'string' || What === undefined) {
+			let res = null;
+			let options = new Asc.asc_CFindOptions();
+			options.asc_setFindWhat(What);
+			options.asc_setScanForward(SearchDirection != 'xlPrevious');
+			MatchCase && options.asc_setIsMatchCase(MatchCase);
+			options.asc_setIsWholeCell(LookAt === 'xlWhole');
+			options.asc_setScanOnOnlySheet(Asc.c_oAscSearchBy.Range);
+			options.asc_setSpecificRange(this.Address);
+			options.asc_setScanByRows(SearchOrder === 'xlByRows');
+			options.asc_setLookIn( (LookIn === 'xlValues' ? 2 : 1) );
+			options.asc_setNotSearchEmptyCells( !(What === "" && !options.isWholeCell) );
+			let start = ( After instanceof ApiRange && After.range.isOneCell() && this.range.containsRange(After.range) )
+						? { row: After.range.bbox.r1, col: After.range.bbox.c1 }
+						: { row: this.range.bbox.r1, col: this.range.bbox.c1 };
+						
+			start.row += (options.scanByRows ? (options.scanForward ? 1 : -1) : 0);
+			start.col += (!options.scanByRows ? (options.scanForward ? 1 : -1) : 0);
+			options.asc_setActiveCell(start);
+			let engine = this.range.worksheet.workbook.oApi.wb.Search(options);
+			let id = this.range.worksheet.workbook.oApi.wb.GetSearchElementId(options.scanForward);
+			if (id != null) {
+				let elem = engine.Elements[id];
+				res = new ApiRange(this.range.worksheet.getRange3(elem.row, elem.col, elem.row, elem.col));
+			}
+			this._searchOptions = options;
+			return res;
+		} else {
+			return new Error('Invalid parametr "What".')
+		}
+	};
+
+	/**
+	 * Continues a search that was begun with the Find method. Finds the next cell that matches those same conditions and returns a Range object that represents that cell. This does not affect the selection or the active cell..
+	 * @memberof ApiRange
+	 * @typeofeditors ["CSE"]
+	 * @param {ApiRange} After - The cell after which you want the search to begin. If you don't specify this argument, the search starts from the last founded cell.
+	 * @returns {ApiRange} - returns null if range does not contains such text.
+	 * 
+	*/
+	ApiRange.prototype.FindNext = function(After) {
+		if (this._searchOptions) {
+			let res = null;
+			let activeCell;
+			let engine;
+			this._searchOptions.asc_setScanForward(true);
+			if (After instanceof ApiRange && After.range.isOneCell() && this.range.containsRange(After.range)) {
+				activeCell = { row: After.range.bbox.r1, col: After.range.bbox.c1 };
+				activeCell.row += (this._searchOptions.scanByRows ? 1 : 0);
+				activeCell.col += (!this._searchOptions.scanByRows ? 1 : 0);
+			} else {
+				activeCell = {row: this.range.bbox.r1, col: this.range.bbox.c1};
+			}
+			if (JSON.stringify(this._searchOptions.activeCell) !== JSON.stringify(activeCell)) {
+				this._searchOptions.asc_setActiveCell(activeCell);
+			} else {
+				engine = this.range.worksheet.workbook.oApi.wb.Search(this._searchOptions);
+				engine.Reset();
+			}
+			engine = this.range.worksheet.workbook.oApi.wb.Search(this._searchOptions);
+			let id = this.range.worksheet.workbook.oApi.wb.GetSearchElementId(true);
+			if (id != null) {
+				let elem = engine.Elements[id];
+				res = new ApiRange(this.range.worksheet.getRange3(elem.row, elem.col, elem.row, elem.col));
+			}
+			return res;
+		} else {
+			return new Error('You should use "Find" method before this.')
+		}
+	};
+
+	/**
+	 * Continues a search that was begun with the Find method. Finds the next cell that matches those same conditions and returns a Range object that represents that cell. This does not affect the selection or the active cell..
+	 * @memberof ApiRange
+	 * @typeofeditors ["CSE"]
+	 * @param {ApiRange} Before - The cell before which you want the search to begin. If you don't specify this argument, the search starts from the last founded cell.
+	 * @returns {ApiRange} - returns null if range does not contains such text.
+	 * 
+	*/
+	ApiRange.prototype.FindPrevious = function(Before) {
+		if (this._searchOptions) {
+			let res = null;
+			let activeCell;
+			let engine;
+			this._searchOptions.asc_setScanForward(false);
+			if (Before instanceof ApiRange && Before.range.isOneCell() && this.range.containsRange(Before.range)) {
+				activeCell = { row: Before.range.bbox.r1, col: Before.range.bbox.c1 };
+				activeCell.row += (this._searchOptions.scanByRows ? -1 : 0);
+				activeCell.col += (!this._searchOptions.scanByRows ? -1 : 0);
+			} else {
+				activeCell = {row: this.range.bbox.r1, col: this.range.bbox.c1};
+			}
+			if (JSON.stringify(this._searchOptions.activeCell) !== JSON.stringify(activeCell)) {
+				this._searchOptions.asc_setActiveCell(activeCell);
+			} else {
+				engine = this.range.worksheet.workbook.oApi.wb.Search(this._searchOptions);
+				engine.Reset();
+			}
+			engine = this.range.worksheet.workbook.oApi.wb.Search(this._searchOptions);
+			let id = this.range.worksheet.workbook.oApi.wb.GetSearchElementId(false);
+			if (id != null) {
+				let elem = engine.Elements[id];
+				res = new ApiRange(this.range.worksheet.getRange3(elem.row, elem.col, elem.row, elem.col));
+			}
+			return res;
+		} else {
+			return new Error('You should use "Find" method before this.')
+		}
+	};
+
+	/**
+	 * Replaces specific information to another one in a range.
+	 * @memberof ApiRange
+	 * @typeofeditors ["CSE"]
+	 * @param {String | undefined} What - The data to search for.
+	 * @param {String} Replacement - The replacement string.
+	 * @param {String} LookAt - Can be one of the following XlLookAt constants: xlWhole or xlPart.
+	 * @param {String} SearchOrder - Can be one of the following XlSearchOrder constants: xlByRows or xlByColumns.
+	 * @param {String} SearchDirection - Can be one of the following XlSearchDirection constants: xlNext or xlPrevious.
+	 * @param {Boolean} MatchCase - True to make the search case-sensitive. The default value is False.
+	 * @param {Boolean} ReplaceAll - True to replace all. The default value is True.
+	 * 
+	 */
+	ApiRange.prototype.Replace = function(What, Replacement, LookAt, SearchOrder, SearchDirection, MatchCase, ReplaceAll) {
+		if (typeof What === 'string' && typeof Replacement === 'string') {
+			let options = new Asc.asc_CFindOptions();
+			options.asc_setFindWhat(What);
+			options.asc_setReplaceWith(Replacement);
+			options.asc_setScanForward(SearchDirection != 'xlPrevious');
+			MatchCase && options.asc_setIsMatchCase(MatchCase);
+			options.asc_setIsWholeCell(LookAt === 'xlWhole');
+			options.asc_setScanOnOnlySheet(Asc.c_oAscSearchBy.Range);
+			options.asc_setSpecificRange(this.Address);
+			options.asc_setScanByRows(SearchOrder === 'xlByRows');
+			options.asc_setLookIn(Asc.c_oAscFindLookIn.Formulas);
+			if (typeof ReplaceAll !== 'boolean')
+				ReplaceAll = true;
+
+			options.asc_setIsReplaceAll((ReplaceAll === true));
+			this.range.worksheet.workbook.oApi.isReplaceAll = options.isReplaceAll;
+			let engine = this.range.worksheet.workbook.oApi.wb.Search(options);
+			engine.Reset();
+			engine = this.range.worksheet.workbook.oApi.wb.Search(options);
+			let id = this.range.worksheet.workbook.oApi.wb.GetSearchElementId(SearchDirection != 'xlPrevious');
+			options.asc_setIsForMacros(true);
+			if (id != null) {
+				if (ReplaceAll)
+					engine.SetCurrent(id);
+				else
+					this.range.worksheet.workbook.oApi.wb.SelectSearchElement(id);
+
+				this.range.worksheet.workbook.oApi.wb.replaceCellText(options);
+			}
+		} else {
+			return new Error('Invalid type of parametr "What" or "Replacement.')
+		}
+	};
+
+	/**
+	 * Returns a Characters object that represents a range of characters within the object text. Use the Characters object to format characters within a text string.
+	 * @memberof ApiRange
+	 * @typeofeditors ["CSE"]
+	 * @param {number} Start - The first character to be returned. If this argument is either 1 or omitted, this property returns a range of characters starting with the first character.
+	 * @param {number} Length - The number of characters to be returned. If this argument is omitted, this property returns the remainder of the string (everything after the Start character).
+	 * @return {ApiCharacters}
+	 * @since 7.4.0
+	 */
+	ApiRange.prototype.GetCharacters = function(Start, Length) {
+		let options = {
+			fragments: this.range.getValueForEdit2(),
+			// user start
+			uStart: Start,
+			// user length
+			uLength: Length,
+			// real start
+			start: ( typeof Start !== "number" || Start < 1 ) ? 1 : Start,
+			// user corrected length
+			length: Length,
+			// real length
+			len: 0
+		};
+
+		options.len = AscCommonExcel.getFragmentsCharCodesLength(options.fragments);
+		if ( typeof Length !== "number" || options.len < (options.start + Length) ) {
+			options.length = options.len - options.start + 1;
+		}
+
+		return new ApiCharacters(options, this);
+	};
+
+	Object.defineProperty(ApiRange.prototype, "Characters", {
+		get: function () {
+			return this.GetCharacters();
+		}
+	});
 
 	//------------------------------------------------------------------------------------------------------------------
 	//
@@ -4125,7 +4534,7 @@
 	 * @typeofeditors ["CSE"]
 	 */
 	ApiComment.prototype.Delete = function () {
-		this.WS.cellCommentator.removeComment(this.Comment.asc_getId());
+		this.WB.removeComment(this.Comment.asc_getId());
 	};
 
 	/**
@@ -4153,6 +4562,7 @@
 	ApiAreas.prototype.GetCount = function () {
 		return this.Items.length;
 	};
+
 	Object.defineProperty(ApiAreas.prototype, "Count", {
 		get: function () {
 			return this.GetCount();
@@ -4176,12 +4586,1032 @@
 	 * @typeofeditors ["CSE"]
 	 * @returns {number}
 	 */
-	 ApiAreas.prototype.GetParent = function () {
+	ApiAreas.prototype.GetParent = function () {
 		return this._parent;
 	};
+
 	Object.defineProperty(ApiAreas.prototype, "Parent", {
 		get: function () {
 			return this.GetParent();
+		}
+	});
+
+	//------------------------------------------------------------------------------------------------------------------
+	//
+	// ApiCharacters
+	//
+	//------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Returns a value that represents the number of objects in the collection.
+	 * @memberof ApiAreas
+	 * @typeofeditors ["CSE"]
+	 * @returns {number}
+	 * @since 7.4.0
+	 */
+	ApiCharacters.prototype.GetCount = function () {
+		return this._options.length < 0 ? 0 : this._options.length;
+	};
+
+	Object.defineProperty(ApiCharacters.prototype, "Count", {
+		get: function () {
+			return this.GetCount();
+		}
+	});
+
+	/**
+	 * Returns the parent object for the specified object.
+	 * @memberof ApiAreas
+	 * @typeofeditors ["CSE"]
+	 * @returns {ApiRange}
+	 * @since 7.4.0
+	 */
+	ApiCharacters.prototype.GetParent = function () {
+		return this._parent;
+	};
+
+	Object.defineProperty(ApiCharacters.prototype, "Parent", {
+		get: function () {
+			return this.GetParent();
+		}
+	});
+
+	/**
+	 * Deletes the object.
+	 * @memberof ApiAreas
+	 * @typeofeditors ["CSE"]
+	 * @since 7.4.0
+	 */
+	ApiCharacters.prototype.Delete = function () {
+		if (this._options.start <= this._options.len) {
+			let editor = this._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+			let begin = this._options.start - 1;
+			if (begin > this._options.len) begin = this._options.len - 1;
+			let end = this._options.start + this._options.length - 1;
+			if (end > this._options.len) end = this._options.len - 1;
+			let fragments = this._options.fragments;
+			let first = editor._findFragment(begin, fragments);
+			let last = editor._findFragment(end, fragments);
+			if (first && last) {
+				if (first.index === last.index) {
+					let codes = fragments[first.index].getCharCodes();
+					fragments[first.index].setCharCodes(codes.slice(0, begin - first.begin).concat(codes.slice(end - first.begin)));
+				} else {
+					fragments[first.index].setCharCodes(fragments[first.index].getCharCodes().slice(0, begin - first.begin));
+					fragments[last.index].setCharCodes(fragments[last.index].getCharCodes().slice(end - last.begin));
+					let len = last.index - first.index;
+					if (len > 1) {
+						fragments.splice(first.index + 1, len - 1);
+					}
+				}
+				editor._mergeFragments(fragments);
+				let range = this._parent.range.worksheet.getRange3(this._parent.range.bbox.r1, this._parent.range.bbox.c1, this._parent.range.bbox.r1, this._parent.range.bbox.c1);
+				range.setValue2(fragments);
+				this._options = this._parent.GetCharacters(this._options.uStart, this._options.uLength)._options;
+			}
+		}
+	};
+
+	/**
+	 * Returns the parent object for the specified object.
+	 * @memberof ApiAreas
+	 * @typeofeditors ["CSE"]
+	 * @param {String} String - A string value that represents the text of this range of characters.
+	 * @since 7.4.0
+	 */
+	ApiCharacters.prototype.Insert = function (String) {
+		this.Delete();
+		let begin = this._options.start - 1;
+		if (begin > this._options.len) begin = this._options.len - 1;
+		let end = this._options.start + this._options.length - 1;
+		if (end > this._options.len) end = this._options.len - 1;
+		let fragments = this._options.fragments;
+		let editor = this._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+		let copyFragment = editor._findFragmentToInsertInto((begin < this._options.len ? begin + 1 : begin), fragments);
+		let textFormat = fragments[copyFragment.index].format.clone();
+
+		String = AscCommon.convertUTF16toUnicode(String);
+		let length = String.length;
+		if (length) {
+			// limit count characters
+			let excess = AscCommonExcel.getFragmentsCharCodesLength(fragments) + length - Asc.c_oAscMaxCellOrCommentLength;
+			if (0 > excess) excess = 0;
+
+			if (excess) {
+				length -= excess;
+				if (!length) {
+					console.error(new Error("Max symbols in one cell."))
+					return;
+				}
+				String = String.slice(0, length);
+			}
+
+			let pos = this._options.start <= this._options.len ? begin : this._options.len;
+			let fr;
+			if (textFormat) {
+				let newFr = new AscCommonExcel.Fragment( { format: textFormat, charCodes: String } );
+				fr = editor._findFragment(pos, fragments);
+				if ( fr && pos < fr.end ) {
+					editor._splitFragment(fr, pos, fragments);
+					fr = editor._findFragment(pos, fragments);
+					Array.prototype.splice.apply( fragments, [fr.index, 0].concat(newFr) );
+				}
+				else {
+					fragments = fragments.concat(newFr);
+				}
+				editor._mergeFragments(fragments);
+			} else {
+				fr = editor._findFragmentToInsertInto(pos);
+				if (fr) {
+					let len = pos - fr.begin;
+					let codes = fragments[fr.index].getCharCodes();
+					fragments[fr.index].setCharCodes(codes.slice(0, len).concat(String).concat(codes.slice(len)));
+					codes = fragments[fr.index].getCharCodes();
+				}
+			}
+			let range = this._parent.range.worksheet.getRange3(this._parent.range.bbox.r1, this._parent.range.bbox.c1, this._parent.range.bbox.r1, this._parent.range.bbox.c1);
+			range.setValue2(fragments);
+			this._options = this._parent.GetCharacters(this._options.uStart, this._options.uLength)._options;
+		}
+	};
+
+	/**
+	 * Sets a String value that represents the text of this range of characters.
+	 * @memberof ApiAreas
+	 * @typeofeditors ["CSE"]
+	 * @param {String} Caption - A string value that represents the text of this range of characters.
+	 * @since 7.4.0
+	 */
+	ApiCharacters.prototype.SetCaption = function (Caption) {
+		this.Insert(Caption);
+	};
+
+	/**
+	 * Returns a String value that represents the text of this range of characters.
+	 * @memberof ApiAreas
+	 * @typeofeditors ["CSE"]
+	 * @param {String} Caption - A string value that represents the text of this range of characters.
+	 * @since 7.4.0
+	 */
+	ApiCharacters.prototype.GetCaption = function () {
+		let value = this._parent.range.getValue();
+		let begin = this._options.start - 1;
+		let end = this._options.start + this._options.length - 1;
+		let str = value.slice(begin, end);
+		return str;
+	};
+
+	Object.defineProperty(ApiCharacters.prototype, "Caption", {
+		get: function () {
+			return this.GetCaption();
+		},
+		set: function (Caption) {
+			return this.SetCaption(Caption);
+		}
+	});
+
+	/**
+	 * Sets the text for the specified object.
+	 * @memberof ApiAreas
+	 * @typeofeditors ["CSE"]
+	 * @param {String} Text - The text of this range of characters.
+	 * @since 7.4.0
+	 */
+	ApiCharacters.prototype.SetText = function (Text) {
+		this.Insert(Text)
+	};
+
+	/**
+	 * Returns the text for the specified object.
+	 * @memberof ApiAreas
+	 * @typeofeditors ["CSE"]
+	 * @returns {String}
+	 * @since 7.4.0
+	 */
+	ApiCharacters.prototype.GetText = function () {
+		return this.GetCaption();
+	};
+
+	Object.defineProperty(ApiCharacters.prototype, "Text", {
+		get: function () {
+			return this.GetText();
+		},
+		set: function (Text) {
+			return this.SetText(Text);
+		}
+	});
+
+	/**
+	 * Returns a Font object that represents the font of the specified object.
+	 * @memberof ApiAreas
+	 * @typeofeditors ["CSE"]
+	 * @returns {ApiFont}
+	 * @since 7.4.0
+	 */
+	ApiCharacters.prototype.GetFont = function () {
+		return new ApiFont(this);
+	};
+
+	Object.defineProperty(ApiCharacters.prototype, "Font", {
+		get: function () {
+			return this.GetFont();
+		}
+	});
+
+	//------------------------------------------------------------------------------------------------------------------
+	//
+	// ApiFont
+	//
+	//------------------------------------------------------------------------------------------------------------------
+
+
+	/**
+	 * Returns the parent object for the specified object.
+	 * @memberof ApiAreas
+	 * @typeofeditors ["CSE"]
+	 * @returns {ApiCharacters}
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.GetParent = function () {
+		return this._object;
+	};
+
+	Object.defineProperty(ApiFont.prototype, "Parent", {
+		get: function () {
+			return this.GetParent();
+		}
+	});
+
+	/**
+	 * Returns the bold property to the text characters.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @returns {boolean || null}
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.GetBold = function () {
+		if (this._object instanceof ApiCharacters) {
+			let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+			let opt = this._object._options;
+			let begin = opt.start - 1;
+			if (begin > opt.len) begin = opt.len - 1;
+			let end = opt.start + opt.length - 1;
+			if (end > opt.len) end = opt.len - 1;
+			let first = editor._findFragment(begin, opt.fragments);
+			let last = editor._findFragmentToInsertInto(end, opt.fragments);
+			let isBold = true;
+			if (first && last) {
+				for (let i = first.index; i <= last.index; i++) {
+					if (!opt.fragments[i].format.getBold()) {
+						isBold = null;
+						break;
+					}
+				}
+			} else {
+				isBold = null;
+			}
+			return isBold;
+		}
+	};
+
+	/**
+	 * Sets the bold property to the text characters.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @param {boolean} isBold - Specifies that the text characters are displayed bold.
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.SetBold = function (isBold) {
+		if (typeof isBold !== 'boolean') {
+			console.error(new Error('Invalid type of parametr "isBold".'));
+			return;
+		}
+		if (this._object instanceof ApiCharacters) {
+			let opt = this._object._options;
+			if (opt.start <= opt.len) {
+				let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+				let begin = opt.start - 1;
+				if (begin > opt.len) begin = opt.len - 1;
+				let end = opt.start + opt.length - 1;
+				if (end > opt.len) end = opt.len - 1;
+				if (begin != end) {
+					editor._extractFragments(begin, end - begin, opt.fragments);
+					let first = editor._findFragment(begin, opt.fragments);
+					let last = editor._findFragment(end - 1, opt.fragments);
+					if (first && last) {
+						for (let i = first.index; i <= last.index; ++i) {
+							editor._setFormatProperty(opt.fragments[i].format, "b", isBold);
+						}
+						editor._mergeFragments(opt.fragments);
+						let bbox = this._object._parent.range.bbox;
+						let range = this._object._parent.range.worksheet.getRange3(bbox.r1, bbox.c1, bbox.r1, bbox.c1);
+						range.setValue2(opt.fragments);
+						this._object._options = this._object._parent.GetCharacters(opt.uStart, opt.uLength)._options;
+					}
+				}
+			}
+		}
+	};
+
+	Object.defineProperty(ApiFont.prototype, "Bold", {
+		get: function () {
+			return this.GetBold();
+		},
+		set: function (isBold) {
+			return this.SetBold(isBold);
+		}
+	});
+
+	/**
+	 * Returns the italic property to the text characters.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @returns {boolean || null}
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.GetItalic = function () {
+		if (this._object instanceof ApiCharacters) {
+			let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+			let opt = this._object._options;
+			let begin = opt.start - 1;
+			if (begin > opt.len) begin = opt.len - 1;
+			let end = opt.start + opt.length - 1;
+			if (end > opt.len) end = opt.len - 1;
+			let first = editor._findFragment(begin, opt.fragments);
+			let last = editor._findFragmentToInsertInto(end, opt.fragments);
+			let isItalic = true;
+			if (first && last) {
+				for (let i = first.index; i <= last.index; i++) {
+					if (!opt.fragments[i].format.getItalic()) {
+						isItalic = null;
+						break;
+					}
+				}
+			} else {
+				isItalic = null;
+			}
+			return isItalic;
+		}
+	};
+
+	/**
+	 * Sets the italic property to the text characters.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @param {boolean} isItalic - Specifies that the text characters are displayed italic.
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.SetItalic = function (isItalic) {
+		if (typeof isItalic !== 'boolean') {
+			console.error(new Error('Invalid type of parametr "isItalic".'));
+			return;
+		}
+		if (this._object instanceof ApiCharacters) {
+			let opt = this._object._options;
+			if (opt.start <= opt.len) {
+				let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+				let begin = opt.start - 1;
+				if (begin > opt.len) begin = opt.len - 1;
+				let end = opt.start + opt.length - 1;
+				if (end > opt.len) end = opt.len - 1;
+				if (begin != end) {
+					editor._extractFragments(begin, end - begin, opt.fragments);
+					let first = editor._findFragment(begin, opt.fragments);
+					let last = editor._findFragment(end - 1, opt.fragments);
+					if (first && last) {
+						for (let i = first.index; i <= last.index; ++i) {
+							editor._setFormatProperty(opt.fragments[i].format, "i", isItalic);
+						}
+						editor._mergeFragments(opt.fragments);
+						let bbox = this._object._parent.range.bbox;
+						let range = this._object._parent.range.worksheet.getRange3(bbox.r1, bbox.c1, bbox.r1, bbox.c1);
+						range.setValue2(opt.fragments);
+						this._object._options = this._object._parent.GetCharacters(opt.uStart, opt.uLength)._options;
+					}
+				}
+			}
+		}
+	};
+
+	Object.defineProperty(ApiFont.prototype, "Italic", {
+		get: function () {
+			return this.GetItalic();
+		},
+		set: function (isItalic) {
+			return this.SetItalic(isItalic);
+		}
+	});
+
+	/**
+	 * Returns the font size property to the text characters.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @returns {number || null}
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.GetSize = function () {
+		if (this._object instanceof ApiCharacters) {
+			let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+			let opt = this._object._options;
+			let begin = opt.start - 1;
+			if (begin > opt.len) begin = opt.len - 1;
+			let end = opt.start + opt.length - 1;
+			if (end > opt.len) end = opt.len - 1;
+			let first = editor._findFragment(begin, opt.fragments);
+			let last = editor._findFragmentToInsertInto(end, opt.fragments);
+			let size = opt.fragments[first.index].format.getSize();
+			if (first && last) {
+				for (let i = first.index + 1; i <= last.index; i++) {
+					if (size !== opt.fragments[i].format.getSize()) {
+						size = null;
+						break;
+					}
+				}
+			} else {
+				size = null;
+			}
+			return size;
+		}
+	};
+
+	/**
+	 * Sets the font size property to the text characters.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @param {number} Size - Font size.
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.SetSize = function (Size) {
+		if (typeof Size !== 'number' || Size < 0 || Size > 409) {
+			console.error(new Error('Invalid type of parametr "Size".'));
+			return;
+		}
+		if (this._object instanceof ApiCharacters) {
+			let opt = this._object._options;
+			if (opt.start <= opt.len) {
+				let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+				let begin = opt.start - 1;
+				if (begin > opt.len) begin = opt.len - 1;
+				let end = opt.start + opt.length - 1;
+				if (end > opt.len) end = opt.len - 1;
+				if (begin != end) {
+					editor._extractFragments(begin, end - begin, opt.fragments);
+					let first = editor._findFragment(begin, opt.fragments);
+					let last = editor._findFragment(end - 1, opt.fragments);
+					if (first && last) {
+						for (let i = first.index; i <= last.index; ++i) {
+							editor._setFormatProperty(opt.fragments[i].format, "fs", Size);
+						}
+						editor._mergeFragments(opt.fragments);
+						let bbox = this._object._parent.range.bbox;
+						let range = this._object._parent.range.worksheet.getRange3(bbox.r1, bbox.c1, bbox.r1, bbox.c1);
+						range.setValue2(opt.fragments);
+						this._object._options = this._object._parent.GetCharacters(opt.uStart, opt.uLength)._options;
+					}
+				}
+			}
+		}
+	};
+
+	Object.defineProperty(ApiFont.prototype, "Size", {
+		get: function () {
+			return this.GetSize();
+		},
+		set: function (Size) {
+			return this.SetSize(Size);
+		}
+	});
+
+	/**
+	 * Returns the strikethrough property to the text characters.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @returns {boolean || null}
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.GetStrikethrough = function () {
+		if (this._object instanceof ApiCharacters) {
+			let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+			let opt = this._object._options;
+			let begin = opt.start - 1;
+			if (begin > opt.len) begin = opt.len - 1;
+			let end = opt.start + opt.length - 1;
+			if (end > opt.len) end = opt.len - 1;
+			let first = editor._findFragment(begin, opt.fragments);
+			let last = editor._findFragmentToInsertInto(end, opt.fragments);
+			let isStrikethrough = true;
+			if (first && last) {
+				for (let i = first.index; i <= last.index; i++) {
+					if (!opt.fragments[i].format.getStrikeout()) {
+						isStrikethrough = null;
+						break;
+					}
+				}
+			} else {
+				isStrikethrough = null;
+			}
+			return isStrikethrough;
+		}
+	};
+
+	/**
+	 * Sets the strikethrough property to the text characters.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @param {boolean} isStrikethrough - Specifies that the text characters are displayed strikethrough.
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.SetStrikethrough = function (isStrikethrough) {
+		if (typeof isStrikethrough !== 'boolean') {
+			console.error(new Error('Invalid type of parametr "isStrikethrough".'));
+			return;
+		}
+		if (this._object instanceof ApiCharacters) {
+			let opt = this._object._options;
+			if (opt.start <= opt.len) {
+				let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+				let begin = opt.start - 1;
+				if (begin > opt.len) begin = opt.len - 1;
+				let end = opt.start + opt.length - 1;
+				if (end > opt.len) end = opt.len - 1;
+				if (begin != end) {
+					editor._extractFragments(begin, end - begin, opt.fragments);
+					let first = editor._findFragment(begin, opt.fragments);
+					let last = editor._findFragment(end - 1, opt.fragments);
+					if (first && last) {
+						for (let i = first.index; i <= last.index; ++i) {
+							editor._setFormatProperty(opt.fragments[i].format, "s", isStrikethrough);
+						}
+						editor._mergeFragments(opt.fragments);
+						let bbox = this._object._parent.range.bbox;
+						let range = this._object._parent.range.worksheet.getRange3(bbox.r1, bbox.c1, bbox.r1, bbox.c1);
+						range.setValue2(opt.fragments);
+						this._object._options = this._object._parent.GetCharacters(opt.uStart, opt.uLength)._options;
+					}
+				}
+			}
+		}
+	};
+
+	Object.defineProperty(ApiFont.prototype, "Strikethrough", {
+		get: function () {
+			return this.GetStrikethrough();
+		},
+		set: function (isStrikethrough) {
+			return this.SetStrikethrough(isStrikethrough);
+		}
+	});
+
+	/**
+	 * Returns the type of underline applied to the font.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @returns {string || null}
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.GetUnderline = function () {
+		if (this._object instanceof ApiCharacters) {
+			let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+			let opt = this._object._options;
+			let begin = opt.start - 1;
+			if (begin > opt.len) begin = opt.len - 1;
+			let end = opt.start + opt.length - 1;
+			if (end > opt.len) end = opt.len - 1;
+			let first = editor._findFragment(begin, opt.fragments);
+			let last = editor._findFragmentToInsertInto(end, opt.fragments);
+			let Underline = opt.fragments[first.index].format.getUnderline();
+			if (first && last) {
+				for (let i = first.index + 1; i <= last.index; i++) {
+					if (Underline !== opt.fragments[i].format.getUnderline()) {
+						Underline = null;
+						break;
+					}
+				}
+			} else {
+				Underline = null;
+			}
+
+			switch (Underline) {
+				case Asc.EUnderline.underlineDouble:
+					// todo doesn't work
+					Underline = "xlUnderlineStyleDouble";
+					break;
+				case Asc.EUnderline.underlineDoubleAccounting:
+					// todo doesn't work
+					Underline = "xlUnderlineStyleDoubleAccounting";
+					break;
+				case Asc.EUnderline.underlineNone:
+					Underline = "xlUnderlineStyleNone";
+					break;
+				case Asc.EUnderline.underlineSingle:
+					Underline = "xlUnderlineStyleSingle";
+					break;
+				case Asc.EUnderline.underlineSingleAccounting:
+					// todo doesn't work
+					Underline = "xlUnderlineStyleSingleAccounting";
+					break;
+	
+				default:
+					Underline = null;
+					break;
+			}
+
+			return Underline;
+		}
+	};
+
+	/**
+	 * Sets the type of underline applied to the font.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @param {string} Underline - type of underline.
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.SetUnderline = function (Underline) {
+		if (typeof Underline !== 'string') {
+			console.error(new Error('Invalid type of parametr "isUnderline".'));
+			return;
+		}
+		switch (Underline) {
+			case "xlUnderlineStyleDouble":
+				// todo doesn't work
+				Underline = Asc.EUnderline.underlineDouble;
+				break;
+			case "xlUnderlineStyleDoubleAccounting":
+				// todo doesn't work
+				Underline = Asc.EUnderline.underlineDoubleAccounting;
+				break;
+			case "xlUnderlineStyleNone":
+				Underline = Asc.EUnderline.underlineNone;
+				break;
+			case "xlUnderlineStyleSingle":
+				Underline = Asc.EUnderline.underlineSingle;
+				break;
+			case "xlUnderlineStyleSingleAccounting":
+				// todo doesn't work
+				Underline = Asc.EUnderline.underlineSingleAccounting;
+				break;
+
+			default:
+				Underline = Asc.EUnderline.underlineNone;
+				break;
+		}
+
+		if (this._object instanceof ApiCharacters) {
+			let opt = this._object._options;
+			if (opt.start <= opt.len) {
+				let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+				let begin = opt.start - 1;
+				if (begin > opt.len) begin = opt.len - 1;
+				let end = opt.start + opt.length - 1;
+				if (end > opt.len) end = opt.len - 1;
+				if (begin != end) {
+					editor._extractFragments(begin, end - begin, opt.fragments);
+					let first = editor._findFragment(begin, opt.fragments);
+					let last = editor._findFragment(end - 1, opt.fragments);
+					if (first && last) {
+						for (let i = first.index; i <= last.index; ++i) {
+							editor._setFormatProperty(opt.fragments[i].format, "u", Underline);
+						}
+						editor._mergeFragments(opt.fragments);
+						let bbox = this._object._parent.range.bbox;
+						let range = this._object._parent.range.worksheet.getRange3(bbox.r1, bbox.c1, bbox.r1, bbox.c1);
+						range.setValue2(opt.fragments);
+						this._object._options = this._object._parent.GetCharacters(opt.uStart, opt.uLength)._options;
+					}
+				}
+			}
+		}
+	};
+
+	Object.defineProperty(ApiFont.prototype, "Underline", {
+		get: function () {
+			return this.GetUnderline();
+		},
+		set: function (Underline) {
+			return this.SetUnderline(Underline);
+		}
+	});
+
+	/**
+	 * Returns the subscript property to the text characters.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @returns {boolean || null}
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.GetSubscript = function () {
+		if (this._object instanceof ApiCharacters) {
+			let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+			let opt = this._object._options;
+			let begin = opt.start - 1;
+			if (begin > opt.len) begin = opt.len - 1;
+			let end = opt.start + opt.length - 1;
+			if (end > opt.len) end = opt.len - 1;
+			let first = editor._findFragment(begin, opt.fragments);
+			let last = editor._findFragmentToInsertInto(end, opt.fragments);
+			let isSubscript = true;
+			if (first && last) {
+				for (let i = first.index; i <= last.index; i++) {
+					if (AscCommon.vertalign_SubScript !== opt.fragments[i].format.getVerticalAlign()) {
+						isSubscript = null;
+						break;
+					}
+				}
+			} else {
+				isSubscript = null;
+			}
+			return isSubscript;
+		}
+	};
+
+	/**
+	 * Sets the subscript property to the text characters.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @param {boolean} isSubscript - Specifies that the text characters are displayed subscript.
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.SetSubscript = function (isSubscript) {
+		if (typeof isSubscript !== 'boolean') {
+			console.error(new Error('Invalid type of parametr "isSubscript".'));
+			return;
+		}
+		if (this._object instanceof ApiCharacters) {
+			let opt = this._object._options;
+			if (opt.start <= opt.len) {
+				let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+				let begin = opt.start - 1;
+				if (begin > opt.len) begin = opt.len - 1;
+				let end = opt.start + opt.length - 1;
+				if (end > opt.len) end = opt.len - 1;
+				if (begin != end) {
+					editor._extractFragments(begin, end - begin, opt.fragments);
+					let first = editor._findFragment(begin, opt.fragments);
+					let last = editor._findFragment(end - 1, opt.fragments);
+					if (first && last) {
+						for (let i = first.index; i <= last.index; ++i) {
+							editor._setFormatProperty(opt.fragments[i].format, "fa", (isSubscript ? AscCommon.vertalign_SubScript : AscCommon.vertalign_Baseline));
+						}
+						editor._mergeFragments(opt.fragments);
+						let bbox = this._object._parent.range.bbox;
+						let range = this._object._parent.range.worksheet.getRange3(bbox.r1, bbox.c1, bbox.r1, bbox.c1);
+						range.setValue2(opt.fragments);
+						this._object._options = this._object._parent.GetCharacters(opt.uStart, opt.uLength)._options;
+					}
+				}
+			}
+		}
+	};
+
+	Object.defineProperty(ApiFont.prototype, "Subscript", {
+		get: function () {
+			return this.GetSubscript();
+		},
+		set: function (isSubscript) {
+			return this.SetSubscript(isSubscript);
+		}
+	});
+
+	/**
+	 * Returns the superscript property to the text characters.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @returns {boolean || null}
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.GetSuperscript = function () {
+		if (this._object instanceof ApiCharacters) {
+			let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+			let opt = this._object._options;
+			let begin = opt.start - 1;
+			if (begin > opt.len) begin = opt.len - 1;
+			let end = opt.start + opt.length - 1;
+			if (end > opt.len) end = opt.len - 1;
+			let first = editor._findFragment(begin, opt.fragments);
+			let last = editor._findFragmentToInsertInto(end, opt.fragments);
+			let isSuperscript = true;
+			if (first && last) {
+				for (let i = first.index; i <= last.index; i++) {
+					if (AscCommon.vertalign_SuperScript !== opt.fragments[i].format.getVerticalAlign()) {
+						isSuperscript = null;
+						break;
+					}
+				}
+			} else {
+				isSuperscript = null;
+			}
+			return isSuperscript;
+		}
+	};
+
+	/**
+	 * Sets the superscript property to the text characters.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @param {boolean} isSuperscript - Specifies that the text characters are displayed superscript.
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.SetSuperscript = function (isSuperscript) {
+		if (typeof isSuperscript !== 'boolean') {
+			console.error(new Error('Invalid type of parametr "isSuperscript".'));
+			return;
+		}
+		if (this._object instanceof ApiCharacters) {
+			let opt = this._object._options;
+			if (opt.start <= opt.len) {
+				let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+				let begin = opt.start - 1;
+				if (begin > opt.len) begin = opt.len - 1;
+				let end = opt.start + opt.length - 1;
+				if (end > opt.len) end = opt.len - 1;
+				if (begin != end) {
+					editor._extractFragments(begin, end - begin, opt.fragments);
+					let first = editor._findFragment(begin, opt.fragments);
+					let last = editor._findFragment(end - 1, opt.fragments);
+					if (first && last) {
+						for (let i = first.index; i <= last.index; ++i) {
+							editor._setFormatProperty(opt.fragments[i].format, "fa", (isSuperscript ? AscCommon.vertalign_SuperScript : AscCommon.vertalign_Baseline));
+						}
+						editor._mergeFragments(opt.fragments);
+						let bbox = this._object._parent.range.bbox;
+						let range = this._object._parent.range.worksheet.getRange3(bbox.r1, bbox.c1, bbox.r1, bbox.c1);
+						range.setValue2(opt.fragments);
+						this._object._options = this._object._parent.GetCharacters(opt.uStart, opt.uLength)._options;
+					}
+				}
+			}
+		}
+	};
+
+	Object.defineProperty(ApiFont.prototype, "Superscript", {
+		get: function () {
+			return this.GetSuperscript();
+		},
+		set: function (isSuperscript) {
+			return this.SetSuperscript(isSuperscript);
+		}
+	});
+
+	/**
+	 * Returns the font name property to the text characters.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @returns {String || null}
+	 * @since 7.4.0
+	 */
+	 ApiFont.prototype.GetName = function () {
+		if (this._object instanceof ApiCharacters) {
+			let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+			let opt = this._object._options;
+			let begin = opt.start - 1;
+			if (begin > opt.len) begin = opt.len - 1;
+			let end = opt.start + opt.length - 1;
+			if (end > opt.len) end = opt.len - 1;
+			let first = editor._findFragment(begin, opt.fragments);
+			let last = editor._findFragmentToInsertInto(end, opt.fragments);
+			let FontName = opt.fragments[first.index].format.getName();
+			if (first && last) {
+				for (let i = first.index + 1; i <= last.index; i++) {
+					if (FontName !== opt.fragments[i].format.getName()) {
+						FontName = null;
+						break;
+					}
+				}
+			} else {
+				FontName = null;
+			}
+			return FontName;
+		}
+	};
+
+	/**
+	 * Sets the font name property to the text characters.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @param {String} FontName - Specifies a font name for characters.
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.SetName = function (FontName) {
+		if (typeof FontName !== 'string') {
+			console.error(new Error('Invalid type of parametr "FontName".'));
+			return;
+		}
+		if (this._object instanceof ApiCharacters) {
+			// todo ms 19 allows to set any string, but maybe we shoud check it before set
+			let opt = this._object._options;
+			if (opt.start <= opt.len) {
+				let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+				let begin = opt.start - 1;
+				if (begin > opt.len) begin = opt.len - 1;
+				let end = opt.start + opt.length - 1;
+				if (end > opt.len) end = opt.len - 1;
+				if (begin != end) {
+					editor._extractFragments(begin, end - begin, opt.fragments);
+					let first = editor._findFragment(begin, opt.fragments);
+					let last = editor._findFragment(end - 1, opt.fragments);
+					if (first && last) {
+						for (let i = first.index; i <= last.index; ++i) {
+							editor._setFormatProperty(opt.fragments[i].format, "fn", FontName);
+						}
+						editor._mergeFragments(opt.fragments);
+						let bbox = this._object._parent.range.bbox;
+						let range = this._object._parent.range.worksheet.getRange3(bbox.r1, bbox.c1, bbox.r1, bbox.c1);
+						range.setValue2(opt.fragments);
+						this._object._options = this._object._parent.GetCharacters(opt.uStart, opt.uLength)._options;
+					}
+				}
+			}
+		}
+	};
+
+	Object.defineProperty(ApiFont.prototype, "Name", {
+		get: function () {
+			return this.GetName();
+		},
+		set: function (FontName) {
+			return this.SetName(FontName);
+		}
+	});
+
+	/**
+	 * Returns the font color property to the text characters.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @returns {ApiColor || null}
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.GetColor = function () {
+		if (this._object instanceof ApiCharacters) {
+			let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+			let opt = this._object._options;
+			let begin = opt.start - 1;
+			if (begin > opt.len) begin = opt.len - 1;
+			let end = opt.start + opt.length - 1;
+			if (end > opt.len) end = opt.len - 1;
+			let first = editor._findFragment(begin, opt.fragments);
+			let last = editor._findFragmentToInsertInto(end, opt.fragments);
+			let color = opt.fragments[first.index].format.getColor();
+			if (first && last) {
+				for (let i = first.index + 1; i <= last.index; i++) {
+					if (color.rgb !== opt.fragments[i].format.getColor().rgb) {
+						color = null;
+						break;
+					}
+				}
+			} else {
+				color = null;
+			}
+			return (color !== null ? new ApiColor(color) : null);
+		}
+	};
+
+	/**
+	 * Sets the font color property to the text characters.
+	 * @memberof ApiFont
+	 * @typeofeditors ["CSE"]
+	 * @param {ApiColor} Color - Specifies a font color for characters.
+	 * @since 7.4.0
+	 */
+	ApiFont.prototype.SetColor = function (Color) {
+		if (!Color instanceof ApiColor) {
+			console.error(new Error('Invalid type of parametr "Color".'));
+			return;
+		}
+		if (this._object instanceof ApiCharacters) {
+			// todo ms 19 allows to set any string, but maybe we shoud check it before set
+			let opt = this._object._options;
+			if (opt.start <= opt.len) {
+				let editor = this._object._parent.range.worksheet.workbook.oApi.wb.cellEditor;
+				let begin = opt.start - 1;
+				if (begin > opt.len) begin = opt.len - 1;
+				let end = opt.start + opt.length - 1;
+				if (end > opt.len) end = opt.len - 1;
+				if (begin != end) {
+					editor._extractFragments(begin, end - begin, opt.fragments);
+					let first = editor._findFragment(begin, opt.fragments);
+					let last = editor._findFragment(end - 1, opt.fragments);
+					if (first && last) {
+						for (let i = first.index; i <= last.index; ++i) {
+							editor._setFormatProperty(opt.fragments[i].format, "c", Color.color);
+						}
+						editor._mergeFragments(opt.fragments);
+						let bbox = this._object._parent.range.bbox;
+						let range = this._object._parent.range.worksheet.getRange3(bbox.r1, bbox.c1, bbox.r1, bbox.c1);
+						range.setValue2(opt.fragments);
+						this._object._options = this._object._parent.GetCharacters(opt.uStart, opt.uLength)._options;
+					}
+				}
+			}
+		}
+	};
+
+	Object.defineProperty(ApiFont.prototype, "Color", {
+		get: function () {
+			return this.GetColor();
+		},
+		set: function (Color) {
+			return this.SetColor(Color);
 		}
 	});
 
@@ -4207,6 +5637,7 @@
 	Api.prototype["GetRange"] = Api.prototype.GetRange;
 
 	Api.prototype["RecalculateAllFormulas"] = Api.prototype.RecalculateAllFormulas;
+	Api.prototype["GetComments"] = Api.prototype.GetComments;
 
 	ApiWorksheet.prototype["GetVisible"] = ApiWorksheet.prototype.GetVisible;
 	ApiWorksheet.prototype["SetVisible"] = ApiWorksheet.prototype.SetVisible;
@@ -4254,6 +5685,7 @@
 	ApiWorksheet.prototype["GetAllShapes"] = ApiWorksheet.prototype.GetAllShapes;
 	ApiWorksheet.prototype["GetAllCharts"] = ApiWorksheet.prototype.GetAllCharts;
 	ApiWorksheet.prototype["GetAllOleObjects"] = ApiWorksheet.prototype.GetAllOleObjects;
+	ApiWorksheet.prototype["Move"] = ApiWorksheet.prototype.Move;
 
 	ApiRange.prototype["GetClassType"] = ApiRange.prototype.GetClassType
 	ApiRange.prototype["GetRow"] = ApiRange.prototype.GetRow;
@@ -4291,6 +5723,7 @@
 	ApiRange.prototype["GetWrapText"] = ApiRange.prototype.GetWrapText;
 	ApiRange.prototype["SetFillColor"] = ApiRange.prototype.SetFillColor;
 	ApiRange.prototype["GetFillColor"] = ApiRange.prototype.GetFillColor;
+	ApiRange.prototype["GetNumberFormat"] = ApiRange.prototype.GetNumberFormat;
 	ApiRange.prototype["SetNumberFormat"] = ApiRange.prototype.SetNumberFormat;
 	ApiRange.prototype["SetBorders"] = ApiRange.prototype.SetBorders;
 	ApiRange.prototype["Merge"] = ApiRange.prototype.Merge;
@@ -4310,6 +5743,11 @@
 	ApiRange.prototype["GetAreas"] = ApiRange.prototype.GetAreas;
 	ApiRange.prototype["Copy"] = ApiRange.prototype.Copy;
 	ApiRange.prototype["Paste"] = ApiRange.prototype.Paste;
+	ApiRange.prototype["Find"] = ApiRange.prototype.Find;
+	ApiRange.prototype["FindNext"] = ApiRange.prototype.FindNext;
+	ApiRange.prototype["FindPrevious"] = ApiRange.prototype.FindPrevious;
+	ApiRange.prototype["Replace"] = ApiRange.prototype.Replace;
+	ApiRange.prototype["GetCharacters"] = ApiRange.prototype.GetCharacters;
 
 
 	ApiDrawing.prototype["GetClassType"]               =  ApiDrawing.prototype.GetClassType;
@@ -4400,6 +5838,37 @@
 	ApiAreas.prototype["GetItem"]                = ApiAreas.prototype.GetItem;
 	ApiAreas.prototype["GetParent"]              = ApiAreas.prototype.GetParent;
 
+
+	ApiCharacters.prototype["GetCount"]          = ApiCharacters.prototype.GetCount;
+	ApiCharacters.prototype["GetParent"]         = ApiCharacters.prototype.GetParent;
+	ApiCharacters.prototype["Delete"]            = ApiCharacters.prototype.Delete;
+	ApiCharacters.prototype["Insert"]            = ApiCharacters.prototype.Insert;
+	ApiCharacters.prototype["SetCaption"]        = ApiCharacters.prototype.SetCaption;
+	ApiCharacters.prototype["GetCaption"]        = ApiCharacters.prototype.GetCaption;
+	ApiCharacters.prototype["SetText"]           = ApiCharacters.prototype.SetText;
+	ApiCharacters.prototype["GetText"]           = ApiCharacters.prototype.GetText;
+	ApiCharacters.prototype["GetFont"]           = ApiCharacters.prototype.GetFont;
+
+	
+	ApiFont.prototype["GetParent"]               = ApiFont.prototype.GetParent;
+	ApiFont.prototype["GetBold"]                 = ApiFont.prototype.GetBold;
+	ApiFont.prototype["SetBold"]                 = ApiFont.prototype.SetBold;
+	ApiFont.prototype["GetItalic"]               = ApiFont.prototype.GetItalic;
+	ApiFont.prototype["SetItalic"]               = ApiFont.prototype.SetItalic;
+	ApiFont.prototype["GetSize"]                 = ApiFont.prototype.GetSize;
+	ApiFont.prototype["SetSize"]                 = ApiFont.prototype.SetSize;
+	ApiFont.prototype["GetStrikethrough"]        = ApiFont.prototype.GetStrikethrough;
+	ApiFont.prototype["SetStrikethrough"]        = ApiFont.prototype.SetStrikethrough;
+	ApiFont.prototype["GetUnderline"]            = ApiFont.prototype.GetUnderline;
+	ApiFont.prototype["SetUnderline"]            = ApiFont.prototype.SetUnderline;
+	ApiFont.prototype["GetSubscript"]            = ApiFont.prototype.GetSubscript;
+	ApiFont.prototype["SetSubscript"]            = ApiFont.prototype.SetSubscript;
+	ApiFont.prototype["GetSuperscript"]          = ApiFont.prototype.GetSuperscript;
+	ApiFont.prototype["SetSuperscript"]          = ApiFont.prototype.SetSuperscript;
+	ApiFont.prototype["GetName"]                 = ApiFont.prototype.GetName;
+	ApiFont.prototype["SetName"]                 = ApiFont.prototype.SetName;
+	ApiFont.prototype["GetColor"]                = ApiFont.prototype.GetColor;
+	ApiFont.prototype["SetColor"]                = ApiFont.prototype.SetColor;
 
 	function private_SetCoords(oDrawing, oWorksheet, nExtX, nExtY, nFromCol, nColOffset,  nFromRow, nRowOffset, pos){
 		oDrawing.x = 0;

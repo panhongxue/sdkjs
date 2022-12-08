@@ -1098,6 +1098,9 @@ Paragraph.prototype.Internal_Content_Remove = function(Pos)
  */
 Paragraph.prototype.Internal_Content_Remove2 = function(Pos, Count)
 {
+	if (Count <= 0)
+		return;
+
 	if (0 === Pos && this.Content.length === Count)
 		return this.ClearContent();
 
@@ -1205,6 +1208,9 @@ Paragraph.prototype.Internal_Content_Remove2 = function(Pos, Count)
  */
 Paragraph.prototype.ClearContent = function()
 {
+	if (this.Content.length <= 0)
+		return;
+
 	var arrCommentsToDelete = [];
 	var isDeleteComments = true === this.DeleteCommentOnRemove && null != this.LogicDocument && null != this.LogicDocument.Comments;
 	var oDocumentComments = null;
@@ -1446,23 +1452,24 @@ Paragraph.prototype.RecalculateEndInfo = function()
 	var oLogicDocument = this.GetLogicDocument();
 	if (oLogicDocument && oLogicDocument.GetRecalcId && this.EndInfoRecalcId === oLogicDocument.GetRecalcId())
 		return;
-
+	
 	var oPRSI     = this.m_oPRSI;
 	var oPrevInfo = this.Parent.GetPrevElementEndInfo(this);
 	oPRSI.Reset(oPrevInfo);
-
+	
 	for (var nCurPos = 0, nCount = this.Content.length; nCurPos < nCount; ++nCurPos)
 	{
 		this.Content[nCurPos].RecalculateEndInfo(oPRSI);
 	}
-
+	
 	this.EndInfo.SetFromPRSI(oPRSI);
-
+	
 	if (oLogicDocument && oLogicDocument.GetRecalcId)
 		this.EndInfoRecalcId = oLogicDocument.GetRecalcId();
 };
 Paragraph.prototype.GetEndInfo = function()
 {
+	this.RecalculateEndInfo();
 	return this.EndInfo;
 };
 Paragraph.prototype.GetEndInfoByPage = function(CurPage)
@@ -1716,23 +1723,38 @@ Paragraph.prototype.GetNumberingTextPr = function()
 
 	var oLvl = oNum.GetLvl(oNumPr.Lvl);
 
-	var oNumTextPr = this.Get_CompiledPr2(false).TextPr.Copy();
-	oNumTextPr.Merge(this.TextPr.Value);
-	oNumTextPr.Merge(oLvl.GetTextPr());
+	let numTextPr = this.Get_CompiledPr2(false).TextPr.Copy();
 
-	// TODO: Пока возвращаем всегда шрифт лежащий в Ascii, в будущем надо будет это переделать
-	if (undefined !== oNumTextPr.RFonts && null !== oNumTextPr.RFonts)
+	// Word не рисует подчеркивание у символа списка, если оно пришло из настроек для символа параграфа
+	let _underline = numTextPr.Underline;
+
+	let paraMarkTextPr = this.TextPr.Value;
+	if (paraMarkTextPr.RStyle)
 	{
-		oNumTextPr.ReplaceThemeFonts(this.GetTheme().themeElements.fontScheme);
-
-		if (!oNumTextPr.FontFamily)
-			oNumTextPr.FontFamily = {Name : "", Index : -1};
-
-		oNumTextPr.FontFamily.Name  = oNumTextPr.RFonts.Ascii.Name;
-		oNumTextPr.FontFamily.Index = oNumTextPr.RFonts.Ascii.Index;
+		let styleManager = this.Parent.GetStyles();
+		let styleTextPr  = styleManager.Get_Pr(paraMarkTextPr.RStyle, styletype_Character).TextPr;
+		numTextPr.Merge(styleTextPr);
 	}
 
-	return oNumTextPr;
+	numTextPr.Merge(paraMarkTextPr);
+
+	numTextPr.Underline = _underline;
+
+	numTextPr.Merge(oLvl.GetTextPr());
+
+	// TODO: Пока возвращаем всегда шрифт лежащий в Ascii, в будущем надо будет это переделать
+	if (undefined !== numTextPr.RFonts && null !== numTextPr.RFonts)
+	{
+		numTextPr.ReplaceThemeFonts(this.GetTheme().themeElements.fontScheme);
+
+		if (!numTextPr.FontFamily)
+			numTextPr.FontFamily = {Name : "", Index : -1};
+
+		numTextPr.FontFamily.Name  = numTextPr.RFonts.Ascii.Name;
+		numTextPr.FontFamily.Index = numTextPr.RFonts.Ascii.Index;
+	}
+
+	return numTextPr;
 };
 /**
  * Получаем рассчитанное значение нумерации для данного параграфа
@@ -2201,6 +2223,7 @@ Paragraph.prototype.Internal_Draw_3 = function(CurPage, pGraphics, Pr)
 		}
 	}
 	PDSH.SetCollectFixedForms(false);
+	PDSH.Reset(this, pGraphics, DrawColl, DrawFind, DrawComm, DrawMMFields, this.GetEndInfoByPage(CurPage - 1), DrawSolvedComments);
 
 	for (var CurLine = StartLine; CurLine <= EndLine; CurLine++)
 	{
@@ -2241,12 +2264,10 @@ Paragraph.prototype.Internal_Draw_3 = function(CurPage, pGraphics, Pr)
 					}
 					else
 					{
-						var oNumbering = this.Parent.GetNumbering();
-						var oNumLvl    = oNumbering.GetNum(NumPr.NumId).GetLvl(NumPr.Lvl);
-						var nNumJc     = oNumLvl.GetJc();
-						var oNumTextPr = this.Get_CompiledPr2(false).TextPr.Copy();
-						oNumTextPr.Merge(this.TextPr.Value);
-						oNumTextPr.Merge(oNumLvl.GetTextPr());
+						let oNumbering = this.Parent.GetNumbering();
+						let oNumLvl    = oNumbering.GetNum(NumPr.NumId).GetLvl(NumPr.Lvl);
+						let nNumJc     = oNumLvl.GetJc();
+						let numTextPr  = this.GetNumberingTextPr();
 
 						var X_start = X;
 
@@ -2256,8 +2277,8 @@ Paragraph.prototype.Internal_Draw_3 = function(CurPage, pGraphics, Pr)
 							X_start = X - NumberingItem.WidthNum / 2;
 
 						// Если есть выделение текста, рисуем его сначала
-						if (highlight_None != oNumTextPr.HighLight)
-							PDSH.High.Add(Y0, Y1, X_start, X_start + NumberingItem.WidthNum + NumberingItem.WidthSuff, 0, oNumTextPr.HighLight.r, oNumTextPr.HighLight.g, oNumTextPr.HighLight.b, undefined, oNumTextPr);
+						if (highlight_None !== numTextPr.HighLight)
+							PDSH.High.Add(Y0, Y1, X_start, X_start + NumberingItem.WidthNum + NumberingItem.WidthSuff, 0, numTextPr.HighLight.r, numTextPr.HighLight.g, numTextPr.HighLight.b, undefined, numTextPr);
 					}
 				}
 
@@ -2862,16 +2883,7 @@ Paragraph.prototype.Internal_Draw_4 = function(CurPage, pGraphics, Pr, BgColor, 
 
 						var nNumSuff   = oNumLvl.GetSuff();
 						var nNumJc     = oNumLvl.GetJc();
-						var oNumTextPr = this.Get_CompiledPr2(false).TextPr.Copy();
-
-						// Word не рисует подчеркивание у символа списка, если оно пришло из настроек для
-						// символа параграфа.
-
-						var oTextPrTemp = this.TextPr.Value.Copy();
-						oTextPrTemp.Underline = undefined;
-
-						oNumTextPr.Merge(oTextPrTemp);
-						oNumTextPr.Merge(oNumLvl.GetTextPr());
+						var oNumTextPr = this.GetNumberingTextPr();
 
 						var oPrevNumTextPr = oPrevNumPr ? this.Get_CompiledPr2(false).TextPr.Copy() : null;
 						if (oPrevNumTextPr && (oPrevNumPr
@@ -4201,27 +4213,6 @@ Paragraph.prototype.Remove = function(nCount, isRemoveWholeElement, bRemoveOnlyS
 		}
 
 		this.Correct_Content(ContentPos, ContentPos);
-
-		// Обработка удаления диакритических знаков
-		if (Direction > 0 && true === Result)
-		{
-			var oElement = this.Get_RunElementByPos(this.Get_ParaContentPos(false));
-			while (oElement && oElement.IsDiacriticalSymbol && oElement.IsDiacriticalSymbol())
-			{
-				if (false === this.Content[this.CurPos.ContentPos].Remove(Direction, bOnAddText))
-				{
-					this.CurPos.ContentPos++;
-
-					// TODO:ParaEnd
-					if (this.CurPos.ContentPos >= this.Content.length - 2)
-						break;
-
-					this.Content[this.CurPos.ContentPos].MoveCursorToStartPos();
-				}
-
-				oElement = this.Get_RunElementByPos(this.Get_ParaContentPos(false));
-			}
-		}
 
 		if (Direction < 0 && false === Result)
 		{
@@ -6279,16 +6270,7 @@ Paragraph.prototype.Get_RightPos = function(SearchPos, ContentPos, StepEnd)
 		this.Content[CurPos].Get_RightPos(SearchPos, ContentPos, Depth + 1, true, StepEnd);
 
 		if (SearchPos.Found)
-		{
-			var oRunElement = this.Get_RunElementByPos(SearchPos.Pos);
-			if (oRunElement && oRunElement.IsDiacriticalSymbol && oRunElement.IsDiacriticalSymbol())
-			{
-				SearchPos.Found = false;
-				continue;
-			}
-
 			return true;
-		}
 	}
 
 	CurPos++;
@@ -6309,16 +6291,7 @@ Paragraph.prototype.Get_RightPos = function(SearchPos, ContentPos, StepEnd)
 		this.Content[CurPos].Get_RightPos(SearchPos, ContentPos, Depth + 1, false, StepEnd);
 
 		if (true === SearchPos.Found)
-		{
-			var oRunElement = this.Get_RunElementByPos(SearchPos.Pos);
-			if (oRunElement && oRunElement.IsDiacriticalSymbol && oRunElement.IsDiacriticalSymbol())
-			{
-				SearchPos.Found = false;
-				continue;
-			}
-
 			return true;
-		}
 
 		CurPos++;
 	}

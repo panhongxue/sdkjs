@@ -576,6 +576,18 @@
 		{
 			this.pos += nDif;
 		}
+		this.WriteWithLen = function(_this, callback)
+		{
+			let oldPos = this.GetCurPosition();
+			this.WriteULong(0);
+			callback.call(_this, this);
+			let curPos = this.GetCurPosition();
+			let len = curPos - oldPos;
+			this.Seek(oldPos);
+			this.WriteULong(len - 4);
+			this.Seek(curPos);
+			return len;
+		};
 		this.WriteBool          = function(val)
 		{
 			this.CheckSize(1);
@@ -988,6 +1000,13 @@
 			this.WriteUtf8Char(0x2f);
 			this.WriteXmlString(name);
 			this.WriteUtf8Char(0x3e);
+		};
+		this.WriteXmlNodeWithText = function(name, text)
+		{
+			this.WriteXmlNodeStart(name);
+			this.WriteXmlAttributesEnd(false);
+			this.WriteXmlStringEncode(text.toString());
+			this.WriteXmlNodeEnd(name);
 		};
 		this.WriteXmlAttributesEnd = function(isEnd)
 		{

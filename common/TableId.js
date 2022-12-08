@@ -104,6 +104,10 @@
 
 		return null;
 	};
+	CTableId.prototype.GetById = function(id)
+	{
+		return this.GetClass(id);
+	}
 	CTableId.prototype.GetClass = function(id)
 	{
 		if (!id || !this.m_aPairs[id])
@@ -121,7 +125,7 @@
 		if (Class.Get_Id)
 			return Class.Get_Id();
 
-		if (Class.GetId())
+		if (Class.GetId)
 			return Class.GetId();
 
 		return null;
@@ -385,6 +389,15 @@
 		this.m_oFactoryClass[AscDFH.historyitem_type_SmartArtNode      ]     = AscFormat.SmartArtNode;
 		this.m_oFactoryClass[AscDFH.historyitem_type_SmartArtNodeData  ]     = AscFormat.SmartArtNodeData;
 		this.m_oFactoryClass[AscDFH.historyitem_type_BuBlip            ]     = AscFormat.CBuBlip;
+
+		if (window['AscOForm'])
+		{
+			this.m_oFactoryClass[AscDFH.historyitem_type_OForm_UserMaster]  = AscOForm.CUserMaster;
+			this.m_oFactoryClass[AscDFH.historyitem_type_OForm_User]        = AscOForm.CUser;
+			this.m_oFactoryClass[AscDFH.historyitem_type_OForm_FieldMaster] = AscOForm.CFieldMaster;
+			this.m_oFactoryClass[AscDFH.historyitem_type_OForm_Document]    = AscOForm.CDocument;
+			this.m_oFactoryClass[AscDFH.historyitem_type_OForm_FieldGroup]  = AscOForm.CFieldGroup;
+		}
 
 		if (window['AscCommonSlide'])
 		{

@@ -156,7 +156,7 @@
 		this.fKeyMouseMove = null;
 		//-----------------
 
-		this.objAutoComplete = {};
+		this.objAutoComplete = new Map();
 		this.sAutoComplete = null;
 		this.eventListeners = [];
 
@@ -396,7 +396,7 @@
 			}
 
 			// delete autoComplete
-			t.objAutoComplete = {};
+			t.objAutoComplete.clear();
 
 			// Сброс состояния редактора
 			t._setEditorState(c_oAscCellEditorState.editEnd);
@@ -408,6 +408,10 @@
 				return true;
 			}
 		};
+
+		if (this.isStartCompositeInput()) {
+			this.End_CompositeInput();
+		}
 
 		if (saveValue) {
 			// Пересчет делаем всегда для не пустой ячейки или если были изменения. http://bugzilla.onlyoffice.com/show_bug.cgi?id=34864
@@ -448,7 +452,7 @@
 		}
 
 		// delete autoComplete
-		this.objAutoComplete = {};
+		this.objAutoComplete.clear();
 
 		// Сброс состояния редактора
 		this._setEditorState(c_oAscCellEditorState.editEnd);
@@ -2036,15 +2040,19 @@
 		return pos === end ? {index: i - 1, begin: begin, end: end} : undefined;
 	};
 
-	CellEditor.prototype._findFragmentToInsertInto = function ( pos ) {
-		var opt = this.options, i, begin, end;
+	CellEditor.prototype._findFragmentToInsertInto = function ( pos, fragments ) {
+		var i, begin, end;
 
-		for ( i = 0, begin = 0; i < opt.fragments.length; ++i ) {
-			end = begin + opt.fragments[i].getCharCodesLength();
+		if (!fragments) {
+			fragments = this.options.fragments;
+		}
+
+		for ( i = 0, begin = 0; i < fragments.length; ++i ) {
+			end = begin + fragments[i].getCharCodesLength();
 			if ( pos >= begin && pos <= end ) {
 				return {index: i, begin: begin, end: end};
 			}
-			if ( i < opt.fragments.length - 1 ) {
+			if ( i < fragments.length - 1 ) {
 				begin = end;
 			}
 		}
@@ -2138,19 +2146,23 @@
 		}
 	};
 
-	CellEditor.prototype._mergeFragments = function () {
-		var t = this, opt = t.options, i;
+	CellEditor.prototype._mergeFragments = function (fragments) {
+		var i;
+		
+		if (!fragments) {
+			fragments = this.options.fragments;
+		}
 
-		for (i = 0; i < opt.fragments.length;) {
-			if (opt.fragments[i].getCharCodesLength() < 1 && opt.fragments.length > 1) {
-				opt.fragments.splice(i, 1);
+		for (i = 0; i < fragments.length;) {
+			if (fragments[i].getCharCodesLength() < 1 && fragments.length > 1) {
+				fragments.splice(i, 1);
 				continue;
 			}
-			if (i < opt.fragments.length - 1) {
-				var fr = opt.fragments[i];
-				var nextFr = opt.fragments[i + 1];
+			if (i < fragments.length - 1) {
+				var fr = fragments[i];
+				var nextFr = fragments[i + 1];
 				if (fr.format.isEqual(nextFr.format)) {
-					opt.fragments.splice(i, 2, new Fragment({format: fr.format, charCodes: fr.getCharCodes().concat(nextFr.getCharCodes())}));
+					fragments.splice(i, 2, new Fragment({format: fr.format, charCodes: fr.getCharCodes().concat(nextFr.getCharCodes())}));
 					continue;
 				}
 			}
@@ -2280,7 +2292,7 @@
 	CellEditor.prototype._getAutoComplete = function (str) {
 		// ToDo можно ускорить делая поиск каждый раз не в большом массиве, а в уменьшенном (по предыдущим символам)
 		//TODO оставляю текст!
-		var oLastResult = this.objAutoComplete[str];
+		var oLastResult = this.objAutoComplete.get(str);
 		if (oLastResult) {
 			return oLastResult;
 		}
@@ -2293,7 +2305,8 @@
 				arrResult.push(arrAutoComplete[i]);
 			}
 		}
-		return this.objAutoComplete[str] = arrResult;
+		this.objAutoComplete.set(str, arrResult);
+		return arrResult;
 	};
 
 	CellEditor.prototype._updateSelectionInfo = function () {
@@ -2634,6 +2647,13 @@
 				}
 				break;
 
+			case 110: //NumpadDecimal
+				var api = window["Asc"]["editor"];
+				t._addChars(api.asc_getDecimalSeparator());
+				event.stopPropagation();
+				event.preventDefault();
+				return false;
+
 			case 113: // F2
 				if (AscBrowser.isOpera) {
 					event.stopPropagation();
@@ -2968,6 +2988,9 @@
 		this._cleanSelection();
 		this._drawSelection();
 	};
+	CellEditor.prototype.isStartCompositeInput = function () {
+		return this.beginCompositePos !== -1 && this.compositeLength !== 0;
+	};
 	CellEditor.prototype.Set_CursorPosInCompositeText = function (nPos) {
 		if (-1 !== this.beginCompositePos) {
 			nPos = Math.min(nPos, this.compositeLength);
@@ -2993,6 +3016,16 @@
 	};
 	CellEditor.prototype._setSkipKeyPress = function (val) {
 		this.skipKeyPress = val;
+	};
+	CellEditor.prototype.getText = function (start, len) {
+		let chars = this.textRender.getChars(start, len);
+		let res = "";
+		for (let i in chars) {
+			if (chars.hasOwnProperty(i)) {
+				res += AscCommon.encodeSurrogateChar(chars[i]);
+			}
+		}
+		return res;
 	};
 
 

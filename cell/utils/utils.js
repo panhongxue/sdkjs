@@ -3201,6 +3201,7 @@
 			this.bChangeColorScheme = false;
 			this.bChangeActive = false;
 			this.activeSheet = null;
+			this.UpdateRigions = {};
 		}
 
 		/** @constructor */

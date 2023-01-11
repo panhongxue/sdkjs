@@ -513,7 +513,7 @@
 		this.headersHeightByFont = tm.height;
 
 		this.maxRowHeightPx = AscCommonExcel.convertPtToPx(Asc.c_oAscMaxRowHeight);
-		this.defaultRowDescender = this.stringRender.lines[0].d;
+		this.defaultRowDescender = this.stringRender.getLineDescender(0);
 		AscCommonExcel.oDefaultMetrics.RowHeight = Math.min(Asc.c_oAscMaxRowHeight,
 			this.model.getDefaultHeight() || AscCommonExcel.convertPxToPt(this.headersHeightByFont));
 		this.defaultRowHeightPx = AscCommonExcel.convertPtToPx(AscCommonExcel.oDefaultMetrics.RowHeight);
@@ -3635,7 +3635,7 @@
         var textY = this._calcTextVertPos(y, h, bl, tm, Asc.c_oAscVAlign.Bottom);
 
 		ctx.AddClipRect(x, y, w, h);
-		ctx.setFillStyle(color).fillText(text, textX, textY + Asc.round(tm.baseline * this.getZoom()), undefined, sr.charWidths);
+		//ctx.setFillStyle(color).fillText(text, textX, textY + Asc.round(tm.baseline * this.getZoom()), undefined, sr.charWidths);
 		ctx.RemoveClipRect();
     };
 
@@ -4603,80 +4603,7 @@
 				}
 			}
 
-            AscFormat.ExecuteNoHistory(function() {
-
-                let oShape = new AscFormat.CShape();
-                oShape.setTxBody(AscFormat.CreateTextBodyFromString("", this, oShape));
-                let oContent = oShape.txBody.content;
-                let oParagraph = oContent.Content[0];
-                oParagraph.Reset(0, 0, 1000, 1000, 0);
-                oParagraph.MoveCursorToStartPos();
-                let aChars = ct.state.chars;
-                let oRun = new AscWord.ParaRun(oParagraph);
-                let oParaPr = new CParaPr();
-                oParagraph.Pr = oParaPr;
-                let oTextPr = new CTextPr();
-                let oCharProps = ct.state.charProps[0];
-                if(oCharProps) {
-                    let oFont = oCharProps.font;
-                    if(oFont) {
-                        if(oFont.fn) {
-                            oTextPr.FontFamily = { Name : oFont.fn, Index : -1 };
-                            oTextPr.RFonts.SetAll(oFont.fn);
-                        }
-                        oTextPr.FontSize = oFont.fs;
-                        oTextPr.Strikeout  = oFont.s;
-                        oTextPr.Underline  = oFont.u;
-                        oTextPr.Bold  = oFont.b;
-                        let oColor = oFont.c;
-                        if(oColor) {
-                            oTextPr.Unifill = AscFormat.CreateUnfilFromRGB(oColor.getR(), oColor.getG(), oColor.getB());
-                        }
-                    }
-                    oRun.Set_Pr(oTextPr);
-                }
-
-                let nCharPos = 0;
-                for (let nIdx = 0; nIdx < aChars.length; nIdx++)
-                {
-                    let nCharCode = aChars[nIdx];
-
-                    if (9 === nCharCode) // \t
-                        oRun.AddToContent(nCharPos++, new AscWord.CRunTab(), true);
-                    else if (10 === nCharCode) // \n
-                        oRun.AddToContent(nCharPos++, new AscWord.CRunBreak(AscWord.break_Line), true);
-                    else if (13 === nCharCode) // \r
-                        continue;
-                    else if (AscCommon.IsSpace(nCharCode)) // space
-                        oRun.AddToContent(nCharPos++, new AscWord.CRunSpace(nCharCode), true);
-                    else
-                        oRun.AddToContent(nCharPos++, new AscWord.CRunText(nCharCode), true);
-                }
-                oParagraph.Add_ToContent(0, oRun);
-                oParagraph.Recalculate_Page(0);
-
-                let oGraphics;
-                if(drawingCtx instanceof AscCommonExcel.CPdfPrinter) {
-                    oGraphics = drawingCtx;
-                }
-                else {
-                    oGraphics = new AscCommon.CGraphics();
-                    let oDrawingCtx = this.stringRender.drawingCtx;
-                    let oCanvas = oDrawingCtx.canvas;
-                    oGraphics.init(oDrawingCtx.ctx, oCanvas.width, oCanvas.height, 25.4 * oCanvas.width / oDrawingCtx.ppiX, 25.4 * oCanvas.height / oDrawingCtx.ppiY);
-                    oGraphics.m_oFontManager = AscCommon.g_fontManager;
-
-                    oGraphics.m_oCoordTransform.tx = textX;
-                    oGraphics.m_oCoordTransform.ty = textY;
-                }
-                oGraphics.SaveGrState();
-                oGraphics.transform(1,0,0,1,0,0);
-                oParagraph.Draw(0, oGraphics);
-                oGraphics.RestoreGrState();
-            }, this, []);
-
-			//this.stringRender.restoreInternalState(ct.state).render(drawingCtx, textX, textY, textW, color);
-			//ctx.RemoveClipRect();
+            this.stringRender.restoreInternalState(ct.state).render(drawingCtx, textX, textY, textW, color);
 		}
 
 
@@ -6816,7 +6743,7 @@
 
     WorksheetView.prototype._addCellTextToCache = function (col, row) {
         var self = this;
-
+		var cache = this._fetchCellCache(col, row);
         function makeFnIsGoodNumFormat(flags, width, isWidth) {
             return function (str) {
 				var widthStr;
@@ -7078,7 +7005,6 @@
             textBound.dy -= 1.5;
         }
 
-        var cache = this._fetchCellCache(col, row);
 		cache.state = this.stringRender.getInternalState();
 		cache.flags = fl;
 		cache.metrics = tm;
@@ -21561,10 +21487,10 @@
 		dc.ppiY = oldPpiY;
 		dc.scaleFactor = oldScaleFactor;
 
-		if(w > tm.width + 3) {
-			var diff = bActive ? 1 : 0;
-			ctx.setFillStyle(st.color).fillText(text, x + w / 2 - tm.width / 2 + diff, y + Asc.round(tm.baseline) + h / 2 -  tm.height / 2 + diff, undefined, sr.charWidths);
-		}
+		// if(w > tm.width + 3) {
+		// 	var diff = bActive ? 1 : 0;
+		// 	ctx.setFillStyle(st.color).fillText(text, x + w / 2 - tm.width / 2 + diff, y + Asc.round(tm.baseline) + h / 2 -  tm.height / 2 + diff, undefined, sr.charWidths);
+		// }
 
 		ctx.stroke();
 		ctx.closePath();

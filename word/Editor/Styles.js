@@ -15424,6 +15424,57 @@ CTextPr.prototype.GetFontInfo = function(nFontSlot)
 
 	return new AscFonts.CTextFontInfo(sFontName, (isBold ? 1  : 0) | (isItalic ? 2 : 0), nFontSize);
 };
+CTextPr.prototype.SetFromFontObject = function(oFont)
+{
+	if(!oFont)
+	{
+		return;
+	}
+	if(oFont.b !== null && oFont.b !== undefined)
+	{
+		this.Bold = oFont.b;
+	}
+	if(oFont.c)
+	{
+		let oC = oFont.c;
+		this.Color = new CDocumentColor(oC.getR(), oC.getB(), oC.getB(), false);
+	}
+	if(oFont.fn)
+	{
+		this.FontFamily = { Name : oFont.fn, Index : -1 };
+		this.RFonts.SetAll(oFont.fn);
+	}
+	if(oFont.fs !== null && oFont.fs !== undefined)
+	{
+		this.FontSize = oFont.fs;
+	}
+	if(oFont.s !== null && oFont.s !== undefined)
+	{
+		this.Strikeout = oFont.s;
+	}
+	if(oFont.i !== null && oFont.i !== undefined)
+	{
+		this.Italic = oFont.i;
+	}
+	if(oFont.u !== null && oFont.u !== undefined)
+	{
+		this.Underline = true;
+	}
+	if(oFont.va !== null && oFont.va !== undefined)
+	{
+		this.VertAlign = oFont.va;
+	}
+
+	//repeat
+	//	:
+	//	null
+	//scheme
+	//	:
+	//	null
+	//skip
+	//	:
+	//	null
+};
 
 function CTextMetrics()
 {

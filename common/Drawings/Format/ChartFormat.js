@@ -15205,7 +15205,9 @@
 
     function AddToContentFromString(content, str) {
         content.MoveCursorToStartPos(false);
-        content.AddText(str);
+		if(typeof str === "string" && str.length > 0) {
+			content.AddText(str);
+		}
     }
 
     function CValAxisLabels(chart, axis) {

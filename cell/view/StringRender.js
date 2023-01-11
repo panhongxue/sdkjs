@@ -143,9 +143,7 @@
 			/** @type String */
 			this.chars = [];
 
-			this.charWidths = [];
 			this.charProps = [];
-			this.lines = [];
             this.angle = 0;
 
             this.fontNeedUpdate = false;
@@ -494,19 +492,399 @@
 			}
 			return this._doMeasure(maxWidth);
 		};
+		// StringRender.prototype.createCachedStream = function () {
+		// 	AscFormat.ExecuteNoHistory(function() {
+		// 		let oParagraph = this.createParagraph();
+		// 		oParagraph.Recalculate_Page(0);
+		//
+		// 		let oDocRenderer = new AscCommon.CDocumentRenderer();
+		// 		oDocRenderer.InitPicker(AscCommon.g_oTextMeasurer.m_oManager);
+		// 		oDocRenderer.VectorMemoryForPrint = new AscCommon.CMemory();
+		// 		oDocRenderer.isPrintMode = false;
+		// 		oDocRenderer.Memory.Seek(0);
+		// 		oDocRenderer.VectorMemoryForPrint.ClearNoAttack();
+		//
+		//
+		// 		oDocRenderer.BeginPage(100, 100);
+		// 		let oGraphics;
+		// 		oGraphics = oDocRenderer;
+		// 		this.startMemoryPos = oDocRenderer.Memory.pos;
+		// 		oGraphics.transform3(new AscCommon.CMatrix());
+		// 		oParagraph.Draw(0, oGraphics);
+		//
+		// 		oDocRenderer.EndPage();
+		//
+		// 		this.endMemoryPos = oDocRenderer.Memory.pos;
+		// 		this.cachedStream = oGraphics.Memory.GetData();
+		// 	}, this, []);
+		// };
+		// StringRender.prototype.createCachedCanvas = function(width, height, textColor) {
+		//
+		// 	this.cachedCanvas = null;
+		// 	if(!width || !height) {
+		// 		return;
+		// 	}
+		// 	let oWB = Asc.editor.wb;
+		// 	if(!oWB) {
+		// 		return;
+		// 	}
+		//
+		// 	//if(!this.cachedStream) {
+		// 	//	this.createCachedStream();
+		// 	//}
+		//
+		// 	let oCanvas = document.createElement('canvas');
+		// 	let dZoom = oWB.buffers.main.getZoom();
+		// 	oCanvas.width = width ;
+		// 	oCanvas.height = height * dZoom >> 0;
+		// 	let oGraphics;
+		// 	oGraphics = new AscCommon.CGraphics();
+		// 	let ppiX = oWB.buffers.main.ppiX;
+		// 	let ppiY = oWB.buffers.main.ppiY;
+		// 	oGraphics.init(oCanvas.getContext("2d"), oCanvas.width, oCanvas.height, 25.4 * oCanvas.width / ppiX, 25.4 * oCanvas.height / ppiY);
+		// 	oGraphics.m_oFontManager = AscCommon.g_fontManager;
+		// 	oGraphics.SetIntegerGrid(false);
+		// 	oGraphics.transform3(new AscCommon.CMatrix());
+		// 	let oParagraph = this.getParagraph();
+		// 	oParagraph.Draw(0, oGraphics);
+		// 	this.cachedCanvas = oCanvas;
+		// 	return;
+		//
+		//
+		// 	let oStream = new AscCommon.FT_Stream2(this.cachedStream, this.endMemoryPos);
+		// 	oStream.Seek2(this.startMemoryPos);
+		// 	let CT = AscCommon.CommandType;
+		// 	let oPenColor = {r: 0, g: 0, b: 0, a: 255};
+		// 	let oBrushColor1 = {r: 0, g: 0, b: 0, a: 255};
+		// 	let oBrushColor2 = {r: 0, g: 0, b: 0, a: 255};
+		// 	let oFont = {Name: "Arial", Size: 11, Style: 0};
+		//
+		// 	while (oStream.cur < this.endMemoryPos) {
+		// 		let nCommand = oStream.GetUChar();
+		// 		switch (nCommand) {
+		// 			case CT.ctPenColor            : {
+		// 				let nColor = oStream.GetLong();
+		// 				oPenColor.r = (nColor >> 16) & 0xFF;
+		// 				oPenColor.g = (nColor >> 8) & 0xFF;
+		// 				oPenColor.b = nColor & 0xFF;
+		// 				oGraphics.p_color(oPenColor.r, oPenColor.g, oPenColor.b, oPenColor.a);
+		// 				break;
+		// 			}
+		// 			case CT.ctPenAlpha            : {
+		// 				oPenColor.a = oStream.GetUChar();
+		// 				oGraphics.p_color(oPenColor.r, oPenColor.g, oPenColor.b, oPenColor.a);
+		// 				break;
+		// 			}
+		// 			case CT.ctPenSize             : {
+		// 				let dWidth = oStream.GetDouble();
+		// 				let nWidth = dWidth * 1000 >> 0;
+		// 				oGraphics.p_width(nWidth);
+		// 				break;
+		// 			}
+		// 			case CT.ctPenDashStyle        : {
+		// 				let nIsDashParam = oStream.GetUChar();
+		// 				let aDash = [];
+		// 				if(nIsDashParam === 0) {
+		// 					oGraphics.p_dash(aDash);
+		// 				}
+		// 				else {
+		// 					let nCount = oStream.GetLong();
+		// 					for(let nDash = 0; nDash < nCount; ++nDash) {
+		// 						aDash.push(oStream.GetDouble());
+		// 					}
+		// 					oGraphics.p_dash(aDash);
+		// 				}
+		// 				break;
+		// 			}
+		// 			case CT.ctPenLineJoin         : {
+		// 				let nJoin = oStream.GetUChar();
+		// 				oGraphics.put_PenLineJoin(nJoin);
+		// 				break;
+		// 			}
+		//
+		// 			// brush
+		// 			case CT.ctBrushType            : {
+		// 				let nType = oStream.GetLong();
+		// 				break;
+		// 			}
+		// 			case CT.ctBrushColor1          : {
+		// 				let nColor = oStream.GetLong();
+		// 				oBrushColor1.r = (nColor >> 16) & 0xFF;
+		// 				oBrushColor1.g = (nColor >> 8) & 0xFF;
+		// 				oBrushColor1.b = nColor & 0xFF;
+		// 				oGraphics.b_color1(oBrushColor1.r, oBrushColor1.g, oBrushColor1.b, oBrushColor1.a);
+		// 				break;
+		// 			}
+		// 			case CT.ctBrushColor2          : {
+		// 				let nColor = oStream.GetLong();
+		// 				oBrushColor2.r = (nColor >> 16) & 0xFF;
+		// 				oBrushColor2.g = (nColor >> 8) & 0xFF;
+		// 				oBrushColor2.b = nColor & 0xFF;
+		// 				oGraphics.b_color2(oBrushColor2.r, oBrushColor2.g, oBrushColor2.b, oBrushColor2.a);
+		// 				break;
+		// 			}
+		// 			case CT.ctBrushAlpha1          : {
+		// 				oBrushColor1.a = oStream.GetUChar();
+		// 				oGraphics.b_color1(oBrushColor1.r, oBrushColor1.g, oBrushColor1.b, oBrushColor1.a);
+		// 				break;
+		// 			}
+		// 			case CT.ctBrushAlpha2          : {
+		// 				oBrushColor2.a = oStream.GetUChar();
+		// 				oGraphics.b_color2(oBrushColor2.r, oBrushColor2.g, oBrushColor2.b, oBrushColor2.a);
+		// 				break;
+		// 			}
+		// 			case CT.ctBrushTextureAlpha    : {
+		// 				oStream.GetUChar();
+		// 				break;
+		// 			}
+		// 			case CT.ctBrushTextureMode     : {
+		// 				oStream.GetUChar();
+		// 				break;
+		// 			}
+		// 			case CT.ctBrushRectable        : {
+		// 				oStream.GetDouble();
+		// 				oStream.GetDouble();
+		// 				oStream.GetDouble();
+		// 				oStream.GetDouble();
+		// 				break;
+		// 			}
+		// 			case CT.ctBrushRectableEnabled : {
+		// 				oStream.GetBool();
+		// 				break;
+		// 			}
+		// 			case CT.ctBrushGradient        : {
+		// 				oStream.GetUChar();
+		// 				let nType = oStream.GetUChar();
+		// 				if(nType === 0) {
+		// 					oStream.GetLong()
+		// 					oStream.GetBool();
+		// 					oStream.GetDouble();
+		// 					oStream.GetDouble();
+		// 					oStream.GetDouble();
+		// 					oStream.GetDouble();
+		// 				}
+		// 				else {
+		// 					oStream.GetUChar()
+		// 					oStream.GetUChar()
+		//
+		// 					oStream.GetDouble();
+		// 					oStream.GetDouble();
+		// 					oStream.GetDouble();
+		// 					oStream.GetDouble();
+		// 					oStream.GetDouble();
+		// 					oStream.GetDouble();
+		// 				}
+		// 				oStream.GetUChar();
+		// 				let nLength = oStream.GetLong();
+		//
+		// 				for(let nIdx = 0; nIdx < nLength; ++nIdx) {
+		// 					oStream.GetLong();
+		// 					oStream.GetUChar();
+		// 					oStream.GetUChar();
+		// 					oStream.GetUChar();
+		// 					oStream.GetUChar();
+		// 				}
+		//
+		// 				oStream.GetUChar();
+		// 				break;
+		// 			}
+		// 			case CT.ctBrushTexturePath     : {
+		//
+		// 				oStream.GetString2LE(2*oStream.GetUShortLE());
+		// 				oStream.GetUChar();
+		// 				oStream.GetUChar();
+		// 				break;
+		// 			}
+		//
+		// 			// font
+		// 			case CT.ctFontName      : {
+		// 				oFont.Name = oStream.GetString2LE(2*oStream.GetUShortLE());
+		// 				oGraphics.SetFontInternal(oFont.Name, oFont.Size, oFont.Style);
+		// 				break;
+		// 			}
+		// 			case CT.ctFontSize      : {
+		// 				oFont.Size = oStream.GetDouble();
+		// 				oGraphics.SetFontInternal(oFont.Name, oFont.Size, oFont.Style);
+		// 				break;
+		// 			}
+		// 			case CT.ctFontStyle     : {
+		// 				oFont.Style = oStream.GetLong();
+		// 				oGraphics.SetFontInternal(oFont.Name, oFont.Size, oFont.Style);
+		// 				break;
+		// 			}
+		//
+		//
+		// 			// text
+		// 			case CT.ctDrawText        : {
+		// 				let sText = oStream.GetString2LE(2*oStream.GetUShortLE());
+		// 				let dX = oStream.GetDouble();
+		// 				let dY = oStream.GetDouble();
+		// 				oGraphics.FillText(dX, dY, sText);
+		// 				break;
+		// 			}
+		// 			case CT.ctDrawTextCodeGid : {
+		// 				let nGid = oStream.GetLong();
+		// 				let dX = oStream.GetDouble();
+		// 				let dY = oStream.GetDouble();
+		// 				let nPointsCount = oStream.GetLong();
+		// 				let aCodePoints = [];
+		// 				for(let nCode = 0; nCode < nPointsCount; ++nCode) {
+		// 					aCodePoints.push(oStream.GetLong());
+		// 				}
+		// 				oGraphics.tg(nGid, dX, dY, aCodePoints);
+		// 				break;
+		// 			}
+		//
+		// 			// pathcommands
+		// 			case CT.ctPathCommandMoveTo   : {
+		// 				let dX = oStream.GetDouble();
+		// 				let dY = oStream.GetDouble();
+		// 				oGraphics._m(dX, dY);
+		// 				break;
+		// 			}
+		// 			case CT.ctPathCommandLineTo   : {
+		// 				let dX = oStream.GetDouble();
+		// 				let dY = oStream.GetDouble();
+		// 				oGraphics._l(dX, dY);
+		// 				break;
+		// 			}
+		// 			case CT.ctPathCommandCurveTo  : {
+		// 				let dX1 = oStream.GetDouble();
+		// 				let dY1 = oStream.GetDouble();
+		// 				let dX2 = oStream.GetDouble();
+		// 				let dY2 = oStream.GetDouble();
+		// 				let dX3 = oStream.GetDouble();
+		// 				let dY3 = oStream.GetDouble();
+		// 				oGraphics._c(dX1, dY1, dX2, dY2, dX3, dY3);
+		// 				break;
+		// 			}
+		// 			case CT.ctPathCommandClose    : {
+		// 				oGraphics._z();
+		// 				break;
+		// 			}
+		// 			case CT.ctPathCommandEnd      : {
+		// 				oGraphics._e();
+		// 				break;
+		// 			}
+		// 			case CT.ctDrawPath            : {
+		// 				let nType = oStream.GetLong();
+		// 				if(nType === 256) {
+		// 					oGraphics.df();
+		// 				}
+		// 				else {
+		// 					oGraphics.ds();
+		// 				}
+		// 				break;
+		// 			}
+		// 			case CT.ctPathCommandStart    : {
+		// 				oGraphics._s();
+		// 				break;
+		// 			}
+		//
+		//
+		//
+		// 			case CT.ctBeginCommand : {
+		// 				oGraphics.GetLong();
+		// 				break;
+		// 			}
+		// 			case CT.ctEndCommand   : {
+		// 				oGraphics.GetLong();
+		// 				break;
+		// 			}
+		//
+		// 			case CT.ctSetTransform   : {
+		//
+		// 				let sx = oStream.GetDouble();
+		// 				let shy = oStream.GetDouble();
+		// 				let shx = oStream.GetDouble();
+		// 				let sy = oStream.GetDouble();
+		// 				let tx = oStream.GetDouble();
+		// 				let ty = oStream.GetDouble();
+		// 				oGraphics.transform(sx, shy, shx, sy, tx, ty);
+		// 				break;
+		// 			}
+		//
+		//
+		// 			case CT.ctHyperlink : {
+		// 				oStream.GetDouble();
+		// 				oStream.GetDouble();
+		// 				oStream.GetDouble();
+		// 				oStream.GetDouble();
+		// 				oStream.GetString2LE(2*oStream.GetUShortLE());
+		// 				oStream.GetString2LE(2*oStream.GetUShortLE());
+		// 				break;
+		// 			}
+		// 			case CT.ctLink      : {
+		//
+		//
+		// 				oStream.GetDouble();
+		// 				oStream.GetDouble();
+		// 				oStream.GetDouble();
+		// 				oStream.GetDouble();
+		// 				oStream.GetDouble();
+		// 				oStream.GetDouble();
+		// 				oStream.GetLong();
+		// 				break;
+		// 			}
+		// 			case CT.ctFormField : {
+		// 				break;
+		// 			}
+		//
+		// 			case CT.ctPageWidth  : {
+		// 				oStream.GetDouble();
+		// 				break;
+		// 			}
+		// 			case CT.ctPageHeight : {
+		// 				oStream.GetDouble();
+		// 				break;
+		// 			}
+		//
+		// 			case CT.ctPageStart : {
+		// 				break;
+		// 			}
+		// 			case CT.ctPageEnd   : {
+		// 				oStream.Seek(this.endMemoryPos);
+		// 				break;
+		// 			}
+		// 		}
+		// 	}
+		// 	this.cachedCanvas = oCanvas;
+		// };
+
+		StringRender.prototype.forEachRunText = function(fCallback) {
+			let oParagraph = this.getCalculatedParagraph();
+			let aContent = oParagraph.Content;
+			let nChar = 0;
+			for(let nIdx = 0; nIdx < aContent.length; ++nIdx) {
+				let oRun = aContent[nIdx];
+				let aRunContent = oRun.Content;
+				if(aRunContent.length === 0) {
+					continue;
+				}
+				for(let nTxt = 0; nTxt < aRunContent.length; ++nTxt) {
+					let oTxt = aRunContent[nTxt];
+					fCallback(oTxt);
+				}
+			}
+		};
 
 		/**
 		 * Returns the width of the widest char in the string has been measured
 		 */
 		StringRender.prototype.getWidestCharWidth = function () {
-			return this.charWidths.reduce(function (p,c) {return p<c?c:p;}, 0);
+			let dMaxWidth = 0;
+			this.forEachRunText(function (oTxt){
+				let dWidth = oTxt.GetWidth();
+				if(dWidth > dMaxWidth) {
+					dMaxWidth = dWidth;
+				}
+			});
+			return this.mmToPixels(dMaxWidth);
 		};
 
 		StringRender.prototype._reset = function() {
 			this.chars = [];
-			this.charWidths = [];
 			this.charProps = [];
-			this.lines = [];
 		};
 
 		/**
@@ -543,18 +921,62 @@
 			return res;
 		};
 
+		StringRender.prototype.mmToPixels = function(dMMValue) {
+			let dZoom = this.drawingCtx.getZoom();
+			let nPPIX = this.drawingCtx.ppiX;
+			return Asc.round(dMMValue / 25.4 * nPPIX * dZoom);
+		};
+		StringRender.prototype.pixelsToMM = function(nPixValue) {
+			let dZoom = this.drawingCtx.getZoom();
+			let nPPIX = this.drawingCtx.ppiX;
+			return nPixValue * 25.4 / nPPIX / dZoom;
+		};
+
 		/**
 		 * @param {Number} startCh
 		 * @param {Number} endCh
 		 * @return {Number}
 		 */
 		StringRender.prototype._calcCharsWidth = function(startCh, endCh) {
-			for (var w = 0, i = startCh; i <= endCh; ++i) {
-				w += this.charWidths[i];
-			}
-			return w;
+			let dW = 0;
+			let nIdx = 0;
+			this.forEachRunText(function(oTxt) {
+				if(nIdx >= startCh && nIdx <= endCh) {
+					dW += oTxt.GetWidth();
+				}
+				++nIdx;
+			});
+			return this.mmToPixels(dW);
+		};
+		StringRender.prototype.getCharWidth = function(nIndex) {
+			let dW = 0;
+			let nIdx = 0;
+			this.forEachRunText(function(oTxt) {
+				if(nIdx === nIndex) {
+					dW = oTxt.GetWidth();
+				}
+				++nIdx;
+			});
+			return this.mmToPixels(dW);
 		};
 
+		StringRender.prototype.getLineDescender = function(nLineIdx) {
+			return this.mmToPixels(this.getLines()[nLineIdx].Metrics.Descent);
+		};
+
+
+		StringRender.prototype.getLinesCount = function () {
+			return this.getLines().length;
+		};
+
+		StringRender.prototype.getLines = function () {
+			let oParagraph = this.getCalculatedParagraph();
+			return oParagraph.Lines;
+		};
+
+		StringRender.prototype.getLineInfo = function (index) {
+			return null;
+		};
 		/**
 		 * @param {Number} startPos
 		 * @param {Number} endPos
@@ -579,7 +1001,7 @@
 					if ( (wrap) && this.codesSpace[this.chars[j]] ) {continue;}
 					isAtEnd = false;
 				}
-				tw += this.charWidths[j];
+				tw += this.getCharWidth(j);
 			}
 
 			return tw;
@@ -669,64 +1091,13 @@
 		 * @return {Asc.TextMetrics}
 		 */
 		StringRender.prototype._calcTextMetrics = function (dontCalcRepeatChars) {
-			var self = this, i = 0, p, p_, lm, beg = 0;
-			var l = new LineInfo(), TW = 0, TH = 0, BL = 0;
-
-			function addLine(b, e) {
-				if (-1 !== b)
-					l.tw += self._calcLineWidth(b, e);
-				l.beg = b;
-				l.end = e < b ? b : e;
-				self.lines.push(l);
-				if (TW < l.tw) {TW = l.tw;}
-				BL = TH + l.bl;
-				TH += l.th;
-			}
-
-			if (0 >= this.chars.length) {
-				p = this.charProps[0];
-				if (p && p.font) {
-					lm = this._calcLineMetrics(p.fsz !== undefined ? p.fsz : p.font.getSize(), p.va, p.fm);
-					l.assign(lm);
-					addLine(-1, -1);
-					l.beg = l.end = 0;
-				}
-			} else {
-				for (; i < this.chars.length; ++i) {
-					p = this.charProps[i];
-
-					// if font has been changed than calc and update line height and etc.
-					if (p && p.font) {
-						lm = this._calcLineMetrics(p.fsz !== undefined ? p.fsz : p.font.getSize(), p.va, p.fm);
-						if (i === 0) {
-							l.assign(lm);
-						} else {
-							l.th += this.calcDelta(lm.bl, l.bl) + this.calcDelta(lm.th - lm.bl, l.th - l.bl);
-							l.bl += this.calcDelta(lm.bl, l.bl);
-							l.a += this.calcDelta(lm.a, l.a);
-							l.d += this.calcDelta(lm.d, l.d);
-						}
-						p.lm = lm;
-						p_ = p;
-					}
-
-					// process 'repeat char' marker
-					if (dontCalcRepeatChars && p && p.repeat) {
-						l.tw -= this._calcCharsWidth(i, i + p.total);
-					}
-
-					// process 'new line' marker
-					if (p && (p.nl || p.hp)) {
-						addLine(beg, i);
-						beg = i + (p.nl ? 1 : 0);
-						lm = this._calcLineMetrics(p_.fsz !== undefined ? p_.fsz : p_.font.getSize(), p_.va, p_.fm);
-						l = new LineInfo(lm);
-					}
-				}
-				if (beg <= i) {
-					// add last line of text
-					addLine(beg, i - 1);
-				}
+			let TW = 0, TH = 0, BL = 0;
+			let oWB = Asc.editor.wb;
+			if(oWB) {
+				let oParagraph = this.getCalculatedParagraph();
+				let oResult = oParagraph.Parent.RecalculateMinMaxContentWidth(false);
+				TW = this.mmToPixels(oResult.Max);
+				TH = this.mmToPixels(oParagraph.Parent.GetSummaryHeight()) + 1;
 			}
 			return new asc.TextMetrics(TW, TH, 0, BL, 0, 0);
 		};
@@ -745,80 +1116,6 @@
 		 * @param {Number} maxWidth
 		 */
 		StringRender.prototype._insertRepeatChars = function (maxWidth) {
-			var self = this, width, w, pos, charProp;
-
-			function shiftCharPropsLeft(fromPos, delta) {
-				// delta - отрицательная
-				var length = self.charProps.length;
-				for (var i = fromPos; i < length; ++i) {
-					var p = self.charProps[i];
-					if (p) {
-						delete self.charProps[i];
-						self.charProps[i + delta] = p;
-					}
-				}
-			}
-
-			function shiftCharPropsRight(fromPos, delta) {
-				// delta - положительная
-				for (var i = self.charProps.length - 1; i >= fromPos; --i) {
-					var p = self.charProps[i];
-					if (p) {
-						delete self.charProps[i];
-						self.charProps[i + delta] = p;
-					}
-				}
-			}
-
-			function insertRepeatChars() {
-				if (0 === charProp.total)
-					return;	// Символ уже изначально лежит в строке и в списке
-				var repeatEnd = pos + charProp.total;
-				self.chars = [].concat(
-					self.chars.slice(0, repeatEnd),
-					self.chars.slice(pos, pos + 1),
-					self.chars.slice(repeatEnd));
-
-				self.charWidths = [].concat(
-					self.charWidths.slice(0, repeatEnd),
-					self.charWidths.slice(pos, pos + 1),
-					self.charWidths.slice(repeatEnd));
-
-				shiftCharPropsRight(pos + 1, 1);
-			}
-
-			function removeRepeatChar() {
-				self.chars = [].concat(
-					self.chars.slice(0, pos),
-					self.chars.slice(pos + 1));
-
-				self.charWidths = [].concat(
-					self.charWidths.slice(0, pos),
-					self.charWidths.slice(pos + 1));
-
-				delete self.charProps[pos];
-				shiftCharPropsLeft(pos + 1, -1);
-			}
-
-			width = this._calcTextMetrics(true).width;
-			pos = this._getRepeatCharPos();
-			if (-1 === pos)
-				return;
-			w = this._calcCharsWidth(pos, pos);
-			charProp = this.charProps[pos];
-
-			while (charProp.total * w + width + w <= maxWidth) {
-				insertRepeatChars();
-				charProp.total += 1;
-				if (w === 0) {
-					break;
-				}
-			}
-
-			if (0 === charProp.total)
-				removeRepeatChar();
-
-			this.lines = [];
 		};
 
 		StringRender.prototype._getCharPropAt = function (index) {
@@ -827,181 +1124,93 @@
 			return prop;
 		};
 
+		StringRender.prototype.createRun = function(aChars, oFont) {
+			return AscFormat.ExecuteNoHistory(function(){
+				let oRun = new AscWord.CRun();
+				for(let nChar = 0; nChar < aChars.length; ++nChar) {
+					let nUnicode = aChars[nChar];
+					if (AscCommon.IsSpace(nUnicode)) {
+						oRun.AddToContentToEnd(new AscWord.CRunSpace(nUnicode));
+					}
+					else if (0x0D === nUnicode) {
+						if (nChar + 1 < aChars.length && 0x0A === aChars[nChar + 1]) {
+							nChar++;
+						}
+						oRun.AddToContentToEnd(new AscWord.CRunSpace());
+					}
+					else if (0x09 === nUnicode) {
+						oRun.AddToContentToEnd(new AscWord.CRunTab());
+					}
+					else {
+						oRun.AddToContentToEnd(new AscWord.CRunText(nUnicode));
+					}
+				}
+				let oPr = new AscWord.CTextPr();
+				oPr.SetFromFontObject(oFont);
+				oRun.SetPr(oPr);
+				return oRun;
+			}, this, []);
+		};
+		StringRender.prototype.createTextPr = function(oFont) {
+			return AscFormat.ExecuteNoHistory(function(){
+				let oPr = new AscWord.CTextPr();
+				oPr.SetFromFontObject(oFont);
+				return oPr;}, this, []);
+		};
+		StringRender.prototype.createParagraph = function() {
+			let oParagraph = AscFormat.ExecuteNoHistory(function() {
+				let bWrap = this.flags && (this.flags.wrapText || this.flags.wrapOnlyCE) && !this.flags.isNumberFormat;
+				let bWrapNL = this.flags && this.flags.wrapOnlyNL;
+				let bVerticalText = this.flags && this.flags.verticalText;
+				let aFragments = this.fragments;
+
+				let oShape = new AscFormat.CShape();
+				oShape.setTxBody(AscFormat.CreateTextBodyFromString("", this, oShape));
+				let oContent = oShape.txBody.content;
+				let oParagraph = oContent.Content[0];
+				let nAlign = AscCommon.align_Left;
+				if(this.flags && AscFormat.isRealNumber(this.flags.textAlign)) {
+					nAlign = this.flags.textAlign;
+				}
+				oParagraph.SetParagraphAlign(nAlign)
+				for(let nFgm = 0; nFgm < aFragments.length; ++nFgm) {
+					let oFgm = aFragments[nFgm];
+					if (oFgm.isInitCharCodes()) {
+						oFgm.initText();
+					}
+					let aChars = this._filterChars(oFgm.getCharCodes(), bWrap || bWrapNL);
+					if(aChars.length === 0) {
+						continue;
+					}
+					let oRun = this.createRun(aChars, oFgm.format);
+					oParagraph.AddToContentToEnd(oRun);
+				}
+				return oParagraph;
+			}, this, []);
+			return oParagraph;
+		};
+
+		StringRender.prototype.getCellTextMeasurer = function() {
+			return AscCommon.g_oTextMeasurer;
+		};
+
+		StringRender.prototype.getCalculatedParagraph = function(maxWidth) {
+			let oParagraph = this.createParagraph();
+			let oContent = oParagraph.GetParent();
+			let nMaxLimit = 20000;
+			let nXLimit = AscFormat.isRealNumber(maxWidth) ? this.pixelsToMM(maxWidth) : nMaxLimit;
+			let nYLimit = nMaxLimit;
+			oContent.Reset(0, 0, 20000, nYLimit);
+			oContent.Recalculate_Page(0, true);
+			return oParagraph;
+		};
+
 		/**
 		 * @param {Number} maxWidth
 		 * @return {Asc.TextMetrics}
 		 */
 		StringRender.prototype._measureChars = function (maxWidth) {
-			var self = this;
-			var ctx = this.drawingCtx;
-			var font = ctx.font;
-			var wrap = this.flags && (this.flags.wrapText || this.flags.wrapOnlyCE) && !this.flags.isNumberFormat;
-			var wrapNL = this.flags && this.flags.wrapOnlyNL;
-			var verticalText = this.flags && this.flags.verticalText;
-			var hasRepeats = false;
-			var i, j, fr, fmt, chars, p, p_ = {}, pIndex, startCh;
-			var tw = 0, nlPos = 0, isEastAsian, hpPos = undefined, isSP_ = true, delta = 0;
-
-			function measureFragment(_chars) {
-				var j, chc, chw, chPos, isNL, isSP, isHP, tm;
-				for (chPos = self.chars.length, j = 0; j < _chars.length; ++j, ++chPos) {
-					chc = _chars[j];
-					tm = ctx.measureChar(null, 0/*px units*/, chc);
-					chw = tm.width;
-
-					isNL = self.codesHypNL[chc];
-					isSP = !isNL ? self.codesHypSp[chc] : false;
-
-					// if 'wrap flag' is set
-					if (wrap || wrapNL || verticalText) {
-						isHP = !isSP && !isNL ? self.codesHyphen[chc] : false;
-						isEastAsian = AscCommon.isEastAsianScript(chc);
-						if (verticalText) {
-							// ToDo verticalText and new line or space
-						} else if (isNL) {
-							// add new line marker
-							nlPos = chPos;
-							self._getCharPropAt(nlPos).nl = true;
-							self._getCharPropAt(nlPos).delta = delta;
-							chc = 0xA0;
-							chw = 0;
-							tw = 0;
-							hpPos = undefined;
-						} else if (isSP || isHP) {
-							// move hyphenation position
-							hpPos = chPos + 1;
-						} else if (isEastAsian) {
-							if (0 !== j && !(AscCommon.g_aPunctuation[_chars[j - 1]] &
-								AscCommon.PUNCTUATION_FLAG_CANT_BE_AT_END_E) &&
-								!(AscCommon.g_aPunctuation[chc] & AscCommon.PUNCTUATION_FLAG_CANT_BE_AT_BEGIN_E)) {
-								// move hyphenation position
-								hpPos = chPos;
-							}
-						}
-
-						if (chPos !== nlPos && ((wrap && !isSP && tw + chw > maxWidth) || verticalText)) {
-							// add hyphenation marker
-							nlPos = hpPos !== undefined ? hpPos : chPos;
-							self._getCharPropAt(nlPos).hp = true;
-							self._getCharPropAt(nlPos).delta = delta;
-							tw = self._calcCharsWidth(nlPos, chPos - 1);
-							hpPos = undefined;
-						}
-
-						if (isEastAsian) {
-							// move hyphenation position
-							if (j !== _chars.length && !(AscCommon.g_aPunctuation[_chars[j + 1]] &
-								AscCommon.PUNCTUATION_FLAG_CANT_BE_AT_BEGIN_E) &&
-								!(AscCommon.g_aPunctuation[chc] & AscCommon.PUNCTUATION_FLAG_CANT_BE_AT_END_E)) {
-								hpPos = chPos + 1;
-							}
-						}
-					}
-
-					if (isSP_ && !isSP && !isNL) {
-						// add word beginning marker
-						self._getCharPropAt(chPos).wrd = true;
-					}
-
-					tw += chw;
-					self.charWidths.push(chw);
-					if (!self.chars) {
-						self.chars = [];
-					}
-					self.chars.push(chc);
-					isSP_ = isSP || isNL;
-					delta = tm.widthBB - tm.width;
-				}
-			}
-
 			this._reset();
-
-			// for each text fragment
-			for (i = 0; i < this.fragments.length; ++i) {
-				startCh = this.charWidths.length;
-				fr = this.fragments[i];
-				fmt = fr.format.clone();
-				var va = fmt.getVerticalAlign();
-
-				//TODO пока не убрал эту регулярку, сначала перевожу в текст, потом обратно в сиволы
-				//TODO избавиться от регулярки!
-				if (fr.isInitCharCodes()) {
-					fr.initText();
-				}
-				chars = this._filterChars(fr.getCharCodes(), wrap || wrapNL);
-				//fr.initCharCodes();
-
-				pIndex = this.chars.length;
-				p = this.charProps[pIndex];
-				p = p ? p.clone() : new charProperties();
-
-				// reduce font size for subscript and superscript chars
-				if (va === AscCommon.vertalign_SuperScript || va === AscCommon.vertalign_SubScript) {
-					p.va = va;
-					p.fsz = fmt.getSize();
-					fmt.fs = p.fsz * 2/3;
-					p.font = fmt;
-				}
-
-				// change font on canvas
-				if (this._setFont(ctx, fmt) || fmt.getUnderline() !== font.getUnderline() ||
-					fmt.getStrikeout() !== font.getStrikeout() || fmt.getColor() !== p_.c) {
-					p.font = fmt;
-				}
-
-				// add marker in chars flow
-				if (i === 0) {
-					p.font = fmt;
-				}
-				if (p.font) {
-					p.fm = ctx.getFontMetrics();
-					p.c = fmt.getColor();
-					this.charProps[pIndex] = p;
-					p_ = p;
-				}
-
-				if (fmt.getSkip()) {
-					this._getCharPropAt(pIndex).skip = chars.length;
-				}
-
-				if (fmt.getRepeat()) {
-					if (hasRepeats)
-						throw new Error("Repeat should occur no more than once");
-
-					this._getCharPropAt(pIndex).repeat = true;
-					this._getCharPropAt(pIndex).total = 0;
-					hasRepeats = true;
-				}
-
-				if (chars.length < 1) {continue;}
-				measureFragment(chars);
-
-				// для italic текста прибавляем к концу строки разницу между charWidth и BBox
-				for (j = startCh; font.getItalic() && j < this.charWidths.length; ++j) {
-					if (this.charProps[j] && this.charProps[j].delta && j > 0) {
-						if (this.charWidths[j-1] > 0) {
-							this.charWidths[j-1] += this.charProps[j].delta;
-						} else if (j > 1) {
-							this.charWidths[j-2] += this.charProps[j].delta;
-						}
-					}
-				}
-			}
-
-			if (0 !== this.chars.length && this.charProps[this.chars.length] !== undefined) {
-				delete this.charProps[this.chars.length];
-			} else if (font.getItalic()) {
-				// для italic текста прибавляем к концу текста разницу между charWidth и BBox
-				this.charWidths[this.charWidths.length - 1] += delta;
-			}
-
-            if (hasRepeats) {
-                if (maxWidth === undefined) {
-                    throw new Error("Undefined width of cell width Numeric Format");
-                }
-                this._insertRepeatChars(maxWidth);
-            }
-
             return this._calcTextMetrics();
         };
 
@@ -1036,131 +1245,29 @@
 		 * @param {String} textColor
 		 */
 		StringRender.prototype._doRender = function(drawingCtx, x, y, maxWidth, textColor) {
-			var self = this;
-			var ctx = drawingCtx || this.drawingCtx;
-			var zoom = ctx.getZoom();
-			var ppiy = ctx.getPPIY();
-			var align  = this.flags ? this.flags.textAlign : null;
-			var i, j, p, p_, strBeg;
-			var n = 0, l = this.lines[0], x1 = l ? initX(0) : 0, y1 = y, dx = l ? computeWordDeltaX() : 0;
 
-			function initX(startPos) {
-				var x_ = x;
-				if (align === AscCommon.align_Right) {
-					x_ = x + maxWidth - self._calcLineWidth(startPos) - 1/*px*/;
-				} else if (align === AscCommon.align_Center) {
-					x_ = x + 0.5 * (maxWidth - self._calcLineWidth(startPos));
-				}
-				l.startX = x_;
-				return x_;
+			let oWB = Asc.editor.wb;
+			if(!oWB) {
+				return;
 			}
+			let oParagraph = this.getCalculatedParagraph(maxWidth);
 
-			function computeWordDeltaX() {
-				if (align !== AscCommon.align_Justify || n === self.lines.length - 1) {return 0;}
-				for (var i = l.beg, c = 0; i <= l.end; ++i) {
-					var p = self.charProps[i];
-					if (p && p.wrd) {++c;}
-				}
-				return c > 1 ? (maxWidth - l.tw) / (c - 1) : 0;
-			}
+			let oContext = oWB.buffers.main.ctx;
+			let oCanvas = oWB.buffers.main.canvas;
+			let oGraphics;
+			oGraphics = new AscCommon.CGraphics();
+			let ppiX = oWB.buffers.main.ppiX;
+			let ppiY = oWB.buffers.main.ppiY;
 
-			function renderFragment(begin, end, prop, angle) {
-				var dh = prop && prop.lm && prop.lm.bl2 > 0 ? prop.lm.bl2 - prop.lm.bl : 0;
-				var dw = self._calcCharsWidth(strBeg, end - 1);
-				var so = prop.font.getStrikeout();
-				var ul = Asc.EUnderline.underlineNone !== prop.font.getUnderline();
-				var isSO = so === true;
-				var fsz, x2, y, lw, dy, i, b, x_, cp;
-				var bl = asc_round(l.bl * zoom);
-
-				y = y1 + bl + dh;
-				if (align !== AscCommon.align_Justify || dx < 0.000001) {
-					ctx.fillTextCode(self.chars.slice(begin, end), x1, y, undefined, self.charWidths.slice(begin, end), angle);
-				} else {
-					for (i = b = begin, x_ = x1; i < end; ++i) {
-						cp = self.charProps[i];
-						if (cp && cp.wrd && i > b) {
-							ctx.fillTextCode(self.chars.slice(b, i), x_, y, undefined, self.charWidths.slice(b, i), angle);
-							x_ += self._calcCharsWidth(b, i - 1) + dx;
-							dw += dx;
-							b = i;
-						}
-					}
-					if (i > b) { // draw remainder of text
-						ctx.fillTextCode(self.chars.slice(b, i), x_, y, undefined, self.charWidths.slice(b, i), angle);
-					}
-				}
-
-				if (isSO || ul) {
-
-					if (angle && window["IS_NATIVE_EDITOR"])
-						ctx.nativeTextDecorationTransform(true);
-
-					x2 = x1 + dw;
-					fsz = prop.font.getSize();
-					lw = asc_round(fsz * ppiy / 72 / 18) || 1;
-					ctx.setStrokeStyle(prop.c || textColor)
-					   .setLineWidth(lw)
-					   .beginPath();
-					dy = (lw / 2); dy = dy >> 0;
-					if (ul) {
-						y = asc_round(y1 + bl + prop.lm.d * 0.4 * zoom);
-						ctx.lineHor(x1, y + dy, x2 + 1/*px*/); // ToDo вопрос тут
-					}
-					if (isSO) {
-						dy += 1;
-						y = asc_round(y1 + bl - prop.lm.a * 0.275 * zoom);
-						ctx.lineHor(x1, y - dy, x2 + 1/*px*/); // ToDo вопрос тут
-					}
-					ctx.stroke();
-
-					if (angle && window["IS_NATIVE_EDITOR"])
-						ctx.nativeTextDecorationTransform(false);
-				}
-
-				return dw;
-			}
-
-			for (i = 0, strBeg = 0; i < this.chars.length; ++i) {
-				p = this.charProps[i];
-
-				if (p && (p.font || p.nl || p.hp || p.skip > 0)) {
-					if (strBeg < i) {
-						// render fragment
-						x1 += renderFragment(strBeg, i, p_, this.angle);
-						strBeg = i;
-					}
-					if (p.nl) {
-						strBeg += 1;
-					}
-
-					if (p.font) {
-						// change canvas font style
-                        this._setFont(ctx, p.font);
-						ctx.setFillStyle(p.c || textColor);
-						p_ = p;
-					}
-					if (p.skip > 0) {
-						// skip invisible chars
-						j = i + p.skip - 1;
-						x1 += this._calcCharsWidth(i, j);
-						strBeg = j + 1;
-						i = j;
-						continue;
-					}
-					if (p.nl || p.hp) {
-						// begin new line
-						y1 += asc_round(l.th * zoom);
-						l = self.lines[++n];
-						x1 = initX(i);
-						dx = computeWordDeltaX();
-					}
-				}
-			}
-			if (strBeg < i) {
-				// render text remainder
-				renderFragment(strBeg, i, p_, this.angle);
-			}
+			oGraphics.init(oWB.buffers.main.ctx, oCanvas.width, oCanvas.height, 25.4 * oCanvas.width / ppiX, 25.4 * oCanvas.height / ppiY);
+			oGraphics.m_oFontManager = AscCommon.g_fontManager;
+			oGraphics.SaveGrState();
+			oGraphics.SetIntegerGrid(false);
+			oGraphics.m_oCoordTransform.tx = x;
+			oGraphics.m_oCoordTransform.ty = y;
+			oGraphics.transform3(new AscCommon.CMatrix());
+			oParagraph.Draw(0, oGraphics);
+			oGraphics.RestoreGrState();
 		};
 
 		StringRender.prototype.getInternalState = function () {
@@ -1169,18 +1276,16 @@
                 flags       : this.flags,
 
                 chars       : this.chars,
-                charWidths  : this.charWidths,
                 charProps   : this.charProps,
-                lines       : this.lines
+				fragments   : [].concat(this.fragments)
             };
         };
 
 		StringRender.prototype.restoreInternalState = function (state) {
 			this.flags       = state.flags;
 			this.chars       = state.chars;
-			this.charWidths  = state.charWidths;
 			this.charProps   = state.charProps;
-			this.lines       = state.lines;
+			this.fragments   = state.fragments;
 			return this;
 		};
 

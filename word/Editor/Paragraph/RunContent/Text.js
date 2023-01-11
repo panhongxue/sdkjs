@@ -309,12 +309,19 @@
 	};
 	CRunText.prototype.GetWidthVisible = function()
 	{
+		let dWidth;
 		if (this.Flags & FLAGS_VISIBLE_WIDTH)
-			return (this.WidthVisible / AscWord.TEXTWIDTH_DIVIDER);
+			dWidth = (this.WidthVisible / AscWord.TEXTWIDTH_DIVIDER);
 		else if (this.Flags & FLAGS_TEMPORARY)
-			return (this.TempWidth / AscWord.TEXTWIDTH_DIVIDER);
+			dWidth = (this.TempWidth / AscWord.TEXTWIDTH_DIVIDER);
 		else
-			return (this.Width / AscWord.TEXTWIDTH_DIVIDER);
+			dWidth = (this.Width / AscWord.TEXTWIDTH_DIVIDER);
+		let oWb = Asc && Asc.editor && Asc.editor.wb;
+		if(oWb) {
+			let oSR = oWb.stringRender;
+			dWidth = oSR.pixelsToMM(oSR.mmToPixels(dWidth));
+		}
+		return dWidth;
 	};
 	CRunText.prototype.GetWidth = function()
 	{

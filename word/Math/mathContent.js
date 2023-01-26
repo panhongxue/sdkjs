@@ -2490,6 +2490,7 @@ CMathContent.prototype.InsertMathContent = function(oMathContent, nPos, isSelect
 	else
 	{
 		this.ParaMath.SetThisElementCurrent();
+        this.CurPos = nPos;
 		this.RemoveSelection();
 
 		if (!this.bRoot)

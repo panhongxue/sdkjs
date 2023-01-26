@@ -1125,12 +1125,15 @@
 	{
 		let oArgument = [];
 		while (intCountOfArguments > 0) {
+			this.SkipFreeSpace();
 			if (this.oLookahead.data === "{") {
+				this.SkipFreeSpace();
 				this.EatToken(this.oLookahead.class);
 				oArgument.push(this.GetExpressionLiteral());
 				this.EatToken(this.oLookahead.class);
 			}
 			else {
+				this.SkipFreeSpace();
 				oArgument.push(this.GetWrapperElementLiteral());
 			}
 			intCountOfArguments--;

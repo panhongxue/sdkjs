@@ -6371,7 +6371,6 @@ ContentIterator.prototype.GetNextFromCurrentElement = function (nextRule)
         return true;
     }
 };
-
 ContentIterator.prototype.CheckTextLiteral = function(literal)
 {
     while (this.CurrentElement)
@@ -6382,7 +6381,7 @@ ContentIterator.prototype.CheckTextLiteral = function(literal)
             this.CreateCurrentElement();
         }
 
-        if (!(this.CurrentElement instanceof ParaRunIterator))
+        if (!(this.CurrentElement instanceof ParaRunIterator) || this.CurrentElement.Cursor < 0)
         {
             this.cursor--;
             this.CreateCurrentElement();
@@ -6519,6 +6518,10 @@ ContentIterator.prototype.CheckRules = function ()
         [true, "⃛" ],
         [true, "̄" ],
         [true, "⃗" ],
+        [true, "⁗"],
+        [true, "‴"],
+        [true, "″"],
+        [true, "′"],
         [true],
     ];
 
@@ -6613,48 +6616,55 @@ CMathContent.prototype.CheckAutoCorrectionRules = function(nInputType)
     const arrPosition = oRuleIterator.RulePosition;
 
     if (arrPosition.length === 2)
+    {
         this.CutConvertAndPaste(arrPosition, nInputType);
-    else if (isSpace)
-        this.Add_TextOnPos(this.Content.length - 1,' ');
-
-    let now = [];
-
-    for (let i = 0; i < this.Content.length; i++) {
-        now.push([this.Content[i].constructor.name, this.Content[i].Content ? this.Content[i].Content.length : 0]);
     }
 
-    if (isSpace)
+    if (isSpace && arrPosition === 0)
     {
-        let counter = 0;
-        let isEqual = true;
-        while (counter !== 2)
-        {
-            let tprev = prev[prev.length - 1 - counter];
-            let tnow = now[now.length - 1 - counter];
-
-            let tprevType = tprev[0];
-            let tnowType = tnow[0];
-
-            let tprevCount = tprev[1];
-            let tnowCount= tnow[1];
-
-            if (tprevType !== tnowType || tprevCount !== tnowCount) {
-                if (!(counter === 0 && tprevCount === tnowCount + 1)) {
-                    isEqual = false;
-                    break;
-                }
-            }
-
-            if (tnow !== "ParaRun")
-                break;
-
-            counter++;
-        }
-        if (isEqual) this.Add_TextOnPos(this.Content.length, ' ');
+        this.Add_TextOnPos(this.Content.length, ' ');
     }
     else if (lastOperator)
     {
         this.Add_TextOnPos(this.Content.length, lastOperator);
+    }
+    else
+    {
+        let now = [];
+        for (let i = 0; i < this.Content.length; i++)
+        {
+            now.push([this.Content[i].constructor.name, this.Content[i].Content ? this.Content[i].Content.length : 0]);
+        }
+
+        if (isSpace)
+        {
+            let counter = 0;
+            let isEqual = true;
+            while (counter !== 2)
+            {
+                let tprev = prev[prev.length - 1 - counter];
+                let tnow = now[now.length - 1 - counter];
+
+                let tprevType = tprev[0];
+                let tnowType = tnow[0];
+
+                let tprevCount = tprev[1];
+                let tnowCount= tnow[1];
+
+                if (tprevType !== tnowType || tprevCount !== tnowCount) {
+                    if (!(counter === 0 && tprevCount === tnowCount + 1)) {
+                        isEqual = false;
+                        break;
+                    }
+                }
+
+                if (tnow[0] !== "ParaRun")
+                    break;
+
+                counter++;
+            }
+            if (isEqual) this.Add_TextOnPos(this.Content.length, ' ');
+        }
     }
 };
 CMathContent.prototype.IsLastTextElementRBracket = function()

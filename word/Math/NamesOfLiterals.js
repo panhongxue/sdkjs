@@ -153,7 +153,7 @@
 		this.data =  [
 			"⨯", "⨝", "⟕", "⟖", "⟗", "⋉", "⋊", "▷",
 			"+", "-", "*", "=", "≶", "≷", "≜", "⇓", "⇐",
-			"⇔", "⟸", "⟺", "⟹", "⇒", "⇑", "⇕", "∠", "≈",
+			"⟸", "⟺", "⟹", "⇑", "⇕", "∠", "≈",
 			"⬆", "∗", "≍", "∵", "⋈", "⊡", "⊟", "⊞", "⤶",
 			"∙", "⋅", "⋯", "∘", "♣", "≅", "∋", "⋱", "≝", "℃",
 			"℉", "°", "⊣", "⋄", "♢", "÷", "≐", "…", "↓",
@@ -624,10 +624,8 @@
 		["\\Bmatrix", oNamesOfLiterals.matrixLiteral[0]],
 		["\\left", true],
 		["\\right", true],
-		["⇔", oNamesOfLiterals.operatorLiteral[0]],
 		["⟫", oNamesOfLiterals.opCloseBracket[0]],
 		["⟧", oNamesOfLiterals.opCloseBracket[0]],
-		["⇒", oNamesOfLiterals.operatorLiteral[0]],
 		["̳", MathLiterals.accent.id], //check
 		["‖", oNamesOfLiterals.opOpenCloseBracket[0]],
 		["⒩", oNamesOfLiterals.matrixLiteral[0]],
@@ -841,12 +839,8 @@
 		["π"],
 		["±"],
 		["⒨", oNamesOfLiterals.matrixLiteral[0]],
-		["⁗", MathLiterals.accent.id],
-		["‴", MathLiterals.accent.id],
-		["″", MathLiterals.accent.id],
 		["≺", oNamesOfLiterals.operatorLiteral[0]],
 		["≼", oNamesOfLiterals.operatorLiteral[0]],
-		["′", MathLiterals.accent.id],
 		["∏", oNamesOfLiterals.opNaryLiteral[0]], //oNamesOfLiterals.functionLiteral[0]
 		["∝", oNamesOfLiterals.operatorLiteral[0]],
 		["ψ"],
@@ -1693,9 +1687,22 @@
 							null,
 							null
 						);
+
+						let filterBracketForContent = oNamesOfLiterals.bracketBlockLiteral[num];
+						if (oTokens.up &&
+							(	oTokens.up.value 	=== "⁗" ||
+								oTokens.up.value  	=== "‴" ||
+								oTokens.up.value  	=== "″" ||
+								oTokens.up.value 	=== "′")
+						)
+						{
+							filterBracketForContent = undefined;
+						}
+
+
 						UnicodeArgument(
 							oTokens.value,
-							oNamesOfLiterals.bracketBlockLiteral[num],
+							filterBracketForContent,
 							SubSup.getBase(),
 						)
 						UnicodeArgument(

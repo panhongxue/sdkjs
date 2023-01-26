@@ -1402,6 +1402,26 @@
 		}
 		return this.WriteSavedTokens();
 	};
+	CUnicodeParser.prototype.IsPrimeLiteral = function()
+	{
+		return 	this.oLookahead.data === "⁗" ||
+				this.oLookahead.data === "‴" ||
+				this.oLookahead.data === "″" ||
+				this.oLookahead.data === "′";
+	}
+	CUnicodeParser.prototype.GetPrimeLiteral = function (oBase)
+	{
+		let strPrime = this.EatToken(this.oLookahead.class).data;
+
+		return {
+			type: oLiteralNames.subSupLiteral[num],
+			up: {
+				type: oLiteralNames.charLiteral[num],
+				value: strPrime,
+			},
+			value: oBase,
+		}
+	}
 	CUnicodeParser.prototype.GetFactorLiteral = function ()
 	{
 		if (this.IsDiacriticsLiteral())
@@ -1416,18 +1436,12 @@
 		{
 			let oEntity = this.GetEntityLiteral();
 
+			if (this.IsPrimeLiteral())
+				return this.GetPrimeLiteral(oEntity);
+
 			if (this.IsDiacriticsLiteral())
 			{
 				const oDiacritic = this.GetDiacriticsLiteral();
-				if (oDiacritic === "''" || oDiacritic === "'")
-				{
-					return {
-						type: oLiteralNames.subSupLiteral[num],
-						value: oEntity,
-						up: oDiacritic,
-					}
-				}
-
 				return {
 					type: MathLiteral.accent.id,
 					base: oEntity,

@@ -1685,22 +1685,10 @@
 							null,
 							null
 						);
-
-						let filterBracketForContent = oNamesOfLiterals.bracketBlockLiteral[num];
-						if (oTokens.up &&
-							(	oTokens.up.value 	=== "⁗" ||
-								oTokens.up.value  	=== "‴" ||
-								oTokens.up.value  	=== "″" ||
-								oTokens.up.value 	=== "′")
-						)
-						{
-							filterBracketForContent = undefined;
-						}
-
-
+						
 						UnicodeArgument(
 							oTokens.value,
-							filterBracketForContent,
+							oNamesOfLiterals.bracketBlockLiteral[num],
 							SubSup.getBase(),
 						)
 						UnicodeArgument(

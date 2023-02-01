@@ -1042,17 +1042,17 @@
 		let intCount = 0;
 		let isAlredyGetContent = false;
 
-		while (this.IsElementLiteral() || this.oLookahead.class === "&") {
+		while (this.IsElementLiteral() || this.oLookahead.data === "&") {
 			let intCopyOfLength = intLength;
 
-			if (this.oLookahead.class !== "&") {
+			if (this.oLookahead.data !== "&") {
 				arrRow.push(this.GetExpressionLiteral("&"));
 				intLength++;
 				isAlredyGetContent = true;
 				this.SkipFreeSpace();
 			}
 			else {
-				this.EatToken("&");
+				this.EatToken(this.oLookahead.class);
 
 				if (isAlredyGetContent === false) {
 					arrRow.push({});

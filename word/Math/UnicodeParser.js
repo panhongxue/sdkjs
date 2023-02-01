@@ -1373,7 +1373,16 @@
 	{
 		const arrAtomsList = [];
 		while (this.IsAtomLiteral()) {
-			arrAtomsList.push(this.GetAtomLiteral());
+			let atom = this.GetAtomLiteral();
+			if (this.IsPrimeLiteral())
+			{
+				arrAtomsList.push(this.GetPrimeLiteral(atom))
+			}
+			else
+			{
+				arrAtomsList.push(atom);
+			}
+
 		}
 		return this.GetContentOfLiteral(arrAtomsList)
 	};

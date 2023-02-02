@@ -316,12 +316,11 @@ CLimit.prototype.Can_ModifyArgSize = function()
     return this.CurPos == 1 && false === this.Is_SelectInside();
 };
 CLimit.prototype.GetTextOfElement = function(isLaTeX) {
+    debugger
 	var strTemp = "";
 	var strLimitSymbol = "";
-	var strFuncName = this.getFName().GetMultipleContentForGetText(isLaTeX, true);
-	var strArgument = this.getIterator().GetMultipleContentForGetText(isLaTeX, true);
-	var strStartBracet = this.GetStartBracetForGetTextContent(isLaTeX);
-	var strCloseBracet = this.GetEndBracetForGetTextContent(isLaTeX);
+	var strFuncName = this.getFName().GetMultipleContentForGetText(isLaTeX);
+	var strArgument = this.getIterator().GetMultipleContentForGetText(isLaTeX);
 
 	if (isLaTeX)
     {
@@ -340,9 +339,6 @@ CLimit.prototype.GetTextOfElement = function(isLaTeX) {
     {
 		strLimitSymbol = (this.Pr.type == 1) ? "┴" : "┬";
 	}
-
-	if (strArgument.length > 1 || isLaTeX)
-		strArgument = strStartBracet + strArgument + strCloseBracet;
 
 	strTemp = strFuncName + strLimitSymbol+ strArgument;
 	return strTemp;
@@ -468,8 +464,6 @@ CMathFunc.prototype.GetTextOfElement = function(isLaTeX) {
     {
         strArgument = "{" + strArgument + "}";
     }
-	//	Unicode
-	//	if strArgument is block.. such as (2+1), then don't add brackets
 
 	if (isLaTeX) {
 		switch (strFuncName) {

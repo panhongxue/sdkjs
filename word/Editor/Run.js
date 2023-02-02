@@ -553,13 +553,13 @@ ParaRun.prototype.MathAutocorrection_GetBracketsOperatorsInfo = function (isLaTe
 		if ((strContent === "{" || strContent === "}") && isLaTeX)
 			continue;
 
-		if (AscMath.MathLiterals.lBrackets.IsIncludes(strContent))
+		if (AscMath.MathLiterals.lBrackets.SearchU(strContent))
 			intCount = -1;
-		else if (AscMath.MathLiterals.rBrackets.IsIncludes(strContent))
+		else if (AscMath.MathLiterals.rBrackets.SearchU(strContent))
 			intCount = 1;
-		else if (AscMath.MathLiterals.lrBrackets.IsIncludes(strContent))
+		else if (AscMath.MathLiterals.lrBrackets.SearchU(strContent))
 			intCount = 0;
-		else if (AscMath.MathLiterals.operators.IsIncludes(strContent))
+		else if (AscMath.MathLiterals.operator.SearchU(strContent))
 			intCount = 2;
 
 		if (intCount !== null)
@@ -576,7 +576,7 @@ ParaRun.prototype.MathAutocorrection_GetOperatorInfo = function ()
 	{
 		let strContent = String.fromCharCode(this.Content[intCounter].value);
 
-		if (AscMath.MathLiterals.operators.IsIncludes(strContent))
+		if (AscMath.MathLiterals.operator.SearchU(strContent))
 			arrOperatorContent.push(intCounter);
 	}
 
@@ -605,7 +605,7 @@ ParaRun.prototype.MathAutocorrection_IsLastElement = function(type)
 
 	let oLastElement = this.Content[this.Content.length - 1];
 	let strLastElement = String.fromCharCode(oLastElement.value);
-	return type.IsIncludes(strLastElement);
+	return type.SearchU(strLastElement);
 }
 
 ParaRun.prototype.MathAutoCorrection_DeleteLastSpace = function()

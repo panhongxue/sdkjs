@@ -4540,10 +4540,11 @@ CGroupCharacter.prototype.Can_ChangePos = function()
     return this.Pr.chr == 0x23DC || this.Pr.chr == 0x23DD || this.Pr.chr == 0x23DE || this.Pr.chr == 0x23DF;
 };
 CGroupCharacter.prototype.GetTextOfElement = function(isLaTeX) {
+    debugger
 	var strTemp = "";
 	var intStartCode = this.Pr.chr || this.operator.Get_CodeChr();
 	var strStart = String.fromCharCode(intStartCode);
-	var Base = this.getBase().GetMultipleContentForGetText(isLaTeX);
+	var Base = this.getBase().GetMultipleContentForGetText(isLaTeX, false, false, true);
 
 	if (true === isLaTeX)
     {

@@ -36,15 +36,14 @@
 
 	function LexerLiterals()
 	{
-		this.fromSymbols = {};
-		this.toSymbols = {};
+		this.Unicode = {};
+		this.LaTeX = {};
 
 		this.Init();
 	}
 	LexerLiterals.prototype.Init = function ()
 	{
-
-		let names = Object.keys(this.toSymbols);
+		let names = Object.keys(this.LaTeX);
 
 		if (names.length < 1)
 			return false;
@@ -52,74 +51,328 @@
 		for (let i = 0; i < names.length; i++)
 		{
 			let name = names[i];
-			let data = this.toSymbols[name];
-			this.private_FromToSymbols(data, name);
-		};
+			let data = this.LaTeX[name];
+			this.SetUnicodeFromLaTeX(data, name);
+		}
 
 		return true;
 	};
-	LexerLiterals.prototype.IsIncludes = function (name)
+	LexerLiterals.prototype.IsLaTeXInclude = function (name)
 	{
-		if (this.data)
-			return this.data.includes(name);
+		if (!this.LaTeX)
+			return false;
 
-		return this.toSymbols[name];
+		return this.LaTeX[name] !== undefined;
 	};
-	LexerLiterals.prototype.private_Add = function (name, data)
+	LexerLiterals.prototype.IsUnicodeInclude = function (name)
 	{
-		this.private_AddToSymbols(name, data);
+		if (!this.Unicode)
+			return false;
+		return this.Unicode[name] !== undefined;
 	};
-	LexerLiterals.prototype.private_AddToSymbols = function (name, data)
+	LexerLiterals.prototype.AddToLaTeX = function (name, data)
 	{
-		this.toSymbols[name] = data;
-		this.private_FromToSymbols(data, name);
+		if (!this.IsLaTeXInclude(name))
+			this.private_AddToLaTeX(name, data);
 	};
-	LexerLiterals.prototype.private_FromToSymbols = function (name, data)
+	LexerLiterals.prototype.AddToUnicode = function (name, data)
 	{
-		this.fromSymbols[name] = data;
+		if (!this.IsUnicodeInclude(name))
+			this.private_AddToUnicode(name, data);
 	};
-	LexerLiterals.prototype.Add = function (name, data)
+	LexerLiterals.prototype.private_AddToLaTeX = function (name, data)
 	{
-		if (!this.IsIncludes(name))
-		{
-			this.private_Add(name, data);
-			return true
-		}
+		this.LaTeX[name] = data;
+		this.SetUnicodeFromLaTeX(data, name);
+	};
+	LexerLiterals.prototype.private_AddToUnicode = function (name, data)
+	{
+		this.Unicode[name] = data;
+		this.SetLaTeXFromUnicode(data, name);
+	};
+	LexerLiterals.prototype.private_GetLaTeXWord = function (arrStr)
+	{
+		if (!arrStr || !arrStr[0] || arrStr[0] !== "\\")
+			return;
 
-		return false;
+		let strFunc = "\\";
+
+		// remove regexp
+		for (let index = 1; arrStr[index] && /[a-zA-Z]/.test(arrStr[index]); index++)
+			strFunc += arrStr[index];
+
+		return strFunc;
 	};
-	LexerLiterals.prototype.DeleteElementByName = function (name)
+	LexerLiterals.prototype.SetUnicodeFromLaTeX= function (name, data)
 	{
-		if (this.IsIncludes(name))
-		{
-			let nameFromSymbols = this.toSymbols[name];
-			delete this.toSymbols[name];
-			delete this.fromSymbols[nameFromSymbols];
+		this.Unicode[name] = data;
+	};
+	LexerLiterals.prototype.SetLaTeXFromUnicode = function (name, data)
+	{
+		this.LaTeX[name] = data;
+	};
+	LexerLiterals.prototype.GetToken = function (type, str)
+	{
+		if (this.GetByOneRule)
+			return this.GetByOneRule(str);
 
-			return true;
-		}
+		if (!type)
+			return this.GetUnicodeToken(str);
+		else
+			return this.GetLaTeXToken(str);
+	};
+	LexerLiterals.prototype.GetUnicodeToken = function (str)
+	{
+		if (this.IsUnicodeInclude(str[0]))
+			return str[0];
+	};
+	LexerLiterals.prototype.GetLaTeXToken = function (str)
+	{
+		let word = this.private_GetLaTeXWord(str);
 
-		return false;
+		if (this.IsLaTeXInclude[word])
+			return word;
+	};
+	LexerLiterals.prototype.SearchU = function (str)
+	{
+		return this.IsUnicodeInclude(str);
+	}
+	LexerLiterals.prototype.SearchL = function (str)
+	{
+		return this.IsLaTeXInclude(str);
+	}
+
+	function Chars()
+	{
+		this.id = 0;
+	}
+	Chars.prototype = Object.create(LexerLiterals.prototype);
+	Chars.prototype.constructor = Chars;
+	Chars.prototype.GetByOneRule = function(arrStr)
+	{
+		if (arrStr[0])
+			return arrStr[0];
+	}
+
+	function Numbers()
+	{
+		this.id = 1;
+	}
+	Numbers.prototype = Object.create(LexerLiterals.prototype);
+	Numbers.prototype.constructor = Numbers;
+	Numbers.prototype.GetByOneRule = function (arrStr)
+	{
+		if (['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(arrStr[0]))
+			return arrStr[0];
 	};
 
-	function Symbols()
+	function Operators()
 	{
-		this.fromSymbols = {};
-		this.toSymbols = {
-			"\\aleph": "ℵ",
-			"\\alpha": "α",
-			"\\Alpha": "Α",
+		this.id = 2;
+		this.LaTeX = {
+			"\\angle" : "∠",
+			"\\approx" : "≈",
+			"\\ast" : "∗",
+			"\\asymp" : "≍",
+			"\\because" : "∵",
+			"\\bot" : "⊥",
+			"\\bowtie" : "⋈",
+			"\\bullet" : "∙",
+			"\\cap" : "∩",
+			"\\cdot" : "⋅",
+			"\\cdots" : "⋯",
+			"\\circ" : "∘",
+			"\\clubsuit" : "♣",
+			"\\cong" : "≅",
+			"\\cup" : "∪",
+			"\\ddots" : "⋱",
+			"\\diamond" : "⋄",
+			"\\diamondsuit" : "♢",
+			"\\div" : "÷",
+			"\\doteq" : "≐",
+			"\\dots" : "…",
+			"\\Downarrow" : "⇓",
+			"\\downarrow" : "↓",
+			"\\equiv" : "≡",
+			"\\exists" : "∃",
+			"\\forall" : "∀",
+			"\\ge" : "≥",
+			"\\geq" : "≥",
+			"\\gg" : "≫",
+			"\\heartsuit" : "♡",
+			"\\in" : "∈",
+			"\\ldots" : "…",
+			"\\le" : "≤",
+			"\\leq" : "≤",
+			"\\ll" : "≪",
+			"\\Longleftarrow" : "⟸",
+			"\\longleftarrow" : "⟵",
+			"\\Longleftrightarrow" : "⟺",
+			"\\longleftrightarrow" : "⟷",
+			"\\Longrightarrow" : "⟹",
+			"\\longrightarrow" : "⟶",
+			"\\naryand" : "▒",
+			"\\ne" : "≠",
+			"\\nearrow" : "↗",
+			"\\neg" : "¬",
+			"\\neq" : "≠",
+			"\\ni" : "∋",
+			"\\nwarrow" : "↖",
+			"\\odot" : "⊙",
+			"\\of" : "▒",
+			"\\ominus" : "⊖",
+			"\\oplus" : "⊕",
+			"\\oslash" : "⊘",
+			"\\otimes" : "⊗",
+			"\\parallel" : "∥",
+			"\\prcue" : "≼",
+			"\\prec" : "≺",
+			"\\preceq" : "⪯",
+			"\\preccurlyeq" : "≼",
+			"\\propto" : "∝",
+			"\\ratio" : "∶",
+			"\\rddots" : "⋰",
+			"\\searrow" : "↙",
+			"\\setminus" : "∖",
+			"\\sim" : "∼",
+			"\\simeq" : "≃",
+			"\\sqcap" : "⊓",
+			"\\sqcup" : "⊔",
+			"\\sqsubseteq" : "⊑",
+			"\\sqsuperseteq" : "⊒",
+			"\\star" : "⋆",
+			"\\subset" : "⊂",
+			"\\subseteq" : "⊆",
+			"\\succ" : "≻",
+			"\\succeq" : "≽",
+			"\\superset" : "⊃",
+			"\\superseteq" : "⊇",
+			"\\swarrow" : "↘",
+			"\\therefore" : "∴",
+			"\\times" : "×",
+			"\\top" : "⊤",
+			"\\Uparrow" : "⇑",
+			"\\uparrow" : "↑",
+			"\\Updownarrow" : "⇕",
+			"\\updownarrow" : "↕",
+			"\\uplus" : "⊎",
+			"\\vdots" : "⋮",
+			"\\vee" : "∨",
+			"\\wedge" : "∧",
+			"\\wr" : "≀",
+
+		};
+		this.Unicode = {
+			"⁣" : 1,
+			"⁤" : 1,
+			"⨯" : 1,
+			"⨝" : 1,
+			"⟕" : 1,
+			"⟖" : 1,
+			"⟗" : 1,
+			"⋉" : 1,
+			"⋊" : 1,
+			"▷" : 1,
+			"+" : 1,
+			"-" : 1,
+			"*" : 1,
+			"=" : 1,
+			"≶" : 1,
+			"≷" : 1,
 		};
 		this.Init();
 	}
-	Symbols.prototype = Object.create(LexerLiterals.prototype);
-	Symbols.prototype.constructor = Symbols;
+	Operators.prototype = Object.create(LexerLiterals.prototype);
+	Operators.prototype.constructor = Operators;
+
+	function Operand()
+	{
+		this.id = 3;
+		this.IsNeedReturnCorrected_Unicode = true;
+		this.LaTeX = {
+			"\\aleph" : "ℵ",
+			"\\alpha" : "α",
+			"\\beta" : "β",
+			"\\beth" : "ℶ",
+			"\\chi" : "χ",
+			"\\daleth" : "ℸ",
+			"\\Dd" : "ⅅ",
+			"\\dd" : "ⅆ",
+			"\\degree" : "°",
+			"\\Delta" : "Δ",
+			"\\delta" : "δ",
+			"\\ee" : "ⅇ",
+			"\\ell" : "ℓ",
+			"\\emptyset" : "∅",
+			"\\epsilon" : "ϵ",
+			"\\eta" : "η",
+			"\\Gamma" : "Γ",
+			"\\gamma" : "γ",
+			"\\gimel" : "ℷ",
+			"\\hbar" : "ℏ",
+			"\\ii" : "ⅈ",
+			"\\Im" : "ℑ",
+			"\\imath" : "ı",
+			"\\inc" : "∆",
+			"\\infty" : "∞",
+			"\\iota" : "ι",
+			"\\jj" : "ⅉ",
+			"\\jmath" : "ȷ",
+			"\\kappa" : "κ",
+			"\\Lambda" : "Λ",
+			"\\lambda" : "λ",
+			"\\mu" : "μ",
+			"\\nabla" : "∇",
+			"\\nu" : "ν",
+			"\\Omega" : "Ω",
+			"\\omega" : "ω",
+			"\\partial" : "∂",
+			"\\Phi" : "Φ",
+			"\\phi" : "π",
+			"\\Psi" : "Ψ",
+			"\\psi" : "ψ",
+			"\\Re" : "ℜ",
+			"\\rho" : "ρ",
+			"\\Sigma" : "Σ",
+			"\\sigma" : "σ",
+			"\\tau" : "τ",
+			"\\Theta" : "Θ",
+			"\\theta" : "θ",
+			"\\Upsilon" : "Υ",
+			"\\upsilon" : "υ",
+			"\\varepsilon" : "ε",
+			"\\varphi" : "φ",
+			"\\varpi" : "ϖ",
+			"\\varrho" : "ϱ",
+			"\\varsigma" : "ς",
+			"\\vartheta" : "ϑ",
+			"\\wp" : "℘",
+			"\\Xi" : "Ξ",
+			"\\xi" : "ξ",
+			"\\zeta" : "ζ"
+		};
+		this.Unicode = {};
+		this.Init();
+	}
+	Operand.prototype = Object.create(LexerLiterals.prototype);
+	Operand.prototype.constructor = Operand;
 
 	function OpenBrackets()
 	{
-		this.data = ["(", "{", "〖",  "⟨", "["];
-		this.fromSymbols = {};
-		this.toSymbols = {};
+		this.id = 4;
+		this.Unicode = {
+			"(" : 1,
+		};
+		this.LaTeX = {
+			"\\begin" : "〖",
+			"\\bra" : "⟨",
+			"\\langle" : "⟨",
+			"\\lbrace" : "{",
+			"\\lbrack" : "[",
+			"\\lceil" : "⌈",
+			"\\lfloor" : "⌊",
+			"\\open" : "├",
+		};
 		this.Init();
 	}
 	OpenBrackets.prototype = Object.create(LexerLiterals.prototype);
@@ -127,12 +380,22 @@
 
 	function CloseBrackets()
 	{
-		this.data = [
-			")", "}", "⟫", //	"\\"
-			"⟧", "〗", "⟩", "]",
-		];
-		this.fromSymbols = {};
-		this.toSymbols = {};
+		this.id = 5;
+		this.Unicode = {
+			")" : 1,
+			"⟫" : 1,
+			"⟧" : 1,
+		};
+		this.LaTeX = {
+			"\\close" : "┤",
+			"\\end" : "〗",
+			"\\ket" : "⟩",
+			"\\rangle" : "⟩",
+			"\\rbrace" : "}",
+			"\\rbrack" : "]",
+			"\\rceil" : "⌉",
+			"\\rfloor" : "⌋",
+		};
 		this.Init();
 	}
 	CloseBrackets.prototype = Object.create(LexerLiterals.prototype);
@@ -140,74 +403,466 @@
 
 	function OpenCloseBrackets()
 	{
-		this.data = ["|", "‖"];
-		this.fromSymbols = {};
-		this.toSymbols = {};
+		this.id = 6;
+		this.Unicode = {};
+		this.LaTeX = {
+			"\\norm" : "‖",
+			"\\Vert" : "‖",
+			"\\vert" : "|",
+		};
 		this.Init();
 	}
 	OpenCloseBrackets.prototype = Object.create(LexerLiterals.prototype);
 	OpenCloseBrackets.prototype.constructor = OpenCloseBrackets;
 
-	function Operators()
+	// function Operators()
+	// {
+	// 	this.data = [
+	// 		"⨯", "⨝", "⟕", "⟖", "⟗", "⋉", "⋊", "▷",
+	// 		"+", "-", "*", "=", "≶", "≷", "≜", "⇓", "⇐",
+	// 		"⇔", "⟸", "⟺", "⟹", "⇒", "⇑", "⇕", "∠", "≈",
+	// 		"⬆", "∗", "≍", "∵", "⋈", "⊡", "⊟", "⊞", "⤶",
+	// 		"∙", "⋅", "⋯", "∘", "♣", "≅", "∋", "⋱", "≝", "℃",
+	// 		"℉", "°", "⊣", "⋄", "♢", "÷", "≐", "…", "↓",
+	// 		"⬇", "∅", "#", "≡", "∃", "∀", "⌑", "≥",
+	// 		"←", "≫", "↩", "♡", "∈", "≤", "↪", "←", "↽",
+	// 		"↼", "↔", "≤", "⬄", "⬌", "≪", "⇋", "↦", "⊨",
+	// 		"∓", "≠", "↗", "¬", "≠", "∌", "∉", "∉", "ν",
+	// 		"↖", "ο", "⊙", "⊖", "⊕", "⊗", "⊥", "±",
+	// 		"≺", "≼", "∶", "⋰", "→", "⇁", "⇀", "↘",
+	// 		"∼", "≃", "⬍", "⊑", "⊒", "⋆", "⊂", "⊆", "≻", "≽",
+	// 		"⊃", "⊇", "×", "⊤", "→", "‼", "∷", "≔", "∩", "∪",
+	// 		"∆", "∞", "⁢",
+	// 	];
+	// 	this.LaTeX = {
+	//
+	//
+	//
+	// 		"\\dd"			:	"ⅆ",
+	// 		"\\Dd"			:	"ⅅ",
+	// 		"\\ee"			:	"ⅇ",
+	// 		"\\ell"			:	"ℓ",
+	// 		"\\hbar"		:	"ℏ",
+	// 		"\\ii"			:	"ⅈ",
+	// 		"\\Im"			: 	"ℑ",
+	// 		"\\imath"		:	"ı",
+	// 		"\\j"			:	"Jay",
+	// 		"\\jj"			:	"ⅉ",
+	// 		"\\jmath"		:	"ȷ",
+	// 		"\\partial"		:	"∂",
+	// 		"\\Re"			:	"R",
+	// 		"\\wp"			:	"℘",
+	// 		"\\aleph"		:	"ℵ",
+	// 		"\\bet"			:	"ℶ",
+	// 		"\\beth"		:	"ℶ",
+	// 		"\\gimel"		:	"ℷ",
+	// 		"\\dalet"		:	"ℸ",
+	// 		"\\daleth"		:	"ℸ",
+	//
+	// 		"\\Alpha"		:	"Α",
+	// 		"\\alpha"		:	"α",
+	// 		"\\Beta"		:	"Β",
+	// 		"\\beta"		:	"β",
+	// 		"\\gamma"		:	"γ",
+	// 		"\\Gamma"		:	"Γ",
+	// 		"\\Delta"		:	"Δ",
+	// 		"\\delta"		:	"δ",
+	// 		"\\epsilon"		:	"ϵ",
+	// 		"\\Epsilon"		:	"Ε",
+	// 		"\\varepsilon"	:	"ε",
+	// 		"\\zeta"		:	"ζ",
+	// 		"\\Zeta"		:	"Ζ",
+	// 		"\\eta"			: 	"η",
+	// 		"\\Eta"			: 	"Η",
+	// 		"\\theta"		:	"θ",
+	// 		"\\Theta"		:	"Θ",
+	// 		"\\vartheta"	:	"ϑ",
+	// 		"\\iota"		:	"ι",
+	// 		"\\Iota"		:	"Ι",
+	// 		"\\kappa"		:	"κ",
+	// 		"\\Kappa"		:	"Κ",
+	// 		"\\lambda"		:	"λ",
+	// 		"\\Lambda"		:	"Λ",
+	// 		"\\mu"			:	"μ",
+	// 		"\\Mu"			:	"Μ",
+	// 		"\\nu"			:	"ν",
+	// 		"\\Nu"			:	"Ν",
+	// 		"\\xi"			:	"ξ",
+	// 		"\\Xi"			:	"Ξ",
+	// 		"\\O"			: 	"Ο",
+	// 		"\\o"			:	"ο",
+	// 		"\\pi"			:	"π",
+	// 		"\\Pi"			:	"Π",
+	// 		"\\varpi"		:	"ϖ",
+	// 		"\\rho"			:	"ρ",
+	// 		"\\Rho"			:	"Ρ",
+	// 		"\\varrho"		:	"ϱ",
+	// 		"\\sigma"		:	"σ",
+	// 		"\\Sigma"		:	"Σ",
+	// 		"\\varsigma"	:	"ς",
+	// 		"\\tau"			:	"τ",
+	// 		"\\Tau"			:	"Τ",
+	// 		"\\upsilon"		:	"υ",
+	// 		"\\Upsilon"		:	"Υ",
+	// 		"\\phi"			:	"ϕ",
+	// 		"\\Phi"			:	"Φ",
+	// 		"\\varphi"		:	"φ",
+	// 		"\\chi"			:	"χ",
+	// 		"\\Chi"			:	"Χ",
+	// 		"\\psi"			:	"ψ",
+	// 		"\\Psi"			:	"Ψ",
+	// 		"\\omega"		:	"ω",
+	// 		"\\Omega"		:	"Ω",
+	//
+	// 		"\\pm"			:	"±",
+	// 		"\\infty"		:	"∞",
+	// 		"\\times"		: 	"×",
+	// 		"\\div"			:	"÷",
+	// 		"\\propto"		:	"∝",
+	// 		"\\ll"			:	"≪",
+	// 		"\\gg"			:	"≫",
+	// 		"\\le"			:	"≤",
+	// 		"\\leg"			:	"≤",
+	// 		"\\ge"			:	"≥",
+	// 		"\\geq"			:	"≥",
+	// 		"\\mp"			:	"∓",
+	// 		"\\cong"		:	"≅",
+	// 		"\\approx"		:	"≈",
+	// 		"\\equiv"		:	"≡",
+	// 		"\\forall"		:	"∀",
+	//
+	// 		"\\emptyset": "∅",
+	//
+	//
+	// 		//
+	// 		// "\\Digamma" 	: 	"",
+	// 		// "\\digamma" 	: 	"",
+	// 		//
+	// 		// // Relations and Operators
+	// 		// "\\le"			:	"≤",
+	// 		// "\\leg"			:	"≤",
+	// 		// "\\ge"			:	"≥",
+	// 		// "\\geq"			:	"≥",
+	// 		// "\\leqq"		: 	"≦",
+	// 		// "\\geqq"		:	"≧",
+	// 		// "\\leqslant"	:	"⩽",
+	// 		// "\\geqslant"	:	"⩾",
+	// 		// "\\ll"			:	"≪",
+	// 		// "\\gg"			:	"≫",
+	// 		// "\\lesssim"		:	"≲",
+	// 		// "\\gtrsim"		:	"≳",
+	// 		// "\\lessapprox"	:	"⪅",
+	// 		// "\\gtrapprox"	:	"⪆",
+	// 		// "\\lessgtr"		:	"≶",
+	// 		// "\\gtrless"		:	"≷",
+	// 		// "\\lesseqgtr"	:	"⋚",
+	// 		// "\\gtreqless"	:	"⋛",
+	// 		// "\\lesseqqgtr"	:	"⪋",
+	// 		// "\\gtreqqless"	:	"⪌",
+	// 		//
+	// 		// "\\neq"			:	"≠",
+	// 		// "\\approx"		:	"≈",
+	// 		// "\\equiv"		:	"≡",
+	// 		//
+	// 		// "\\barin"		:	"⋶",
+	// 		// "\\ddots"		:	"⋱",
+	// 		// "\\iddots"		:	"⋰",
+	// 		// "\\cdots"		:	"⋯",
+	// 		// "\\vdots"		:	"⋮",
+	// 		// "\\ntrianglerighteq" 	:	"⋭",
+	// 		// "\\ntrianglelefteq" 	:	"⋬",
+	// 		// "\\ntriangleright"		:	"⋫",
+	// 		// "\\ntriangleleft"		:	"⋪",
+	// 		// "\\succnsim"		:	"⋩",
+	// 		// "\\gnsim"		:	"⋧",
+	// 		// "\\lnsim"		:	"⋦",
+	// 		// "\\nsqsupseteq"		:	"⋣",
+	// 		// "\\nsqsubseteq"		:	"⋢",
+	// 		// "\\nsucceq"		:	"⋡",
+	// 		// "\\npreceq"		:	"⋠",
+	// 		// "\\curlyeqsucc"		:	"⋟",
+	// 		// "\\curlyeqprec"		:	"⋞",
+	// 		// "\\ggg" : "⋙",
+	// 		// "\\lll" : "⋘",
+	// 		// "\\gtrdot" : "⋗",
+	// 		//
+	// 		// "\\angle": "∠",
+	// 		// "\\ast": "∗",
+	// 		// "\\asymp": "≍",
+	// 		// "\\because": "∵",
+	// 		// "\\bot": "⊥",
+	// 		// "\\bowtie": "⋈",
+	// 		// "\\boxdot": "⊡",
+	// 		// "\\boxminus": "⊟",
+	// 		// "\\boxplus": "⊞",
+	// 		// "\\bullet": "∙",
+	// 		// "\\cap": "∩",
+	// 		// "\\cdot": "⋅",
+	// 		// "\\circ": "∘",
+	// 		// "\\clubsuit": "♣",
+	// 		// "\\cong": "≅",
+	// 		// "\\cup": "∪",
+	// 		// "\\dashv": "⊣",
+	// 		// "\\defeq": "≝",
+	// 		// "\\degc": "℃",
+	// 		// "\\degf": "℉",
+	// 		// "\\degree": "°",
+	// 		// "\\Deltaeq": "≜",
+	// 		//
+	// 		//
+	// 		// "\\diamond": "⋄",
+	// 		// "\\diamondsuit": "♢",
+	// 		//
+	// 		// "\\doteq": "≐",
+	// 		// "\\dots": "…",
+	// 		// "\\emptyset": "∅",
+	// 		// "\\exists": "∃",
+	// 		// "\\forall": "∀",
+	// 		// "\\frown": "⌑",
+	// 		// "\\heartsuit": "♡",
+	// 		// "\\in": "∈",
+	// 		// "\\inc": "∆",
+	// 		// "\\ldots": "…",
+	// 		// "\\left": "├",
+	// 		// "\\lmoust": "⎰",
+	// 		// "\\models": "⊨",
+	// 		// "\\nabla": "∇",
+	// 		// "\\neg": "¬",
+	// 		// "\\ni": "∋",
+	// 		// "\\odot": "⊙",
+	// 		//
+	// 		// "\\ominus": "⊖",
+	// 		// "\\oplus": "⊕",
+	// 		// "\\otimes": "⊗",
+	// 		// "\\overbracket": "⎴",
+	// 		// "\\parallel": "∥",
+	// 		// "\\perp": "⊥",
+	// 		// "\\prec": "≺",
+	// 		// "\\preceq": "≼",
+	// 		// "\\ratio": "∶",
+	// 		// "\\rddots": "⋰",
+	// 		// "\\right": "┤",
+	// 		// "\\rmoust": "⎱",
+	// 		// "\\setminus": "∖",
+	// 		// "\\sim": "∼",
+	// 		// "\\simeq": "≃",
+	// 		// "\\smile": "⌣",
+	// 		// "\\spadesuit": "♠",
+	// 		// "\\sqcap": "⊓",
+	// 		// "\\sqcup": "⊔",
+	// 		// "\\sqsubseteq": "⊑",
+	// 		// "\\sqsuperseteq": "⊒",
+	// 		// "\\star": "⋆",
+	// 		// "\\subset": "⊂",
+	// 		// "\\subseteq": "⊆",
+	// 		// "\\succ": "≻",
+	// 		// "\\succeq": "≽",
+	// 		// "\\superset": "⊃",
+	// 		// "\\superseteq": "⊇",
+	// 		//
+	// 		// "\\therefore": "∴",
+	// 		// "\\top": "⊤",
+	// 		// "\\underbracket": "⎵",
+	// 		// "\\underline": "▁",
+	// 		// "\\uplus": "⊎",
+	//
+	//
+	// 	};
+	// 	this.Unicode = {
+	// 		"="		: null,
+	// 		"~"		: null,
+	// 		"!"		: null,
+	// 		"<"		: null,
+	// 		">"		: null,
+	//
+	// 	};
+	// 	this.Init();
+	// }
+	// Operators.prototype = Object.create(LexerLiterals.prototype);
+	// Operators.prototype.constructor = Operators;
+
+	function Phantom()
 	{
-		this.data =  [
-			"⨯", "⨝", "⟕", "⟖", "⟗", "⋉", "⋊", "▷",
-			"+", "-", "*", "=", "≶", "≷", "≜", "⇓", "⇐",
-			"⟸", "⟺", "⟹", "⇑", "⇕", "∠", "≈",
-			"⬆", "∗", "≍", "∵", "⋈", "⊡", "⊟", "⊞", "⤶",
-			"∙", "⋅", "⋯", "∘", "♣", "≅", "∋", "⋱", "≝", "℃",
-			"℉", "°", "⊣", "⋄", "♢", "÷", "≐", "…", "↓",
-			"⬇", "∅", "#", "≡", "∃", "∀", "⌑", "≥",
-			"←", "≫", "↩", "♡", "∈", "≤", "↪", "←", "↽",
-			"↼", "↔", "≤", "⬄", "⬌", "≪", "⇋", "↦", "⊨",
-			"∓", "≠", "↗", "¬", "≠", "∌", "∉", "∉", "ν",
-			"↖", "ο", "⊙", "⊖", "⊕", "⊗", "⊥", "±",
-			"≺", "≼", "∶", "⋰", "→", "⇁", "⇀", "↘", "∝",
-			"∼", "≃", "⬍", "⊑", "⊒", "⋆", "⊂", "⊆", "≻", "≽",
-			"⊃", "⊇", "×", "⊤", "→", "‼", "∷", "≔", "∩", "∪",
-			"∆", "∞", "⁢", "/", ">", "<", "_", "^", ".", ",",
-			"?", ":", ";", "`", "~", "@", "!", "#", "$", "%", "&"
-		];
-		this.toSymbols = {
-			"\\angle": "∠",
+		this.id = 7;
+		this.LaTeX = {
+			"\\asmash" : "⬆",
+			"\\dsmash" : "⬇",
+			"\\hphantom" : "⬄",
+			"\\hsmash" : "⬌",
+			"\\phantom" : "⟡",
+			"\\smash" : "⬍",
+			"\\vphantom" : "⇳",
 		};
-		this.fromSymbols = {};
+		this.Unicode = {};
 		this.Init();
 	}
-	Operators.prototype = Object.create(LexerLiterals.prototype);
-	Operators.prototype.constructor = Operators;
+	Phantom.prototype = Object.create(LexerLiterals.prototype);
+	Phantom.prototype.constructor = Phantom;
+
+	function HorizontalStretch()
+	{
+		this.id = 8;
+		this.LaTeX = {
+			"\\dashv" : "⊣",
+			"\\gets" : "←",
+			"\\hookleftarrow" : "↩",
+			"\\hookrightarrow" : "↪",
+			"\\Leftarrow" : "⇐",
+			"\\leftarrow" : "←",
+			"\\leftharpoondown" : "↽",
+			"\\leftharpoonup" : "↼",
+			"\\Leftrightarrow" : "⇔",
+			"\\leftrightarrow" : "↔",
+			"\\mapsto" : "↦",
+			"\\models" : "⊨",
+			"\\Rightarrow" : "⇒",
+			"\\rightarrow" : "→",
+			"\\rightharpoondown" : "⇁",
+			"\\rightharpoonup" : "⇀",
+			"\\to" : "→",
+			"\\vdash" : "⊢",
+		};
+		this.Unicode = {};
+		this.Init();
+	}
+	HorizontalStretch.prototype = Object.create(LexerLiterals.prototype);
+	HorizontalStretch.prototype.constructor = HorizontalStretch;
+
+	function Overbar()
+	{
+		this.id = 9;
+		this.LaTeX = {
+			"\\overbar" : "¯",
+			"\\overbrace" : "⏞",
+			"\\overparen" : "⏜",
+		};
+		this.Unicode = {};
+		this.Init();
+	}
+	Overbar.prototype = Object.create(LexerLiterals.prototype);
+	Overbar.prototype.constructor = Overbar;
+
+	function Underbar()
+	{
+		this.id = 10;
+		this.LaTeX = {
+			"\\underbar" : "▁",
+			"\\underbrace" : "⏟",
+			"\\underparen" : "⏝",
+		};
+		this.Unicode = {};
+		this.Init();
+	}
+	Underbar.prototype = Object.create(LexerLiterals.prototype);
+	Underbar.prototype.constructor = Underbar;
+
+	function Divide()
+	{
+		this.id = 11;
+		this.LaTeX = {
+			"\\atop" : "¦",
+			"\\ndiv" : "⊘",
+			"\\over" : "/",
+			"\\sdiv" : "⁄",
+			"\\ldiv" : "∕",
+		};
+		this.Unicode = {};
+		this.Init();
+	}
+	Divide.prototype = Object.create(LexerLiterals.prototype);
+	Divide.prototype.constructor = Divide;
+
+	function EqArray()
+	{
+		this.id = 12;
+		this.LaTeX = {
+			"\\eqarray" : "■",
+		};
+		this.Unicode = {};
+		this.Init();
+	}
+	EqArray.prototype = Object.create(LexerLiterals.prototype);
+	EqArray.prototype.constructor = EqArray;
+
+	function Marker()
+	{
+		this.id = 13;
+		this.LaTeX = {
+			"\\eqno" : "#",
+		};
+		this.Unicode = {};
+		this.Init();
+	}
+	Marker.prototype = Object.create(LexerLiterals.prototype);
+	Marker.prototype.constructor = Marker;
+
+	function SubSup()
+	{
+		this.id = 14;
+		this.LaTeX = {
+			"\\above" : "┴",
+			"\\below" : "┬",
+			"\\pppprime" : "⁗",
+			"\\ppprime" : "‴",
+			"\\pprime" : "″",
+			"\\prime" : "′",
+		};
+		this.Unicode = {};
+		this.Init();
+	}
+	SubSup.prototype = Object.create(LexerLiterals.prototype);
+	SubSup.prototype.constructor = SubSup;
 
 	function Nary()
 	{
-		this.data = [
-			"⅀", "⨊", "⨋", "∫", "∱", "⨑", "⨍", "⨎", "⨏", "⨕",
-			"⨖", "⨗", "⨘", "⨙", "⨚", "⨛", "⨜", "⨒", "⨓", "⨔",
-			"⨃", "⨅", "⨉", "⫿", "∐", "∳", "⋂", "⋃", "⨀", "⨁",
-			"⨂", "⨆", "⨄", "⋁", "⋀", "∲", "⨌", "∭", "∬",
-			"∫", "∰", "∯", "∮", "∏", "∑",
-		];
-		this.fromSymbols  = {};
-		this.toSymbols = {
-			"\\sum" : "∑",
-			"\\prod": "∏",
+		this.id = 15;
+		this.Unicode = {
+			"⅀" : null,
+			"⨊" : null,
+			"⨋" : null,
+			"∱" : null,
+			"⨑" : null,
+			"⨍" : null,
+			"⨎" : null,
+			"⨏" : null,
+			"⨕" : null,
+			"⨖" : null,
+			"⨗" : null,
+			"⨘" : null,
+			"⨙" : null,
+			"⨚" : null,
+			"⨛" : null,
+			"⨜" : null,
+			"⨒" : null,
+			"⨓" : null,
+			"⨔" : null,
+			"⨃" : null,
+			"⨅" : null,
+			"⨉" : null,
+			"⫿" : null,
+		};
+		this.LaTeX = {
 			"\\amalg" : "∐",
-			"\\coprod" : "∐",
-			"\\bigwedge" : "⋀",
-			"\\bigvee" : "⋁",
-			"\\bigcup" : "⋃",
+			"\\aoint": "∳",
 			"\\bigcap" : "⋂",
+			"\\bigcup" : "⋃",
+			"\\bigodot" : "⨀",
+			"\\bigoplus" : "⨁",
+			"\\bigotimes" : "⨂",
 			"\\bigsqcup" : "⨆",
 			"\\biguplus" : "⨄",
-			"\\bigoplus" :  "⨁",
-			"\\bigotimes" : "⨂",
-			"\\int" : "∫",
-			"\\iint" : "∬",
-			"\\iiint" : "∭",
+			"\\bigvee" : "⋁",
+			"\\bigwedge" : "⋀",
+			"\\coint" : "∲",
 			"\\iiiint" : "⨌",
-			"\\oint" : "∮",
-			"\\oiint" :  "∯",
+			"\\iiint" : "∭",
+			"\\iint" : "∬",
+			"\\int" : "∫",
 			"\\oiiint" : "∰",
-			"\\coint" :  "∲",
+			"\\oiint" : "∯",
+			"\\oint" : "∮",
+			"\\prod" : "∏",
+			"\\sum" : "∑",
 		};
 		this.Init();
 	}
@@ -216,57 +871,98 @@
 
 	function Radical()
 	{
-		this.data = [
-			"√", "∛", "∜"
-		];
-		this.fromSymbols = {};
-		this.toSymbols = {};
+		this.id = 16;
+		this.Unicode = {};
+		this.LaTeX = {
+			"\\cbrt" : "∛",
+			"\\qdrt" : "∜",
+			"\\sqrt" : "√",
+		};
 		this.Init();
 	}
 	Radical.prototype = Object.create(LexerLiterals.prototype);
 	Radical.prototype.constructor = Radical;
 
+	function Rrect()
+	{
+		this.id = 17;
+		this.Unicode = {};
+		this.LaTeX = {
+			"\\rrect" : "▢",
+		};
+		this.Init();
+	}
+	Rrect.prototype = Object.create(LexerLiterals.prototype);
+	Rrect.prototype.constructor = Rrect;
+
+	function Delimiter()
+	{
+		this.id = 18;
+		this.Unicode = {};
+		this.LaTeX = {
+			"\\mid" : "∣",
+			"\\vbar" : "│",
+
+		};
+		this.Init();
+	}
+	Delimiter.prototype = Object.create(LexerLiterals.prototype);
+	Delimiter.prototype.constructor = Delimiter;
+
 	function Accent()
 	{
-		this.id 			= 4;
-		this.name			= "AccentLiterals";
-		this.toSymbols 		= {
-			"\\acute"	: 	"́",
-			"\\hat" 	: 	"̂",
-			"\\check" 	:	"̌",
-			"\\tilde"	:	"̃",
-			"\\grave"	: 	"̀",
-			"\\dot"		:	"̇",
-			"\\ddot"	:	"̈",
-			"\\dddot"	:	"⃛",
-			"\\bar"		:	"̄",
-			"\\vec"		:	"⃗",
+		this.id = 19;
+		this.name = "AccentLiterals";
+		this.LaTeX = {
+			"\\hat": "̂",
+			"\\widehat": "̂",
+			"\\check": "̌",
+			"\\tilde": "̃",
+			"\\widetilde": "～",
+			"\\acute": "́",
+			"\\grave": "̀",
+			"\\dot": "̇",
+			"\\ddddot" : "⃜",
+			"\\ddot": "̈",
+			"\\dddot": "⃛",
+			"\\breve": "̆",
+			"\\bar": "̅",
+			"\\Bar": "̿",
+			"\\vec": "⃗",
+			"\\hvec" : "⃑",
+			"\\tvec" : "⃡",
 		};
-		this.fromSymbols 	= {};
+		this.Unicode = {};
 
 		this.Init();
 	}
 	Accent.prototype = Object.create(LexerLiterals.prototype);
-	Accent.prototype.constructor = Accent;
-
-	function Over()
+	Accent.prototype.IsUnicodeToken = function (str)
 	{
-		this.data = [
-			"/",  //TODO opOpen
-			"⊘", "⒞", "\\/", "¦",
-		];
-		this.fromSymbols = {};
-		this.toSymbols = {};
-		this.Init();
-	}
-	Over.prototype = Object.create(LexerLiterals.prototype);
-	Over.prototype.constructor = Over;
+		if (!str || !str[0])
+			return;
+
+		let strFirstSymbol = str[0];
+
+		let code = strFirstSymbol.charCodeAt(0);
+		const isFirstBlocks = function (code) {
+			return code >= 768 && code <= 879
+		}
+		const isSecondBlocks = function (code) {
+			return code >= 8400 && code <= 8447
+		}
+
+		if (isFirstBlocks(code) || isSecondBlocks(code))
+			return strFirstSymbol;
+	};
 
 	function Box()
 	{
-		this.data = ["□"];
-		this.fromSymbols = {};
-		this.toSymbols = {};
+		this.id = 20;
+		this.Unicode = {};
+		this.LaTeX = {
+			"\\box" : "□"
+		};
 		this.Init();
 	}
 	Box.prototype = Object.create(LexerLiterals.prototype);
@@ -274,71 +970,202 @@
 
 	function Matrix()
 	{
+		this.id = 21;
 		this.data = ["⒩", "■"];
-		this.fromSymbols = {};
-		this.toSymbols = {};
+		this.Unicode = {};
+		this.LaTeX = {
+			"\\matrix" : "■",
+
+		};
 		this.Init();
 	}
 	Matrix.prototype = Object.create(LexerLiterals.prototype);
 	Matrix.prototype.constructor = Matrix;
 
+	function Rect()
+	{
+		this.id = 22;
+		this.Unicode = {};
+		this.LaTeX = {
+			"\\rect" : "▭",
+		};
+		this.Init();
+	}
+	Rect.prototype = Object.create(LexerLiterals.prototype);
+	Rect.prototype.constructor = Rect;
+
 	function Space()
 	{
-		this.fromSymbols = {};
-		this.toSymbols = {
-			"\\nbsp" : 		" ",		// space width && no-break space
-			"\\numsp": 		" ",		// digit width
-			"\\emsp" :		" ",		// 18/18 em
-			"\\ensp" :		" ",		// 9/18 em
-			"\\vthicksp": 	" ",	// 6/18 em verythickmathspace
-			"\\thicksp": 	" ",	// 5/18 em thickmathspace
-			"\\medsp": 		" ",		// 4/18 em mediummathspace
-			"\\thinsp": 	" ",		// 3/18 em thinmathspace
-			"\\hairsp": 	" ",		// 3/18 em veryverythinmathspace
-			"\\zwsp": 		"​",		// 3/18 em zero-width space
+		this.id = 23;
+		this.Unicode = {
+			"  " 	: 	1,			// 2/18em space  very thin math space
+			"  "	:	1,			// 7/18em space  very very thick math space
+			" "			:	1,
+			"\t"		:	1,
+			"\n"		:	1,
+			" "		:	1,
+			"‌"		:	1,
+		};
+		this.LaTeX = {
+			"\\nbsp"	:	" ",		// space width && no-break space
+			"\\numsp"	:	" ",		// digit width
+			"\\emsp"	:	" ",		// 18/18 em
+			"\\ensp"	:	" ",		// 9/18 em
+			"\\vthicksp":	" ",	// 6/18 em verythickmathspace
+			"\\thicksp"	:	" ",	// 5/18 em thickmathspace
+			"\\medsp"	:	" ",		// 4/18 em mediummathspace
+			"\\thinsp"	:	" ",		// 3/18 em thinmathspace
+			"\\hairsp"	:	" ",		// 3/18 em veryverythinmathspace
+			"\\zwsp"	: 	"​",
+			"\\zwnj"	: 	"‌",
+			" "			:	" ",// 3/18 em zero-width space
 		};
 		this.Init();
 	}
 	Space.prototype = Object.create(LexerLiterals.prototype);
 	Space.prototype.constructor = Space;
 
-	//class === data
+	function LaTeXWords()
+	{
+		this.id = 24;
+		this.isClassEqalData = true;
+	}
+	LaTeXWords.prototype = Object.create(LexerLiterals.prototype);
+	LaTeXWords.prototype.constructor = LaTeXWords;
+	LaTeXWords.prototype.SearchForLaTeXToken = function (arrStr)
+	{
+		return this.private_GetLaTeXWord(arrStr);
+	}
+
+	function FunctionLiteral()
+	{
+		this.id = 25;
+	}
+	FunctionLiteral.prototype = Object.create(LexerLiterals.prototype);
+	FunctionLiteral.prototype.constructor = FunctionLiteral;
+	FunctionLiteral.prototype.IsLaTeX = function (str)
+	{
+		if (functionNames.includes(str.slice(1)) || limitFunctions.includes(str.slice(1)))
+			return str;
+	}
+
 	function SpecialLiteral()
 	{
-		this.data = [
-			"^", "_", "&", "@", "┴", "┬", "┤", "█", "▒",
-		];
-		this.fromSymbols = {};
-		this.toSymbols = {
-			"\\above": "┴",
+		this.id = 26;
+		this.isClassEqalData = true;
+		this.Unicode = {
+			"_" : 1,
+			"^": 1,
+			"┬" : 1,
+			"┴" : 1,
 		};
-		this.Init();
+
 	}
 	SpecialLiteral.prototype = Object.create(LexerLiterals.prototype);
 	SpecialLiteral.prototype.constructor = SpecialLiteral;
 
+	function Other()
+	{
+		this.id = 27;
+		this.Unicode = {
+		};
+		this.LaTeX = {};
+		this.Init();
+	}
+	Other.prototype = Object.create(LexerLiterals.prototype);
+	Other.prototype.constructor = Other;
+	Other.prototype.GetUnicodeToken = function(arrStr)
+	{
+		let intCode = GetFixedCharCodeAt(arrStr[0]);
+		if (intCode >= 0x1D400 && intCode <= 0x1D7FF)
+			return arrStr[0];
+	}
+
+	function HorizontalBrackets()
+	{
+		this.id = 28;
+		this.LaTeX = {
+			"\\overparen": "⏜",
+			"\\underparen": "⏝",
+			"\\overbrace": "⏞",
+			"\\underbrace": "⏟",
+			"\\overshell": "⏠",
+			"\\undershell": "⏡",
+			"\\overbracket": "⎴",
+			"\\underbracket": "⎵",
+		};
+		this.Unicode = {};
+		this.Init();
+	}
+	HorizontalBrackets.prototype = Object.create(LexerLiterals.prototype);
+	HorizontalBrackets.prototype.constructor = HorizontalBrackets;
+
+	// List of structures types that generate parsers
+	const MathStructures = {
+		char:	0,
+		space:	1,
+		number: 2,
+		other:	3,
+		frac: 	5,
+		bracket_block: 6,
+		minus: 	7,
+		plain: 	8,
+		bar:	9,
+		nary:	10,
+		box:	11,
+		rect:	12,
+		radical:13,
+		func: 	14,
+		pre_script: 15,
+		sub_sub: 16,
+		func_lim: 18,
+		below_above: 19,
+		diacritic_base: 20,
+		matrix: 21,
+		accent: 22,
+		horizontal_bracket: 23,
+	};
+
+	// List of tokens types for parsers processing
 	const MathLiterals = {
 		lBrackets: 		new OpenBrackets(),
 		rBrackets: 		new CloseBrackets(),
 		lrBrackets: 	new OpenCloseBrackets(),
-		operators: 		new Operators(),
+		operator:		new Operators(),
+		operand:		new Operand(),
 		nary: 			new Nary(),
 		accent: 		new Accent(),
 		radical: 		new Radical(),
-		over: 			new Over(),
+		divide: 		new Divide(),
 		box: 			new Box(),
+		rect:			new Rect(),
 		matrix: 		new Matrix(),
 		space: 			new Space(),
-		special: 		new SpecialLiteral(),
-	}
-	function GetClassOfMathLiterals (id)
+		char:			new Chars(),
+		number:			new Numbers(),
+		LaTeX:			new LaTeXWords(),
+		func:			new FunctionLiteral(),
+		subSup:			new SubSup(),
+		special:		new SpecialLiteral(),
+		overbar:		new Overbar(),
+		underbar:		new Underbar(),
+		other:			new Other(),
+	};
+
+	function GenerateLaTeXAutoCorrectionDictionary()
 	{
-		switch (id)
+		let names = Object.keys(MathLiterals);
+
+		for (let i = 0; i < names.length; i++)
 		{
-			case 1		:	return MathLiterals.space;
-			default		:	return undefined;
+			let name = names[i];
+			let data = MathLiterals[name].LaTeX;
+			console.log(data)
 		}
+
 	}
+	//GenerateLaTeXAutoCorrectionDictionary()
+
 
 	const oNamesOfLiterals = {
 		fractionLiteral: 			[0, "FractionLiteral"],
@@ -426,617 +1253,1068 @@
 		"/=" : "≠"
 	}
 
+	// const wordAutoCorrection = [
+	// 	//Char
+	// 	[
+	// 		function (str) {
+	// 			return str[0];
+	// 		},
+	// 		oNamesOfLiterals.charLiteral[0],
+	// 	],
+	// 	//Accent
+	// 	[
+	// 		function (str) {
+	// 			const code = GetFixedCharCodeAt(str[0]);
+	// 			if (code >= 768 && code <= 879) {
+	// 				return str[0];
+	// 			}
+	// 		},
+	// 		MathLiterals.accent.id,
+	// 	],
+	// 	//Numbers
+	// 	[
+	// 		function (str) {
+	// 			const arrNumbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+	// 			let literal = str[0];
+	// 			if (arrNumbers.includes(literal)) {
+	// 				return literal;
+	// 			}
+	// 		},
+	// 		oNamesOfLiterals.numberLiteral[0],
+	// 	],
+	// 	//Mathematical Alphanumeric Symbols 1D400:1D7FF
+	// 	[
+	// 		function (arrData) {
+	// 			let intCode = GetFixedCharCodeAt(arrData[0]);
+	// 			if (intCode >= 0x1D400 && intCode <= 0x1D7FF) {
+	// 				return arrData[0];
+	// 			}
+	// 		},
+	// 		oNamesOfLiterals.otherLiteral[0],
+	// 	],
+	//
+	//
+	// 	["  ", oNamesOfLiterals.spaceLiteral[0]], // 2/18em space  very thin math space
+	// 	[" ", oNamesOfLiterals.spaceLiteral[0]], // 3/18em space thin math space
+	// 	["  ", oNamesOfLiterals.spaceLiteral[0]],  // 7/18em space  very very thick math space
+	// 	[" ", oNamesOfLiterals.spaceLiteral[0]], // Digit-width space
+	// 	[" ",  oNamesOfLiterals.spaceLiteral[0]], // Space-with space (non-breaking space)
+	// 	["\t", oNamesOfLiterals.spaceLiteral[0]], //Tab
+	// 	["\n", oNamesOfLiterals.spaceLiteral[0]],
+	//
+	// 	["⁣", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["⁤", oNamesOfLiterals.operatorLiteral[0]],
+	//
+	// 	["(", oNamesOfLiterals.opOpenBracket[0]],
+	// 	[")", oNamesOfLiterals.opCloseBracket[0]],
+	// 	["{", oNamesOfLiterals.opOpenBracket[0]],
+	// 	["}", oNamesOfLiterals.opCloseBracket[0]],
+	//
+	// 	["^", true],
+	// 	["_", true],
+	//
+	// 	// ["!!", "‼", oNamesOfLiterals.charLiteral[0]],
+	// 	// ["...", "…"],
+	// 	// ["::", "∷"],
+	// 	// [":=", "≔"],
+	//
+	// 	// ["~=", "≅", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["+-", "±"],
+	// 	// ["-+", "∓"],
+	// 	// ["<<", "≪"],
+	// 	// ["<=", "≤"],
+	// 	// [">=", "≥", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["->", "→"],
+	// 	// [">>", "≫"],
+	//
+	// 	["&", true],
+	// 	["@", true],
+	// 	["array(", oNamesOfLiterals.matrixLiteral[0]],
+	//
+	// 	["⁰", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+	// 	["¹", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+	// 	["²", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+	// 	["³", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+	// 	["⁴", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+	// 	["⁵", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+	// 	["⁶", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+	// 	["⁷", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+	// 	["⁸", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+	// 	["⁹", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+	// 	["ⁱ",  oNamesOfLiterals.specialScriptCharLiteral[0]],
+	// 	["ⁿ", oNamesOfLiterals.specialScriptCharLiteral[0]],
+	// 	["⁺", oNamesOfLiterals.specialScriptOperatorLiteral[0]],
+	// 	["⁻", oNamesOfLiterals.specialScriptOperatorLiteral[0]],
+	// 	["⁼", oNamesOfLiterals.specialScriptOperatorLiteral[0]],
+	// 	["⁽", oNamesOfLiterals.specialScriptBracketLiteral[0]],
+	// 	["⁾", oNamesOfLiterals.specialScriptBracketLiteral[0]],
+	//
+	// 	["₀", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+	// 	["₁", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+	// 	["₂", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+	// 	["₃", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+	// 	["₄", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+	// 	["₅", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+	// 	["₆", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+	// 	["₇", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+	// 	["₈", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+	// 	["₉", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+	// 	["₊", oNamesOfLiterals.specialIndexOperatorLiteral[0]],
+	// 	["₋", oNamesOfLiterals.specialIndexOperatorLiteral[0]],
+	// 	["₌", oNamesOfLiterals.specialIndexOperatorLiteral[0]],
+	// 	["₍", oNamesOfLiterals.specialIndexBracketLiteral[0]],
+	// 	["₎", oNamesOfLiterals.specialIndexBracketLiteral[0]],
+	//
+	// 	["/", oNamesOfLiterals.overLiteral[0]], // opOpen
+	// 	["'", MathLiterals.accent.id],
+	// 	["''", MathLiterals.accent.id],
+	// 	["|", oNamesOfLiterals.opOpenCloseBracket[0]],
+	// 	["\\|", oNamesOfLiterals.opOpenCloseBracket[0]],
+	//
+	// 	["⊘",  oNamesOfLiterals.overLiteral[0]],
+	// 	["⒞", oNamesOfLiterals.overLiteral[0]],
+	// 	["|", oNamesOfLiterals.opOpenCloseBracket[0]],
+	// 	["||", oNamesOfLiterals.opOpenCloseBracket[0]],
+	// 	["\\/", oNamesOfLiterals.overLiteral[0]],
+	//
+	// 	["+", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["-", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["*", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["=", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["≶", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["≷", oNamesOfLiterals.operatorLiteral[0]],
+	//
+	// 	["\\", oNamesOfLiterals.opCloseBracket[0]],
+	//
+	// 	[
+	// 		function (str) {
+	// 			if (str[0] === "\\") {
+	// 				let strOutput = "\\";
+	// 				let index = 1;
+	// 				while (str[index] && /[a-zA-Z]/.test(str[index])) {
+	// 					strOutput += str[index];
+	// 					index++;
+	// 				}
+	// 				return strOutput;
+	// 			}
+	// 		},
+	// 		oNamesOfLiterals.charLiteral[0]
+	// 	],
+	//
+	// 	["\\matrix", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\array", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\above", true],
+	// 	["\\below", true],
+	// 	["\\mid", true],
+	// 	["┴", true],
+	//
+	// 	["̿", MathLiterals.accent.id], //todo
+	// 	["Β"],
+	// 	["□", oNamesOfLiterals.boxLiteral[0]],
+	// 	["\\Bmatrix", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\left", true],
+	// 	["\\right", true],
+	// 	["⇔", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["⟫", oNamesOfLiterals.opCloseBracket[0]],
+	// 	["⟧", oNamesOfLiterals.opCloseBracket[0]],
+	// 	["⇒", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["̳", MathLiterals.accent.id], //check
+	// 	["‖", oNamesOfLiterals.opOpenCloseBracket[0]],
+	// 	["⒩", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["┴", true],
+	// 	["́", MathLiterals.accent.id],
+	// 	["∐", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["∳", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["≈", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["≍", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["¦", oNamesOfLiterals.overLiteral[0]], //LateX true
+	// 	["■", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["‵", MathLiterals.accent.id],
+	// 	["̅", MathLiterals.accent.id],
+	// 	["〖", oNamesOfLiterals.opOpenBracket[0]], //Unicode  LaTeX: ["\\begin{"],
+	// 	["\\begin{", true],
+	// 	["\\begin{equation}", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\begin{array}", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\begin{cases}", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\begin{matrix}", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\begin{pmatrix}", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\begin{bmatrix}", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\begin{Bmatrix}", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\begin{vmatrix}", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\begin{Vmatrix}", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\matrix{", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\pmatrix{", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\bmatrix{", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\Bmatrix{", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\vmatrix{", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\Vmatrix{", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["┬", true],
+	// 	["\\bmatrix", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["\\bmod", " mod ", oNamesOfLiterals.charLiteral[0]],
+	// 	["⋂", oNamesOfLiterals.opNaryLiteral[0]], // todo in unicode NaryOp REFACTOR ["⋂", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["⋃", oNamesOfLiterals.opNaryLiteral[0]], // 	["⋃", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["⨀", oNamesOfLiterals.opNaryLiteral[0]], //["⨀", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["⨁", oNamesOfLiterals.opNaryLiteral[0]], //["⨁", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["⨂", oNamesOfLiterals.opNaryLiteral[0]], //["⨂", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["⨆", oNamesOfLiterals.opNaryLiteral[0]], //["⨆", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["⨄", oNamesOfLiterals.opNaryLiteral[0]], //		["⨄", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["⋁", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["⋀", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\binom", true],
+	// 	["⊥", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["□", oNamesOfLiterals.boxLiteral[0]],
+	// 	["\\boxplus", "⊞"],
+	// 	["⟨", oNamesOfLiterals.opOpenBracket[0]],
+	// 	["\\break", "⤶"],
+	// 	["̆", MathLiterals.accent.id],
+	// 	["\\cr", "\\\\", true],
+	// 	["█", true],//Ⓒ
+	// 	["∛", oNamesOfLiterals.sqrtLiteral[0]], //oNamesOfLiterals.opBuildupLiteral[0] to functionLiteral?
+	// 	["⋅", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["⋯"],
+	// 	["\\cfrac", true],// https://www.tutorialspoint.com/tex_commands/cfrac.htm
+	// 	["̌", MathLiterals.accent.id],
+	// 	["χ"],
+	// 	["∘"],
+	// 	["┤", true],
+	// 	["♣"],
+	// 	["∲", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["≅", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["∋", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["∐", oNamesOfLiterals.opNaryLiteral[0]], //check type
+	// 	["∪"],
+	// 	["ℸ"],
+	// 	["ℸ"],
+	// 	["⊣"],
+	// 	["ⅆ"],
+	// 	["⃜", MathLiterals.accent.id],
+	// 	["⃛", MathLiterals.accent.id],
+	// 	["̈", MathLiterals.accent.id],
+	// 	["⋱"],
+	// 	["≝"],
+	// 	["℃"],
+	// 	["℉"],
+	// 	["\\sqrt", oNamesOfLiterals.sqrtLiteral[0]],
+	//
+	// 	["°"],
+	// 	["δ"],
+	// 	["\\dfrac{", true],
+	// 	["⋄"],
+	// 	["♢"],
+	// 	["÷", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["̇", MathLiterals.accent.id],
+	// 	[" ", oNamesOfLiterals.spaceLiteral[0]], // [" ", oNamesOfLiterals.spaceLiteral[0]], // 1em space
+	// 	["〗", oNamesOfLiterals.opCloseBracket[0]], //LaTeX ["\\end{"],
+	// 	["\\end{equation}", "endOfMatrix"],
+	// 	["\\end{array}", "endOfMatrix"],
+	// 	["\\end{cases}", "endOfMatrix"],
+	// 	["\\end{matrix}", "endOfMatrix"],
+	// 	["\\end{pmatrix}", "endOfMatrix"],
+	// 	["\\end{bmatrix}", "endOfMatrix"],
+	// 	["\\end{Bmatrix}", "endOfMatrix"],
+	// 	["\\end{vmatrix}", "endOfMatrix"],
+	// 	["\\end{Vmatrix}", "endOfMatrix"],
+	// 	[" ", oNamesOfLiterals.spaceLiteral[0],], //[" ", oNamesOfLiterals.spaceLiteral[0]], // 9/18em space
+	// 	["ϵ"],
+	// 	["█", true],
+	// 	["#"],
+	// 	["≡", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["η"],
+	// 	["∃", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["∀", oNamesOfLiterals.operatorLiteral[0]], //fractur
+	// 	["\\frac", true],
+	// 	["⌑"],
+	// 	["⁡", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["γ"],
+	// 	["≥", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["≥", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["←"],
+	// 	["≫"],
+	// 	["ℷ"],//0x2137
+	// 	["̀", MathLiterals.accent.id],
+	// 	[" ", oNamesOfLiterals.spaceLiteral[0]], //	[" ", oNamesOfLiterals.spaceLiteral[0]], // 1/18em space very very thin math space
+	// 	["̂", MathLiterals.accent.id], //["\\hat", MathLiterals.accent.id, 770],
+	// 	["ℏ"],//0x210f
+	// 	["♡"],
+	// 	["↩"],
+	// 	["↪"],
+	// 	["⬄"],
+	// 	["⬌"],
+	// 	["⃑"],
+	// 	["ⅈ"],//0x2148
+	// 	["⨌", oNamesOfLiterals.opNaryLiteral[0]], //LaTeX oNamesOfLiterals.functionLiteral[0] //Unicode oNamesOfLiterals.opNaryLiteral[0]
+	// 	["∭", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["∬", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["𝚤"],
+	// 	["∈", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["∆"],
+	// 	["∞"],
+	// 	["∫", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["ι"],
+	// 	//["\\itimes", "⁢", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["Jay"],
+	// 	["ⅉ"],
+	// 	["𝚥"],
+	// 	["κ"],
+	// 	["⟩", oNamesOfLiterals.opCloseBracket[0]],
+	// 	["λ"],
+	// 	["⟨", oNamesOfLiterals.opOpenBracket[0]],
+	// 	["⟦", oNamesOfLiterals.opOpenBracket[0]],
+	// 	["\\{", oNamesOfLiterals.opOpenBracket[0]], // todo check in word { or \\{
+	// 	["[", oNamesOfLiterals.opOpenBracket[0]],
+	// 	["⌈", oNamesOfLiterals.opOpenBracket[0]],
+	// 	["∕", oNamesOfLiterals.overLiteral[0]],
+	// 	["∕", oNamesOfLiterals.overLiteral[0]],
+	// 	["…"],
+	// 	["≤", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["├", true], //LaTeX type === \left
+	// 	["←"],
+	// 	["↽"],
+	// 	["↼"],
+	// 	["↔"],
+	// 	["≤"],
+	// 	["⌊", oNamesOfLiterals.opOpenBracket[0]],
+	// 	["⃐", oNamesOfLiterals.opOpenBracket[0]], //check word
+	// 	["\\limits", true],
+	// 	["≪"],
+	// 	["⟦", oNamesOfLiterals.opOpenBracket[0]],
+	// 	["⎰", oNamesOfLiterals.opOpenBracket[0]],
+	// 	["⇋"],
+	// 	["⃖", MathLiterals.accent.id],
+	// 	["|", oNamesOfLiterals.opOpenCloseBracket[0]],
+	// 	["↦"],
+	// 	["■", oNamesOfLiterals.matrixLiteral[0]],
+	// 	[" ", oNamesOfLiterals.spaceLiteral[0]], //[" ", oNamesOfLiterals.spaceLiteral[0]], // 4/18em space medium math space
+	// 	["∣", true],
+	// 	["ⓜ", true],
+	// 	["⊨"],
+	// 	["∓"],
+	// 	["μ"],
+	// 	["∇"],
+	// 	["▒", true],
+	// 	[" ", oNamesOfLiterals.spaceLiteral[0]],
+	// 	["≠"],
+	// 	["↗"],
+	// 	["¬", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["≠"],
+	// 	["∋", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["‖", oNamesOfLiterals.opOpenCloseBracket[0]],
+	// 	//["\\not", "̸"], //doesn't implement in word
+	// 	["∌"],
+	// 	["∉"],
+	// 	["∉"],
+	// 	["ν"],
+	// 	["↖"],
+	// 	["ο"],
+	// 	["⊙"],
+	// 	["▒", true],
+	// 	["∰", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["∯", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["∮", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["ω"],
+	// 	["⊖"],
+	// 	["├", true],
+	// 	["⊕", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["⊗", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["\\over", true],
+	// 	["¯", oNamesOfLiterals.hBracketLiteral[0]],
+	// 	["⏞", oNamesOfLiterals.hBracketLiteral[0]],
+	// 	["⎴", oNamesOfLiterals.hBracketLiteral[0]],
+	// 	["¯", true],
+	// 	["⏜", oNamesOfLiterals.hBracketLiteral[0]],
+	// 	["┴", true],
+	// 	["⏠", oNamesOfLiterals.hBracketLiteral[0]],
+	// 	["∥"], //check
+	// 	["∂"],
+	// 	["⊥", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["ϕ"],
+	// 	["π"],
+	// 	["±"],
+	// 	["⒨", oNamesOfLiterals.matrixLiteral[0]],
+	// 	["⁗", MathLiterals.accent.id],
+	// 	["‴", MathLiterals.accent.id],
+	// 	["″", MathLiterals.accent.id],
+	// 	["≺", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["≼", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["′", MathLiterals.accent.id],
+	// 	["∏", oNamesOfLiterals.opNaryLiteral[0]], //oNamesOfLiterals.functionLiteral[0]
+	// 	["∝", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["ψ"],
+	// 	["∜", oNamesOfLiterals.sqrtLiteral[0]],
+	// 	["〉", oNamesOfLiterals.opCloseBracket[0]],
+	// 	["⟩", oNamesOfLiterals.opCloseBracket[0]],
+	// 	["∶"],
+	// 	["}", oNamesOfLiterals.opCloseBracket[0]],
+	// 	["]", oNamesOfLiterals.opCloseBracket[0]],
+	// 	["⌉", oNamesOfLiterals.opCloseBracket[0]],
+	// 	["⋰"],
+	//
+	// 	["\\box", oNamesOfLiterals.boxLiteral[0]],
+	// 	["\\fbox", oNamesOfLiterals.rectLiteral[0]],
+	// 	["\\rect", oNamesOfLiterals.rectLiteral[0]],
+	//
+	// 	["▭", oNamesOfLiterals.rectLiteral[0]],
+	// 	["▭", oNamesOfLiterals.rectLiteral[0]],
+	// 	["⌋", oNamesOfLiterals.opCloseBracket[0]],
+	// 	["┤", true],
+	// 	["⎱", oNamesOfLiterals.opCloseBracket[0]],
+	// 	["⒭", oNamesOfLiterals.sqrtLiteral[0]], //check
+	// 	["|", oNamesOfLiterals.opOpenCloseBracket[0]],
+	// 	["⁄", oNamesOfLiterals.overLiteral[0]],
+	// 	["⁄", oNamesOfLiterals.overLiteral[0]], //Script
+	// 	["∼", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["≃", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["√", oNamesOfLiterals.sqrtLiteral[0]],
+	// 	["⊑", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["⊒", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["⊂", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["⊆", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["█", true],
+	// 	["≻", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["≽", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["∑", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["⊃", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["⊇", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["√", oNamesOfLiterals.sqrtLiteral[0]],
+	// 	[" ", oNamesOfLiterals.spaceLiteral[0]], //[" ", oNamesOfLiterals.spaceLiteral[0]], // 5/18em space thick math space
+	// 	[" ", oNamesOfLiterals.spaceLiteral[0]],
+	// 	["̃", MathLiterals.accent.id],
+	// 	["×", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["→"],
+	// 	["⊤", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["⃡", MathLiterals.accent.id],
+	// 	["̲", MathLiterals.accent.id], //check
+	// 	["┌", oNamesOfLiterals.opOpenBracket[0]],
+	// 	["▁", oNamesOfLiterals.hBracketLiteral[0]],
+	// 	["⏟", oNamesOfLiterals.hBracketLiteral[0]],
+	// 	["⎵", oNamesOfLiterals.hBracketLiteral[0]],
+	// 	["▁", true],
+	// 	["⏝", oNamesOfLiterals.hBracketLiteral[0]],
+	// 	["┬", true],
+	// 	["┐", oNamesOfLiterals.opCloseBracket[0]],
+	// 	["│", true],
+	// 	["⊢", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["⋮"],
+	// 	["⃗", MathLiterals.accent.id],
+	// 	["∨", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["|", oNamesOfLiterals.opOpenCloseBracket[0]],
+	// 	[" ", oNamesOfLiterals.spaceLiteral[0]], //[" ", oNamesOfLiterals.spaceLiteral[0]], // 6/18em space very thick math space
+	// 	["∧", oNamesOfLiterals.operatorLiteral[0]],
+	// 	["̂", MathLiterals.accent.id], //["\\hat", MathLiterals.accent.id, 770],
+	// 	["℘"],//0x2118
+	// 	["‌", oNamesOfLiterals.spaceLiteral[0]],
+	// 	["​", oNamesOfLiterals.spaceLiteral[0]], //["​", oNamesOfLiterals.spaceLiteral[0]], // zero-width space
+	//
+	// 	["√", oNamesOfLiterals.sqrtLiteral[0]],
+	// 	//["√(", oNamesOfLiterals.sqrtLiteral[0]],
+	// 	["\\}", oNamesOfLiterals.opCloseBracket[0]],
+	// 	["\\|", oNamesOfLiterals.opOpenCloseBracket[0]],
+	// 	["\\\\", true],
+	//
+	// 	["\\sf",  oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\script",  oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\scr",  oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\rm",  oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\oldstyle", oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\mathtt",  oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\mathsfit", oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\mathsfbfit", oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\mathsfbf",  oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\mathsf", oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\mathrm",  oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\mathit", oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\mathfrak", oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\mathcal", oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\mathbfit",  oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\mathbffrak", oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\mathbfcal",  oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\mathbf", oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\mathbb", oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\it", oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\fraktur", oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\frak", oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\double", oNamesOfLiterals.mathFontLiteral[0]],
+	// 	["\\sfrac", true],
+	// 	["\\text", true],
+	//
+	// 	["\\sum", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\prod", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\amalg", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\coprod", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\bigwedge", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\bigvee", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\bigcup", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\bigcap", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\bigsqcup", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\biguplus", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\bigoplus", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\bigotimes", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\int", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\iint", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\iiint", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\iiiint", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\oint", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\oiint", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\oiiint", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\coint", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\aouint", oNamesOfLiterals.opNaryLiteral[0]],
+	// 	["\\substack", true],
+	//
+	// 	["\\hat", MathLiterals.accent.id],
+	// 	["\\dot", MathLiterals.accent.id],
+	//
+	// 	["\"",  oNamesOfLiterals.charLiteral[0]],
+	// 	["\'",  oNamesOfLiterals.charLiteral[0]],
+	//
+	// 	["\\quad", oNamesOfLiterals.spaceLiteral[0]], // 1 em (nominally, the height of the font)
+	// 	// ["\\qquad", [8193, 8193], oNamesOfLiterals.spaceLiteral[0]], // 2em
+	// 	//["\\text{", "text{"],
+	//
+	// 	["\\,", oNamesOfLiterals.spaceLiteral[0]], // 3/18em space thin math space
+	// 	["\\:", oNamesOfLiterals.spaceLiteral[0]], // 4/18em space thin math space
+	// 	["\\;", oNamesOfLiterals.spaceLiteral[0]], // 5/18em space thin math space
+	// 	//["\!", " ", oNamesOfLiterals.spaceLiteral[0]], // -3/18 of \quad (= -3 mu)
+	// 	["\\ ", oNamesOfLiterals.spaceLiteral[0]], // equivalent of space in normal text
+	// 	["\\qquad", oNamesOfLiterals.spaceLiteral[0]], // equivalent of space in normal text
+	//
+	// 	["\\\\", true],
+	// 	// ["\\lim", oNamesOfLiterals.opNaryLiteral[0]], LaTeX
+	// 	// ["\\lg", oNamesOfLiterals.opNaryLiteral[0]],
+	//
+	// 	// ["/<", "≮", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/=", "≠", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/>", "≯", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\exists", "∄", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\in", "∉", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\ni", "∌", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\simeq", "≄", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\cong", "≇", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\approx", "≉", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\asymp", "≭", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\equiv", "≢", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\le", "≰", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\ge", "≱", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\lessgtr", "≸", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\gtrless", "≹", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\succeq", "⋡", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\prec", "⊀", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\succ", "⊁", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\preceq", "⋠", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\subset", "⊄", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\supset", "⊅", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\subseteq", "⊈", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\supseteq", "⊉", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\sqsubseteq", "⋢", oNamesOfLiterals.operatorLiteral[0]],
+	// 	// ["/\\sqsupseteq", "⋣", oNamesOfLiterals.operatorLiteral[0]],
+	//
+	// 	[",", true],
+	// 	[".", true],
+	//
+	// 	[
+	// 		function (str) {
+	// 			if (str[0] === "\\") {
+	// 				let strOutput = "\\";
+	// 				let index = 1;
+	// 				while (str[index] && /[a-zA-Z]/.test(str[index])) {
+	// 					strOutput += str[index];
+	// 					index++;
+	// 				}
+	// 				if (functionNames.includes(strOutput.slice(1)) || limitFunctions.includes(strOutput.slice(1))) {
+	// 					return strOutput;
+	// 				}
+	// 			}
+	// 			else {
+	// 				let index = 0;
+	// 				let strOutput = "";
+	// 				while (str[index] && /[a-zA-Z]/.test(str[index])) {
+	// 					strOutput += str[index];
+	// 					index++;
+	// 				}
+	// 				if (limitFunctions.includes(strOutput) || functionNames.includes(strOutput)) {
+	// 					return strOutput
+	// 				}
+	// 			}
+	// 		},
+	// 		oNamesOfLiterals.functionLiteral[0]
+	// 	],
+	// ];
+
 	const wordAutoCorrection = [
-		//Char
-		[
-			function (str) {
-				return str[0];
-			},
-			oNamesOfLiterals.charLiteral[0],
-		],
-		//Accent
-		[
-			function (str) {
-				const code = GetFixedCharCodeAt(str[0]);
-				if (code >= 768 && code <= 879) {
-					return str[0];
-				}
-			},
-			MathLiterals.accent.id,
-		],
-		//Numbers
-		[
-			function (str) {
-				const arrNumbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
-				let literal = str[0];
-				if (arrNumbers.includes(literal)) {
-					return literal;
-				}
-			},
-			oNamesOfLiterals.numberLiteral[0],
-		],
-		//Mathematical Alphanumeric Symbols 1D400:1D7FF
-		[
-			function (arrData) {
-				let intCode = GetFixedCharCodeAt(arrData[0]);
-				if (intCode >= 0x1D400 && intCode <= 0x1D7FF) {
-					return arrData[0];
-				}
-			},
-			oNamesOfLiterals.otherLiteral[0],
-		],
+		MathLiterals.char,
+		MathLiterals.other,
+		MathLiterals.special,
+		MathLiterals.number,
+		MathLiterals.accent,
+		MathLiterals.space,
+		MathLiterals.operator,
+		MathLiterals.operand,
+		MathLiterals.lBrackets,
+		MathLiterals.rBrackets,
+		MathLiterals.lrBrackets,
+		MathLiterals.divide,
 
-		// ["⅀", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨊", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨋", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["∫", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["∱", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨑", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨍", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨎", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨏", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨕", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨖", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨗", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨘", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨙", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨚", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨛", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨜", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨒", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨓", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨔", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨃", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨅", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⨉", oNamesOfLiterals.opNaryLiteral[0]],
-		// ["⫿", oNamesOfLiterals.opNaryLiteral[0]],
+		// //Mathematical Alphanumeric Symbols 1D400:1D7FF
+		// [
+		// 	function (arrData) {
+		// 		let intCode = GetFixedCharCodeAt(arrData[0]);
+		// 		if (intCode >= 0x1D400 && intCode <= 0x1D7FF) {
+		// 			return arrData[0];
+		// 		}
+		// 	},
+		// 	oNamesOfLiterals.otherLiteral[0],
+		// ],
+		//
+		//
+		//
+		// ["(", oNamesOfLiterals.opOpenBracket[0]],
+		// [")", oNamesOfLiterals.opCloseBracket[0]],
+		// ["{", oNamesOfLiterals.opOpenBracket[0]],
+		// ["}", oNamesOfLiterals.opCloseBracket[0]],
+		//
+		// ["^", true],
+		// ["_", true],
+		//
+		// // ["!", MathLiterals.char.id],
+		// // ["!!", "‼", MathLiterals.char.id],
+		// // ["...", "…"],
+		// // ["::", "∷"],
+		// // [":=", "≔"],
+		//
+		// // ["~=", "≅", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["+-", "±"],
+		// // ["-+", "∓"],
+		// // ["<<", "≪"],
+		// // ["<=", "≤"],
+		// // [">=", "≥", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["->", "→"],
+		// // [">>", "≫"],
+		//
+		// ["&", true],
+		// ["@", true],
+		// ["array(", oNamesOfLiterals.matrixLiteral[0]],
+		//
+		// ["⁰", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+		// ["¹", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+		// ["²", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+		// ["³", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+		// ["⁴", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+		// ["⁵", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+		// ["⁶", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+		// ["⁷", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+		// ["⁸", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+		// ["⁹", oNamesOfLiterals.specialScriptNumberLiteral[0]],
+		// ["ⁱ",  oNamesOfLiterals.specialScriptCharLiteral[0]],
+		// ["ⁿ", oNamesOfLiterals.specialScriptCharLiteral[0]],
+		// ["⁺", oNamesOfLiterals.specialScriptOperatorLiteral[0]],
+		// ["⁻", oNamesOfLiterals.specialScriptOperatorLiteral[0]],
+		// ["⁼", oNamesOfLiterals.specialScriptOperatorLiteral[0]],
+		// ["⁽", oNamesOfLiterals.specialScriptBracketLiteral[0]],
+		// ["⁾", oNamesOfLiterals.specialScriptBracketLiteral[0]],
+		//
+		// ["₀", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+		// ["₁", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+		// ["₂", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+		// ["₃", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+		// ["₄", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+		// ["₅", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+		// ["₆", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+		// ["₇", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+		// ["₈", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+		// ["₉", oNamesOfLiterals.specialIndexNumberLiteral[0]],
+		// ["₊", oNamesOfLiterals.specialIndexOperatorLiteral[0]],
+		// ["₋", oNamesOfLiterals.specialIndexOperatorLiteral[0]],
+		// ["₌", oNamesOfLiterals.specialIndexOperatorLiteral[0]],
+		// ["₍", oNamesOfLiterals.specialIndexBracketLiteral[0]],
+		// ["₎", oNamesOfLiterals.specialIndexBracketLiteral[0]],
+		//
+		// ["/", oNamesOfLiterals.overLiteral[0]], // opOpen
+		//
+		// ["|", oNamesOfLiterals.opOpenCloseBracket[0]],
+		// ["\\|", oNamesOfLiterals.opOpenCloseBracket[0]],
+		//
+		// ["⊘",  oNamesOfLiterals.overLiteral[0]],
+		// ["⒞", oNamesOfLiterals.overLiteral[0]],
+		// ["|", oNamesOfLiterals.opOpenCloseBracket[0]],
+		// ["||", oNamesOfLiterals.opOpenCloseBracket[0]],
+		// ["\\/", oNamesOfLiterals.overLiteral[0]],
+		//
+		//
+		//
+		// ["\\", oNamesOfLiterals.opCloseBracket[0]],
 
-		["  ", oNamesOfLiterals.spaceLiteral[0]], // 2/18em space  very thin math space
-		[" ", oNamesOfLiterals.spaceLiteral[0]], // 3/18em space thin math space
-		["  ", oNamesOfLiterals.spaceLiteral[0]],  // 7/18em space  very very thick math space
-		[" ", oNamesOfLiterals.spaceLiteral[0]], // Digit-width space
-		[" ",  oNamesOfLiterals.spaceLiteral[0]], // Space-with space (non-breaking space)
-		["\t", oNamesOfLiterals.spaceLiteral[0]], //Tab
-		["\n", oNamesOfLiterals.spaceLiteral[0]],
+		MathLiterals.LaTeX,
+		// // [
+		// // 	function (str) {
+		// // 		if (str[0] === "\\") {
+		// // 			let strOutput = "\\";
+		// // 			let index = 1;
+		// // 			while (str[index] && /[a-zA-Z]/.test(str[index])) {
+		// // 				strOutput += str[index];
+		// // 				index++;
+		// // 			}
+		// // 			return strOutput;
+		// // 		}
+		// // 	},
+		// // 	MathLiterals.char.id
+		// // ],
+		//
+		// ["┴", true],
+		// ["Α"],
+		//
+		// ["Β"],
+		// ["□", oNamesOfLiterals.boxLiteral[0]],
+		// ["\\Bmatrix", oNamesOfLiterals.matrixLiteral[0]],
+		//
+		//
+		// ["Ψ"],
+		// ["⟫", oNamesOfLiterals.opCloseBracket[0]],
+		// ["⟧", oNamesOfLiterals.opCloseBracket[0]],
+		//
+		// ["⇒", oNamesOfLiterals.operatorLiteral[0]],
+		//
+		// ["‖", oNamesOfLiterals.opOpenCloseBracket[0]],
+		// ["⒩", oNamesOfLiterals.matrixLiteral[0]],
+		//
+		// ["┴", true],
+		//
+		//
+		// ["∐", oNamesOfLiterals.opNaryLiteral[0]],
+		//
+		// ["∳", oNamesOfLiterals.opNaryLiteral[0]],
+		// ["≈", oNamesOfLiterals.operatorLiteral[0]],
+		//
+		//
+		// ["≍", oNamesOfLiterals.operatorLiteral[0]],
+		// ["¦", oNamesOfLiterals.overLiteral[0]], //LateX true
+		// ["■", oNamesOfLiterals.matrixLiteral[0]],
+		//
+		// ["∵"],
+		// ["〖", oNamesOfLiterals.opOpenBracket[0]], //Unicode  LaTeX: ["\\begin{"],
+		// ["\\begin{", true],
+		// ["\\begin{equation}",  true],
+		// ["\\begin{array}", oNamesOfLiterals.matrixLiteral[0]],
+		// ["\\begin{cases}", oNamesOfLiterals.matrixLiteral[0]],
+		// ["\\begin{matrix}", oNamesOfLiterals.matrixLiteral[0]],
+		// ["\\begin{pmatrix}", oNamesOfLiterals.matrixLiteral[0]],
+		// ["\\begin{bmatrix}", oNamesOfLiterals.matrixLiteral[0]],
+		// ["\\begin{Bmatrix}", oNamesOfLiterals.matrixLiteral[0]],
+		// ["\\begin{vmatrix}", oNamesOfLiterals.matrixLiteral[0]],
+		// ["\\begin{Vmatrix}", oNamesOfLiterals.matrixLiteral[0]],
+		// ["┬", true],
+		//
+		// ["\\bmatrix", oNamesOfLiterals.matrixLiteral[0]],
+		// ["\\bmod", " mod ", MathLiterals.char.id],
+		// ["\\binom", true],
+		// ["⊥", oNamesOfLiterals.operatorLiteral[0]],
+		//
+		// ["\\boxplus", "⊞"],
+		// ["⟨", oNamesOfLiterals.opOpenBracket[0]],
+		// ["\\break", "⤶"],
+		//
+		//
+		// ["\\cr", "\\\\", true],
+		// ["█", true],//Ⓒ
+		// ["∛", oNamesOfLiterals.sqrtLiteral[0]], //oNamesOfLiterals.opBuildupLiteral[0] to functionLiteral?
+		// ["⋅", oNamesOfLiterals.operatorLiteral[0]],
+		// ["⋯"],
+		//
+		//
+		// ["┤", true],
+		//
+		// ["∲", oNamesOfLiterals.opNaryLiteral[0]],
+		// ["≅", oNamesOfLiterals.operatorLiteral[0]],
+		// ["∋", oNamesOfLiterals.operatorLiteral[0]],
+		// ["∐", oNamesOfLiterals.opNaryLiteral[0]], //check type
+		//
+		//
+		// ["'", 	true],
+		// ["''", 	true],
+		//
+		// ["̿", 	MathLiterals.accent.id], //todo
+		// ["̳", 	MathLiterals.accent.id], //check
+		// ["́", 	MathLiterals.accent.id],
+		// ["‵", 	MathLiterals.accent.id],
+		// ["̅", 	MathLiterals.accent.id],
+		// ["̆", 	MathLiterals.accent.id],
+		// ["⃜", 	MathLiterals.accent.id],
+		// ["⃛", 	MathLiterals.accent.id],
+		// ["̈", 	MathLiterals.accent.id],
+		// ["̌", 	MathLiterals.accent.id],
+		// ["̇", 	MathLiterals.accent.id],
+		// ["̀", 	MathLiterals.accent.id],
+		// ["̂", 	MathLiterals.accent.id], //["\\hat", MathLiterals.accent.id, 770],
+		// ["⃖", 	MathLiterals.accent.id],
+		// ["⁗", 	MathLiterals.accent.id],
+		// ["‴", 	MathLiterals.accent.id],
+		// ["″", 	MathLiterals.accent.id],
+		// ["′", 	MathLiterals.accent.id],
+		// ["̃", 	MathLiterals.accent.id],
+		// ["⃡", 	MathLiterals.accent.id],
+		// ["̲", 	MathLiterals.accent.id], //check
+		// ["⃗", 	MathLiterals.accent.id],
+		// ["̂", 	MathLiterals.accent.id], //["\\hat", MathLiterals.accent.id, 770],
+		//
+		// ["\\ddot", MathLiterals.accent.id],
+		// ["\\hat", MathLiterals.accent.id],
+		// ["\\dot", MathLiterals.accent.id],
+		// ["\\acute", MathLiterals.accent.id],
+		// ["\\check", MathLiterals.accent.id],
+		// ["\\tilde", MathLiterals.accent.id],
+		// ["\\grave", MathLiterals.accent.id],
+		// ["\\dddot", MathLiterals.accent.id],
+		// ["\\bar", MathLiterals.accent.id],
+		// ["\\vec", MathLiterals.accent.id],
+		// ["\\breve", MathLiterals.accent.id],
+		// ["\\widehat", MathLiterals.accent.id],
+		//
+		//
+		// ["\\sqrt", oNamesOfLiterals.sqrtLiteral[0]],
+		//
+		//
+		// ["÷", oNamesOfLiterals.operatorLiteral[0]],
+		//
+		//
+		// ["〗", oNamesOfLiterals.opCloseBracket[0]], //LaTeX ["\\end{"],
+		// ["\\end{equation}", true],
+		// ["\\end{array}", "endOfMatrix"],
+		// ["\\end{cases}", "endOfMatrix"],
+		// ["\\end{matrix}", "endOfMatrix"],
+		// ["\\end{pmatrix}", "endOfMatrix"],
+		// ["\\end{bmatrix}", "endOfMatrix"],
+		// ["\\end{Bmatrix}", "endOfMatrix"],
+		// ["\\end{vmatrix}", "endOfMatrix"],
+		// ["\\end{Vmatrix}", "endOfMatrix"],
+		//
+		// ["█", true],
+		//
+		// ["≡", oNamesOfLiterals.operatorLiteral[0]],
+		//
+		// ["∃", oNamesOfLiterals.operatorLiteral[0]],
+		// ["∀", oNamesOfLiterals.operatorLiteral[0]], //fractur
+		//
+		//
+		// ["⁡", oNamesOfLiterals.operatorLiteral[0]],
+		//
+		// ["≥", oNamesOfLiterals.operatorLiteral[0]],
+		// ["≥", oNamesOfLiterals.operatorLiteral[0]],
+		//
+		//
+		//
+		//
+		// ["∕", oNamesOfLiterals.overLiteral[0]],
+		// ["∕", oNamesOfLiterals.overLiteral[0]],
+		// ["…"],
+		// ["≤", oNamesOfLiterals.operatorLiteral[0]],
+		// ["├", true], //LaTeX type === \left
+		// ["←"],
+		// ["↽"],
+		// ["↼"],
+		// ["↔"],
+		// ["≤"],
+		// ["⌊", oNamesOfLiterals.opOpenBracket[0]],
+		// ["⃐", oNamesOfLiterals.opOpenBracket[0]], //check word
+		// ["\\limits", true],
+		// ["≪"],
+		// ["⟦", oNamesOfLiterals.opOpenBracket[0]],
+		// ["⎰", oNamesOfLiterals.opOpenBracket[0]],
+		// ["⇋"],
+		//
+		// ["|", oNamesOfLiterals.opOpenCloseBracket[0]],
+		// ["↦"],
+		// ["■", oNamesOfLiterals.matrixLiteral[0]],
+		// ["∣", true],
+		// ["ⓜ", true],
+		// ["⊨"],
+		// ["∓"],
+		// ["μ"],
+		// ["∇"],
+		// ["▒", true],
+		// ["≠"],
+		// ["↗"],
+		// ["¬", oNamesOfLiterals.operatorLiteral[0]],
+		// ["≠"],
+		// ["∋", oNamesOfLiterals.operatorLiteral[0]],
+		// ["‖", oNamesOfLiterals.opOpenCloseBracket[0]],
+		// //["\\not", "̸"], //doesn't implement in word
+		//
+		// ["▒", true],
+		// ["∰", oNamesOfLiterals.opNaryLiteral[0]],
+		// ["∯", oNamesOfLiterals.opNaryLiteral[0]],
+		// ["∮", oNamesOfLiterals.opNaryLiteral[0]],
+		// ["ω"],
+		// ["⊖"],
+		// ["├", true],
+		// ["⊕", oNamesOfLiterals.operatorLiteral[0]],
+		// ["⊗", oNamesOfLiterals.operatorLiteral[0]],
+		// ["\\over", true],
+		// ["¯", oNamesOfLiterals.hBracketLiteral[0]],
+		// ["⏞", oNamesOfLiterals.hBracketLiteral[0]],
+		// ["⎴", oNamesOfLiterals.hBracketLiteral[0]],
+		// ["¯", true],
+		// ["⏜", oNamesOfLiterals.hBracketLiteral[0]],
+		// ["┴", true],
+		// ["⏠", oNamesOfLiterals.hBracketLiteral[0]],
+		// ["∥"], //check
+		// ["∂"],
+		// ["⊥", oNamesOfLiterals.operatorLiteral[0]],
+		// ["ϕ"],
+		// ["π"],
+		// ["±"],
+		// ["⒨", oNamesOfLiterals.matrixLiteral[0]],
+		//
+		// ["≺", oNamesOfLiterals.operatorLiteral[0]],
+		// ["≼", oNamesOfLiterals.operatorLiteral[0]],
+		//
+		// ["∏", oNamesOfLiterals.opNaryLiteral[0]], //oNamesOfLiterals.functionLiteral[0]
+		// ["∝"],
+		// ["ψ"],
+		// ["∜", oNamesOfLiterals.sqrtLiteral[0]],
+		// ["〉", oNamesOfLiterals.opCloseBracket[0]],
+		// ["⟩", oNamesOfLiterals.opCloseBracket[0]],
+		// ["∶"],
+		// ["}", oNamesOfLiterals.opCloseBracket[0]],
+		// ["]", oNamesOfLiterals.opCloseBracket[0]],
+		// ["⌉", oNamesOfLiterals.opCloseBracket[0]],
+		// ["⋰"],
+		// ["▭", oNamesOfLiterals.rectLiteral[0]],
+		// ["▭", oNamesOfLiterals.rectLiteral[0]],
+		// ["⌋", oNamesOfLiterals.opCloseBracket[0]],
+		// ["ρ"],
+		// ["⃑"],
+		// ["┤", true],
+		// ["→"],
+		// ["⇁"],
+		// ["⇀"],
+		// ["⎱", oNamesOfLiterals.opCloseBracket[0]],
+		// ["⒭", oNamesOfLiterals.sqrtLiteral[0]], //check
+		// ["|", oNamesOfLiterals.opOpenCloseBracket[0]],
+		// ["⁄", oNamesOfLiterals.overLiteral[0]],
+		// ["⁄", oNamesOfLiterals.overLiteral[0]], //Script
+		// ["↘"],
+		// ["∖"],
+		// ["σ"],
+		// ["∼", oNamesOfLiterals.operatorLiteral[0]],
+		// ["≃", oNamesOfLiterals.operatorLiteral[0]],
+		//
+		// ["√", oNamesOfLiterals.sqrtLiteral[0]],
+		// ["⊑", oNamesOfLiterals.operatorLiteral[0]],
+		// ["⊒", oNamesOfLiterals.operatorLiteral[0]],
+		// ["⋆"],
+		// ["⊂", oNamesOfLiterals.operatorLiteral[0]],
+		// ["⊆", oNamesOfLiterals.operatorLiteral[0]],
+		// ["█", true],
+		// ["≻", oNamesOfLiterals.operatorLiteral[0]],
+		// ["≽", oNamesOfLiterals.operatorLiteral[0]],
+		// ["∑", oNamesOfLiterals.opNaryLiteral[0]],
+		// ["⊃", oNamesOfLiterals.operatorLiteral[0]],
+		// ["⊇", oNamesOfLiterals.operatorLiteral[0]],
+		// ["√", oNamesOfLiterals.sqrtLiteral[0]],
+		//
+		//
+		// ["×", oNamesOfLiterals.operatorLiteral[0]],
+		// ["→"],
+		// ["⊤", oNamesOfLiterals.operatorLiteral[0]],
+		//
+		// ["┌", oNamesOfLiterals.opOpenBracket[0]],
+		// ["▁", oNamesOfLiterals.hBracketLiteral[0]],
+		// ["⏟", oNamesOfLiterals.hBracketLiteral[0]],
+		// ["⎵", oNamesOfLiterals.hBracketLiteral[0]],
+		// ["▁", true],
+		// ["⏝", oNamesOfLiterals.hBracketLiteral[0]],
+		// ["┬", true],
+		// ["↑"],
+		// ["↕"],
+		// ["⊎"],
+		// ["υ"],
+		// ["┐", oNamesOfLiterals.opCloseBracket[0]],
+		// ["ε"],
+		// ["φ"],
+		// ["ϖ"],
+		// ["∝"],
+		// ["ϱ"],
+		// ["ς"],
+		// ["ϑ"],
+		// ["│", true],
+		// ["⊢", oNamesOfLiterals.operatorLiteral[0]],
+		// ["⋮"],
+		//
+		// ["∨", oNamesOfLiterals.operatorLiteral[0]],
+		// ["|", oNamesOfLiterals.opOpenCloseBracket[0]],
+		// ["⇳"],
+		// ["∧", oNamesOfLiterals.operatorLiteral[0]],
+		//
+		// ["℘"],//0x2118
+		// ["≀"],
+		// ["ξ"],
+		// ["ζ"],
+		// ["√", oNamesOfLiterals.sqrtLiteral[0]],
+		// //["√(", oNamesOfLiterals.sqrtLiteral[0]],
+		// ["\\}", oNamesOfLiterals.opCloseBracket[0]],
+		// ["\\|", oNamesOfLiterals.opOpenCloseBracket[0]],
+		// ["\\\\", true],
+		//
+		// ["\\sf",  oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\script",  oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\scr",  oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\rm",  oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\oldstyle", oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\mathtt",  oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\mathsfit", oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\mathsfbfit", oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\mathsfbf",  oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\mathsf", oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\mathrm",  oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\mathit", oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\mathfrak", oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\mathcal", oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\mathbfit",  oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\mathbffrak", oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\mathbfcal",  oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\mathbf", oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\mathbb", oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\it", oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\fraktur", oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\frak", oNamesOfLiterals.mathFontLiteral[0]],
+		// ["\\double", oNamesOfLiterals.mathFontLiteral[0]],
+		//
+		//
+		// // ["\""],
+		// // ["\'"],
+		//
+		// ["\\\\", true],
+		// // ["\\lim", oNamesOfLiterals.opNaryLiteral[0]], LaTeX
+		// // ["\\lg", oNamesOfLiterals.opNaryLiteral[0]],
+		//
+		// // ["/<", "≮", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/=", "≠", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/>", "≯", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\exists", "∄", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\in", "∉", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\ni", "∌", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\simeq", "≄", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\cong", "≇", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\approx", "≉", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\asymp", "≭", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\equiv", "≢", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\le", "≰", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\ge", "≱", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\lessgtr", "≸", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\gtrless", "≹", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\succeq", "⋡", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\prec", "⊀", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\succ", "⊁", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\preceq", "⋠", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\subset", "⊄", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\supset", "⊅", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\subseteq", "⊈", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\supseteq", "⊉", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\sqsubseteq", "⋢", oNamesOfLiterals.operatorLiteral[0]],
+		// // ["/\\sqsupseteq", "⋣", oNamesOfLiterals.operatorLiteral[0]],
+		//
+		// [",", true],
+		// [".", true],
 
-		["⁣", oNamesOfLiterals.operatorLiteral[0]],
-		["⁤", oNamesOfLiterals.operatorLiteral[0]],
-
-		//Unicode DB operators
-		["⨯", oNamesOfLiterals.operatorLiteral[0]],
-		["⨝", oNamesOfLiterals.operatorLiteral[0]],
-		["⟕", oNamesOfLiterals.operatorLiteral[0]],
-		["⟖", oNamesOfLiterals.operatorLiteral[0]],
-		["⟗", oNamesOfLiterals.operatorLiteral[0]],
-		["⋉", oNamesOfLiterals.operatorLiteral[0]],
-		["⋊", oNamesOfLiterals.operatorLiteral[0]],
-		["▷", oNamesOfLiterals.operatorLiteral[0]],
-		["<", oNamesOfLiterals.operatorLiteral[0]],
-		[">", oNamesOfLiterals.operatorLiteral[0]],
-		["!", oNamesOfLiterals.operatorLiteral[0]],
-
-		["(", oNamesOfLiterals.opOpenBracket[0]],
-		[")", oNamesOfLiterals.opCloseBracket[0]],
-		["{", oNamesOfLiterals.opOpenBracket[0]],
-		["}", oNamesOfLiterals.opCloseBracket[0]],
-
-		["^", true],
-		["_", true],
-
-		// ["!!", "‼", oNamesOfLiterals.charLiteral[0]],
-		// ["...", "…"],
-		// ["::", "∷"],
-		// [":=", "≔"],
-
-		// ["~=", "≅", oNamesOfLiterals.operatorLiteral[0]],
-		// ["+-", "±"],
-		// ["-+", "∓"],
-		// ["<<", "≪"],
-		// ["<=", "≤"],
-		// [">=", "≥", oNamesOfLiterals.operatorLiteral[0]],
-		// ["->", "→"],
-		// [">>", "≫"],
-
-		["array(", oNamesOfLiterals.matrixLiteral[0]],
-
-		["⁰", oNamesOfLiterals.specialScriptNumberLiteral[0]],
-		["¹", oNamesOfLiterals.specialScriptNumberLiteral[0]],
-		["²", oNamesOfLiterals.specialScriptNumberLiteral[0]],
-		["³", oNamesOfLiterals.specialScriptNumberLiteral[0]],
-		["⁴", oNamesOfLiterals.specialScriptNumberLiteral[0]],
-		["⁵", oNamesOfLiterals.specialScriptNumberLiteral[0]],
-		["⁶", oNamesOfLiterals.specialScriptNumberLiteral[0]],
-		["⁷", oNamesOfLiterals.specialScriptNumberLiteral[0]],
-		["⁸", oNamesOfLiterals.specialScriptNumberLiteral[0]],
-		["⁹", oNamesOfLiterals.specialScriptNumberLiteral[0]],
-		["ⁱ",  oNamesOfLiterals.specialScriptCharLiteral[0]],
-		["ⁿ", oNamesOfLiterals.specialScriptCharLiteral[0]],
-		["⁺", oNamesOfLiterals.specialScriptOperatorLiteral[0]],
-		["⁻", oNamesOfLiterals.specialScriptOperatorLiteral[0]],
-		["⁼", oNamesOfLiterals.specialScriptOperatorLiteral[0]],
-		["⁽", oNamesOfLiterals.specialScriptBracketLiteral[0]],
-		["⁾", oNamesOfLiterals.specialScriptBracketLiteral[0]],
-
-		["₀", oNamesOfLiterals.specialIndexNumberLiteral[0]],
-		["₁", oNamesOfLiterals.specialIndexNumberLiteral[0]],
-		["₂", oNamesOfLiterals.specialIndexNumberLiteral[0]],
-		["₃", oNamesOfLiterals.specialIndexNumberLiteral[0]],
-		["₄", oNamesOfLiterals.specialIndexNumberLiteral[0]],
-		["₅", oNamesOfLiterals.specialIndexNumberLiteral[0]],
-		["₆", oNamesOfLiterals.specialIndexNumberLiteral[0]],
-		["₇", oNamesOfLiterals.specialIndexNumberLiteral[0]],
-		["₈", oNamesOfLiterals.specialIndexNumberLiteral[0]],
-		["₉", oNamesOfLiterals.specialIndexNumberLiteral[0]],
-		["₊", oNamesOfLiterals.specialIndexOperatorLiteral[0]],
-		["₋", oNamesOfLiterals.specialIndexOperatorLiteral[0]],
-		["₌", oNamesOfLiterals.specialIndexOperatorLiteral[0]],
-		["₍", oNamesOfLiterals.specialIndexBracketLiteral[0]],
-		["₎", oNamesOfLiterals.specialIndexBracketLiteral[0]],
-
-		["/", oNamesOfLiterals.overLiteral[0]], // opOpen
-		["'", MathLiterals.accent.id],
-		["''", MathLiterals.accent.id],
-		["|", oNamesOfLiterals.opOpenCloseBracket[0]],
-		["\\|", oNamesOfLiterals.opOpenCloseBracket[0]],
-
-		["⊘",  oNamesOfLiterals.overLiteral[0]],
-		["⒞", oNamesOfLiterals.overLiteral[0]],
-		["|", oNamesOfLiterals.opOpenCloseBracket[0]],
-		["||", oNamesOfLiterals.opOpenCloseBracket[0]],
-		["\\/", oNamesOfLiterals.overLiteral[0]],
-
-		["+", oNamesOfLiterals.operatorLiteral[0]],
-		["-", oNamesOfLiterals.operatorLiteral[0]],
-		["*", oNamesOfLiterals.operatorLiteral[0]],
-		["=", oNamesOfLiterals.operatorLiteral[0]],
-		["≶", oNamesOfLiterals.operatorLiteral[0]],
-		["≷", oNamesOfLiterals.operatorLiteral[0]],
-
-		["\\", oNamesOfLiterals.opCloseBracket[0]],
-
-		[
-			function (str) {
-				if (str[0] === "\\") {
-					let strOutput = "\\";
-					let index = 1;
-					while (str[index] && /[a-zA-Z]/.test(str[index])) {
-						strOutput += str[index];
-						index++;
-					}
-					return strOutput;
-				}
-			},
-			oNamesOfLiterals.charLiteral[0]
-		],
-
-		["\\matrix", oNamesOfLiterals.matrixLiteral[0]],
-		["\\array", oNamesOfLiterals.matrixLiteral[0]],
-		["\\above", true],
-		["\\below", true],
-		["\\mid", true],
-		["┴", true],
-
-		["̿", MathLiterals.accent.id], //todo
-		["Β"],
-		["□", oNamesOfLiterals.boxLiteral[0]],
-		["\\Bmatrix", oNamesOfLiterals.matrixLiteral[0]],
-		["\\left", true],
-		["\\right", true],
-		["⟫", oNamesOfLiterals.opCloseBracket[0]],
-		["⟧", oNamesOfLiterals.opCloseBracket[0]],
-		["̳", MathLiterals.accent.id], //check
-		["‖", oNamesOfLiterals.opOpenCloseBracket[0]],
-		["⒩", oNamesOfLiterals.matrixLiteral[0]],
-		["┴", true],
-		["́", MathLiterals.accent.id],
-		["∐", oNamesOfLiterals.opNaryLiteral[0]],
-		["∳", oNamesOfLiterals.opNaryLiteral[0]],
-		["≈", oNamesOfLiterals.operatorLiteral[0]],
-		["≍", oNamesOfLiterals.operatorLiteral[0]],
-		["¦", oNamesOfLiterals.overLiteral[0]], //LateX true
-		["■", oNamesOfLiterals.matrixLiteral[0]],
-		["‵", MathLiterals.accent.id],
-		["̅", MathLiterals.accent.id],
-		["〖", oNamesOfLiterals.opOpenBracket[0]], //Unicode  LaTeX: ["\\begin{"],
-		["\\begin{", true],
-		["\\begin{equation}", oNamesOfLiterals.matrixLiteral[0]],
-		["\\begin{array}", oNamesOfLiterals.matrixLiteral[0]],
-		["\\begin{cases}", oNamesOfLiterals.matrixLiteral[0]],
-		["\\begin{matrix}", oNamesOfLiterals.matrixLiteral[0]],
-		["\\begin{pmatrix}", oNamesOfLiterals.matrixLiteral[0]],
-		["\\begin{bmatrix}", oNamesOfLiterals.matrixLiteral[0]],
-		["\\begin{Bmatrix}", oNamesOfLiterals.matrixLiteral[0]],
-		["\\begin{vmatrix}", oNamesOfLiterals.matrixLiteral[0]],
-		["\\begin{Vmatrix}", oNamesOfLiterals.matrixLiteral[0]],
-		["\\matrix{", oNamesOfLiterals.matrixLiteral[0]],
-		["\\pmatrix{", oNamesOfLiterals.matrixLiteral[0]],
-		["\\bmatrix{", oNamesOfLiterals.matrixLiteral[0]],
-		["\\Bmatrix{", oNamesOfLiterals.matrixLiteral[0]],
-		["\\vmatrix{", oNamesOfLiterals.matrixLiteral[0]],
-		["\\Vmatrix{", oNamesOfLiterals.matrixLiteral[0]],
-		["┬", true],
-		["\\bmatrix", oNamesOfLiterals.matrixLiteral[0]],
-		["\\bmod", " mod ", oNamesOfLiterals.charLiteral[0]],
-		["⋂", oNamesOfLiterals.opNaryLiteral[0]], // todo in unicode NaryOp REFACTOR ["⋂", oNamesOfLiterals.opNaryLiteral[0]],
-		["⋃", oNamesOfLiterals.opNaryLiteral[0]], // 	["⋃", oNamesOfLiterals.opNaryLiteral[0]],
-		["⨀", oNamesOfLiterals.opNaryLiteral[0]], //["⨀", oNamesOfLiterals.opNaryLiteral[0]],
-		["⨁", oNamesOfLiterals.opNaryLiteral[0]], //["⨁", oNamesOfLiterals.opNaryLiteral[0]],
-		["⨂", oNamesOfLiterals.opNaryLiteral[0]], //["⨂", oNamesOfLiterals.opNaryLiteral[0]],
-		["⨆", oNamesOfLiterals.opNaryLiteral[0]], //["⨆", oNamesOfLiterals.opNaryLiteral[0]],
-		["⨄", oNamesOfLiterals.opNaryLiteral[0]], //		["⨄", oNamesOfLiterals.opNaryLiteral[0]],
-		["⋁", oNamesOfLiterals.opNaryLiteral[0]],
-		["⋀", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\binom", true],
-		["⊥", oNamesOfLiterals.operatorLiteral[0]],
-		["□", oNamesOfLiterals.boxLiteral[0]],
-		["\\boxplus", "⊞"],
-		["⟨", oNamesOfLiterals.opOpenBracket[0]],
-		["\\break", "⤶"],
-		["̆", MathLiterals.accent.id],
-		["\\cr", "\\\\", true],
-		["█", true],//Ⓒ
-		["∛", oNamesOfLiterals.sqrtLiteral[0]], //oNamesOfLiterals.opBuildupLiteral[0] to functionLiteral?
-		["⋅", oNamesOfLiterals.operatorLiteral[0]],
-		["⋯"],
-		["\\cfrac", true],// https://www.tutorialspoint.com/tex_commands/cfrac.htm
-		["̌", MathLiterals.accent.id],
-		["χ"],
-		["∘"],
-		["♣"],
-		["∲", oNamesOfLiterals.opNaryLiteral[0]],
-		["≅", oNamesOfLiterals.operatorLiteral[0]],
-		["∋", oNamesOfLiterals.operatorLiteral[0]],
-		["∐", oNamesOfLiterals.opNaryLiteral[0]], //check type
-		["∪"],
-		["ℸ"],
-		["ℸ"],
-		["⊣"],
-		["ⅆ"],
-		["⃜", MathLiterals.accent.id],
-		["⃛", MathLiterals.accent.id],
-		["̈", MathLiterals.accent.id],
-		["⋱"],
-		["≝"],
-		["℃"],
-		["℉"],
-		["\\sqrt", oNamesOfLiterals.sqrtLiteral[0]],
-
-		["°"],
-		["δ"],
-		["\\dfrac{", true],
-		["⋄"],
-		["♢"],
-		["÷", oNamesOfLiterals.operatorLiteral[0]],
-		["̇", MathLiterals.accent.id],
-		[" ", oNamesOfLiterals.spaceLiteral[0]], // [" ", oNamesOfLiterals.spaceLiteral[0]], // 1em space
-		["〗", oNamesOfLiterals.opCloseBracket[0]], //LaTeX ["\\end{"],
-		["\\end{equation}", "endOfMatrix"],
-		["\\end{array}", "endOfMatrix"],
-		["\\end{cases}", "endOfMatrix"],
-		["\\end{matrix}", "endOfMatrix"],
-		["\\end{pmatrix}", "endOfMatrix"],
-		["\\end{bmatrix}", "endOfMatrix"],
-		["\\end{Bmatrix}", "endOfMatrix"],
-		["\\end{vmatrix}", "endOfMatrix"],
-		["\\end{Vmatrix}", "endOfMatrix"],
-		[" ", oNamesOfLiterals.spaceLiteral[0],], //[" ", oNamesOfLiterals.spaceLiteral[0]], // 9/18em space
-		["ϵ"],
-		["█", true],
-		["#"],
-		["≡", oNamesOfLiterals.operatorLiteral[0]],
-		["η"],
-		["∃", oNamesOfLiterals.operatorLiteral[0]],
-		["∀", oNamesOfLiterals.operatorLiteral[0]], //fractur
-		["\\frac", true],
-		["⌑"],
-		["⁡", oNamesOfLiterals.operatorLiteral[0]],
-		["γ"],
-		["≥", oNamesOfLiterals.operatorLiteral[0]],
-		["≥", oNamesOfLiterals.operatorLiteral[0]],
-		["←"],
-		["≫"],
-		["ℷ"],//0x2137
-		["̀", MathLiterals.accent.id],
-		[" ", oNamesOfLiterals.spaceLiteral[0]], //	[" ", oNamesOfLiterals.spaceLiteral[0]], // 1/18em space very very thin math space
-		["̂", MathLiterals.accent.id], //["\\hat", MathLiterals.accent.id, 770],
-		["ℏ"],//0x210f
-		["♡"],
-		["↩"],
-		["↪"],
-		["⬄"],
-		["⬌"],
-		["⃑"],
-		["ⅈ"],//0x2148
-		["⨌", oNamesOfLiterals.opNaryLiteral[0]], //LaTeX oNamesOfLiterals.functionLiteral[0] //Unicode oNamesOfLiterals.opNaryLiteral[0]
-		["∭", oNamesOfLiterals.opNaryLiteral[0]],
-		["∬", oNamesOfLiterals.opNaryLiteral[0]],
-		["𝚤"],
-		["∈", oNamesOfLiterals.operatorLiteral[0]],
-		["∆"],
-		["∞"],
-		["∫", oNamesOfLiterals.opNaryLiteral[0]],
-		["ι"],
-		//["\\itimes", "⁢", oNamesOfLiterals.operatorLiteral[0]],
-		["Jay"],
-		["ⅉ"],
-		["𝚥"],
-		["κ"],
-		["⟩", oNamesOfLiterals.opCloseBracket[0]],
-		["λ"],
-		["⟨", oNamesOfLiterals.opOpenBracket[0]],
-		["⟦", oNamesOfLiterals.opOpenBracket[0]],
-		["\\{", oNamesOfLiterals.opOpenBracket[0]], // todo check in word { or \\{
-		["[", oNamesOfLiterals.opOpenBracket[0]],
-		["⌈", oNamesOfLiterals.opOpenBracket[0]],
-		["∕", oNamesOfLiterals.overLiteral[0]],
-		["∕", oNamesOfLiterals.overLiteral[0]],
-		["…"],
-		["≤", oNamesOfLiterals.operatorLiteral[0]],
-		["├", oNamesOfLiterals.opOpenBracket[0]], //LaTeX type === \left
-		["←"],
-		["↽"],
-		["↼"],
-		["↔"],
-		["≤"],
-		["⌊", oNamesOfLiterals.opOpenBracket[0]],
-		["⃐", oNamesOfLiterals.opOpenBracket[0]], //check word
-		["\\limits", true],
-		["≪"],
-		["⟦", oNamesOfLiterals.opOpenBracket[0]],
-		["⎰", oNamesOfLiterals.opOpenBracket[0]],
-		["⇋"],
-		["⃖", MathLiterals.accent.id],
-		["|", oNamesOfLiterals.opOpenCloseBracket[0]],
-		["↦"],
-		["■", oNamesOfLiterals.matrixLiteral[0]],
-		[" ", oNamesOfLiterals.spaceLiteral[0]], //[" ", oNamesOfLiterals.spaceLiteral[0]], // 4/18em space medium math space
-		["∣", true],
-		["ⓜ", true],
-		["⊨"],
-		["∓"],
-		["μ"],
-		["∇"],
-		["▒", true],
-		[" ", oNamesOfLiterals.spaceLiteral[0]],
-		["≠"],
-		["↗"],
-		["¬", oNamesOfLiterals.operatorLiteral[0]],
-		["≠"],
-		["∋", oNamesOfLiterals.operatorLiteral[0]],
-		["‖", oNamesOfLiterals.opOpenCloseBracket[0]],
-		//["\\not", "̸"], //doesn't implement in word
-		["∌"],
-		["∉"],
-		["∉"],
-		["ν"],
-		["↖"],
-		["ο"],
-		["⊙"],
-		["▒", true],
-		["∰", oNamesOfLiterals.opNaryLiteral[0]],
-		["∯", oNamesOfLiterals.opNaryLiteral[0]],
-		["∮", oNamesOfLiterals.opNaryLiteral[0]],
-		["ω"],
-		["⊖"],
-		["⊕", oNamesOfLiterals.operatorLiteral[0]],
-		["⊗", oNamesOfLiterals.operatorLiteral[0]],
-		["\\over", true],
-		["¯", oNamesOfLiterals.hBracketLiteral[0]],
-		["⏞", oNamesOfLiterals.hBracketLiteral[0]],
-		["⎴", oNamesOfLiterals.hBracketLiteral[0]],
-		["¯", true],
-		["⏜", oNamesOfLiterals.hBracketLiteral[0]],
-		["┴", true],
-		["⏠", oNamesOfLiterals.hBracketLiteral[0]],
-		["∥"], //check
-		["∂"],
-		["⊥", oNamesOfLiterals.operatorLiteral[0]],
-		["ϕ"],
-		["π"],
-		["±"],
-		["⒨", oNamesOfLiterals.matrixLiteral[0]],
-		["≺", oNamesOfLiterals.operatorLiteral[0]],
-		["≼", oNamesOfLiterals.operatorLiteral[0]],
-		["∏", oNamesOfLiterals.opNaryLiteral[0]], //oNamesOfLiterals.functionLiteral[0]
-		["∝", oNamesOfLiterals.operatorLiteral[0]],
-		["ψ"],
-		["∜", oNamesOfLiterals.sqrtLiteral[0]],
-		["〉", oNamesOfLiterals.opCloseBracket[0]],
-		["⟩", oNamesOfLiterals.opCloseBracket[0]],
-		["∶"],
-		["}", oNamesOfLiterals.opCloseBracket[0]],
-		["]", oNamesOfLiterals.opCloseBracket[0]],
-		["⌉", oNamesOfLiterals.opCloseBracket[0]],
-		["⋰"],
-
-		["\\box", oNamesOfLiterals.boxLiteral[0]],
-		["\\fbox", oNamesOfLiterals.rectLiteral[0]],
-		["\\rect", oNamesOfLiterals.rectLiteral[0]],
-
-		["▭", oNamesOfLiterals.rectLiteral[0]],
-		["▭", oNamesOfLiterals.rectLiteral[0]],
-		["⌋", oNamesOfLiterals.opCloseBracket[0]],
-		["┤", oNamesOfLiterals.opCloseBracket[0]],
-		["⎱", oNamesOfLiterals.opCloseBracket[0]],
-		["⒭", oNamesOfLiterals.sqrtLiteral[0]], //check
-		["|", oNamesOfLiterals.opOpenCloseBracket[0]],
-		["⁄", oNamesOfLiterals.overLiteral[0]],
-		["⁄", oNamesOfLiterals.overLiteral[0]], //Script
-		["∼", oNamesOfLiterals.operatorLiteral[0]],
-		["≃", oNamesOfLiterals.operatorLiteral[0]],
-		["√", oNamesOfLiterals.sqrtLiteral[0]],
-		["⊑", oNamesOfLiterals.operatorLiteral[0]],
-		["⊒", oNamesOfLiterals.operatorLiteral[0]],
-		["⊂", oNamesOfLiterals.operatorLiteral[0]],
-		["⊆", oNamesOfLiterals.operatorLiteral[0]],
-		["█", true],
-		["≻", oNamesOfLiterals.operatorLiteral[0]],
-		["≽", oNamesOfLiterals.operatorLiteral[0]],
-		["∑", oNamesOfLiterals.opNaryLiteral[0]],
-		["⊃", oNamesOfLiterals.operatorLiteral[0]],
-		["⊇", oNamesOfLiterals.operatorLiteral[0]],
-		["√", oNamesOfLiterals.sqrtLiteral[0]],
-		[" ", oNamesOfLiterals.spaceLiteral[0]], //[" ", oNamesOfLiterals.spaceLiteral[0]], // 5/18em space thick math space
-		[" ", oNamesOfLiterals.spaceLiteral[0]],
-		["̃", MathLiterals.accent.id],
-		["×", oNamesOfLiterals.operatorLiteral[0]],
-		["→"],
-		["⊤", oNamesOfLiterals.operatorLiteral[0]],
-		["⃡", MathLiterals.accent.id],
-		["̲", MathLiterals.accent.id], //check
-		["┌", oNamesOfLiterals.opOpenBracket[0]],
-		["▁", oNamesOfLiterals.hBracketLiteral[0]],
-		["⏟", oNamesOfLiterals.hBracketLiteral[0]],
-		["⎵", oNamesOfLiterals.hBracketLiteral[0]],
-		["▁", true],
-		["⏝", oNamesOfLiterals.hBracketLiteral[0]],
-		["┬", true],
-		["┐", oNamesOfLiterals.opCloseBracket[0]],
-		["│", true],
-		["⊢", oNamesOfLiterals.operatorLiteral[0]],
-		["⋮"],
-		["⃗", MathLiterals.accent.id],
-		["∨", oNamesOfLiterals.operatorLiteral[0]],
-		["|", oNamesOfLiterals.opOpenCloseBracket[0]],
-		[" ", oNamesOfLiterals.spaceLiteral[0]], //[" ", oNamesOfLiterals.spaceLiteral[0]], // 6/18em space very thick math space
-		["∧", oNamesOfLiterals.operatorLiteral[0]],
-		["̂", MathLiterals.accent.id], //["\\hat", MathLiterals.accent.id, 770],
-		["℘"],//0x2118
-		["‌", oNamesOfLiterals.spaceLiteral[0]],
-		["​", oNamesOfLiterals.spaceLiteral[0]], //["​", oNamesOfLiterals.spaceLiteral[0]], // zero-width space
-
-		["√", oNamesOfLiterals.sqrtLiteral[0]],
-		//["√(", oNamesOfLiterals.sqrtLiteral[0]],
-		["\\}", oNamesOfLiterals.opCloseBracket[0]],
-		["\\|", oNamesOfLiterals.opOpenCloseBracket[0]],
-		["\\\\", true],
-
-		["\\sf",  oNamesOfLiterals.mathFontLiteral[0]],
-		["\\script",  oNamesOfLiterals.mathFontLiteral[0]],
-		["\\scr",  oNamesOfLiterals.mathFontLiteral[0]],
-		["\\rm",  oNamesOfLiterals.mathFontLiteral[0]],
-		["\\oldstyle", oNamesOfLiterals.mathFontLiteral[0]],
-		["\\mathtt",  oNamesOfLiterals.mathFontLiteral[0]],
-		["\\mathsfit", oNamesOfLiterals.mathFontLiteral[0]],
-		["\\mathsfbfit", oNamesOfLiterals.mathFontLiteral[0]],
-		["\\mathsfbf",  oNamesOfLiterals.mathFontLiteral[0]],
-		["\\mathsf", oNamesOfLiterals.mathFontLiteral[0]],
-		["\\mathrm",  oNamesOfLiterals.mathFontLiteral[0]],
-		["\\mathit", oNamesOfLiterals.mathFontLiteral[0]],
-		["\\mathfrak", oNamesOfLiterals.mathFontLiteral[0]],
-		["\\mathcal", oNamesOfLiterals.mathFontLiteral[0]],
-		["\\mathbfit",  oNamesOfLiterals.mathFontLiteral[0]],
-		["\\mathbffrak", oNamesOfLiterals.mathFontLiteral[0]],
-		["\\mathbfcal",  oNamesOfLiterals.mathFontLiteral[0]],
-		["\\mathbf", oNamesOfLiterals.mathFontLiteral[0]],
-		["\\mathbb", oNamesOfLiterals.mathFontLiteral[0]],
-		["\\it", oNamesOfLiterals.mathFontLiteral[0]],
-		["\\fraktur", oNamesOfLiterals.mathFontLiteral[0]],
-		["\\frak", oNamesOfLiterals.mathFontLiteral[0]],
-		["\\double", oNamesOfLiterals.mathFontLiteral[0]],
-		["\\sfrac", true],
-		["\\text", true],
-
-		["\\sum", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\prod", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\amalg", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\coprod", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\bigwedge", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\bigvee", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\bigcup", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\bigcap", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\bigsqcup", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\biguplus", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\bigoplus", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\bigotimes", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\int", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\iint", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\iiint", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\iiiint", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\oint", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\oiint", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\oiiint", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\coint", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\aouint", oNamesOfLiterals.opNaryLiteral[0]],
-		["\\substack", true],
-
-		["\\hat", MathLiterals.accent.id],
-		["\\dot", MathLiterals.accent.id],
-
-		["\"",  oNamesOfLiterals.charLiteral[0]],
-		["\'",  oNamesOfLiterals.charLiteral[0]],
-
-		["\\quad", oNamesOfLiterals.spaceLiteral[0]], // 1 em (nominally, the height of the font)
-		// ["\\qquad", [8193, 8193], oNamesOfLiterals.spaceLiteral[0]], // 2em
-		//["\\text{", "text{"],
-
-		["\\,", oNamesOfLiterals.spaceLiteral[0]], // 3/18em space thin math space
-		["\\:", oNamesOfLiterals.spaceLiteral[0]], // 4/18em space thin math space
-		["\\;", oNamesOfLiterals.spaceLiteral[0]], // 5/18em space thin math space
-		//["\!", " ", oNamesOfLiterals.spaceLiteral[0]], // -3/18 of \quad (= -3 mu)
-		["\\ ", oNamesOfLiterals.spaceLiteral[0]], // equivalent of space in normal text
-		["\\qquad", oNamesOfLiterals.spaceLiteral[0]], // equivalent of space in normal text
-
-		["\\\\", true],
-		// ["\\lim", oNamesOfLiterals.opNaryLiteral[0]], LaTeX
-		// ["\\lg", oNamesOfLiterals.opNaryLiteral[0]],
-
-		// ["/<", "≮", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/=", "≠", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/>", "≯", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\exists", "∄", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\in", "∉", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\ni", "∌", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\simeq", "≄", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\cong", "≇", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\approx", "≉", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\asymp", "≭", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\equiv", "≢", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\le", "≰", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\ge", "≱", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\lessgtr", "≸", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\gtrless", "≹", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\succeq", "⋡", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\prec", "⊀", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\succ", "⊁", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\preceq", "⋠", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\subset", "⊄", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\supset", "⊅", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\subseteq", "⊈", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\supseteq", "⊉", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\sqsubseteq", "⋢", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\sqsupseteq", "⋣", oNamesOfLiterals.operatorLiteral[0]],
-
-		[",", true],
-		[".", true],
-
-		[
-			function (str) {
-				if (str[0] === "\\") {
-					let strOutput = "\\";
-					let index = 1;
-					while (str[index] && /[a-zA-Z]/.test(str[index])) {
-						strOutput += str[index];
-						index++;
-					}
-					if (functionNames.includes(strOutput.slice(1)) || limitFunctions.includes(strOutput.slice(1))) {
-						return strOutput;
-					}
-				}
-				else {
-					let index = 0;
-					let strOutput = "";
-					while (str[index] && /[a-zA-Z]/.test(str[index])) {
-						strOutput += str[index];
-						index++;
-					}
-					if (limitFunctions.includes(strOutput) || functionNames.includes(strOutput)) {
-						return strOutput
-					}
-				}
-			},
-			oNamesOfLiterals.functionLiteral[0]
-		],
+		MathLiterals.func,
 	];
 
 	const arrDoNotConvertWordsForLaTeX = [
@@ -1411,7 +2689,7 @@
 					}
 				}
 			}
-			else 
+			else
 			{
 				SelectObject(oTokens, oContext)
 			}
@@ -1440,7 +2718,7 @@
 						);
 					}
 					break;
-				case oNamesOfLiterals.otherLiteral[num]:
+				case MathStructures.other:
 					let intCharCode = oTokens.value.codePointAt()
 					oContext.Add_Symbol(intCharCode);
 					break;
@@ -1454,11 +2732,10 @@
 				case oNamesOfLiterals.specialIndexBracketLiteral[num]:
 				case oNamesOfLiterals.specialIndexOperatorLiteral[num]:
 				case oNamesOfLiterals.opDecimal[num]:
-				case oNamesOfLiterals.charLiteral[num]:
-				case oNamesOfLiterals.spaceLiteral[num]:
-				case oNamesOfLiterals.operatorLiteral[num]:
+				case MathStructures.char:
+				case MathStructures.space:
 				case oNamesOfLiterals.mathOperatorLiteral[num]:
-				case oNamesOfLiterals.numberLiteral[num]:
+				case MathStructures.number:
 					if (oTokens.decimal) {
 						ConvertTokens(
 							oTokens.left,
@@ -1477,7 +2754,7 @@
 				case oNamesOfLiterals.textPlainLiteral[num]:
 					oContext.Add_Text(oTokens.value, Paragraph, STY_PLAIN);
 					break
-				case oNamesOfLiterals.opNaryLiteral[num]:
+				case MathStructures.nary:
 					let lPr = {
 						chr: oTokens.value.charCodeAt(0),
 						subHide: true,
@@ -1488,7 +2765,7 @@
 					if (oTokens.third) {
 						UnicodeArgument(
 							oTokens.third,
-							oNamesOfLiterals.bracketBlockLiteral[num],
+							MathStructures.bracket_block,
 							oNary.getBase(),
 						)
 					}
@@ -1507,16 +2784,16 @@
 					);
 					UnicodeArgument(
 						oTokens.up,
-						oNamesOfLiterals.bracketBlockLiteral[num],
+						MathStructures.bracket_block,
 						oPreSubSup.getUpperIterator()
 					)
 					UnicodeArgument(
 						oTokens.down,
-						oNamesOfLiterals.bracketBlockLiteral[num],
+						MathStructures.bracket_block,
 						oPreSubSup.getLowerIterator()
 					)
 					break;
-				case MathLiterals.accent.id:
+				case MathStructures.accent:
 					let oAccent = oContext.Add_Accent(
 						new CTextPr(),
 						GetFixedCharCodeAt(oTokens.value),
@@ -1524,47 +2801,30 @@
 					);
 					UnicodeArgument(
 						oTokens.base,
-						oNamesOfLiterals.bracketBlockLiteral[num],
+						MathStructures.bracket_block,
 						oAccent.getBase()
 					)
 					break;
 				case oNamesOfLiterals.skewedFractionLiteral[num]:
-				case oNamesOfLiterals.fractionLiteral[num]:
-				case oNamesOfLiterals.binomLiteral[num]:
-					let oFraction;
-					if (oTokens.type === oNamesOfLiterals.binomLiteral[num]) {
-						oFraction = oContext.Add_Fraction(
-							{ctrPrp: new CTextPr(), type: NO_BAR_FRACTION},
-							null,
-							null
-						);
-					}
-					else if (oTokens.type === oNamesOfLiterals.fractionLiteral[num]) {
-						oFraction = oContext.Add_Fraction(
-							{ctrPrp: new CTextPr(), type: oTokens.fracType},
-							null,
-							null
-						);
-					}
-					else if (oTokens.type === oNamesOfLiterals.skewedFractionLiteral[num]) {
-						oFraction = oContext.Add_Fraction(
-							{ctrPrp: new CTextPr(), type: SKEWED_FRACTION},
-							null,
-							null
-						);
-					}
+				case MathStructures.frac:
+					let oFraction = oContext.Add_Fraction(
+						{ctrPrp: new CTextPr(), type: oTokens.fracType},
+						null,
+						null
+					);
+
 					UnicodeArgument(
 						oTokens.up,
-						oNamesOfLiterals.bracketBlockLiteral[num],
+						MathStructures.bracket_block,
 						oFraction.getNumeratorMathContent()
 					);
 					UnicodeArgument(
 						oTokens.down,
-						oNamesOfLiterals.bracketBlockLiteral[num],
+						MathStructures.bracket_block,
 						oFraction.getDenominatorMathContent()
 					);
 					break;
-				case oNamesOfLiterals.subSupLiteral[num]:
+				case MathStructures.sub_sub:
 					if (oTokens.value && oTokens.value.type === oNamesOfLiterals.functionLiteral[num]) {
 						let oFunc = oContext.Add_Function({}, null, null);
 						let oFuncName = oFunc.getFName();
@@ -1587,14 +2847,14 @@
 						if (oTokens.up) {
 							UnicodeArgument(
 								oTokens.up,
-								oNamesOfLiterals.bracketBlockLiteral[num],
+								MathStructures.bracket_block,
 								SubSup.getUpperIterator()
 							)
 						}
 						if (oTokens.down) {
 							UnicodeArgument(
 								oTokens.down,
-								oNamesOfLiterals.bracketBlockLiteral[num],
+								MathStructures.bracket_block,
 								SubSup.getLowerIterator()
 							)
 						}
@@ -1603,7 +2863,7 @@
 							let oFuncArgument = oFunc.getArgument();
 							UnicodeArgument(
 								oTokens.third,
-								oNamesOfLiterals.bracketBlockLiteral[num],
+								MathStructures.bracket_block,
 								oFuncArgument
 							)
 						}
@@ -1630,13 +2890,13 @@
 						if (oTokens.up || oTokens.down) {
 							UnicodeArgument(
 								oTokens.up === undefined ? oTokens.down : oTokens.up,
-								oNamesOfLiterals.bracketBlockLiteral[num],
+								MathStructures.bracket_block,
 								oLimitIterator
 							)
 						}
 						UnicodeArgument(
 							oTokens.third,
-							oNamesOfLiterals.bracketBlockLiteral[num],
+							MathStructures.bracket_block,
 							oFuncWithLimit.getArgument()
 						)
 					}
@@ -1655,12 +2915,12 @@
 						);
 						UnicodeArgument(
 							oTokens.up,
-							oNamesOfLiterals.bracketBlockLiteral[num],
+							MathStructures.bracket_block,
 							oNary.getSupMathContent()
 						)
 						UnicodeArgument(
 							oTokens.down,
-							oNamesOfLiterals.bracketBlockLiteral[num],
+							MathStructures.bracket_block,
 							oNary.getSubMathContent()
 						)
 					}
@@ -1685,40 +2945,40 @@
 							null,
 							null
 						);
-						
+
 						UnicodeArgument(
 							oTokens.value,
-							oNamesOfLiterals.bracketBlockLiteral[num],
+							MathStructures.bracket_block,
 							SubSup.getBase(),
 						)
 						UnicodeArgument(
 							oTokens.up,
-							oNamesOfLiterals.bracketBlockLiteral[num],
+							MathStructures.bracket_block,
 							SubSup.getUpperIterator()
 						)
 						UnicodeArgument(
 							oTokens.down,
-							oNamesOfLiterals.bracketBlockLiteral[num],
+							MathStructures.bracket_block,
 							SubSup.getLowerIterator()
 						)
 					}
 					break;
-				case oNamesOfLiterals.functionWithLimitLiteral[num]:
-					var MathFunc = new CMathFunc({});
+				case MathStructures.func_lim:
+					let MathFunc = new CMathFunc({});
 					oContext.Add_Element(MathFunc);
 
-					var FuncName = MathFunc.getFName();
+					let FuncName = MathFunc.getFName();
 
-					var Limit = new CLimit({ctrPrp : new CTextPr(), type : oTokens.down !== undefined ? LIMIT_LOW : LIMIT_UP});
+					let Limit = new CLimit({ctrPrp : new CTextPr(), type : oTokens.down !== undefined ? LIMIT_LOW : LIMIT_UP});
 					FuncName.Add_Element(Limit);
 
-					var LimitName = Limit.getFName();
+					let LimitName = Limit.getFName();
 					LimitName.Add_Text(oTokens.value, Paragraph, STY_PLAIN);
 
 					if (oTokens.up || oTokens.down) {
 						UnicodeArgument(
 							oTokens.up === undefined ? oTokens.down : oTokens.up,
-							oNamesOfLiterals.bracketBlockLiteral[num],
+							MathStructures.bracket_block,
 							Limit.getIterator()
 						)
 					}
@@ -1732,24 +2992,29 @@
 					}
 
 					break;
-				case oNamesOfLiterals.hBracketLiteral[num]:
+				case MathStructures.horizontal_bracket:
 					let intBracketPos = GetHBracket(oTokens.hBrack);
 					let intIndexPos = oTokens.up === undefined ? LIMIT_LOW : LIMIT_UP;
 
-					if (!(oTokens.up || oTokens.down)) {
-						let oGroup = oContext.Add_GroupCharacter({
+					if (!(oTokens.up || oTokens.down))
+					{
+						let Pr = {
 							ctrPrp: new CTextPr(),
 							chr: oTokens.hBrack.charCodeAt(0),
 							pos: intBracketPos,
 							vertJc: 1
-						}, null);
+						};
+
+						let oGroup = oContext.Add_GroupCharacter(Pr, null);
+
 						UnicodeArgument(
 							oTokens.value,
-							oNamesOfLiterals.bracketBlockLiteral[num],
+							MathStructures.bracket_block,
 							oGroup.getBase()
-						)
+						);
 					}
-					else {
+					else
+					{
 						let Limit = oContext.Add_Limit({ctrPrp: new CTextPr(), type: intIndexPos}, null, null);
 						let MathContent = Limit.getFName();
 						let oGroup = MathContent.Add_GroupCharacter({
@@ -1761,21 +3026,21 @@
 
 						UnicodeArgument(
 							oTokens.value,
-							oNamesOfLiterals.bracketBlockLiteral[num],
+							MathStructures.bracket_block,
 							oGroup.getBase()
 						)
 
-						if (oTokens.down || oTokens.up) {
+						if (oTokens.down || oTokens.up)
+						{
 							UnicodeArgument(
 								oTokens.up === undefined ? oTokens.down : oTokens.up,
-								oNamesOfLiterals.bracketBlockLiteral[num],
+								MathStructures.bracket_block,
 								Limit.getIterator()
 							)
 						}
 					}
-
 					break;
-				case oNamesOfLiterals.bracketBlockLiteral[num]:
+				case MathStructures.bracket_block:
 
 					let arr = [null]
 					if (oTokens.counter > 1 && oTokens.value.length < oTokens.counter)
@@ -1808,7 +3073,7 @@
 					}
 
 					break;
-				case oNamesOfLiterals.sqrtLiteral[num]:
+				case MathStructures.radical:
 					let Pr = GetPrForFunction(oTokens.index);
 					let oRadical = oContext.Add_Radical(
 						Pr,
@@ -1817,7 +3082,7 @@
 					);
 					UnicodeArgument(
 						oTokens.value,
-						oNamesOfLiterals.bracketBlockLiteral[num],
+						MathStructures.bracket_block,
 						oRadical.getBase()
 					)
 					ConvertTokens(
@@ -1825,12 +3090,12 @@
 						oRadical.getDegree()
 					);
 					break;
-				case oNamesOfLiterals.functionLiteral[num]:
+				case MathStructures.func:
 					let oFunc = oContext.Add_Function({}, null, null);
 					oFunc.getFName().Add_Text(oTokens.value, Paragraph, STY_PLAIN);
 					UnicodeArgument(
 						oTokens.third,
-						oNamesOfLiterals.bracketBlockLiteral[num],
+						MathStructures.bracket_block,
 						oFunc.getArgument()
 					)
 					break;
@@ -1840,7 +3105,7 @@
 						oContext,
 					);
 					break;
-				case oNamesOfLiterals.matrixLiteral[num]:
+				case MathStructures.matrix:
 					let strStartBracket, strEndBracket;
 					if (oTokens.strMatrixType) {
 						if (oTokens.strMatrixType.length === 2) {
@@ -1883,19 +3148,24 @@
 						);
 					}
 					break;
-				case oNamesOfLiterals.boxLiteral[num]:
+				case MathStructures.box:
 					let oBox = oContext.Add_Box({ctrPrp: new CTextPr(), opEmu : 1}, null);
+					if (oTokens.argSize)
+					{
+						let BoxMathContent = oBox.getBase();
+						BoxMathContent.SetArgSize(oTokens.argSize);
+					}
 					UnicodeArgument(
 						oTokens.value,
-						oNamesOfLiterals.bracketBlockLiteral[num],
+						MathStructures.bracket_block,
 						oBox.getBase(),
 					)
 					break;
-				case oNamesOfLiterals.borderBoxLiteral[num]:
+
 					let BorderBox = oContext.Add_BorderBox({}, null);
 					UnicodeArgument(
 						oTokens.value,
-						oNamesOfLiterals.bracketBlockLiteral[num],
+						MathStructures.bracket_block,
 						BorderBox.getBase(),
 					)
 					break;
@@ -1903,33 +3173,34 @@
 					let oBorderBox = oContext.Add_BorderBox({}, null);
 					UnicodeArgument(
 						oTokens.value,
-						oNamesOfLiterals.bracketBlockLiteral[num],
+						MathStructures.bracket_block,
 						oBorderBox.getBase(),
 					)
 					break;
-				case oNamesOfLiterals.overBarLiteral[num]:
-					let intLocation = oTokens.overUnder === "▁" ? LOCATION_BOT : LOCATION_TOP;
-					let oBar = oContext.Add_Bar({ctrPrp: new CTextPr(), pos: intLocation}, null);
-					UnicodeArgument(
-						oTokens.value,
-						oNamesOfLiterals.bracketBlockLiteral[num],
-						oBar.getBase(),
-					);
-					break;
-				case oNamesOfLiterals.belowAboveLiteral[num]:
+				// case MathStructures.bar:
+				// 	let intLocation = oTokens.overUnder === "▁" ? LOCATION_BOT : LOCATION_TOP;
+				// 	let oBar = oContext.Add_Bar({ctrPrp: new CTextPr(), pos: intLocation}, null);
+				// 	UnicodeArgument(
+				// 		oTokens.value,
+				// 		MathStructures.bracket_block,
+				// 		oBar.getBase(),
+				// 	);
+				// 	break;
+				case MathStructures.below_above:
 					let LIMIT_TYPE = (oTokens.isBelow === false) ? VJUST_BOT : VJUST_TOP;
-					if (oTokens.base.type === oNamesOfLiterals.charLiteral[num] && oTokens.base.value.length === 1)
+
+					if (oTokens.base.type === MathStructures.char && oTokens.base.value.length === 1)
 					{
 						let Pr = (LIMIT_TYPE == VJUST_TOP)
 							? {ctrPrp : new CTextPr(), pos :LIMIT_TYPE, chr : oTokens.base.value.charCodeAt(0)}
 							: {ctrPrp : new CTextPr(), vertJc : LIMIT_TYPE, chr : oTokens.base.value.charCodeAt(0)};
 
-						var Group = new CGroupCharacter(Pr);
+						let Group = new CGroupCharacter(Pr);
 						oContext.Add_Element(Group);
 
 						UnicodeArgument(
 							oTokens.value,
-							oNamesOfLiterals.bracketBlockLiteral[num],
+							MathStructures.bracket_block,
 							Group.getBase(),
 						);
 					}
@@ -1938,12 +3209,12 @@
 						let oLimit = oContext.Add_Limit({ctrPrp: new CTextPr(), type: LIMIT_TYPE});
 						UnicodeArgument(
 							oTokens.base,
-							oNamesOfLiterals.bracketBlockLiteral[num],
+							MathStructures.bracket_block,
 							oLimit.getFName(),
 						);
 						UnicodeArgument(
 							oTokens.value,
-							oNamesOfLiterals.bracketBlockLiteral[num],
+							MathStructures.bracket_block,
 							oLimit.getIterator(),
 						);
 					}
@@ -1971,11 +3242,12 @@
 		}
 	}
 
-	function Tokenizer()
+	function Tokenizer(isLaTeX)
 	{
 		this._string = [];
 		this._cursor = 0;
 		this.state = [];
+		this.isLaTeX = isLaTeX;
 	}
 	Tokenizer.prototype.Init = function (string)
 	{
@@ -2030,34 +3302,30 @@
 		let autoCorrectRule,
 			tokenValue,
 			tokenClass,
-			string = this._string.slice(this._cursor),
-			mathLiteral;
-
+			string = this._string.slice(this._cursor);
 
 		for (let i = wordAutoCorrection.length - 1; i >= 0; i--)
 		{
 			autoCorrectRule = wordAutoCorrection[i];
-			tokenValue = this.MatchToken(autoCorrectRule[0], string);
-			mathLiteral = GetClassOfMathLiterals[autoCorrectRule[1]];
+			tokenValue = this.MatchToken(autoCorrectRule, string);
 
 			if (tokenValue === null)
-			{
 				continue;
-			}
-			if (mathLiteral)
+
+			else if (!Array.isArray(autoCorrectRule))
 			{
-				let new_token = mathLiteral.toSymbols[tokenValue];
-				if (new_token)
-					tokenValue = new_token;
+				tokenClass = (autoCorrectRule.isClassEqalData)
+					? tokenValue
+					: autoCorrectRule.id;
 			}
 			else if (autoCorrectRule.length === 1)
 			{
-				tokenClass = oNamesOfLiterals.charLiteral[0];
+				tokenClass = MathLiterals.char.id;
 			}
 			else if (autoCorrectRule.length === 2)
 			{
 				tokenClass = (autoCorrectRule[1] === true)
-					? tokenValue
+					? autoCorrectRule[0]
 					: autoCorrectRule[1];
 			}
 
@@ -2072,30 +3340,29 @@
 	{
 		let intLenOfRule = 0;
 
-		while (intLenOfRule <= char.length - 1) {
+		while (intLenOfRule <= char.length - 1)
+		{
 			if (char[intLenOfRule] === str[intLenOfRule])
-			{
 				intLenOfRule++;
-			}
 			else
-			{
 				return;
-			}
 		}
 		return char;
 	};
-	Tokenizer.prototype.MatchToken = function (regexp, string)
+	Tokenizer.prototype.MatchToken = function (Func, arrStr)
 	{
-		let oMatched = (typeof regexp === "function")
-			? regexp(string, this)
-			: this.ProcessString(string, regexp);
+		let oMatched = (Array.isArray(Func))
+			? this.ProcessString(arrStr, Func[0])
+			: Func.GetToken(this.isLaTeX, arrStr);
 
 		if (oMatched === null || oMatched === undefined)
-		{
 			return null;
-		}
 
 		this._cursor += this.GetStringLength(oMatched);
+
+		if (Func.IsNeedReturnCorrected_Unicode === true && !this.isLaTeX)
+			oMatched = Func.LaTeX[oMatched];
+
 		return oMatched;
 	};
 	Tokenizer.prototype.SaveState = function (oLookahead)
@@ -2888,7 +4155,7 @@
 		let isConvert = false;
 		let oContent = oCMathContent.Content[oCMathContent.CurPos];
 
-		if (oCMathContent.GetLastTextElement() === " " || oCMathContent.IsLastElement(AscMath.MathLiterals.operators))
+		if (oCMathContent.GetLastTextElement() === " " || oCMathContent.IsLastElement(AscMath.MathLiterals.operator))
 			pos--;
 
 		let str = "";
@@ -3096,8 +4363,8 @@
 				intCode === 92 ||			// "\\"
 				intCode === 95 ||			// _
 				intCode === 94 ||			// ^
-				MathLiterals.lBrackets.IsIncludes(String.fromCodePoint(intCode)) ||
-				MathLiterals.rBrackets.IsIncludes(String.fromCodePoint(intCode)) ||
+				MathLiterals.lBrackets.SearchU(String.fromCodePoint(intCode)) ||
+				MathLiterals.rBrackets.SearchU(String.fromCodePoint(intCode)) ||
 				intCode === 40 ||			// (
 				intCode === 41 ||			// )
 				intCode === 47 ||			// /
@@ -3116,8 +4383,8 @@
 				intCode === 92||					// "\\"
 				intCode === 123 ||					// {
 				intCode === 125 ||					// }
-				MathLiterals.lBrackets.IsIncludes(String.fromCodePoint(intCode)) ||
-				MathLiterals.rBrackets.IsIncludes(String.fromCodePoint(intCode)) ||
+				MathLiterals.lBrackets.SearchU(String.fromCodePoint(intCode)) ||
+				MathLiterals.rBrackets.SearchU(String.fromCodePoint(intCode)) ||
 				intCode === 95 ||					// _
 				intCode === 94 ||					// ^
 				intCode === 91 ||					// [
@@ -3154,5 +4421,6 @@
 	window["AscMath"].IsStartAutoCorrection = IsStartAutoCorrection;
 	window["AscMath"].GetConvertContent = GetConvertContent;
 	window["AscMath"].MathLiterals = MathLiterals;
+	window["AscMath"].MathStructures = MathStructures;
 	window["AscMath"].SymbolsToLaTeX = SymbolsToLaTeX;
 })(window);

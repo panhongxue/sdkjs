@@ -153,7 +153,7 @@
 		this.data =  [
 			"⨯", "⨝", "⟕", "⟖", "⟗", "⋉", "⋊", "▷",
 			"+", "-", "*", "=", "≶", "≷", "≜", "⇓", "⇐",
-			"⇔", "⟸", "⟺", "⟹", "⇒", "⇑", "⇕", "∠", "≈",
+			"⟸", "⟺", "⟹", "⇑", "⇕", "∠", "≈",
 			"⬆", "∗", "≍", "∵", "⋈", "⊡", "⊟", "⊞", "⤶",
 			"∙", "⋅", "⋯", "∘", "♣", "≅", "∋", "⋱", "≝", "℃",
 			"℉", "°", "⊣", "⋄", "♢", "÷", "≐", "…", "↓",
@@ -537,8 +537,6 @@
 		// ["->", "→"],
 		// [">>", "≫"],
 
-		["&", true],
-		["@", true],
 		["array(", oNamesOfLiterals.matrixLiteral[0]],
 
 		["⁰", oNamesOfLiterals.specialScriptNumberLiteral[0]],
@@ -624,10 +622,8 @@
 		["\\Bmatrix", oNamesOfLiterals.matrixLiteral[0]],
 		["\\left", true],
 		["\\right", true],
-		["⇔", oNamesOfLiterals.operatorLiteral[0]],
 		["⟫", oNamesOfLiterals.opCloseBracket[0]],
 		["⟧", oNamesOfLiterals.opCloseBracket[0]],
-		["⇒", oNamesOfLiterals.operatorLiteral[0]],
 		["̳", MathLiterals.accent.id], //check
 		["‖", oNamesOfLiterals.opOpenCloseBracket[0]],
 		["⒩", oNamesOfLiterals.matrixLiteral[0]],
@@ -686,7 +682,6 @@
 		["̌", MathLiterals.accent.id],
 		["χ"],
 		["∘"],
-		["┤", true],
 		["♣"],
 		["∲", oNamesOfLiterals.opNaryLiteral[0]],
 		["≅", oNamesOfLiterals.operatorLiteral[0]],
@@ -777,7 +772,7 @@
 		["∕", oNamesOfLiterals.overLiteral[0]],
 		["…"],
 		["≤", oNamesOfLiterals.operatorLiteral[0]],
-		["├", true], //LaTeX type === \left
+		["├", oNamesOfLiterals.opOpenBracket[0]], //LaTeX type === \left
 		["←"],
 		["↽"],
 		["↼"],
@@ -823,7 +818,6 @@
 		["∮", oNamesOfLiterals.opNaryLiteral[0]],
 		["ω"],
 		["⊖"],
-		["├", true],
 		["⊕", oNamesOfLiterals.operatorLiteral[0]],
 		["⊗", oNamesOfLiterals.operatorLiteral[0]],
 		["\\over", true],
@@ -841,12 +835,8 @@
 		["π"],
 		["±"],
 		["⒨", oNamesOfLiterals.matrixLiteral[0]],
-		["⁗", MathLiterals.accent.id],
-		["‴", MathLiterals.accent.id],
-		["″", MathLiterals.accent.id],
 		["≺", oNamesOfLiterals.operatorLiteral[0]],
 		["≼", oNamesOfLiterals.operatorLiteral[0]],
-		["′", MathLiterals.accent.id],
 		["∏", oNamesOfLiterals.opNaryLiteral[0]], //oNamesOfLiterals.functionLiteral[0]
 		["∝", oNamesOfLiterals.operatorLiteral[0]],
 		["ψ"],
@@ -866,7 +856,7 @@
 		["▭", oNamesOfLiterals.rectLiteral[0]],
 		["▭", oNamesOfLiterals.rectLiteral[0]],
 		["⌋", oNamesOfLiterals.opCloseBracket[0]],
-		["┤", true],
+		["┤", oNamesOfLiterals.opCloseBracket[0]],
 		["⎱", oNamesOfLiterals.opCloseBracket[0]],
 		["⒭", oNamesOfLiterals.sqrtLiteral[0]], //check
 		["|", oNamesOfLiterals.opOpenCloseBracket[0]],
@@ -1296,6 +1286,8 @@
 			"〗": -1,
 			"⟨" : 10216,
 			"⟩": 10217,
+			"├": -1,
+			"┤": -1,
 
 		}
 		if (code) {
@@ -1479,7 +1471,7 @@
 						);
 					}
 					else {
-						oContext.Add_Text(oTokens.value);
+						oContext.Add_TextInLastParaRun(oTokens.value);
 					}
 					break;
 				case oNamesOfLiterals.textPlainLiteral[num]:
@@ -1693,6 +1685,7 @@
 							null,
 							null
 						);
+						
 						UnicodeArgument(
 							oTokens.value,
 							oNamesOfLiterals.bracketBlockLiteral[num],

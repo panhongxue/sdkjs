@@ -3705,11 +3705,12 @@ ParaMath.prototype.ConvertFromLaTeX = function()
 {
 	var strLaTeX = this.GetText(true);
     this.Root.Remove_Content(0, this.Root.Content.length);
-    this.Root.Correct_Content(true);
+    this.Root.CurPos = 0;
     AscMath.ConvertLaTeXToTokensList(strLaTeX, this.Root);
     this.Root.CorrectAllMathWords(true);
     this.Root.ConvertAllSpecialWords(true);
 	this.Root.Correct_Content(true);
+    this.Root.CurPos++;
 };
 ParaMath.prototype.ConvertToLaTeX = function()
 {
@@ -3724,9 +3725,10 @@ ParaMath.prototype.ConvertFromUnicodeMath = function()
     this.Root.ConvertAllSpecialWords(false);
 	var strUnicode = this.GetText();
 	this.Root.Remove_Content(0,this.Root.Content.length);
-    this.Root.Correct_Content(true);
+    this.Root.CurPos = 0;
 	AscMath.CUnicodeConverter(strUnicode, this.Root);
 	this.Root.Correct_Content(true);
+    this.Root.CurPos++;
 };
 ParaMath.prototype.ConvertToUnicodeMath = function()
 {

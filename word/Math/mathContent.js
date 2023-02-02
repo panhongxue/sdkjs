@@ -2490,6 +2490,7 @@ CMathContent.prototype.InsertMathContent = function(oMathContent, nPos, isSelect
 	else
 	{
 		this.ParaMath.SetThisElementCurrent();
+        this.CurPos = nPos;
 		this.RemoveSelection();
 
 		if (!this.bRoot)
@@ -3280,6 +3281,35 @@ CMathContent.prototype.Add_Text = function(text, paragraph, mathStyle)
 	
 	this.AddToContent(this.CurPos, run, false);
 	this.CurPos++;
+};
+CMathContent.prototype.Add_TextInLastParaRun = function(sText, Paragraph, MathStyle)
+{
+    this.Paragraph = Paragraph;
+
+    if (sText)
+    {
+        if (this.Content.length > 0 && this.Content[this.Content.length - 1].Type === 49)
+        {
+            var MathRun = this.Content[this.Content.length - 1]
+
+            for (var nCharPos = 0, nTextLen = sText.length; nCharPos < nTextLen; nCharPos++)
+            {
+                var oText = null;
+                if (0x0026 == sText.charCodeAt(nCharPos))
+                    oText = new CMathAmp();
+                else
+                {
+                    oText = new CMathText(false);
+                    oText.addTxt(sText[nCharPos]);
+                }
+                MathRun.AddToContentToEnd(oText);
+            }
+        }
+        else
+        {
+            this.Add_Text(sText, Paragraph, MathStyle)
+        }
+    }
 };
 
 CMathContent.prototype.Add_TextOnPos = function(nPos, sText, Paragraph, MathStyle)
@@ -5670,6 +5700,44 @@ CMathContent.prototype.SplitContentByContentPos = function()
 
     return arrContent;
 };
+CMathContent.prototype.ConvertSpacesAfterConvertOldEquation = function ()
+{
+    function recursiveMathProcessing(oContent)
+    {
+        if (oContent)
+        {
+            if (oContent.Type === 52) // CMathText
+            {
+                console.log(oContent);
+                switch (oContent.value)
+                {
+                    case 8202:
+                    case 8201: return "HSP";
+                    case 8203: return "ZWSP"
+                }
+            }
+            else if (oContent.Content && oContent.Content.length > 0)
+            {
+                for (let i = 0; i < oContent.Content.length; i++)
+                {
+                    let CurrentContent = oContent.Content[i];
+                    let outStr = recursiveMathProcessing(CurrentContent);
+                    if (outStr === "HSP")
+                    {
+                        oContent.Remove_FromContent(i, 1);
+                        i--;
+                    }
+                    else if (outStr === "ZWSP")
+                    {
+                        oContent.Content[i].add("⥂".charCodeAt(0));
+                    }
+                }
+            }
+        }
+    }
+
+    recursiveMathProcessing(this);
+}
 CMathContent.prototype.Process_AutoCorrect = function (oElement)
 {
     let isConvert = false;
@@ -5738,7 +5806,7 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
         let Bracket = this.CheckAutoCorrectionBrackets(nInputType, true);
 
         // proceed rules (1/2, 1_2 ...)
-        isConvert = Bracket.intCounter >= 0 ? this.CheckAutoCorrectionRules(nInputType) : false;
+        isConvert = Bracket.intCounter >= 0 ? this.CheckAutoCorrectionRules(nInputType, Bracket) : false;
 
         // else - convert content until first operator
         if (isConvert === false && Bracket.intCounter >= 0 && Bracket.isConvert === false)
@@ -6007,7 +6075,6 @@ CMathContent.prototype.ConvertContentInLastBracketBlock = function(nInputType)
 
             if (Result.length === 2)
             {
-                Result[0]++;
                 this.CutConvertAndPaste(Result, nInputType);
                 Brackets.isConvert = true;
             }
@@ -6326,7 +6393,6 @@ ContentIterator.prototype.GetNextFromCurrentElement = function (nextRule)
         return true;
     }
 };
-
 ContentIterator.prototype.CheckTextLiteral = function(literal)
 {
     while (this.CurrentElement)
@@ -6370,7 +6436,7 @@ ContentIterator.prototype.CheckBracket = function(strCurrent)
             this.CreateCurrentElement();
         }
 
-        while (this.CurrentElement.IsHasContent())
+        while (this.CurrentElement && this.CurrentElement.IsHasContent())
         {
             let intCurrent = this.CurrentElement.GetNext();
             let strCurrent = String.fromCharCode(intCurrent);
@@ -6406,6 +6472,9 @@ ContentIterator.prototype.CheckBracket = function(strCurrent)
                 return
             }
         }
+
+        if (this.cursor === 0)
+            return;
     }
 }
 ContentIterator.prototype.ResetParaRunCursor = function()
@@ -6418,9 +6487,7 @@ ContentIterator.prototype.CheckRules = function ()
 {
     // TODO it is better to search for sequences by what is, and not vice versa; incredibly inefficient!!!
     const rules = [
-        //true обозначает обычный текст или блоки контента (CFraction, CLimit, CDegree...);
-        // ["_"],
-        // ["^"],
+
         [true, "^", true, "_", true, "▒", true],
         [true, "_", true, "^", true, "▒", true],
 
@@ -6440,16 +6507,83 @@ ContentIterator.prototype.CheckRules = function ()
         [true, "┬", true],
         [true, "┴", true],
 
-        ["s","i","n"],["t","a","n"],["t","a","n","h"],["s","u","p"],["s","i","n","h"],["s","e","c"],["k"],
-        ["h","o","m"],["a","r","g"],["a","r","c","y","a","n"],["a","r","c","s","i","n"],["a","r","c","s","e","c"],
-        ["a","r","c","c","s","c"],["a","r","c","c","o","t"],["a","r","c","c","o","s"],["i","n","f"],["g","c","d"],
-        ["e","x","p"],["d","i","m"],["d","e","t"],["d","e","g"],["c","s","c"],["c","o","t","h"],["c","o","t"],
-        ["c","o","s","h"],["c","o","s"],["P","r"],["l","g"],["l","n"],["l","o","g"],["s","g","n"],["s","e","c","h"],
-        ["l","i","m"],["m","i","n"],["m","a","x"],
+        ["s","i","n"],
+        ["t","a","n"],
+        ["t","a","n","h"],
+        ["s","u","p"],
+        ["s","i","n","h"],
+        ["s","e","c"],
+        ["k"],
+        ["h","o","m"],
+        ["a","r","g"],
+        ["a","r","c","y","a","n"],
+        ["a","r","c","s","i","n"],
+        ["a","r","c","s","e","c"],
+        ["a","r","c","c","s","c"],
+        ["a","r","c","c","o","t"],
+        ["a","r","c","c","o","s"],
+        ["i","n","f"],
+        ["g","c","d"],
+        ["e","x","p"],
+        ["d","i","m"],
+        ["d","e","t"],
+        ["d","e","g"],
+        ["c","s","c"],
+        ["c","o","t","h"],
+        ["c","o","t"],
+        ["c","o","s","h"],
+        ["c","o","s"],
+        ["P","r"],
+        ["l","g"],
+        ["l","n"],
+        ["l","o","g"],
+        ["s","g","n"],
+        ["s","e","c","h"],
+        ["l","i","m"],
+        ["m","i","n"],
+        ["m","a","x"],
+
+        ["s","i","n", true],
+        ["t","a","n", true],
+        ["t","a","n","h", true],
+        ["s","u","p", true],
+        ["s","i","n","h", true],
+        ["s","e","c", true],
+        ["k", true],
+        ["h","o","m", true],
+        ["a","r","g", true],
+        ["a","r","c","y","a","n", true],
+        ["a","r","c","s","i","n", true],
+        ["a","r","c","s","e","c", true],
+        ["a","r","c","c","s","c", true],
+        ["a","r","c","c","o","t", true],
+        ["a","r","c","c","o","s", true],
+        ["i","n","f", true],
+        ["g","c","d", true],
+        ["e","x","p", true],
+        ["d","i","m", true],
+        ["d","e","t", true],
+        ["d","e","g", true],
+        ["c","s","c", true],
+        ["c","o","t","h", true],
+        ["c","o","t", true],
+        ["c","o","s","h", true],
+        ["c","o","s", true],
+        ["P","r", true],
+        ["l","g", true],
+        ["l","n", true],
+        ["l","o","g", true],
+        ["s","g","n", true],
+        ["s","e","c","h", true],
+        ["l","i","m", true],
+        ["m","i","n", true],
+        ["m","a","x", true],
 
         [true, "/", true],
         [true, "^", true],
         [true, "_", true],
+        [true, "^", true, true],
+        [true, "_", true, true],
 
         ['\\frac', true, true],
 
@@ -6460,9 +6594,12 @@ ContentIterator.prototype.CheckRules = function ()
         ["/", true],
         [true, "/"],
 
+        [true, "_"],
+        [true, "^"],
+        ["■", true],
+
         [true, "┬"],
         [true, "┴"],
-        ["/"],
 
         [true, "́" ],
         [true, "̂" ],
@@ -6474,6 +6611,21 @@ ContentIterator.prototype.CheckRules = function ()
         [true, "⃛" ],
         [true, "̄" ],
         [true, "⃗" ],
+        [true, "⁗"],
+        [true, "‴"],
+        [true, "″"],
+        [true, "′"],
+
+        ["⁗"],
+        ["‴"],
+        ["″"],
+        ["′"],
+
+        ["/"],
+
+        ["∛"],
+        ["∜"],
+        ["▭"],
         [true],
     ];
 
@@ -6539,7 +6691,7 @@ ContentIterator.prototype.GetPosition = function()
         }
     }
 };
-CMathContent.prototype.CheckAutoCorrectionRules = function(nInputType)
+CMathContent.prototype.CheckAutoCorrectionRules = function(nInputType, Bracket)
 {
     const oRuleIterator = new ContentIterator(this);
     let prev = [];
@@ -6568,48 +6720,64 @@ CMathContent.prototype.CheckAutoCorrectionRules = function(nInputType)
     const arrPosition = oRuleIterator.RulePosition;
 
     if (arrPosition.length === 2)
-        this.CutConvertAndPaste(arrPosition, nInputType);
-    else if (isSpace)
-        this.Add_TextOnPos(this.Content.length - 1,' ');
-
-    let now = [];
-
-    for (let i = 0; i < this.Content.length; i++) {
-        now.push([this.Content[i].constructor.name, this.Content[i].Content ? this.Content[i].Content.length : 0]);
+    {
+        this.CutConvertAndPaste(arrPosition, nInputType, Bracket.isConvert);
     }
 
-    if (isSpace)
+    if (isSpace && arrPosition === 0)
     {
-        let counter = 0;
-        let isEqual = true;
-        while (counter !== 2)
-        {
-            let tprev = prev[prev.length - 1 - counter];
-            let tnow = now[now.length - 1 - counter];
-
-            let tprevType = tprev[0];
-            let tnowType = tnow[0];
-
-            let tprevCount = tprev[1];
-            let tnowCount= tnow[1];
-
-            if (tprevType !== tnowType || tprevCount !== tnowCount) {
-                if (!(counter === 0 && tprevCount === tnowCount + 1)) {
-                    isEqual = false;
-                    break;
-                }
-            }
-
-            if (tnow !== "ParaRun")
-                break;
-
-            counter++;
-        }
-        if (isEqual) this.Add_TextOnPos(this.Content.length, ' ');
+        this.Add_TextOnPos(this.Content.length, ' ');
+        return true
     }
     else if (lastOperator)
     {
         this.Add_TextOnPos(this.Content.length, lastOperator);
+        return true
+    }
+    else
+    {
+        let now = [];
+        for (let i = 0; i < this.Content.length; i++)
+        {
+            now.push([this.Content[i].constructor.name, this.Content[i].Content ? this.Content[i].Content.length : 0]);
+        }
+
+        if (isSpace)
+        {
+            let counter = 0;
+            let isEqual = true;
+            while (counter !== 2)
+            {
+                let tprev = prev[prev.length - 1 - counter];
+                let tnow = now[now.length - 1 - counter];
+
+                if(tnow && !tprev && tnow[0] !== "ParaRun")
+                    isEqual = false;
+
+                if (!tprev || !tnow)
+                    break;
+
+                let tprevType = tprev[0];
+                let tnowType = tnow[0];
+
+                let tprevCount = tprev[1];
+                let tnowCount= tnow[1];
+
+                if (tprevType !== tnowType || tprevCount !== tnowCount) {
+                    if (!(counter === 0 && tprevCount === tnowCount + 1)) {
+                        isEqual = false;
+                        break;
+                    }
+                }
+
+                if (tnow[0] !== "ParaRun")
+                    break;
+
+                counter++;
+            }
+            if (isEqual) this.Add_TextOnPos(this.Content.length, ' ');
+        }
+        return true
     }
 };
 CMathContent.prototype.IsLastTextElementRBracket = function()
@@ -6640,6 +6808,7 @@ CMathContent.prototype.CheckAutoCorrectionBrackets = function(nInputType)
     {
         if (arrPosition.length === 2 && Brackets.intCounter === 0)
         {
+            arrPosition[1] += 1;
             this.CutConvertAndPaste(arrPosition, nInputType);
             Brackets.isConvert = true;
             if (this.GetLastTextElement() === " ")
@@ -6649,7 +6818,7 @@ CMathContent.prototype.CheckAutoCorrectionBrackets = function(nInputType)
 
     return Brackets;
 };
-CMathContent.prototype.CutConvertAndPaste = function(arrPos, nInputType, isNotCorrect)
+CMathContent.prototype.CutConvertAndPaste = function(arrPos, nInputType, isSkipDelimiter)
 {
     if (arrPos.length === 0)
         arrPos = [0, 0];
@@ -6658,6 +6827,7 @@ CMathContent.prototype.CutConvertAndPaste = function(arrPos, nInputType, isNotCo
         arrPos[0] = 0;
 
     let strContent = "";
+    let isFindDelimiter = false;
 
     for (let i = this.Content.length - 1; i >= arrPos[0]; i--)
     {
@@ -6676,12 +6846,18 @@ CMathContent.prototype.CutConvertAndPaste = function(arrPos, nInputType, isNotCo
         else
         {
             if (CurrentContent.Type !== 49) {
-                strContent = "〖" + CurrentContent.GetTextOfElement(nInputType === 1).trim() + "〗" + strContent;
-                strContent = strContent.trim();
+                if (!isFindDelimiter && isSkipDelimiter)
+                {
+                    strContent = CurrentContent.GetTextOfElement(nInputType === 1).trim() + strContent;
+                    isFindDelimiter = true;
+                }
+                else
+                {
+                    strContent = "〖" + CurrentContent.GetTextOfElement(nInputType === 1).trim() + "〗" + strContent;
+                }
             }
             else {
                 strContent = CurrentContent.GetTextOfElement(nInputType === 1).trim() + strContent;
-                strContent = strContent.trim();
             }
             this.Remove_FromContent(i, 1);
         }

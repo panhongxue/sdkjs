@@ -125,6 +125,10 @@
 	{
 		return this.ReadTokensWhileEnd(oLiteralNames.charLiteral)
 	};
+	CLaTeXParser.prototype.GetOtherLiteral = function ()
+	{
+		return this.ReadTokensWhileEnd(oLiteralNames.otherLiteral)
+	};
 	CLaTeXParser.prototype.GetSpaceLiteral = function ()
 	{
 		//todo LaTex skip all normal spaces
@@ -335,7 +339,8 @@
 			this.oLookahead.data === "\\above" ||
 			this.IsOverUnderBarLiteral() ||
 			this.IsTextLiteral() ||
-			this.IsSpecialSymbol()
+			this.IsSpecialSymbol() ||
+			this.oLookahead.class === oLiteralNames.otherLiteral[0]
 		);
 	};
 	CLaTeXParser.prototype.IsSpecialSymbol = function ()
@@ -370,6 +375,10 @@
 		else if (this.oLookahead.class === oLiteralNames.charLiteral[0])
 		{
 			return this.GetCharLiteral();
+		}
+		else if (this.oLookahead.class === oLiteralNames.otherLiteral[0])
+		{
+			return this.GetOtherLiteral();
 		}
 		else if (this.oLookahead.class === oLiteralNames.opDecimal[0])
 		{
@@ -1042,17 +1051,17 @@
 		let intCount = 0;
 		let isAlredyGetContent = false;
 
-		while (this.IsElementLiteral() || this.oLookahead.class === "&") {
+		while (this.IsElementLiteral() || this.oLookahead.data === "&") {
 			let intCopyOfLength = intLength;
 
-			if (this.oLookahead.class !== "&") {
+			if (this.oLookahead.data !== "&") {
 				arrRow.push(this.GetExpressionLiteral("&"));
 				intLength++;
 				isAlredyGetContent = true;
 				this.SkipFreeSpace();
 			}
 			else {
-				this.EatToken("&");
+				this.EatToken(this.oLookahead.class);
 
 				if (isAlredyGetContent === false) {
 					arrRow.push({});
@@ -1125,12 +1134,15 @@
 	{
 		let oArgument = [];
 		while (intCountOfArguments > 0) {
+			this.SkipFreeSpace();
 			if (this.oLookahead.data === "{") {
+				this.SkipFreeSpace();
 				this.EatToken(this.oLookahead.class);
 				oArgument.push(this.GetExpressionLiteral());
 				this.EatToken(this.oLookahead.class);
 			}
 			else {
+				this.SkipFreeSpace();
 				oArgument.push(this.GetWrapperElementLiteral());
 			}
 			intCountOfArguments--;

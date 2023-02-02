@@ -3105,6 +3105,7 @@ ParaDrawing.prototype.ConvertToMath = function(isUpdatePos)
 
 	// Коректируем формулу после конвертации
 	this.ParaMath.Correct_AfterConvertFromEquation();
+	this.ParaMath.Root.ConvertSpacesAfterConvertOldEquation();
 
 	// Сначала удаляем Drawing из рана
 	oRun.RemoveFromContent(nBotElementPos, 1);

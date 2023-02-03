@@ -582,7 +582,6 @@ ParaRun.prototype.MathAutocorrection_GetOperatorInfo = function ()
 
 	return arrOperatorContent;
 }
-
 ParaRun.prototype.MathAutocorrection_GetSlashesInfo = function ()
 {
 	const arrOperatorContent = [];
@@ -597,7 +596,6 @@ ParaRun.prototype.MathAutocorrection_GetSlashesInfo = function ()
 
 	return arrOperatorContent;
 }
-
 ParaRun.prototype.MathAutocorrection_IsLastElement = function(type)
 {
 	if (this.Content.length === 0)
@@ -607,7 +605,6 @@ ParaRun.prototype.MathAutocorrection_IsLastElement = function(type)
 	let strLastElement = String.fromCharCode(oLastElement.value);
 	return type.SearchU(strLastElement);
 }
-
 ParaRun.prototype.MathAutoCorrection_DeleteLastSpace = function()
 {
 	if (this.Content.length === 0)
@@ -622,7 +619,13 @@ ParaRun.prototype.MathAutoCorrection_DeleteLastSpace = function()
 
 	return false;
 }
-
+ParaRun.prototype.CheckMathIsOneTypeOfContent = function()
+{
+	let str = this.GetTextOfElement();
+	let tokenizer = new AscMath.Tokenizer();
+	tokenizer.Init(str);
+	return tokenizer.IsContentOfOneType();
+}
 
 // Проверяем пустой ли ран
 ParaRun.prototype.Is_Empty = function(oProps)

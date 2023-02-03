@@ -316,7 +316,6 @@ CLimit.prototype.Can_ModifyArgSize = function()
     return this.CurPos == 1 && false === this.Is_SelectInside();
 };
 CLimit.prototype.GetTextOfElement = function(isLaTeX) {
-    debugger
 	var strTemp = "";
 	var strLimitSymbol = "";
 	var strFuncName = this.getFName().GetMultipleContentForGetText(isLaTeX);

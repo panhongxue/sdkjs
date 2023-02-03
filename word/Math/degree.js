@@ -541,7 +541,8 @@ CDegree.prototype.Can_ModifyArgSize = function()
 {
     return this.CurPos == 1 && false === this.Is_SelectInside(); // находимся в итераторе
 };
-CDegree.prototype.GetTextOfElement = function(isLaTeX) {
+CDegree.prototype.GetTextOfElement = function(isLaTeX)
+{
 	var strTemp = "";
 	var strTypeOfScript = this.Pr.type === 1 ? '^' : '_';
 	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX);

@@ -784,12 +784,11 @@ CRadical.prototype.GetTextOfElement = function(isLaTeX)
             strRadicalSymbol = strDegree === "3" ?  "∛" : "∜";
         }
 
-        if (strDegree.length > 0)
-        {
-            strDegree = "(" + strDegree + '&';
-        }
+        // if (strDegree.length > 0)
+        // {
+        //     strDegree =+ strDegree + '&';
+        // }
 
-        strBase =  strBase + ")";
 
         strTemp = strRadicalSymbol + strDegree + strBase;
 

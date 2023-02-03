@@ -6928,68 +6928,48 @@ CMathContent.prototype.IsFirstLetterIsBracket = function (isLaTeX)
 
     return false;
 };
-CMathContent.prototype.GetMultipleContentForGetText = function(isLaTeX, isNotBrackets, isMustBeBracketsInLaTeX, isMustBeBracketsInUnicode)
+CMathContent.prototype.IsContainSingleDelimiter = function()
 {
-    let str = "";
-
-    if ((isMustBeBracketsInLaTeX && isLaTeX) || (isMustBeBracketsInUnicode && !isLaTeX))
+    let isOneDelimiter = true;
+    let intBracketCounter = 0;
+    for (let nCount = 0, len = this.Content.length; nCount < len && isOneDelimiter; nCount++)
     {
-        if (isMustBeBracketsInLaTeX === true && isLaTeX)
+        let oCurrentContent = this.Content[nCount];
+        if (oCurrentContent.Type === 49)
         {
-            str = this.GetTextOfElement(isLaTeX);
-            if (str.length > 0 && str[0] !== "{")
-            {
-                str = "{" + this.GetTextOfElement(isLaTeX) + "}";
-            }
+            if (!oCurrentContent.Is_Empty())
+                isOneDelimiter = false;
         }
-
-        if (isMustBeBracketsInUnicode === true && !isLaTeX)
+        else if (oCurrentContent.Type === 51)
         {
-            str = this.GetTextOfElement(isLaTeX);
-            if (str.length > 0 && str[0] !== "(")
-            {
-                str =  "(" + this.GetTextOfElement(isLaTeX) + ")";
-            }
-        }
-
-        return str;
-    }
-
-    if (this.IsOneElementInContentForGetText() || this.IsFirstLetterIsBracket(isLaTeX))
-    {
-        str = this.GetTextOfElement(isLaTeX)
-    }
-    else
-    {
-        if (isNotBrackets)
-        {
-            str = this.GetTextOfElement(isLaTeX)
+            intBracketCounter++;
         }
         else
         {
-            str = this.GetTextOfElement(isLaTeX);
-            if (!AscMath.functionNames.includes(str) && !(str[0] === "\"" && str[str.length-1] === "\""))
-            {
-                str = (isLaTeX === true)
-                    ?  "{" + this.GetTextOfElement(isLaTeX) + "}"
-                    :  "(" + this.GetTextOfElement(isLaTeX) + ")";
-            }
+            isOneDelimiter = false;
         }
     }
 
-    if (!isLaTeX && isNotBrackets && str[0] === "├" && str[str.length - 1] === "┤")
+    if (intBracketCounter === 1 && isOneDelimiter)
     {
-        return str.slice(1,str.length - 1);
+        return true
     }
 
-    return this.CheckIsEmpty(str);
+    return false;
 };
-CMathContent.prototype.CheckIsEmpty = function(strAtom)
+CMathContent.prototype.IsOneTypeTokensInContent = function()
 {
-    if (strAtom === '⬚')
-        return "";
+   if (this.Content.length === 1 && this.Content[0].Type === 49)
+   {
+       return this.Content[0].CheckMathIsOneTypeOfContent();
+   }
+};
+CMathContent.prototype.GetMultipleContentForGetText = function(isLaTeX)
+{
+    if (this.IsContainSingleDelimiter() || this.IsOneTypeTokensInContent())
+        return this.GetTextOfElement(isLaTeX)
     else
-        return strAtom;
+        return "(" + this.GetTextOfElement(isLaTeX) + ")";
 };
 CMathContent.prototype.GetTextOfElement = function(isLaTeX)
 {

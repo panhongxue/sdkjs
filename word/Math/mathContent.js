@@ -6964,12 +6964,15 @@ CMathContent.prototype.IsOneTypeTokensInContent = function()
        return this.Content[0].CheckMathIsOneTypeOfContent();
    }
 };
-CMathContent.prototype.GetMultipleContentForGetText = function(isLaTeX)
+CMathContent.prototype.GetMultipleContentForGetText = function(isLaTeX, isBase)
 {
-    if (this.IsContainSingleDelimiter() || this.IsOneTypeTokensInContent())
+    if (this.IsOneTypeTokensInContent())
         return this.GetTextOfElement(isLaTeX)
     else
-        return "(" + this.GetTextOfElement(isLaTeX) + ")";
+        if (isBase)
+            return "〖" + this.GetTextOfElement(isLaTeX) + "〗";
+        else
+            return "(" + this.GetTextOfElement(isLaTeX) + ")";
 };
 CMathContent.prototype.GetTextOfElement = function(isLaTeX)
 {

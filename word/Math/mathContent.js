@@ -5762,7 +5762,7 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
         this.ConvertContentInLastBracketBlock(nInputType);
 
     // convert word near cursor (\int, \sqrt, \alpha...)
-    if (oElement.value === 32 || this.IsLastElement(AscMath.MathLiterals.operator))
+    if (oElement.value === 32 || this.IsLastElement(AscMath.MathLiterals.operator) || lastElement === "&" || lastElement === "@")
     {
         if (oElement.value === 32)
         {
@@ -5795,6 +5795,11 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
     {
         this.AddContentForAutoCorrection(arrNextContent, true);
         return;
+    }
+
+    if ( lastElement === "&" || lastElement === "@")
+    {
+        return
     }
 
     //const oSlashesContent = this.GetSlashesInfo();

@@ -561,7 +561,7 @@ CBorderBox.prototype.Get_InterfaceProps = function()
 };
 CBorderBox.prototype.GetTextOfElement = function(isLaTeX) {
 	var strTemp = "";
-	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX, true);
+	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX);
 	var strStartBracet = (strBase.length > 1 || isLaTeX) ? this.GetStartBracetForGetTextContent(isLaTeX) : "";
 	var strCloseBracet = (strBase.length > 1 || isLaTeX) ? this.GetEndBracetForGetTextContent(isLaTeX) : "";
 	
@@ -1118,7 +1118,7 @@ CBar.prototype.GetTextOfElement = function(isLaTeX) {
     else
         strSymbol = (this.Pr.pos) ? "\\underline" : "\\overline";
 
-	strBase = this.getBase().GetMultipleContentForGetText(isLaTeX, true);
+	strBase = this.getBase().GetMultipleContentForGetText(isLaTeX);
 	
 	strTemp =
 		strSymbol

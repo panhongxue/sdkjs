@@ -820,9 +820,9 @@ CNary.prototype.GetTextOfElement = function(isLaTeX)
 	var strTemp = "";
 
 	var strStartCode = String.fromCharCode(this.Pr.chr || this.getSign().chrCode);
-	var strSupContent = this.getSupMathContent().GetMultipleContentForGetText(isLaTeX, undefined, true);
-	var strSubContent = this.getSubMathContent().GetMultipleContentForGetText(isLaTeX, undefined, true);
-	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX, true);
+	var strSupContent = this.getSupMathContent().GetMultipleContentForGetText(isLaTeX);
+	var strSubContent = this.getSubMathContent().GetMultipleContentForGetText(isLaTeX);
+	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX);
 
     if (true === isLaTeX)
     {

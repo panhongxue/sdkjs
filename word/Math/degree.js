@@ -545,7 +545,7 @@ CDegree.prototype.GetTextOfElement = function(isLaTeX)
 {
 	var strTemp = "";
 	var strTypeOfScript = this.Pr.type === 1 ? '^' : '_';
-	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX);
+	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX, true);
 	var strIterator = this.getIterator().GetMultipleContentForGetText(isLaTeX);
 
 	if (isLaTeX)
@@ -1249,7 +1249,7 @@ CDegreeSubSup.prototype.Can_ModifyArgSize = function()
 CDegreeSubSup.prototype.GetTextOfElement = function(isLaTeX)
 {
 	let strTemp = "";
-	let Base = this.getBase().GetMultipleContentForGetText(isLaTeX);
+	let Base = this.getBase().GetMultipleContentForGetText(isLaTeX, true);
 	let strLower = this.getLowerIterator().GetMultipleContentForGetText(isLaTeX);
 	let strUpper = this.getUpperIterator().GetMultipleContentForGetText(isLaTeX);
 

@@ -690,7 +690,7 @@ CAccent.prototype.Get_InterfaceProps = function()
 };
 CAccent.prototype.GetTextOfElement = function(isLaTeX) {
 	var strTemp = "";
-	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX, true);
+	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX);
 	var strAccent = String.fromCharCode(this.Pr.chr);
 	var strStartBracet = (strBase.length > 1 || isLaTeX) ? this.GetStartBracetForGetTextContent(isLaTeX) : "";
 	var strCloseBracet = (strBase.length > 1 || isLaTeX) ? this.GetEndBracetForGetTextContent(isLaTeX) : "";

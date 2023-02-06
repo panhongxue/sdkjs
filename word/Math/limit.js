@@ -445,8 +445,8 @@ CMathFunc.prototype.fillContent = function()
 };
 CMathFunc.prototype.GetTextOfElement = function(isLaTeX) {
 	var strTemp = "";
-	var strFuncName = this.getFName().GetMultipleContentForGetText(isLaTeX, true);
-	var strArgument = this.getArgument().GetMultipleContentForGetText(isLaTeX, true);
+	var strFuncName = this.getFName().GetMultipleContentForGetText(isLaTeX);
+	var strArgument = this.getArgument().GetMultipleContentForGetText(isLaTeX);
 
     if (!isLaTeX)
     {

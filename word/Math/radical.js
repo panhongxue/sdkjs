@@ -765,8 +765,8 @@ CRadical.prototype.Is_ContentUse = function(MathContent)
 CRadical.prototype.GetTextOfElement = function(isLaTeX)
 {
 	var strTemp = "";
-	var strDegree = this.getDegree().GetMultipleContentForGetText(isLaTeX, true);
-	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX, true);
+	var strDegree = this.getDegree().GetMultipleContentForGetText(isLaTeX);
+	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX);
 
 	if (isLaTeX)
     {
@@ -784,13 +784,13 @@ CRadical.prototype.GetTextOfElement = function(isLaTeX)
             strRadicalSymbol = strDegree === "3" ?  "∛" : "∜";
         }
 
-        // if (strDegree.length > 0)
-        // {
-        //     strDegree =+ strDegree + '&';
-        // }
+        if (strDegree.length > 0)
+        {
+            strDegree = strDegree + '&';
+        }
 
 
-        strTemp = strRadicalSymbol + strDegree + strBase;
+        strTemp = strRadicalSymbol + "(" + strDegree + strBase + ")";
 
 	}
 

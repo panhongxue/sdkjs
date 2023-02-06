@@ -4069,7 +4069,7 @@ CDelimiter.prototype.GetTextOfElement = function(isLaTeX) {
 
 	for (let intCount = 0; intCount < this.Content.length; intCount++)
     {
-		strTemp += this.Content[intCount].GetTextOfElement(isLaTeX);
+		strTemp += this.Content[intCount].GetTextOfElement(isLaTeX).trim();
 
 		if (strSeparatorSymbol && this.Content.length > 1 && intCount < this.Content.length - 1)
 			strTemp += strSeparatorSymbol;
@@ -4543,7 +4543,7 @@ CGroupCharacter.prototype.GetTextOfElement = function(isLaTeX) {
 	var strTemp = "";
 	var intStartCode = this.Pr.chr || this.operator.Get_CodeChr();
 	var strStart = String.fromCharCode(intStartCode);
-	var Base = this.getBase().GetMultipleContentForGetText(isLaTeX, false, false, true);
+	var Base = this.getBase().GetMultipleContentForGetText(isLaTeX);
 
 	if (true === isLaTeX)
     {

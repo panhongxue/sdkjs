@@ -1801,42 +1801,47 @@
     };
     CUnicodeParser.prototype.GetElementLiteral = function ()
     {
-        const oOperandLiteral = this.GetOperandLiteral();
-        this.EatOneSpace();
+        let oOperandLiteral = this.GetOperandLiteral();
 
         if (this.oLookahead.class === Literals.divide.id)
-        {
-            if (!Array.isArray(oOperandLiteral))
-            {
-                return this.GetFractionLiteral(oOperandLiteral)
-            }
-            else
-            {
-                let frac = this.GetFractionLiteral(oOperandLiteral.pop());
-                oOperandLiteral.push(frac);
-            }
-        }
+            oOperandLiteral = this.GetFractionLiteral(oOperandLiteral);
 
         return oOperandLiteral;
     };
     CUnicodeParser.prototype.IsExpLiteral = function ()
     {
-        return this.IsElementLiteral();
+        return this.IsElementLiteral()
+            || this.IsFractionWithoutNumeratorLiteral()
+            || this.IsSpaceLiteral()
+            || this.oLookahead.class === Literals.operator.id
     };
+    CUnicodeParser.prototype.GetFractionWithoutNumeratorLiteral = function()
+    {
+        let strDivideSymbol = this.EatToken(this.oLookahead.class);
+        let oDenominator = {};
+        if (this.IsOperandLiteral())
+            oDenominator = this.GetOperandLiteral();
+
+        return {
+            type: Struc.frac,
+            up: {},
+            down: oDenominator,
+            fracType: this.GetFractionType(strDivideSymbol),
+        };
+    };
+    CUnicodeParser.prototype.IsFractionWithoutNumeratorLiteral = function()
+    {
+        return this.oLookahead.class === Literals.divide.id;
+    }
     CUnicodeParser.prototype.GetExpLiteral = function ()
     {
         const oExpLiteral = [];
 
-        while (this.IsExpLiteral() || this.oLookahead.class === Literals.operator.id)
+        while (this.IsExpLiteral())
         {
-            if (this.oLookahead.data === "/")
+            if (this.IsFractionWithoutNumeratorLiteral())
             {
-                let down;
-                this.EatToken(this.oLookahead.class)
-                if (this.oLookahead.class)
-                    down = this.GetElementLiteral();
-
-                oExpLiteral.push({type: Struc.func, up: null, down: down, fracType: null});
+                oExpLiteral.push(this.GetFractionWithoutNumeratorLiteral());
             }
             else if (this.IsElementLiteral())
             {

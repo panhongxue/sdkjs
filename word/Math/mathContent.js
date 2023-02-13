@@ -4010,7 +4010,13 @@ CMathContent.prototype.Get_WordStartPos = function(SearchPos, ContentPos, Depth,
             this.Content[CurPos].Get_WordStartPos(SearchPos, ContentPos, Depth + 1, false);
 
             if (true === SearchPos.UpdatePos)
-                SearchPos.Pos.Update(CurPos, Depth);
+            {
+                if (this.CurPos - 1 >= 0)
+                    //Встаем перед элементом не заходя в него
+                    SearchPos.Pos.Update(CurPos - 1, Depth);
+                else
+                    SearchPos.Pos.Update(CurPos, Depth);
+            }
             else
                 SearchPos.UpdatePos = OldUpdatePos;
 
@@ -4096,7 +4102,13 @@ CMathContent.prototype.Get_WordEndPos = function(SearchPos, ContentPos, Depth, U
             this.Content[CurPos].Get_WordEndPos(SearchPos, ContentPos, Depth + 1, false, StepEnd);
 
             if (true === SearchPos.UpdatePos)
-                SearchPos.Pos.Update(CurPos, Depth);
+            {
+                if (this.CurPos + 1 < this.Content.length)
+                    //Встаем после элемента не заходя в него
+                    SearchPos.Pos.Update(CurPos + 1, Depth);
+                else
+                    SearchPos.Pos.Update(CurPos, Depth);
+            }
             else
                 SearchPos.UpdatePos = OldUpdatePos;
 

@@ -9198,6 +9198,16 @@
 	{
 		return !!(window['AscOForm'] && IsSupportAscFeature("forms"));
 	}
+	
+	/**
+	 * Add change to history and apply it to the document
+	 * @param change {AscDFH.CChangesBase}
+	 */
+	function ApplyChange(change)
+	{
+		AscCommon.History.Add(change);
+		change.Redo();
+	}
 
 	var g_oUserColorById = {}, g_oUserNextColorIndex = 0;
 

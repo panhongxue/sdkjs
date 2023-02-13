@@ -1382,6 +1382,7 @@
 	window['AscDFH'].historyitem_type_GlossaryDocument   = 67 << 16;
 	window['AscDFH'].historyitem_type_DocPart            = 68 << 16;
 	window['AscDFH'].historyitem_type_Endnotes           = 69 << 16;
+	window['AscDFH'].historyitem_type_Permissions        = 70 << 16;
 
 	window['AscDFH'].historyitem_type_CommonShape            = 1000 << 16; // Этот класс добавлен для элементов, у которых нет конкретного класса
 

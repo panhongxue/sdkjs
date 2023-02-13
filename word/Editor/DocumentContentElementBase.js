@@ -1251,3 +1251,6 @@ CDocumentContentElementBase.prototype.GetSelectedReviewChanges = function(arrCha
 window['AscCommonWord'] = window['AscCommonWord'] || {};
 window['AscCommonWord'].CDocumentContentElementBase = CDocumentContentElementBase;
 window['AscCommonWord'].type_Unknown = type_Unknown;
+
+window['AscWord'] = window['AscWord'] || {};
+window['AscWord'].BlockLevelBase = CDocumentContentElementBase;

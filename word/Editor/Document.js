@@ -8822,8 +8822,11 @@ CDocument.prototype.OnKeyDown = function(e)
 		{
 			var oSelectedInfo = this.GetSelectedElementsInfo();
 			var oMath         = oSelectedInfo.GetMath();
-			if (null === oMath)
-				this.Api.asc_AddMath();
+
+            if (null === oMath)
+                this.Api.asc_AddMath();
+            else
+                this.MathPlaceHolderProceed(oMath);
 
 			bRetValue = keydownresult_PreventAll;
 			break;
@@ -14347,6 +14350,33 @@ CDocument.prototype.private_CheckCursorInPlaceHolder = function()
 			placeholderOwner.SelectAllInCurrentMathContent();
 		}
 	}
+};
+
+CDocument.prototype.MathPlaceHolderProceed = function(oMath)
+{
+    let placeholderOwner = this.GetPlaceHolderObject();
+
+    if (placeholderOwner instanceof CInlineLevelSdt)
+    {
+        this.StartAction(AscDFH.historydescription_Document_DeleteButton);
+
+        let oParagraph = placeholderOwner.Parent;
+        let intIndexOfPlaceHolder = placeholderOwner.Get_PosInParent(oParagraph);
+
+        oParagraph.Remove_FromContent(intIndexOfPlaceHolder, 1);
+        oParagraph.CorrectContent();
+
+        this.UpdateSelection();
+        this.UpdateInterface();
+        this.Recalculate();
+        this.FinalizeAction();
+    }
+    else if (oMath)
+    {
+        let oParagraph = oMath.Parent
+        oMath.MoveCursorToEndPos();
+        oParagraph.MoveCursorRight(false);
+    }
 };
 
 CDocument.prototype.ResetWordSelection = function()

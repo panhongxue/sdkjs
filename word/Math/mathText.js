@@ -1022,7 +1022,8 @@ CMathText.prototype.ToSearchElement = function(oProps)
 CMathText.prototype.GetTextOfElement = function(isLaTeX) {
 	var strPre = "";
 
-	if (this.Parent) {
+	if (this.Parent)
+    {
 		var oParentMathPrp = this.Parent.MathPrp.scr;
 
 		if (1 === oParentMathPrp) {
@@ -1045,7 +1046,11 @@ CMathText.prototype.GetTextOfElement = function(isLaTeX) {
     }
 
     if (this.value && this.value !== 11034)
+    {
+        // if (this.Parent)
+        //     AscMath.wordStyle.push(this.Parent.Pr.Copy());
         return strPre + AscCommon.encodeSurrogateChar(this.value);
+    }
 
 	return "";
 };

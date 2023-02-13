@@ -39,7 +39,7 @@
 	const ConvertTokens = window.AscMath.ConvertTokens;
 	const Tokenizer = window.AscMath.Tokenizer;
 	const LimitFunctions = window.AscMath.LimitFunctions;
-	const FunctionNames = window.AscMath.functionNames;
+	const FunctionNames = window.AscMath.MathAutoCorrectionFuncNames;
 	const GetTypeFont = window.AscMath.GetTypeFont;
 	const GetMathFontChar = window.AscMath.GetMathFontChar;
 

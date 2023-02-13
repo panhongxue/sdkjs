@@ -3311,7 +3311,6 @@ CMathContent.prototype.Add_TextInLastParaRun = function(sText, Paragraph, MathSt
         }
     }
 };
-
 CMathContent.prototype.Add_TextOnPos = function(nPos, sText, Paragraph, MathStyle)
 {
     this.Paragraph = Paragraph;
@@ -7007,6 +7006,7 @@ CMathContent.prototype.GetTextContent = function(bSelectedText, isLaTeX)
 	if (undefined === isLaTeX || null === isLaTeX)
 		isLaTeX = false;
 
+    AscMath.wordStyle = [];
 	let str = "";
 	let StartPos = 0;
 	let EndPos = this.Content.length;
@@ -7028,10 +7028,10 @@ CMathContent.prototype.GetTextContent = function(bSelectedText, isLaTeX)
             {
                 str += this.Content[i].GetTextOfElement(isLaTeX);
             }
-
         }
 	}
 
+    // console.log(AscMath.wordStyle);
 	return {str: str};
 };
 
@@ -7580,13 +7580,13 @@ var g_DefaultAutoCorrectMathSymbolsList =
     ['\\zwnj', 0x200C],
     ['\\zwsp', 0x200B]
 ];
-var g_AutoCorrectMathSymbols = JSON.parse(JSON.stringify(g_DefaultAutoCorrectMathSymbolsList));
-var g_AutoCorrectMathFuncs = JSON.parse(JSON.stringify(g_DefaultAutoCorrectMathFuncs));
+var g_AutoCorrectMathSymbols = JSON.parse(JSON.stringify(AscMath.AutoCorrection));
+var g_AutoCorrectMathFuncs = JSON.parse(JSON.stringify(AscMath.MathAutoCorrectionFuncNames));
 var g_AutoCorrectMathsList = {
-    DefaultAutoCorrectMathSymbolsList : g_DefaultAutoCorrectMathSymbolsList,
-    AutoCorrectMathSymbols : g_AutoCorrectMathSymbols,
-    DefaultAutoCorrectMathFuncs : g_DefaultAutoCorrectMathFuncs,
-    AutoCorrectMathFuncs : g_AutoCorrectMathFuncs
+    DefaultAutoCorrectMathSymbolsList   :   AscMath.AutoCorrection,
+    AutoCorrectMathSymbols              :   g_AutoCorrectMathSymbols,
+    DefaultAutoCorrectMathFuncs         :   AscMath.MathAutoCorrectionFuncNames,
+    AutoCorrectMathFuncs                :   g_AutoCorrectMathFuncs
 };
 //символы для mathfunc (интеграл, сумма...)
 var q_aMathAutoCorrectControlAggregationCodes =

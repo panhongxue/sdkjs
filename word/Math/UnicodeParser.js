@@ -40,7 +40,7 @@
     const UnicodeSpecialScript = AscMath.UnicodeSpecialScript;
     const ConvertTokens = AscMath.ConvertTokens;
     const Tokenizer = AscMath.Tokenizer;
-    const FunctionNames = AscMath.functionNames;
+    const FunctionNames = AscMath.MathAutoCorrectionFuncNames;
     const LimitNames = AscMath.LimitFunctions;
 
     function CUnicodeParser()
@@ -1496,7 +1496,7 @@
         else
         {
             return {
-                type: Struc.char.id,
+                type: Struc.char,
                 value: "█"
             }
         }
@@ -1860,16 +1860,19 @@
     {
         let arrLiterals = [];
         let strLiteral = "";
-
+        let style;
         while (this.oLookahead.class === arrTypeOfLiteral.id && this.IsNotStopToken(this.oLookahead.data))
         {
+            style = this.oLookahead.style;
             if (isSpecial)
                 strLiteral += UnicodeSpecialScript[this.EatToken(arrTypeOfLiteral.id).data];
             else
                 strLiteral += this.EatToken(arrTypeOfLiteral.id).data;
         }
 
-        arrLiterals.push({type: type, value: strLiteral});
+        //console.log(style, this.oLookahead)
+
+        arrLiterals.push({type: type, value: strLiteral, style: style});
 
         if (arrLiterals.length === 1)
             return arrLiterals[0];

@@ -1731,6 +1731,7 @@ ParaMath.prototype.GetNextRunElements = function(oRunElements, isUseContentPos, 
 
 	this.Root.GetNextRunElements(oRunElements, isUseContentPos, nDepth);
 };
+
 ParaMath.prototype.GetPrevRunElements = function(oRunElements, isUseContentPos, nDepth)
 {
 	if (oRunElements.IsSkipMath())
@@ -1841,6 +1842,7 @@ ParaMath.prototype.Get_MenuProps = function()
 {
     return this.Root.Get_MenuProps();
 };
+
 ParaMath.prototype.Set_MenuProps = function(Props)
 {
     if(Props != undefined)
@@ -2522,18 +2524,15 @@ ParaMath.prototype.Check_Range_OnlyMath = function(Checker, CurRange, CurLine)
     else
         Checker.Math = this;
 };
-
 ParaMath.prototype.Check_MathPara = function(Checker)
 {
     Checker.Found  = true;
     Checker.Result = false;
 };
-
 ParaMath.prototype.Check_PageBreak = function()
 {
     return false;
 };
-
 ParaMath.prototype.CheckSplitPageOnPageBreak = function(oPBChecker)
 {
 	return true;
@@ -2542,22 +2541,18 @@ ParaMath.prototype.Get_ParaPosByContentPos = function(ContentPos, Depth)
 {
     return this.Root.Get_ParaPosByContentPos(ContentPos, Depth);
 };
-
 ParaMath.prototype.Recalculate_CurPos = function(_X, Y, CurrentRun, _CurRange, _CurLine, _CurPage, UpdateCurPos, UpdateTarget, ReturnTarget)
 {
     return this.Root.Recalculate_CurPos(_X, Y, CurrentRun, _CurRange, _CurLine, _CurPage, UpdateCurPos, UpdateTarget, ReturnTarget);
 };
-
 ParaMath.prototype.Refresh_RecalcData = function(Data)
 {
     this.Paragraph.Refresh_RecalcData2(0);
 };
-
 ParaMath.prototype.Refresh_RecalcData2 = function(Data)
 {
     this.Paragraph.Refresh_RecalcData2(0);
 };
-
 ParaMath.prototype.RecalculateMinMaxContentWidth = function(MinMax)
 {
     var RPI = new CRPI();
@@ -2566,7 +2561,6 @@ ParaMath.prototype.RecalculateMinMaxContentWidth = function(MinMax)
     this.Root.PreRecalc(null, this, new CMathArgSize(), RPI);
     this.Root.RecalculateMinMaxContentWidth(MinMax);
 };
-
 ParaMath.prototype.Get_Range_VisibleWidth = function(RangeW, _CurLine, _CurRange)
 {
     this.Root.Get_Range_VisibleWidth(RangeW, _CurLine, _CurRange);

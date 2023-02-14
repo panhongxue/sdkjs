@@ -263,12 +263,18 @@
 			"word/Editor/FootnotesChanges.js",
 			"word/Editor/Endnotes.js",
 			"word/Editor/EndnotesChanges.js",
-		    "word/Editor/GlossaryDocument.js",
-		    "word/Editor/GlossaryDocumentChanges.js",
+			"word/Editor/GlossaryDocument.js",
+			"word/Editor/GlossaryDocumentChanges.js",
 			"word/Editor/DocumentProtection.js",
 			"word/Editor/Comparison.js",
 			"word/Editor/Revisions/TrackRevisionsManager.js",
 			"word/Editor/Merge.js",
+			"word/Editor/RangePermissions/PermBase.js",
+			"word/Editor/RangePermissions/InlinePerm.js",
+			"word/Editor/RangePermissions/BlockPerm.js",
+			
+			"word/Changes/RangePermissions/PermChanges.js",
+
 
 			"word/Drawing/Graphics.js",
 			"word/Drawing/ShapeDrawer.js",

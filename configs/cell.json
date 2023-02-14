@@ -317,6 +317,11 @@
 			"word/Math/mathTrackHandler.js",
 			"word/Editor/Styles/FixedFormDefaults.js",
 			"word/Editor/Revisions/TrackRevisionsManager.js",
+			"word/Editor/RangePermissions/PermBase.js",
+			"word/Editor/RangePermissions/InlinePerm.js",
+			"word/Editor/RangePermissions/BlockPerm.js",
+			
+			"word/Changes/RangePermissions/PermChanges.js",
 
 			"word/apiBuilder.js",
 			"slide/apiBuilder.js",

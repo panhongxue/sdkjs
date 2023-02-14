@@ -44,24 +44,101 @@
 	 * @constructor
 	 * @extends {window['AscDFH'].CChangesBaseStringProperty}
 	 */
-	function CChangesPermissionsPermId(Class, oldAuthor, newAuthor)
+	function CChangesPermissionsPermId(Class, oldValue, newValue)
 	{
-		let oldId = oldAuthor ? oldAuthor.GetId() : undefined;
-		let newId = newAuthor ? newAuthor.GetId() : undefined;
-		
-		window['AscDFH'].CChangesBaseStringProperty.call(this, Class, oldId, newId);
+		window['AscDFH'].CChangesBaseStringProperty.call(this, Class, oldValue, newValue);
 	}
 	window['AscDFH'].InheritPropertyChange(
 		CChangesPermissionsPermId,
 		window['AscDFH'].CChangesBaseStringProperty,
-		window['AscDFH'].historyitem_OForm_Document_Author,
+		window['AscDFH'].historyitem_Permissions_PermId,
 		function(value)
 		{
 			this.Class.PermId = value;
 		},
 		false
 	);
-	window['AscDFH'].CChangesOFormDocumentAuthor = CChangesOFormDocumentAuthor;
+	window['AscDFH'].CChangesPermissionsPermId = CChangesPermissionsPermId;
+	
+	/**
+	 * @constructor
+	 * @extends {window['AscDFH'].CChangesBaseStringProperty}
+	 */
+	function CChangesPermissionsEd(Class, oldValue, newValue)
+	{
+		window['AscDFH'].CChangesBaseStringProperty.call(this, Class, oldValue, newValue);
+	}
+	window['AscDFH'].InheritPropertyChange(
+		CChangesPermissionsEd,
+		window['AscDFH'].CChangesBaseStringProperty,
+		window['AscDFH'].historyitem_Permissions_Ed,
+		function(value)
+		{
+			this.Class.Ed = value;
+		},
+		false
+	);
+	window['AscDFH'].CChangesPermissionsEd = CChangesPermissionsEd;
+	
+	/**
+	 * @constructor
+	 * @extends {window['AscDFH'].CChangesBaseStringProperty}
+	 */
+	function CChangesPermissionsPermEdGrp(Class, oldValue, newValue)
+	{
+		window['AscDFH'].CChangesBaseStringProperty.call(this, Class, oldValue, newValue);
+	}
+	window['AscDFH'].InheritPropertyChange(
+		CChangesPermissionsPermEdGrp,
+		window['AscDFH'].CChangesBaseStringProperty,
+		window['AscDFH'].historyitem_Permissions_EdGrp,
+		function(value)
+		{
+			this.Class.EdGrp = value;
+		},
+		false
+	);
+	window['AscDFH'].CChangesPermissionsPermEdGrp = CChangesPermissionsPermEdGrp;
+	
+	/**
+	 * @constructor
+	 * @extends {window['AscDFH'].CChangesBaseLongProperty}
+	 */
+	function CChangesPermissionsPermColFirst(Class, oldValue, newValue)
+	{
+		window['AscDFH'].CChangesBaseLongProperty.call(this, Class, oldValue, newValue);
+	}
+	window['AscDFH'].InheritPropertyChange(
+		CChangesPermissionsPermColFirst,
+		window['AscDFH'].CChangesBaseLongProperty,
+		window['AscDFH'].historyitem_Permissions_ColFirst,
+		function(value)
+		{
+			this.Class.ColFirst = value;
+		},
+		false
+	);
+	window['AscDFH'].CChangesPermissionsPermColFirst = CChangesPermissionsPermColFirst;
+	
+	/**
+	 * @constructor
+	 * @extends {window['AscDFH'].CChangesBaseLongProperty}
+	 */
+	function CChangesPermissionsPermColLast(Class, oldValue, newValue)
+	{
+		window['AscDFH'].CChangesBaseLongProperty.call(this, Class, oldValue, newValue);
+	}
+	window['AscDFH'].InheritPropertyChange(
+		CChangesPermissionsPermColLast,
+		window['AscDFH'].CChangesBaseLongProperty,
+		window['AscDFH'].historyitem_Permissions_ColLast,
+		function(value)
+		{
+			this.Class.ColLast = value;
+		},
+		false
+	);
+	window['AscDFH'].CChangesPermissionsPermColLast = CChangesPermissionsPermColLast;
 	
 })(window);
 

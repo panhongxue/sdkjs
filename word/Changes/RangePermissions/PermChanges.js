@@ -74,7 +74,7 @@
 		window['AscDFH'].historyitem_Permissions_Ed,
 		function(value)
 		{
-			this.Class.Ed = value;
+			this.Class.PermEd = value;
 		},
 		false
 	);
@@ -84,61 +84,61 @@
 	 * @constructor
 	 * @extends {window['AscDFH'].CChangesBaseStringProperty}
 	 */
-	function CChangesPermissionsPermEdGrp(Class, oldValue, newValue)
+	function CChangesPermissionsEdGrp(Class, oldValue, newValue)
 	{
 		window['AscDFH'].CChangesBaseStringProperty.call(this, Class, oldValue, newValue);
 	}
 	window['AscDFH'].InheritPropertyChange(
-		CChangesPermissionsPermEdGrp,
+		CChangesPermissionsEdGrp,
 		window['AscDFH'].CChangesBaseStringProperty,
 		window['AscDFH'].historyitem_Permissions_EdGrp,
 		function(value)
 		{
-			this.Class.EdGrp = value;
+			this.Class.PermEdGrp = value;
 		},
 		false
 	);
-	window['AscDFH'].CChangesPermissionsPermEdGrp = CChangesPermissionsPermEdGrp;
+	window['AscDFH'].CChangesPermissionsEdGrp = CChangesPermissionsEdGrp;
 	
 	/**
 	 * @constructor
 	 * @extends {window['AscDFH'].CChangesBaseLongProperty}
 	 */
-	function CChangesPermissionsPermColFirst(Class, oldValue, newValue)
+	function CChangesPermissionsColFirst(Class, oldValue, newValue)
 	{
 		window['AscDFH'].CChangesBaseLongProperty.call(this, Class, oldValue, newValue);
 	}
 	window['AscDFH'].InheritPropertyChange(
-		CChangesPermissionsPermColFirst,
+		CChangesPermissionsColFirst,
 		window['AscDFH'].CChangesBaseLongProperty,
 		window['AscDFH'].historyitem_Permissions_ColFirst,
 		function(value)
 		{
-			this.Class.ColFirst = value;
+			this.Class.PermColFirst = value;
 		},
 		false
 	);
-	window['AscDFH'].CChangesPermissionsPermColFirst = CChangesPermissionsPermColFirst;
+	window['AscDFH'].CChangesPermissionsColFirst = CChangesPermissionsColFirst;
 	
 	/**
 	 * @constructor
 	 * @extends {window['AscDFH'].CChangesBaseLongProperty}
 	 */
-	function CChangesPermissionsPermColLast(Class, oldValue, newValue)
+	function CChangesPermissionsColLast(Class, oldValue, newValue)
 	{
 		window['AscDFH'].CChangesBaseLongProperty.call(this, Class, oldValue, newValue);
 	}
 	window['AscDFH'].InheritPropertyChange(
-		CChangesPermissionsPermColLast,
+		CChangesPermissionsColLast,
 		window['AscDFH'].CChangesBaseLongProperty,
 		window['AscDFH'].historyitem_Permissions_ColLast,
 		function(value)
 		{
-			this.Class.ColLast = value;
+			this.Class.PermColLast = value;
 		},
 		false
 	);
-	window['AscDFH'].CChangesPermissionsPermColLast = CChangesPermissionsPermColLast;
+	window['AscDFH'].CChangesPermissionsColLast = CChangesPermissionsColLast;
 	
 })(window);
 

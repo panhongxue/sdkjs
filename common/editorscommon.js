@@ -14135,6 +14135,7 @@
 	window["AscCommon"].CompareStrings = CompareStrings;
 	window["AscCommon"].IsSupportAscFeature = IsSupportAscFeature;
 	window["AscCommon"].IsSupportOFormFeature = IsSupportOFormFeature;
+	window["AscCommon"].ApplyChange = ApplyChange;
 
 	window["AscCommon"].loadSdk = loadSdk;
     window["AscCommon"].loadScript = loadScript;

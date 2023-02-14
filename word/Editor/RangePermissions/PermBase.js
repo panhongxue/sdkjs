@@ -34,38 +34,72 @@
 
 (function(window)
 {
-	const History = AscCommon.History;
-	
 	/**
 	 * Base class for range permissions
 	 * @constructor
 	 */
 	function PermBase()
 	{
-		this.PermId   = undefined;
-		this.Ed       = undefined;
-		this.EdGrp    = undefined;
-		this.ColFirst = undefined;
-		this.ColLast  = undefined;
+		this.PermId       = undefined;
+		this.PermEd       = undefined;
+		this.PermEdGrp    = undefined;
+		this.PermColFirst = undefined;
+		this.PermColLast  = undefined;
 	}
 	PermBase.prototype.GetPermId = function()
 	{
 		return this.PermId;
 	};
-	PermBase.prototype.SetPermId = function()
+	PermBase.prototype.SetPermId = function(id)
 	{
-	
-	};
-	PermBase.prototype.GetEd = function()
-	{
-		return this.Ed;
-	};
-	PermBase.prototype.SetEd = function(value)
-	{
-		if (value === this.Ed)
+		if (this.PermId === id)
 			return;
 		
-		History.AddChange();
+		AscCommon.ApplyChange(new AscDFH.CChangesPermissionsPermId(this, this.PermId, id));
+	};
+	PermBase.prototype.GetPermEd = function()
+	{
+		return this.PermEd;
+	};
+	PermBase.prototype.SetPermEd = function(value)
+	{
+		if (value === this.PermEd)
+			return;
+		
+		AscCommon.ApplyChange(new AscDFH.CChangesPermissionsEd(this, this.PermEd, value));
+	};
+	PermBase.prototype.GetPermEdGrp = function()
+	{
+		return this.PermEdGrp;
+	};
+	PermBase.prototype.SetPermEdGrp = function(value)
+	{
+		if (value === this.PermEdGrp)
+			return;
+		
+		AscCommon.ApplyChange(new AscDFH.CChangesPermissionsEdGrp(this, this.PermEdGrp, value));
+	};
+	PermBase.prototype.GetPermColFirst = function()
+	{
+		return this.PermColFirst;
+	};
+	PermBase.prototype.SetPermColFirst = function(value)
+	{
+		if (value === this.PermColFirst)
+			return;
+		
+		AscCommon.ApplyChange(new AscDFH.CChangesPermissionsColFirst(this, this.PermColFirst, value));
+	};
+	PermBase.prototype.GetPermColLast = function()
+	{
+		return this.PermColLast;
+	};
+	PermBase.prototype.SetGermColLast = function(value)
+	{
+		if (value === this.PermColLast)
+			return;
+		
+		AscCommon.ApplyChange(new AscDFH.CChangesPermissionsColLast(this, this.PermColLast, value));
 	};
 	//--------------------------------------------------------export----------------------------------------------------
 	window['AscWord'].PermBase = PermBase;

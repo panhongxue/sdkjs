@@ -35,14 +35,27 @@
 (function(window)
 {
 	/**
-	 *
 	 * @constructor
+	 * @extends {AscWord.InlineLevelBase}
 	 */
 	function InlinePerm()
 	{
-		//this.Id =
+		this.Id = AscCommon.g_oIdCounter.Get_NewId();
+		AscWord.InlineLevelBase.call(this);
+		
+		this.Pr   = new CSdtPr();
+		this.Type = para_InlineLevelSdt;
+		
+		this.BoundsPaths          = null;
+		this.BoundsPathsStartPage = -1;
+		
+		// Добавляем данный класс в таблицу Id (обязательно в конце конструктора)
+		AscCommon.g_oTableId.Add(this, this.Id);
 	}
 	
+	InlinePerm.prototype = Object.create(InlineLevelBase.prototype);
+	InlinePerm.prototype.constructor = InlinePerm;
+	AscCommon.ExtendPrototype(InlinePerm, AscWord.PermBase);
 	
 	
 	//--------------------------------------------------------export----------------------------------------------------

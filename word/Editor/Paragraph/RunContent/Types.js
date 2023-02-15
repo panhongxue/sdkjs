@@ -79,6 +79,7 @@ var para_Bookmark                  = 0x0047;
 var para_RevisionMove              = 0x0048;
 var para_EndnoteReference          = 0x0049; // Ссылка на сноску
 var para_EndnoteRef                = 0x004a; // Номер сноски (должен быть только внутри сноски)
+var para_Perm                      = 0x004b; //
 
 (function(window)
 {
@@ -92,6 +93,7 @@ var para_EndnoteRef                = 0x004a; // Номер сноски (дол�
 			case para_HyperlinkStart:
 			case para_InlineLevelSdt:
 			case para_Bookmark:
+			case para_Perm:
 			{
 				var ElementId = oReader.GetString2();
 				oElement       = g_oTableId.Get_ById(ElementId);

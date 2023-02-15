@@ -217,10 +217,10 @@
 
 	/**
      * Possible values for the position of chart tick labels (either horizontal or vertical).
-     * * **"none"** - does not display the selected tick labels.
-     * * **"nextTo"** - sets the position of the selected tick labels next to the main label.
-     * * **"low"** - sets the position of the selected tick labels in the part of the chart with lower values.
-     * * **"high"** - sets the position of the selected tick labels in the part of the chart with higher values.
+     * * <b>"none"</b> - does not display the selected tick labels.
+     * * <b>"nextTo"</b> - sets the position of the selected tick labels next to the main label.
+     * * <b>"low"</b> - sets the position of the selected tick labels in the part of the chart with lower values.
+     * * <b>"high"</b> - sets the position of the selected tick labels in the part of the chart with higher values.
 	 * @typedef {("none" | "nextTo" | "low" | "high")} TickLabelPosition
 	 * **/
 	
@@ -1481,7 +1481,7 @@
 	 * @typeofeditors ["CSE"]
 	 * @param {string} sRange - The range where the hyperlink will be added to.
 	 * @param {string} sAddress - The link address.
-	 * @param {string} subAddress - The subaddress of the hyperlink.
+	 * @param {string} subAddress - The link subaddress to insert internal sheet hyperlinks.
 	 * @param {string} sScreenTip - The screen tip text.
 	 * @param {string} sTextToDisplay - The link text that will be displayed on the sheet.
 	 * */
@@ -1795,16 +1795,14 @@
 	 * @param {ApiWorksheet} after - The sheet after which the moved sheet will be placed. You cannot specify After if you specify Before.
 	*/
 	ApiWorksheet.prototype.Move = function(before, after) {
-		var bb = before instanceof ApiWorksheet;
-		var ba = after instanceof ApiWorksheet;
+		let bb = before instanceof ApiWorksheet;
+		let ba = after instanceof ApiWorksheet;
 		if ( (bb && ba) || (!bb && !ba) )
 			return new Error('Incorrect parametrs.');
 
-		if (bb) {
-			this.worksheet.workbook.oApi.asc_moveWorksheet( before.Index, [this.Index] );
-		} else {
-			this.worksheet.workbook.oApi.asc_moveWorksheet( (after.Index + 1), [this.Index] );
-		}
+		let curIndex = this.GetIndex();
+		let newIndex = ( bb ? ( before.GetIndex() ) : (after.GetIndex() + 1) );
+		this.worksheet.workbook.oApi.asc_moveWorksheet( newIndex, [curIndex] );
 	};
 
 	/**
@@ -5668,6 +5666,10 @@
 	ApiWorksheet.prototype["GetBottomMargin"] = ApiWorksheet.prototype.GetBottomMargin;		
 	ApiWorksheet.prototype["SetPageOrientation"] = ApiWorksheet.prototype.SetPageOrientation;
 	ApiWorksheet.prototype["GetPageOrientation"] = ApiWorksheet.prototype.GetPageOrientation;
+	ApiWorksheet.prototype["GetPrintHeadings"] = ApiWorksheet.prototype.GetPrintHeadings;
+	ApiWorksheet.prototype["SetPrintHeadings"] = ApiWorksheet.prototype.SetPrintHeadings;
+	ApiWorksheet.prototype["GetPrintGridlines"] = ApiWorksheet.prototype.GetPrintGridlines;
+	ApiWorksheet.prototype["SetPrintGridlines"] = ApiWorksheet.prototype.SetPrintGridlines;
 	ApiWorksheet.prototype["GetDefNames"] = ApiWorksheet.prototype.GetDefNames;
 	ApiWorksheet.prototype["GetDefName"] = ApiWorksheet.prototype.GetDefName;
 	ApiWorksheet.prototype["AddDefName"] = ApiWorksheet.prototype.AddDefName;

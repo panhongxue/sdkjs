@@ -8571,7 +8571,7 @@
 				else if(oData.Type === AscDFH.historyitem_ThemeSetFontScheme) {
 					let oPresentation = this.GetLogicDocument();
 					let aSlideIndexes = this.GetAllSlideIndexes();
-					if(oPresentation && aSlideIndexes.length > 0) {
+					if(oPresentation && aSlideIndexes && aSlideIndexes.length > 0) {
 						oPresentation.Refresh_RecalcData2({Type: AscDFH.historyitem_ThemeSetFontScheme, aIndexes: aSlideIndexes});
 					}
 				}
@@ -9551,23 +9551,26 @@
 				this.textFit.Read_FromBinary(r);
 			}
 		};
+		CBodyPr.prototype.setDefaultInsets = function() {
+			this.bIns = 45720 / 36000;
+			this.tIns = 45720 / 36000;
+			this.lIns = 91440 / 36000;
+			this.rIns = 91440 / 36000;
+		};
 		CBodyPr.prototype.setDefault = function () {
+			this.setDefaultInsets();
 			this.flatTx = null;
 			this.anchor = 4;
 			this.anchorCtr = false;
-			this.bIns = 45720 / 36000;
 			this.compatLnSpc = false;
 			this.forceAA = false;
 			this.fromWordArt = false;
 			this.horzOverflow = AscFormat.nHOTOverflow;
-			this.lIns = 91440 / 36000;
 			this.numCol = 1;
-			this.rIns = 91440 / 36000;
 			this.rot = null;
 			this.rtlCol = false;
 			this.spcCol = false;
 			this.spcFirstLastPara = null;
-			this.tIns = 45720 / 36000;
 			this.upright = false;
 			this.vert = AscFormat.nVertTThorz;
 			this.vertOverflow = AscFormat.nVOTOverflow;
@@ -10334,6 +10337,17 @@
 			return this.getImageBulletURL();
 		}
 		prot["getImageId"] = prot["asc_getImageId"] = CBullet.prototype.getImageId;
+		prot.getJsonBullet = prot["asc_getJsonBullet"] = function () {
+			const sUrlId = this.getImageBulletURL();
+			const oRes = window['AscJsonConverter'].WriterToJSON.prototype.SerBullet(this);
+			if (sUrlId) {
+				const oBuBlip = oRes["bulletType"] && oRes["bulletType"]["buBlip"] && oRes["bulletType"]["buBlip"]["blip"] && oRes["bulletType"]["buBlip"]["blip"]["fill"];
+				if (oBuBlip) {
+					oBuBlip["rasterImageId"] = sUrlId;
+				}
+			}
+			return oRes;
+		}
 		prot.put_ImageUrl = function (sUrl, token) {
 			var _this = this;
 			var Api = editor || Asc.editor;

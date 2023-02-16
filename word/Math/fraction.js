@@ -614,45 +614,48 @@ CFraction.prototype.raw_SetFractionType = function(FractionType)
     this.Pr.type = FractionType;
     this.fillContent();
 };
-CFraction.prototype.GetTextOfElement = function(isLaTeX)
+CFraction.prototype.GetTextOfElement = function(isLaTeX, isOnlyText)
 {
-	let strTemp = "";
-	let strNumerator = this.getNumerator().GetMultipleContentForGetText(isLaTeX);
-	let strDenominator = this.getDenominator().GetMultipleContentForGetText(isLaTeX);
+	let arrContent = [];
+	let oNumerator = this.getNumerator().GetMultipleContentForGetText(isLaTeX);
+	let oDenominator = this.getDenominator().GetMultipleContentForGetText(isLaTeX);
 
 	if (true === isLaTeX)
     {
-        if (strNumerator[0] !== "{")
-            strNumerator = "{" + strNumerator + "}";
-        if (strDenominator[0] !== "{")
-            strDenominator = "{" + strDenominator + "}";
+        if (oNumerator.text[0] !== "{")
+            oNumerator.Wrap("{", "}");
+        if (oDenominator.text[0]  !== "{")
+            oDenominator.Wrap("{", "}");
 
 		switch (this.Pr.type)
         {
-			case 0:	strTemp += '\\frac'; break;
-			case 1:	strTemp += '\\sfrac'; break;
-			case 2:	strTemp += '\\cfrac'; break;
-            case 3: strTemp += '\\binom'; break;
-			default: strTemp += '\\frac';  break;
+			case 0:	    arrContent.push('\\frac');  break;
+			case 1:		arrContent.push('\\sfrac'); break;
+			case 2:	    arrContent.push('\\cfrac');  break;
+            case 3: 	arrContent.push('\\binom');  break;
+			default: 	arrContent.push('\\frac');   break;
 		}
 
-		strTemp += strNumerator + strDenominator;
+        arrContent.push(oNumerator, oDenominator);
 	}
     else
     {
-		strTemp += strNumerator;
+		arrContent.push(oNumerator);
 		switch (this.Pr.type)
         {
-			case 0:	strTemp += '/';	break;
-			case 1:	strTemp += '⁄';	break;
-			case 2:	strTemp += '⊘';	break;
-			case 3:	strTemp += String.fromCharCode(166); break;
-			default:strTemp += String.fromCharCode(47); break;
+			case 0:	    arrContent.push('/');	break;
+			case 1: 	arrContent.push('⁄');	break;
+			case 2:		arrContent.push('⊘');	break;
+			case 3:		arrContent.push(String.fromCharCode(166));  break;
+			default: 	arrContent.push(String.fromCharCode(47));   break;
 		}
-
-		strTemp += strDenominator;
+        arrContent.push(oDenominator);
 	}
-	return strTemp;
+
+    if (isOnlyText)
+        return AscMath.ConvertMathTextToText(arrContent);
+
+	return arrContent;
 };
 /**
  *

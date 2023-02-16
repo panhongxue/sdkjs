@@ -1791,13 +1791,19 @@ ParaMath.prototype.GetSelectedText = function(bAll, bClearText, oPr)
 	return "";
 };
 
-ParaMath.prototype.GetText = function(isLaTeX)
+ParaMath.prototype.GetText = function(isLaTeX, isNotOnlyText)
 {
-    var res = "";
-    if (this.Root && this.Root.GetTextContent) {
+    let res = "";
+    if (this.Root && this.Root.GetTextContent)
+    {
         var textContent = this.Root.GetTextContent(false, isLaTeX);
-        if (textContent && textContent.str) {
+        if (textContent && textContent.str && !isNotOnlyText)
+        {
             res = textContent.str;
+        }
+        else
+        {
+            res = textContent.content;
         }
     }
     return res;
@@ -3253,6 +3259,7 @@ ParaMath.prototype.Get_EndPos = function(BehindEnd, ContentPos, Depth)
 //-----------------------------------------------------------------------------------
 ParaMath.prototype.Set_SelectionContentPos = function(StartContentPos, EndContentPos, Depth, StartFlag, EndFlag)
 {
+    //debugger
     this.Root.Set_SelectionContentPos(StartContentPos, EndContentPos, Depth, StartFlag, EndFlag);
     this.bSelectionUse = true;
 };
@@ -3716,8 +3723,8 @@ ParaMath.prototype.ConvertToLaTeX = function()
 ParaMath.prototype.ConvertFromUnicodeMath = function()
 {
     this.Root.CorrectAllMathWords(false);
-    this.Root.ConvertAllSpecialWords(false);
-	var strUnicode = this.GetText();
+    //this.Root.ConvertAllSpecialWords(false);
+	var strUnicode = this.GetText(false, true);
 	this.Root.Remove_Content(0,this.Root.Content.length);
     this.Root.CurPos = 0;
 	AscMath.CUnicodeConverter(strUnicode, this.Root);
@@ -3726,13 +3733,12 @@ ParaMath.prototype.ConvertFromUnicodeMath = function()
 };
 ParaMath.prototype.ConvertToUnicodeMath = function()
 {
-	var strUnicode = this.GetText();
-    if (strUnicode[strUnicode.length - 1] === " ")
-    {
-        strUnicode = strUnicode.slice(0, -1)
-    }
+	var strUnicode = this.GetText(false, true);
+
 	this.Root.Remove_Content(0,this.Root.Content.length);
-	this.Root.Add_Text(strUnicode, this.Paragraph);
+
+    this.Root.AddTextWithStyles(strUnicode);
+	//this.Root.Add_Text(strUnicode, this.Paragraph);
 };
 ParaMath.prototype.ConvertView = function(isToLinear, nInputType)
 {

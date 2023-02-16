@@ -533,13 +533,17 @@ ParaRun.prototype.GetText = function(oText)
 
 ParaRun.prototype.GetTextOfElement = function(isLaTeX)
 {
-    var str = "";
-	for (var i = 0; i < this.Content.length; i++) {
-		if (this.Content[i]) {
+    let str = "";
+	if (this.Content.length === 0)
+		return;
+
+	for (var i = 0; i < this.Content.length; i++)
+	{
+		if (this.Content[i])
 			str += this.Content[i].GetTextOfElement(isLaTeX);
-		}
 	}
-	return str;
+
+	return new AscMath.MathText(str, this.CompiledPr.Copy());
 };
 ParaRun.prototype.MathAutocorrection_GetBracketsOperatorsInfo = function (isLaTeX)
 {
@@ -623,7 +627,7 @@ ParaRun.prototype.CheckMathIsOneTypeOfContent = function()
 {
 	let str = this.GetTextOfElement();
 	let tokenizer = new AscMath.Tokenizer();
-	tokenizer.Init(str);
+	tokenizer.Init(str.text);
 	return tokenizer.IsContentOfOneType();
 }
 

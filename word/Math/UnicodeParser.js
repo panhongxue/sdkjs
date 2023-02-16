@@ -426,21 +426,21 @@
 
         return this.WriteSavedTokens();
     };
-    CUnicodeParser.prototype.GetHBracketLiteral = function ()
+    CUnicodeParser.prototype.GetHBracketLiteral = function (oBase)
     {
-        this.SaveTokensWhileReturn();
-
+        let isUp = this.oLookahead.class === Literals.overbar.id;
         let strHBracket = this.EatToken(this.oLookahead.class).data;
 
         let oUp,
-            oDown,
-            oOperand;
+            oDown
 
         if (this.IsOperandLiteral())
         {
-            this.EatOneSpace();
-            oOperand = this.GetOperandLiteral("custom");
-            this.EatOneSpace();
+            if (!oBase)
+            {
+                this.EatOneSpace();
+                oBase = this.GetOperandLiteral("custom");
+            }
 
             if (this.IsScriptStandardContentLiteral() || this.IsScriptBelowOrAboveContent())
             {
@@ -455,17 +455,41 @@
                     oUp = this.GetSoOperandLiteral();
                 }
             }
+            else if (this.IsOperandLiteral())
+            {
+                if (isUp)
+                    oUp =  this.GetSoOperandLiteral();
+                else
+                    oDown = this.GetSoOperandLiteral();
+            }
 
             return {
                 type: Struc.horizontal_bracket,
                 hBrack: strHBracket,
-                value: oOperand,
+                value: oBase,
                 up: oUp,
                 down: oDown,
             };
         }
+        else
+        {
+            if (oBase)
+            {
+                if (isUp)
+                    oUp = {};
+                else
+                    oDown = {};
 
-        return this.WriteSavedTokens();
+                return {
+                    type: Struc.horizontal_bracket,
+                    hBrack: strHBracket,
+                    value: oBase,
+                    up: oUp,
+                    down: oDown,
+                };
+            }
+        }
+
     };
     CUnicodeParser.prototype.IsHBracketLiteral = function ()
     {
@@ -1597,13 +1621,15 @@
 
                 if (arrFactorList[arrFactorList.length - 1])
                     isBreak = arrFactorList[arrFactorList.length - 1].type === 'BracketBlock';
+
+                this.EatOneSpace()
             }
 
-            if (this.IsSpecial(isNoSubSup) && arrFactorList[arrFactorList.length - 1])
+            if (this.IsSpecial(isNoSubSup) || this.IsHBracketLiteral() && arrFactorList[arrFactorList.length - 1] )
             {
                 let oContent = arrFactorList[arrFactorList.length - 1];
 
-                while (this.IsSpecial(isNoSubSup))
+                while (this.IsSpecial(isNoSubSup) || this.IsHBracketLiteral())
                 {
                     //if next token "_" or "^" proceed as index/degree
                     if (this.oLookahead.data === isNoSubSup || !isNoSubSup && this.IsScriptStandardContentLiteral())
@@ -1614,6 +1640,10 @@
                     else if (this.oLookahead.data === isNoSubSup || !isNoSubSup && this.IsScriptBelowOrAboveContent())
                     {
                         oContent = this.GetScriptBelowOrAboveContent(oContent);
+                    }
+                    else if (this.IsHBracketLiteral())
+                    {
+                        oContent = this.GetHBracketLiteral(oContent);
                     }
                     //if next token like ⁶⁷⁸⁹ or ₂₃₄ proceed as special degree/index
                     // else if (this.oLookahead.data === isNoSubSup || !isNoSubSup) //  && this.IsSpecialContent()
@@ -1860,19 +1890,18 @@
     {
         let arrLiterals = [];
         let strLiteral = "";
-        let style;
+        let styles = [];
         while (this.oLookahead.class === arrTypeOfLiteral.id && this.IsNotStopToken(this.oLookahead.data))
         {
-            style = this.oLookahead.style;
+            styles.push(this.oLookahead.style);
+
             if (isSpecial)
                 strLiteral += UnicodeSpecialScript[this.EatToken(arrTypeOfLiteral.id).data];
             else
                 strLiteral += this.EatToken(arrTypeOfLiteral.id).data;
         }
 
-        //console.log(style, this.oLookahead)
-
-        arrLiterals.push({type: type, value: strLiteral, style: style});
+        arrLiterals.push({type: type, value: strLiteral, style: []});
 
         if (arrLiterals.length === 1)
             return arrLiterals[0];

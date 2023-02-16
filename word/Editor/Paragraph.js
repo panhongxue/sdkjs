@@ -5416,6 +5416,7 @@ Paragraph.prototype.Set_ParaContentPos = function(ContentPos, CorrectEndLinePos,
 };
 Paragraph.prototype.Set_SelectionContentPos = function(StartContentPos, EndContentPos, CorrectAnchor)
 {
+	// debugger
 	var Depth = 0;
 
 	var Direction = 1;
@@ -6015,6 +6016,7 @@ Paragraph.prototype.MoveCursorLeftWithSelectionFromEnd = function(Word)
 };
 Paragraph.prototype.MoveCursorRight = function(AddToSelect, Word)
 {
+	//debugger
 	if (true === this.Selection.Use)
 	{
 		var EndSelectionPos   = this.Get_ParaContentPos(true, false);

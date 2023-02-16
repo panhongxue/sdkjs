@@ -5751,7 +5751,6 @@ CMathContent.prototype.ConvertSpacesAfterConvertOldEquation = function ()
 }
 CMathContent.prototype.Process_AutoCorrect = function (oElement)
 {
-    let isConvert = false;
     var oLogicDocument = this.GetLogicDocument();
     var nInputType = oLogicDocument
         ? oLogicDocument. Api.getMathInputType()
@@ -5761,12 +5760,15 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
     if (nInputType === 1 || oElement.value === 39 || oElement.value === 34)
         return;
 
-    let lastElement = this.GetLastTextElement();
+    let isConvert = false;
 
     // split content by cursor position
     const arrNextContent = this.SplitContentByContentPos();
 
-    this.CorrectSpecialWordOnCursor(nInputType);
+    let lastElement = this.GetLastTextElement();
+
+    if (this.CorrectSpecialWordOnCursor(nInputType))
+        return;
 
     // convert content of bracket block, near cursor for Unicode (1/2) -> ( CFraction )
     if (nInputType === 0)
@@ -5808,10 +5810,8 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
         return;
     }
 
-    if ( lastElement === "&" || lastElement === "@")
-    {
-        return
-    }
+    if (lastElement === "&" || lastElement === "@")
+        return;
 
     //const oSlashesContent = this.GetSlashesInfo();
 
@@ -5837,9 +5837,8 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
 
     this.MoveCursorToEndPos();
 
-    if (arrNextContent.length > 0) {
+    if (arrNextContent.length > 0)
         this.AddContentForAutoCorrection(arrNextContent, true);
-    }
 };
 CMathContent.prototype.GetLastContent = function ()
 {
@@ -6982,34 +6981,54 @@ CMathContent.prototype.IsOneTypeTokensInContent = function()
 };
 CMathContent.prototype.GetMultipleContentForGetText = function(isLaTeX, isBase)
 {
+    let outputContent = this.GetTextOfElement(isLaTeX);
+
     if (this.IsOneTypeTokensInContent())
-        return this.GetTextOfElement(isLaTeX)
+    {
+        return outputContent;
+    }
     else
-        if (isBase)
-            return "〖" + this.GetTextOfElement(isLaTeX) + "〗";
+    {
+        if (isBase) {
+            if (Array.isArray(outputContent)) {
+                outputContent = ["〖"].concat(outputContent,  "〗");
+            }
+            else
+                outputContent.Wrap("〖", "〗");
+        }
         else
-            return "(" + this.GetTextOfElement(isLaTeX) + ")";
-};
+        {
+            if (Array.isArray(outputContent)) {
+                outputContent = ["("].concat(outputContent, ")");
+            } else
+                outputContent.Wrap("(", ")");
+        }
+
+        return outputContent;
+    }
+}
 CMathContent.prototype.GetTextOfElement = function(isLaTeX)
 {
-	let str = "";
+	let arrTextContent = [];
 
 	for (let i = 0; i < this.Content.length; i++)
     {
-		str += this.Content[i].GetTextOfElement(isLaTeX);
+        arrTextContent.push(this.Content[i].GetTextOfElement(isLaTeX));
 	}
 
-	return str;
+    if (arrTextContent.length === 1)
+        return arrTextContent[0]
+	return arrTextContent;
 };
 CMathContent.prototype.GetTextContent = function(bSelectedText, isLaTeX)
 {
 	if (undefined === isLaTeX || null === isLaTeX)
 		isLaTeX = false;
 
-    AscMath.wordStyle = [];
 	let str = "";
 	let StartPos = 0;
 	let EndPos = this.Content.length;
+    let arr = []
 
 	if (bSelectedText) {
 		StartPos = (this.Selection.Use == true ? Math.min(this.Selection.StartPos, this.Selection.EndPos) : this.CurPos.ContentPos);
@@ -7020,19 +7039,43 @@ CMathContent.prototype.GetTextContent = function(bSelectedText, isLaTeX)
     {
 		if (this.Content[i] !== undefined)
         {
-            if (i < EndPos && i > 0 && this.Content[i - 1].Type !== this.Content[i].Type && str !== "")
-            {
-                str += " " + this.Content[i].GetTextOfElement(isLaTeX);
-            }
-            else
-            {
-                str += this.Content[i].GetTextOfElement(isLaTeX);
-            }
+            let one = this.Content[i].GetTextOfElement(isLaTeX);
+            if (one)
+                arr.push(one);
         }
 	}
 
-    // console.log(AscMath.wordStyle);
-	return {str: str};
+    str = AscMath.ConvertMathTextToText(arr);
+
+	return {str: str, content: arr};
+};
+CMathContent.prototype.AddTextWithStyles = function(arr)
+{
+    let arrContent = AscMath.ContentWithStylesIterator(arr);
+
+    for (let i = 0; i < arrContent.length; i++)
+    {
+        let currentContent = arrContent[i];
+        if (currentContent instanceof AscMath.MathText)
+        {
+            let text = currentContent.GetText();
+            let style = currentContent.GetStyle();
+
+            if (text.length === 0)
+                continue;
+
+            let run = new AscWord.CRun(this.Paragraph, true);
+            AscWord.TextToMathRunElements(text, function(item) { run.Add(item, true) });
+            run.Apply_Pr(style);
+
+            this.AddToContent(this.CurPos, run, false);
+            this.CurPos++;
+        }
+        else
+        {
+            this.Add_Text(currentContent);
+        }
+    }
 };
 
 var g_DefaultAutoCorrectMathFuncs =

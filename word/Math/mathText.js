@@ -1047,9 +1047,7 @@ CMathText.prototype.GetTextOfElement = function(isLaTeX) {
 
     if (this.value && this.value !== 11034)
     {
-        // if (this.Parent)
-        //     AscMath.wordStyle.push(this.Parent.Pr.Copy());
-        return strPre + AscCommon.encodeSurrogateChar(this.value);
+        return AscCommon.encodeSurrogateChar(this.value);
     }
 
 	return "";

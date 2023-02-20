@@ -4069,7 +4069,7 @@ CDelimiter.prototype.GetTextOfElement = function(isLaTeX) {
 
 	for (let intCount = 0; intCount < this.Content.length; intCount++)
     {
-		strTemp += this.Content[intCount].GetTextOfElement(isLaTeX).trim();
+		strTemp += this.Content[intCount].GetTextOfElement(isLaTeX);
 
 		if (strSeparatorSymbol && this.Content.length > 1 && intCount < this.Content.length - 1)
 			strTemp += strSeparatorSymbol;

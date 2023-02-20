@@ -5656,7 +5656,9 @@ CMathContent.prototype.ConvertContentView = function(intStart, intEnd, nInputTyp
 
             if (undefined !== oElement)
             {
-                strContent += oElement.GetTextOfElement(nInputType);
+                //let oTextContent = oElement.GetTextOfElement(nInputType);
+
+                strContent += AscMath.GetOnlyText(oElement, nInputType);
             }
         }
 
@@ -5785,32 +5787,11 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
 
     let lastElement = this.GetLastTextElement();
 
-    if (this.CorrectSpecialWordOnCursor(nInputType))
-        return;
+    AscMath.AutoCorrectOnCursor(lastElement, this, nInputType);
 
     // convert content of bracket block, near cursor for Unicode (1/2) -> ( CFraction )
     if (nInputType === 0)
         this.ConvertContentInLastBracketBlock(nInputType);
-
-    // convert word near cursor (\int, \sqrt, \alpha...)
-    if (oElement.value === 32 || this.IsLastElement(AscMath.MathLiterals.operator) || lastElement === "&" || lastElement === "@")
-    {
-        if (oElement.value === 32)
-        {
-            if (this.CorrectWordOnCursor(nInputType === 1))
-            {
-                if (arrNextContent)
-                    this.ConcatToContent(this.Content.length, arrNextContent);
-
-                return;
-            }
-        }
-        else
-        {
-            if (this.CorrectWordOnCursor(nInputType === 1, 2))
-                return;
-        }
-    }
 
     if (this.IsLastElement(AscMath.MathLiterals.operator))
     {
@@ -5830,8 +5811,6 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
 
     if (lastElement === "&" || lastElement === "@")
         return;
-
-    //const oSlashesContent = this.GetSlashesInfo();
 
     // Unicode
     if (nInputType === 0)
@@ -6881,16 +6860,16 @@ CMathContent.prototype.CutConvertAndPaste = function(arrPos, nInputType, isSkipD
             if (CurrentContent.Type !== 49) {
                 if (!isFindDelimiter && isSkipDelimiter)
                 {
-                    strContent = CurrentContent.GetTextOfElement(nInputType === 1).trim() + strContent;
+                    strContent = CurrentContent.GetTextOfElement(nInputType === 1).text.trim() + strContent;
                     isFindDelimiter = true;
                 }
                 else
                 {
-                    strContent = "〖" + CurrentContent.GetTextOfElement(nInputType === 1).trim() + "〗" + strContent;
+                    strContent = "〖" + CurrentContent.GetTextOfElement(nInputType === 1).text.trim() + "〗" + strContent;
                 }
             }
             else {
-                strContent = CurrentContent.GetTextOfElement(nInputType === 1).trim() + strContent;
+                strContent = CurrentContent.GetTextOfElement(nInputType === 1).text.trim() + strContent;
             }
             this.Remove_FromContent(i, 1);
         }

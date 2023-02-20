@@ -537,7 +537,7 @@ ParaRun.prototype.GetTextOfElement = function(isLaTeX)
 	if (this.Content.length === 0)
 		return;
 
-	for (var i = 0; i < this.Content.length; i++)
+	for (let i = 0; i < this.Content.length; i++)
 	{
 		if (this.Content[i])
 			str += this.Content[i].GetTextOfElement(isLaTeX);
@@ -551,23 +551,20 @@ ParaRun.prototype.MathAutocorrection_GetBracketsOperatorsInfo = function (isLaTe
 
 	for (let intCounter = 0; intCounter < this.Content.length; intCounter++)
 	{
-		let strContent = String.fromCharCode(this.Content[intCounter].value);
-		let intCount = null;
+		let CurrentElement = this.Content[intCounter].value
+		let strContent = String.fromCharCode(CurrentElement);
+		let intType = null;
 
 		if ((strContent === "{" || strContent === "}") && isLaTeX)
 			continue;
 
-		if (AscMath.MathLiterals.lBrackets.SearchU(strContent))
-			intCount = -1;
-		else if (AscMath.MathLiterals.rBrackets.SearchU(strContent))
-			intCount = 1;
-		else if (AscMath.MathLiterals.lrBrackets.SearchU(strContent))
-			intCount = 0;
-		else if (AscMath.MathLiterals.operator.SearchU(strContent))
-			intCount = 2;
+		intType = AscMath.GetTokenType(strContent);
 
-		if (intCount !== null)
-			arrBracketsInfo.push([intCounter, intCount]);
+		if (intType !== null)
+		{
+			let pos = new AscMath.TokenPosition(intCounter, intType);
+			arrBracketsInfo.push(pos);
+		}
 	}
 
 	return arrBracketsInfo;

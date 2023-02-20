@@ -265,10 +265,12 @@
 		if (this.IsLaTeXInclude[word])
 			return word;
 	};
+	// Search in Unicode group of tokens
 	LexerLiterals.prototype.SearchU = function (str)
 	{
 		return this.IsUnicodeInclude(str);
 	};
+	// Search in LaTeX group of tokens
 	LexerLiterals.prototype.SearchL = function (str)
 	{
 		return this.IsLaTeXInclude(str);
@@ -1492,9 +1494,9 @@
 	{
 		if (Array.isArray(string))
 		{
-			let arr = ContentWithStylesIterator(string);
 
-			for (let i = 0; i < arr.length; i++)
+			let arr = ContentWithStylesIterator(string);
+			ContentWithStylesToText(string, this, function (obj, arr)
 			{
 				let oCurrentElement = arr[i];
 				let oStyleCopy = oCurrentElement.GetStyle();
@@ -1517,7 +1519,17 @@
 						this._styles.push(oStyleCopy);
 					}
 				}
+			})
+
+			for (let i = 0; i < arr.length; i++)
+			{
+
 			}
+		}
+		else
+		{
+			let arrContent = this.GetSymbols(string);
+			this._string = arrContent;
 		}
 	};
 	Tokenizer.prototype.GetSymbols = function (str)
@@ -2392,6 +2404,25 @@
 	};
 
 	//--------------------------------------Helper functions for autocorrection-----------------------------------------
+	function IsCorrect(token)
+	{
+		return MathLiterals.operator.SearchU(token)
+			|| MathLiterals.space.SearchU(token)
+			|| MathLiterals.lBrackets.SearchU(token)
+			|| MathLiterals.rBrackets.SearchU(token)
+			|| MathLiterals.lrBrackets.SearchU(token);
+	}
+	function AutoCorrectOnCursor(token, oCMathContent, isLaTeX)
+	{
+		if (IsCorrect(token))
+		{
+			if (CorrectSpecialWordOnCursor(oCMathContent, isLaTeX))
+				return true;
+			else if (CorrectWordOnCursor(oCMathContent, isLaTeX))
+				return true;
+		}
+		return false;
+	};
 	function CorrectSpecialWordOnCursor(oCMathContent, isLaTeX)
 	{
 		return CheckAutoCorrection(
@@ -2411,6 +2442,11 @@
 			false,
 			true
 		);
+	};
+	function CorrectAll(oCMathContent, isLaTeX)
+	{
+		CorrectAllWords(oCMathContent, isLaTeX);
+		CorrectAllSpecialWords(oCMathContent, isLaTeX);
 	};
 	function CorrectAllWords (oCMathContent, isLaTeX)
 	{
@@ -2588,7 +2624,7 @@
 	};
 	CMathContentIterator.prototype.IsHasContent = function ()
 	{
-		return (this._index < this._content.length);
+		return ( this._content && this._index < this._content.length);
 	};
 
 	function IsNeedSkipSpecial(oContentIterator, isSkipSpecial, currentContent)
@@ -2614,6 +2650,7 @@
 		let oContentIterator = new CMathContentIterator(oContent);
 		let isConvert = false;
 		let strWord = "";
+		let strOperator = "";
 
 		while (oContentIterator.IsHasContent())
 		{
@@ -2636,6 +2673,7 @@
 			// used when it is necessary to process one word before the cursor
 			else if (IsNeedSkipSpecial(oContentIterator, isSkipSpecial, currentContent))
 			{
+				strOperator = currentContent;
 				continue;
 			}
 			else if (isAllWords && currentContent === " ")
@@ -2656,6 +2694,7 @@
 				CutContentFromEnd(oContent, oDelMark, strWord.length);
 
 				let strRule = ConvertRuleDataToText(intCurrentSymbol);
+				strRule += strOperator;
 				AddTextByPos(oContent, oDelMark, strRule);
 				
 				isConvert = true;
@@ -2750,6 +2789,27 @@
 		this.text = strFirst + this.text + strSecond;
 	}
 
+	function GetTokenType(strToken)
+	{
+		if (MathLiterals.lBrackets.SearchU(strToken))
+			return MathLiterals.lBrackets.id;
+		else if (MathLiterals.rBrackets.SearchU(strToken))
+			return MathLiterals.rBrackets.id;
+		else if (MathLiterals.lrBrackets.SearchU(strToken))
+			return MathLiterals.rBrackets.id;
+		else if (MathLiterals.operator.SearchU(strToken))
+			return MathLiterals.rBrackets.id;
+	}
+	/**
+	 * Store position and type of token.
+	 * @param {number} pos - Position in ParaRun.
+	 * @param {number} type - Type of token.
+	 */
+	function TokenPosition(pos, type)
+	{
+		this.position = pos;
+		this.type = type;
+	}
 
 	function ContentWithStylesIterator(arr)
 	{
@@ -2772,9 +2832,20 @@
 				oArr.push(CurrentElement)
 			}
 		}
-
-
 		return oArr;
+	}
+	function ContentWithStylesToText(arr)
+	{
+		let arrInput = ContentWithStylesIterator(arr);
+		let str = "";
+
+		for (let i = 0; i < arrInput.length; i++)
+		{
+			let oCurrentElement = arrInput[i];
+			str += oCurrentElement.GetText();
+		}
+
+		return str;
 	}
 
 	function ConvertMathTextToText(arr)
@@ -2843,6 +2914,9 @@
 	window["AscMath"].ConvertMathTextToText = ConvertMathTextToText;
 	window["AscMath"].GetOnlyText = GetOnlyText;
 	window["AscMath"].ContentWithStylesIterator = ContentWithStylesIterator;
+	window["AscMath"].AutoCorrectOnCursor = AutoCorrectOnCursor;
+	window["AscMath"].GetTokenType = GetTokenType;
+	window["AscMath"].TokenPosition = TokenPosition;
 
 
 })(window);

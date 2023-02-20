@@ -954,6 +954,11 @@ CMathText.prototype.Is_RightBracket = function()
 {
     return this.value == 0x29 || this.value == 0x7D || this.value == 0x5D || this.value == 0x27E9 || this.value == 0x230B || this.value == 0x2309 || this.value == 0x27E7 || this.value == 0x232A;
 };
+CMathText.prototype.IsNBSP = function()
+{
+    let strValue = String.fromCharCode(this.value);
+    return AscMath.MathLiterals.space.SearchU(strValue);
+};
 ////
 CMathText.prototype.setCoeffTransform = function(sx, shx, shy, sy)
 {

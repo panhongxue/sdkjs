@@ -4006,24 +4006,29 @@ CMathContent.prototype.Get_WordStartPos = function(SearchPos, ContentPos, Depth,
         {
             var OldUpdatePos = SearchPos.UpdatePos;
 
-            this.Content[CurPos].Get_WordStartPos(SearchPos, ContentPos, Depth + 1, false);
-
-            if (true === SearchPos.UpdatePos)
+            if (this.Content[CurPos].Type !== 49)
             {
-                if (this.CurPos - 1 >= 0)
-                    //Встаем перед элементом не заходя в него
-                    SearchPos.Pos.Update(CurPos - 1, Depth);
-                else
-                    SearchPos.Pos.Update(CurPos, Depth);
+                this.Content[CurPos - 1].Get_EndPos(false, SearchPos.Pos, Depth + 1);
+                SearchPos.Pos.Update(CurPos - 1, Depth);
+                SearchPos.Found     = true;
+                SearchPos.UpdatePos = true;
+                return;
             }
             else
-                SearchPos.UpdatePos = OldUpdatePos;
+            {
+                this.Content[CurPos].Get_WordStartPos(SearchPos, ContentPos, Depth + 1, false);
 
-            if (true === SearchPos.Found)
-                return;
+                if (true === SearchPos.UpdatePos)
+                    SearchPos.Pos.Update(CurPos, Depth);
+                else
+                    SearchPos.UpdatePos = OldUpdatePos;
 
-            if (true === SearchPos.Shift)
-                bStepStartRun = true;
+                if (true === SearchPos.Found)
+                    return;
+
+                if (true === SearchPos.Shift)
+                    bStepStartRun = true;
+            }
         }
         else
         {
@@ -4098,24 +4103,37 @@ CMathContent.prototype.Get_WordEndPos = function(SearchPos, ContentPos, Depth, U
         {
             var OldUpdatePos = SearchPos.UpdatePos;
 
-            this.Content[CurPos].Get_WordEndPos(SearchPos, ContentPos, Depth + 1, false, StepEnd);
-
-            if (true === SearchPos.UpdatePos)
+            if (this.Content[CurPos].Type !== 49)
             {
-                if (this.CurPos + 1 < this.Content.length)
-                    //Встаем после элемента не заходя в него
+                // встаем после математического контента
+                this.Content[CurPos + 1].Get_WordStartPos(SearchPos, ContentPos, Depth + 1, false);
+
+                if (true === SearchPos.UpdatePos)
                     SearchPos.Pos.Update(CurPos + 1, Depth);
                 else
-                    SearchPos.Pos.Update(CurPos, Depth);
+                    SearchPos.UpdatePos = OldUpdatePos;
+
+                if (true === SearchPos.Found)
+                    return;
+
+                if (true === SearchPos.Shift)
+                    bStepEndRun = true;
             }
             else
-                SearchPos.UpdatePos = OldUpdatePos;
+            {
+                this.Content[CurPos].Get_WordEndPos(SearchPos, ContentPos, Depth + 1, false, StepEnd);
 
-            if (true === SearchPos.Found)
-                return;
+                if (true === SearchPos.UpdatePos)
+                    SearchPos.Pos.Update(CurPos, Depth);
+                else
+                    SearchPos.UpdatePos = OldUpdatePos;
 
-            if (true === SearchPos.Shift)
-                bStepEndRun = true;
+                if (true === SearchPos.Found)
+                    return;
+
+                if (true === SearchPos.Shift)
+                    bStepEndRun = true;
+            }
         }
         else
         {

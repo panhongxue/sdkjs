@@ -5776,10 +5776,6 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
         ? oLogicDocument. Api.getMathInputType()
         : Asc.c_oAscMathInputType.Unicode;
 
-    // LaTeX autocorrection disabled
-    if (nInputType === 1 || oElement.value === 39 || oElement.value === 34)
-        return;
-
     let isConvert = false;
 
     // split content by cursor position
@@ -5787,11 +5783,25 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
 
     let lastElement = this.GetLastTextElement();
 
-    AscMath.AutoCorrectOnCursor(lastElement, this, nInputType);
-
-    // convert content of bracket block, near cursor for Unicode (1/2) -> ( CFraction )
     if (nInputType === 0)
-        this.ConvertContentInLastBracketBlock(nInputType);
+    {
+        if (AscMath.AutoCorrectOnCursor(lastElement, this, nInputType))
+            return;
+
+        const arrBracketsContent = this.GetBracketOperatorInfo(nInputType === 1);
+        const Tokens = new AscMath.ProceedTokens(arrBracketsContent, this);
+
+        // if (this.ConvertContentInLastBracketBlock(nInputType))
+        //     return;
+    }
+
+    // LaTeX autocorrection disabled
+    if (nInputType === 1 || oElement.value === 39 || oElement.value === 34)
+        return;
+
+    return
+
+
 
     if (this.IsLastElement(AscMath.MathLiterals.operator))
     {
@@ -6013,22 +6023,39 @@ CMathContent.prototype.CorrectSpecialWordOnCursor = function (IsLaTeX)
 }
 CMathContent.prototype.GetBracketOperatorInfo = function (isLaTeX)
 {
-    const arrContent = {};
+    let arrSearch = [
+        AscMath.MathLiterals.lrBrackets,
+        AscMath.MathLiterals.lBrackets,
+        AscMath.MathLiterals.rBrackets,
+        AscMath.MathLiterals.operator,
+    ];
 
-    for (let i = 0; i < this.Content.length; i++)
-    {
-        if (this.Content[i].Type === 49 && this.Content[i].Content.length > 0)
-        {
-            let cont = this.Content[i].MathAutocorrection_GetBracketsOperatorsInfo(isLaTeX);
-
-            if (cont.length > 0) {
-                arrContent[i] = cont;
-            }
-        }
-    }
-
-    return arrContent;
+    return AscMath.GetInfoAboutCMathContent(this, arrSearch);
 };
+CMathContent.prototype.GetOtherOperatorInfo = function (isLaTeX)
+{
+    let arrSearch = [
+        AscMath.MathLiterals.operator,
+        AscMath.MathLiterals.space,
+        AscMath.MathLiterals.underbar,
+        AscMath.MathLiterals.nary,
+        AscMath.MathLiterals.accent,
+        AscMath.MathLiterals.accent,
+        AscMath.MathLiterals.box,
+        AscMath.MathLiterals.divide,
+        AscMath.MathLiterals.func,
+        AscMath.MathLiterals.matrix,
+        AscMath.MathLiterals.overbar,
+        AscMath.MathLiterals.radical,
+        AscMath.MathLiterals.rect,
+        AscMath.MathLiterals.special,
+        AscMath.MathLiterals.subSup,
+    ];
+
+    return AscMath.GetInfoAboutCMathContent(this, arrSearch);
+};
+
+
 CMathContent.prototype.GetOperatorInfo = function ()
 {
     const arrContent = {};
@@ -6077,8 +6104,8 @@ CMathContent.prototype.ConvertContentInLastBracketBlock = function(nInputType)
 {
     if (this.IsLastTextElementRBracket())
     {
-        const oBracketsContent = this.GetBracketOperatorInfo(nInputType === 1);
-        const Brackets = new ProceedBrackets(oBracketsContent);
+        const arrBracketsContent = this.GetBracketOperatorInfo(nInputType === 1);
+        const Brackets = new AscMath.ProceedBrackets(arrBracketsContent);
 
         if (Brackets.intCounter === 0 && Brackets.BracketsPair.length > 0)
         {
@@ -6806,7 +6833,9 @@ CMathContent.prototype.IsPreLastTextElementRBracket = function()
 };
 CMathContent.prototype.CheckAutoCorrectionBrackets = function(nInputType)
 {
+    debugger
     const oBracketsContent = this.GetBracketOperatorInfo(nInputType === 1);
+
     const Brackets = new ProceedBrackets(oBracketsContent, nInputType);
     const arrPosition = Brackets.GetPosition(this);
 

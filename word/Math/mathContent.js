@@ -5788,8 +5788,7 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
         if (AscMath.AutoCorrectOnCursor(lastElement, this, nInputType))
             return;
 
-        const arrBracketsContent = this.GetBracketOperatorInfo(nInputType === 1);
-        const Tokens = new AscMath.ProceedTokens(arrBracketsContent, this);
+        const Tokens = new AscMath.ProceedTokens(this);
 
         // if (this.ConvertContentInLastBracketBlock(nInputType))
         //     return;
@@ -5799,9 +5798,10 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
     if (nInputType === 1 || oElement.value === 39 || oElement.value === 34)
         return;
 
+    if (arrNextContent.length > 0)
+        this.AddContentForAutoCorrection(arrNextContent, true);
+
     return
-
-
 
     if (this.IsLastElement(AscMath.MathLiterals.operator))
     {
@@ -6021,40 +6021,6 @@ CMathContent.prototype.CorrectSpecialWordOnCursor = function (IsLaTeX)
 {
     return AscMath.CorrectSpecialWordOnCursor(this, IsLaTeX)
 }
-CMathContent.prototype.GetBracketOperatorInfo = function (isLaTeX)
-{
-    let arrSearch = [
-        AscMath.MathLiterals.lrBrackets,
-        AscMath.MathLiterals.lBrackets,
-        AscMath.MathLiterals.rBrackets,
-        AscMath.MathLiterals.operator,
-    ];
-
-    return AscMath.GetInfoAboutCMathContent(this, arrSearch);
-};
-CMathContent.prototype.GetOtherOperatorInfo = function (isLaTeX)
-{
-    let arrSearch = [
-        AscMath.MathLiterals.operator,
-        AscMath.MathLiterals.space,
-        AscMath.MathLiterals.underbar,
-        AscMath.MathLiterals.nary,
-        AscMath.MathLiterals.accent,
-        AscMath.MathLiterals.accent,
-        AscMath.MathLiterals.box,
-        AscMath.MathLiterals.divide,
-        AscMath.MathLiterals.func,
-        AscMath.MathLiterals.matrix,
-        AscMath.MathLiterals.overbar,
-        AscMath.MathLiterals.radical,
-        AscMath.MathLiterals.rect,
-        AscMath.MathLiterals.special,
-        AscMath.MathLiterals.subSup,
-    ];
-
-    return AscMath.GetInfoAboutCMathContent(this, arrSearch);
-};
-
 
 CMathContent.prototype.GetOperatorInfo = function ()
 {

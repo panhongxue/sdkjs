@@ -4044,49 +4044,52 @@ CDelimiter.prototype.private_GetRightOperator = function(bHide)
 
     return NewEndCode;
 };
-CDelimiter.prototype.GetTextOfElement = function(isLaTeX) {
+CDelimiter.prototype.GetTextOfElement = function(isLaTeX)
+{
 	//	Patterns:
 	//	if start bracket doesn't show:	├ ...) => ...)
 	//	if end bracket doesn't show:	(...┤ => (...
 	//	else:							(...) => (...)
-	//if start and close braketets non-standart add \open, \close
-	var strTemp = "";
-	var strStartSymbol = this.Pr.begChr === -1 ? "" : String.fromCharCode((this.begOper.code || this.Pr.begChr) || 40);
-	var strEndSymbol = this.Pr.endChr === -1 ? "" : String.fromCharCode((this.endOper.code || this.Pr.endChr) || 41);
+    //
+	// if start and close brackets non-standard add \open, \close
 
-	var strSeparatorSymbol = isLaTeX ? "\\mid " : "∣";
+	let arrContent          = [];
+	let strStartSymbol      = this.Pr.begChr === -1 ? "" : String.fromCharCode((this.begOper.code || this.Pr.begChr) || 40);
+	let strEndSymbol        = this.Pr.endChr === -1 ? "" : String.fromCharCode((this.endOper.code || this.Pr.endChr) || 41);
+	let strSeparatorSymbol  = isLaTeX ? "\\mid " : "∣";
 
     if (isLaTeX)
     {
-        strStartSymbol = strStartSymbol === "" ? "." : strStartSymbol;
-        strTemp += "\\left" + strStartSymbol;
+        strStartSymbol      = strStartSymbol === "" ? "." : strStartSymbol;
+        arrContent.push("\\left", strStartSymbol);
     }
     else
     {
         strStartSymbol = strStartSymbol === "" ? "├" : strStartSymbol;
-        strTemp += strStartSymbol;
+        arrContent.push(strStartSymbol);
     }
 
 	for (let intCount = 0; intCount < this.Content.length; intCount++)
     {
-		strTemp += this.Content[intCount].GetTextOfElement(isLaTeX);
+        let oCurrent = this.Content[intCount].GetTextOfElement(isLaTeX);
+        arrContent.push(oCurrent);
 
 		if (strSeparatorSymbol && this.Content.length > 1 && intCount < this.Content.length - 1)
-			strTemp += strSeparatorSymbol;
+            arrContent.push(strSeparatorSymbol);
 	}
 
     if (isLaTeX)
     {
         strEndSymbol = strEndSymbol === "" ? "." : strEndSymbol;
-        strTemp += "\\right" + strEndSymbol;
+        arrContent.push("\\right", strEndSymbol);
     }
     else
     {
         strEndSymbol = strEndSymbol === "" ? "┤" : strEndSymbol;
-        strTemp += strEndSymbol;
+        arrContent.push(strEndSymbol);
     }
 
-	return strTemp;
+	return arrContent;
 }
 
 /**

@@ -443,67 +443,31 @@ CMathFunc.prototype.fillContent = function()
     this.elements[0][0] = this.getFName();
     this.elements[0][1] = this.getArgument();
 };
-CMathFunc.prototype.GetTextOfElement = function(isLaTeX) {
-	var strTemp = "";
-	var strFuncName = this.getFName().GetMultipleContentForGetText(isLaTeX);
-	var strArgument = this.getArgument().GetMultipleContentForGetText(isLaTeX);
+CMathFunc.prototype.GetTextOfElement = function(isLaTeX)
+{
+	let arrContent = [];
+	let strFuncName = this.getFName().GetMultipleContentForGetText(isLaTeX, null);
+	let strArgument = this.getArgument().GetMultipleContentForGetText(isLaTeX);
 
     if (!isLaTeX)
     {
-        if (!this.getArgument().IsOneElementInContentForGetText())
-        {
-            strArgument =  " 〖" + strArgument + "〗";
-        }
+        if (strFuncName.isWrap)
+            arrContent.push(strFuncName, " ", strArgument);
         else
-        {
-            strArgument = " " + strArgument;
-        }
+            arrContent.push(strFuncName, strArgument);
     }
-    if (isLaTeX)
+    else if (isLaTeX)
+        strArgument.wrap("{", "}");
+
+	if (isLaTeX)
     {
-        strArgument = "{" + strArgument + "}";
-    }
+        if (AscMath.SearchFunctionName(strFuncName))
+            strFuncName.text = '\\' + strFuncName.text;
 
-	if (isLaTeX) {
-		switch (strFuncName) {
-			case 'cos':
-			case 'sin':
-			case 'tan':
-			case 'sec':
-			case 'cot':
-			case 'csc':
-			case 'arcsin':
-			case 'arccos':
-			case 'arctan':
-			case 'arcsec':
-			case 'arccot':
-			case 'arccsc':
-			case 'sinh':
-			case 'cosh':
-			case 'tanh':
-			case 'coth':
-			case 'sech':
-			case 'csch':
-			case 'srcsinh':
-			case 'arctanh':
-			case 'arcsech':
-			case 'arccosh':
-			case 'arccoth':
-			case 'arccsch':
-			case 'log':
-
-			case 'lin':
-			case 'ln':
-			case 'max':
-			case 'min':
-			case 'exp': strFuncName = '\\'+ strFuncName; break;
-			default: break;
-		}
+        arrContent.push(strFuncName, strArgument);
 	}
 
-	strTemp = strFuncName + strArgument;
-
-	return strTemp;
+	return arrContent;
 };
 
 

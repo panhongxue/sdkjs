@@ -6799,7 +6799,6 @@ CMathContent.prototype.IsPreLastTextElementRBracket = function()
 };
 CMathContent.prototype.CheckAutoCorrectionBrackets = function(nInputType)
 {
-    debugger
     const oBracketsContent = this.GetBracketOperatorInfo(nInputType === 1);
 
     const Brackets = new ProceedBrackets(oBracketsContent, nInputType);
@@ -6981,12 +6980,17 @@ CMathContent.prototype.GetMultipleContentForGetText = function(isLaTeX, isBase)
     }
     else
     {
-        if (isBase) {
+        if (isBase)
+        {
             if (Array.isArray(outputContent)) {
                 outputContent = ["〖"].concat(outputContent,  "〗");
             }
             else
                 outputContent.Wrap("〖", "〗");
+        }
+        else if (isBase === null)
+        {
+
         }
         else
         {
@@ -7014,7 +7018,7 @@ CMathContent.prototype.GetTextOfElement = function(isLaTeX)
 };
 CMathContent.prototype.GetTextContent = function(bSelectedText, isLaTeX)
 {
-	if (undefined === isLaTeX || null === isLaTeX)
+    if (undefined === isLaTeX || null === isLaTeX)
 		isLaTeX = false;
 
 	let str = "";

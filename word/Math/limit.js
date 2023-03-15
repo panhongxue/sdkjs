@@ -315,23 +315,24 @@ CLimit.prototype.Can_ModifyArgSize = function()
 {
     return this.CurPos == 1 && false === this.Is_SelectInside();
 };
-CLimit.prototype.GetTextOfElement = function(isLaTeX) {
-	var strTemp = "";
-	var strLimitSymbol = "";
-	var strFuncName = this.getFName().GetMultipleContentForGetText(isLaTeX);
-	var strArgument = this.getIterator().GetMultipleContentForGetText(isLaTeX);
+CLimit.prototype.GetTextOfElement = function(isLaTeX, isOnlyText)
+{
+	let arrContent      = [];
+	let strLimitSymbol  = "";
+	let oFuncName       = this.getFName().GetMultipleContentForGetText(isLaTeX);
+	let oArgument       = this.getIterator().GetMultipleContentForGetText(isLaTeX);
 
 	if (isLaTeX)
     {
         strLimitSymbol = (this.Pr.type == 1) ? "\\above" : "\\below";
-		if (strFuncName === 'lim' ||
-			strFuncName === 'log' ||
-			strFuncName === 'max' ||
-			strFuncName === 'min' ||
-			strFuncName === 'ln')
+		if (oFuncName === 'lim' ||
+			oFuncName === 'log' ||
+			oFuncName === 'max' ||
+			oFuncName === 'min' ||
+			oFuncName === 'ln')
         {
             strLimitSymbol = (this.Pr.type == 1) ? "^" : "_";
-            strFuncName = '\\' + strFuncName;
+            oFuncName = '\\' + oFuncName;
 		}
 	}
     else
@@ -339,8 +340,12 @@ CLimit.prototype.GetTextOfElement = function(isLaTeX) {
 		strLimitSymbol = (this.Pr.type == 1) ? "┴" : "┬";
 	}
 
-	strTemp = strFuncName + strLimitSymbol+ strArgument;
-	return strTemp;
+    arrContent.push(oFuncName, strLimitSymbol, oArgument);
+
+    if (isOnlyText)
+        return AscMath.ConvertMathTextToText(arrContent);
+
+	return arrContent;
 };
 
 /**
@@ -443,29 +448,30 @@ CMathFunc.prototype.fillContent = function()
     this.elements[0][0] = this.getFName();
     this.elements[0][1] = this.getArgument();
 };
-CMathFunc.prototype.GetTextOfElement = function(isLaTeX)
+CMathFunc.prototype.GetTextOfElement = function(isLaTeX, isOnlyText)
 {
 	let arrContent = [];
-	let strFuncName = this.getFName().GetMultipleContentForGetText(isLaTeX, null);
-	let strArgument = this.getArgument().GetMultipleContentForGetText(isLaTeX);
+	let oFuncName = this.getFName().GetMultipleContentForGetText(isLaTeX, null);
+	let oArgument = this.getArgument().GetMultipleContentForGetText(isLaTeX);
 
     if (!isLaTeX)
     {
-        if (strFuncName.isWrap)
-            arrContent.push(strFuncName, " ", strArgument);
+        if (oFuncName.isWrap)
+            arrContent.push(oFuncName, " ", oArgument);
         else
-            arrContent.push(strFuncName, strArgument);
+            arrContent.push(oFuncName, oArgument);
     }
     else if (isLaTeX)
-        strArgument.wrap("{", "}");
-
-	if (isLaTeX)
     {
-        if (AscMath.SearchFunctionName(strFuncName))
-            strFuncName.text = '\\' + strFuncName.text;
+        oArgument.wrap("{", "}");
+        if (AscMath.SearchFunctionName(oFuncName))
+            oFuncName.text = '\\' + oFuncName.text;
 
-        arrContent.push(strFuncName, strArgument);
-	}
+        arrContent.push(oFuncName, oArgument);
+    }
+
+    if (isOnlyText)
+        return AscMath.ConvertMathTextToText(arrContent);
 
 	return arrContent;
 };

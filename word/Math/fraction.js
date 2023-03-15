@@ -614,48 +614,29 @@ CFraction.prototype.raw_SetFractionType = function(FractionType)
     this.Pr.type = FractionType;
     this.fillContent();
 };
-CFraction.prototype.GetTextOfElement = function(isLaTeX, isOnlyText)
+CFraction.prototype.GetTextOfElement = function(oMathText)
 {
-	let arrContent = [];
-	let oNumerator = this.getNumerator().GetMultipleContentForGetText(isLaTeX);
-	let oDenominator = this.getDenominator().GetMultipleContentForGetText(isLaTeX);
+    let oNumerator          = this.getNumerator();
+    let oDenominator        = this.getDenominator();
+    let arrPosNumerator     = oMathText.Add(oNumerator, true);
+    let arrPosDenominator   = oMathText.Add(oDenominator, true);
 
-	if (true === isLaTeX)
+    if (!oMathText.IsLaTeX())
     {
-        if (oNumerator.text[0] !== "{")
-            oNumerator.Wrap("{", "}");
-        if (oDenominator.text[0]  !== "{")
-            oDenominator.Wrap("{", "}");
-
-		switch (this.Pr.type)
+        let frac;
+        switch (this.Pr.type)
         {
-			case 0:	    arrContent.push('\\frac');  break;
-			case 1:		arrContent.push('\\sfrac'); break;
-			case 2:	    arrContent.push('\\cfrac');  break;
-            case 3: 	arrContent.push('\\binom');  break;
-			default: 	arrContent.push('\\frac');   break;
-		}
+            case 0:	    frac = '/';	break;
+            case 1: 	frac = '⁄';	break;
+            case 2:		frac = '⊘';	break;
+            case 3:		frac = String.fromCharCode(166);  break;
+            default: 	frac = String.fromCharCode(47);   break;
+        }
 
-        arrContent.push(oNumerator, oDenominator);
-	}
-    else
-    {
-		arrContent.push(oNumerator);
-		switch (this.Pr.type)
-        {
-			case 0:	    arrContent.push('/');	break;
-			case 1: 	arrContent.push('⁄');	break;
-			case 2:		arrContent.push('⊘');	break;
-			case 3:		arrContent.push(String.fromCharCode(166));  break;
-			default: 	arrContent.push(String.fromCharCode(47));   break;
-		}
-        arrContent.push(oDenominator);
-	}
+        oMathText.AddAfter(arrPosNumerator, frac);
+    }
 
-    if (isOnlyText)
-        return AscMath.ConvertMathTextToText(arrContent);
-
-	return arrContent;
+    oMathText.WrapExactElement(arrPosNumerator);
 };
 /**
  *

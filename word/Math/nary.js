@@ -815,14 +815,13 @@ CNary.prototype.Can_ModifyArgSize = function()
 {
     return this.CurPos !== 2 && false === this.Is_SelectInside();
 };
-CNary.prototype.GetTextOfElement = function(isLaTeX)
+CNary.prototype.GetTextOfElement = function(isLaTeX, isOne)
 {
-	var strTemp = "";
-
-	var strStartCode = String.fromCharCode(this.Pr.chr || this.getSign().chrCode);
-	var strSupContent = this.getSupMathContent().GetMultipleContentForGetText(isLaTeX);
-	var strSubContent = this.getSubMathContent().GetMultipleContentForGetText(isLaTeX);
-	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX);
+	let arrContent      = [];
+	let strStartCode    = String.fromCharCode(this.Pr.chr || this.getSign().chrCode);
+	let oSup            = this.getSupMathContent().GetMultipleContentForGetText(isLaTeX);
+	let oSub            = this.getSubMathContent().GetMultipleContentForGetText(isLaTeX);
+	let oBase           = this.getBase().GetMultipleContentForGetText(isLaTeX);
 
     if (true === isLaTeX)
     {
@@ -850,29 +849,29 @@ CNary.prototype.GetTextOfElement = function(isLaTeX)
             case 10752: strStartCode = '\\bigodot';		break;
             default: break;
         }
-        if (strSupContent.length === 0 && strSubContent.length === 0)
+        if (oSup.length === 0 && oSub.length === 0)
         {
             strStartCode += " ";
         }
     }
-    else if (false === isLaTeX && strBase.length > 0)
+    else if (false === isLaTeX && oBase.length > 0)
     {
-        strBase = '▒' + strBase;
+        oBase.text = '▒' + oBase.text;
 	}
 
-	strTemp += strStartCode;
+    arrContent.push(strStartCode);
 
-	if (strSupContent.length > 0)
+	if (oSup.length > 0)
     {
-		strTemp += "^" + strSupContent;
+		arrContent.push("^", oSup);
 	}
-	if (strSubContent.length > 0)
+	if (oSub.length > 0)
     {
-		strTemp += "_" + strSubContent;
+        arrContent.push("_", oSub);
 	}
-	strTemp += strBase;
 
-	return strTemp;
+    arrContent.push(oBase);
+	return arrContent;
 };
 
 /**

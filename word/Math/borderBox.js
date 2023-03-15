@@ -559,18 +559,20 @@ CBorderBox.prototype.Get_InterfaceProps = function()
 {
     return new CMathMenuBorderBox(this);
 };
-CBorderBox.prototype.GetTextOfElement = function(isLaTeX) {
-	var strTemp = "";
-	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX);
-	var strStartBracet = (strBase.length > 1 || isLaTeX) ? this.GetStartBracetForGetTextContent(isLaTeX) : "";
-	var strCloseBracet = (strBase.length > 1 || isLaTeX) ? this.GetEndBracetForGetTextContent(isLaTeX) : "";
-	
-	if (true === isLaTeX)
-		strTemp = '\\rect' + strStartBracet + strBase + strCloseBracet;
-	else
-		strTemp = "▭" + strStartBracet + strBase + strCloseBracet;
+CBorderBox.prototype.GetTextOfElement = function(isLaTeX, isOnlyText)
+{
+	let arrContent = [];
+	let oContent = this.getBase().GetMultipleContentForGetText(isLaTeX);
 
-	return strTemp;
+	if (true === isLaTeX)
+        arrContent.push("\\rect", oContent);
+	else
+        arrContent.push("▭", oContent);
+
+    if (isOnlyText)
+        return AscMath.ConvertMathTextToText(arrContent);
+
+	return arrContent;
 };
 
 /**
@@ -958,16 +960,18 @@ CBox.prototype.Apply_ForcedBreak = function(Props)
     if(Props.Action & c_oMathMenuAction.DeleteForcedBreak)
         Props.Action ^= c_oMathMenuAction.DeleteForcedBreak;
 };
-CBox.prototype.GetTextOfElement = function(isLaTeX) {
-	var strTemp = "";
-	var strSymbol = (true === isLaTeX) ? "\\box" : "□";
-	var Base = this.getBase().GetMultipleContentForGetText(isLaTeX);
+CBox.prototype.GetTextOfElement = function(isLaTeX, isOnlyText)
+{
+	let arrContent  = [];
+	let strSymbol   = (true === isLaTeX) ? "\\box" : "□";
+	let oBase       = this.getBase().GetMultipleContentForGetText(isLaTeX);
 
-	strTemp =
-		strSymbol
-		+ Base
+    arrContent.push(strSymbol, oBase);
 
-	return strTemp;
+    if (isOnlyText)
+        return AscMath.ConvertMathTextToText(arrContent);
+
+	return arrContent;
 };
 
 /**
@@ -1106,27 +1110,20 @@ CBar.prototype.raw_SetLinePos = function(Value)
     this.RecalcInfo.bProps = true;
     this.ApplyProperties();
 };
-CBar.prototype.GetTextOfElement = function(isLaTeX) {
-	var strTemp = "",
-        strSymbol,
-        strBase,
-        strStartBracket = this.GetStartBracetForGetTextContent(isLaTeX),
-        strCloseBracket = this.GetEndBracetForGetTextContent(isLaTeX);
+CBar.prototype.GetTextOfElement = function(isLaTeX, isOnlyText, arrStyles)
+{
+    let strSymbol   = "";
+    let oBase       = this.getBase().GetMultipleContentForGetText(isLaTeX);
 
     if (!isLaTeX)
         strSymbol = (this.Pr.pos) ? "▁" : "¯";
     else
         strSymbol = (this.Pr.pos) ? "\\underline" : "\\overline";
 
-	strBase = this.getBase().GetMultipleContentForGetText(isLaTeX);
-	
-	strTemp =
-		strSymbol
-		+ strStartBracket
-		+ strBase
-		+ strCloseBracket;
+    arrStyles.push(strSymbol, oBase);
 
-	return strTemp;
+    if (isOnlyText)
+        return AscMath.ConvertMathTextToText(arrStyles);
 }
 
 /**

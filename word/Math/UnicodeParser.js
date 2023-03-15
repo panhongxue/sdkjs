@@ -143,6 +143,7 @@
         return {
             type: Struc.space,
             value: oSpaceLiteral.data,
+            style: oSpaceLiteral.style,
         };
     };
     CUnicodeParser.prototype.IsSpaceLiteral = function ()
@@ -1497,8 +1498,8 @@
                 {
                     this.EatToken("@");
 
-                    if (this.oLookahead.class === "&")
-                        this.EatToken("&");
+                    if (this.oLookahead.data === "&")
+                        this.EatToken(this.oLookahead.class);
                 }
                 else
                 {
@@ -1891,6 +1892,7 @@
         let arrLiterals = [];
         let strLiteral = "";
         let styles = [];
+
         while (this.oLookahead.class === arrTypeOfLiteral.id && this.IsNotStopToken(this.oLookahead.data))
         {
             styles.push(this.oLookahead.style);
@@ -1901,7 +1903,7 @@
                 strLiteral += this.EatToken(arrTypeOfLiteral.id).data;
         }
 
-        arrLiterals.push({type: type, value: strLiteral, style: []});
+        arrLiterals.push({type: type, value: strLiteral, style: styles});
 
         if (arrLiterals.length === 1)
             return arrLiterals[0];

@@ -762,39 +762,36 @@ CRadical.prototype.Is_ContentUse = function(MathContent)
 
     return false;
 };
-CRadical.prototype.GetTextOfElement = function(isLaTeX)
+CRadical.prototype.GetTextOfElement = function(isLaTeX, isOnlyText)
 {
-	var strTemp = "";
-	var strDegree = this.getDegree().GetMultipleContentForGetText(isLaTeX);
-	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX);
+	let arrContent  = [];
+	let oDegree     = this.getDegree().GetMultipleContentForGetText(isLaTeX);
+	let oBase       = this.getBase().GetMultipleContentForGetText(isLaTeX);
 
 	if (isLaTeX)
     {
-        if (strDegree.length > 0)
-            strDegree = '[' + strDegree + ']';
+        if (oDegree.text.length > 0)
+            oDegree.text = '[' + oDegree.text + ']';
 
-        strTemp = '\\sqrt' + strDegree + "{" + strBase + "}";
+        arrContent.push('\\sqrt', oDegree, "{", oBase, "}");
     }
 	else
     {
-		var strRadicalSymbol = "√";
+		let strRadicalSymbol = "√";
 
-        if (strDegree === "3" || strDegree === "4")
-        {
-            strRadicalSymbol = strDegree === "3" ?  "∛" : "∜";
-        }
+        if (oDegree.text === "3" || oDegree.text === "4")
+            strRadicalSymbol = oDegree.text === "3" ?  "∛" : "∜";
 
-        if (strDegree.length > 0)
-        {
-            strDegree = strDegree + '&';
-        }
+        if (oDegree.text.length > 0)
+            oDegree.text = oDegree.text + '&';
 
-
-        strTemp = strRadicalSymbol + "(" + strDegree + strBase + ")";
-
+        arrContent.push(strRadicalSymbol, "(", oDegree, oBase, ")");
 	}
 
-	return strTemp;
+    if (isOnlyText)
+        return AscMath.ConvertMathTextToText(arrContent);
+
+    return arrContent;
 };
 
 /**

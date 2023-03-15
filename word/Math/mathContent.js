@@ -3275,8 +3275,10 @@ CMathContent.prototype.Add_Text = function(text, paragraph, mathStyle)
 	});
 	
 	run.Set_RFont_ForMathRun();
-	
-	if (mathStyle)
+
+    if (mathStyle instanceof CTextPr)
+        run.ApplyPr(mathStyle);
+	else if (mathStyle)
 		run.Math_Apply_Style(mathStyle);
 	
 	this.AddToContent(this.CurPos, run, false);
@@ -3303,6 +3305,10 @@ CMathContent.prototype.Add_TextInLastParaRun = function(sText, Paragraph, MathSt
                     oText.addTxt(sText[nCharPos]);
                 }
                 MathRun.AddToContentToEnd(oText);
+                MathRun.Set_RFont_ForMathRun();
+
+                if (undefined !== MathStyle && null !== MathStyle)
+                    MathRun.Math_Apply_Style(MathStyle);
             }
         }
         else
@@ -3317,11 +3323,11 @@ CMathContent.prototype.Add_TextOnPos = function(nPos, sText, Paragraph, MathStyl
 
     if (sText)
     {
-        var MathRun = new ParaRun(this.Paragraph, true);
+        let MathRun = new ParaRun(this.Paragraph, true);
 
-        for (var nCharPos = 0, nTextLen = sText.length; nCharPos < nTextLen; nCharPos++)
+        for (let nCharPos = 0, nTextLen = sText.length; nCharPos < nTextLen; nCharPos++)
         {
-            var oText = null;
+            let oText = null;
             if (0x0026 == sText.charCodeAt(nCharPos))
                 oText = new CMathAmp();
             else
@@ -3329,7 +3335,7 @@ CMathContent.prototype.Add_TextOnPos = function(nPos, sText, Paragraph, MathStyl
                 oText = new CMathText(false);
                 oText.addTxt(sText[nCharPos]);
             }
-            MathRun.Add(oText, true);
+            MathRun.Add(oText);
         }
 
         MathRun.Set_RFont_ForMathRun();
@@ -3339,6 +3345,56 @@ CMathContent.prototype.Add_TextOnPos = function(nPos, sText, Paragraph, MathStyl
 
         this.Internal_Content_Add(nPos, MathRun, false);
         this.CurPos++;
+    }
+};
+/**
+ *
+ * @param {number} nPos
+ * @param {MathTextAndStyles} oMathText
+ */
+CMathContent.prototype.Add_MathStyleText = function(nPos, oMathText)
+{
+    let arrContent = oMathText.arr;
+
+    for (let nCounter = 0; nCounter < arrContent.length; nCounter++)
+    {
+        let oCurrentElement = arrContent[nCounter];
+        let MathRun;
+
+        if (oCurrentElement instanceof AscMath.MathText)
+        {
+            let strElement = oCurrentElement.GetText();
+            let MathStyle = oCurrentElement.GetStyle();
+
+            MathRun = new ParaRun(this.Paragraph, true);
+
+            for (let nCharPos = 0, nTextLen = strElement.length; nCharPos < nTextLen; nCharPos++)
+            {
+                let oText = null;
+                if (0x0026 == strElement.charCodeAt(nCharPos))
+                    oText = new CMathAmp();
+                else
+                {
+                    oText = new CMathText(false);
+                    oText.addTxt(strElement[nCharPos]);
+                }
+                MathRun.Add(oText);
+            }
+
+            MathRun.Set_RFont_ForMathRun();
+
+            if (undefined !== MathStyle && null !== MathStyle)
+                MathRun.Apply_Pr(MathStyle);
+
+            this.Internal_Content_Add(nPos, MathRun, false);
+            this.CurPos++;
+        }
+        else
+        {
+            this.Add_TextOnPos(nPos, oCurrentElement, this.Paragraph);
+        }
+
+        nPos++;
     }
 };
 CMathContent.prototype.Add_Symbol = function(Code, TextPr, MathPr)
@@ -5645,9 +5701,10 @@ CMathContent.prototype.ConvertContentView = function(intStart, intEnd, nInputTyp
     if (this.Content.length === 0)
         return;
 
+    let MathText = new AscMath.MathTextAndStyles(nInputType);
+
     if (intStart >= 0 && intEnd <= this.Content.length)
     {
-        let strContent = "";
         let intCount = (intEnd - intStart) + 1;
 
         for (let i = intStart, j = 0; i <= intEnd; i++)
@@ -5655,17 +5712,13 @@ CMathContent.prototype.ConvertContentView = function(intStart, intEnd, nInputTyp
             let oElement = this.Content[i];
 
             if (undefined !== oElement)
-            {
-                //let oTextContent = oElement.GetTextOfElement(nInputType);
-
-                strContent += AscMath.GetOnlyText(oElement, nInputType);
-            }
+                MathText.Add(oElement);
         }
 
         if (isToLinear || undefined === nInputType || null === nInputType)
         {
             this.Remove_FromContent(intStart, intCount);
-            this.Add_TextOnPos(intStart, strContent);
+            this.Add_MathStyleText(intStart, MathText);
             this.Content[intStart].SelectAll();
 
             this.Selection.Use      = true;
@@ -5674,16 +5727,13 @@ CMathContent.prototype.ConvertContentView = function(intStart, intEnd, nInputTyp
         }
         else
         {
+            let strContent = MathText.GetText();
             let oTempContent = new CMathContent();
 
             if (nInputType === Asc.c_oAscMathInputType.Unicode)
-            {
-                AscMath.CUnicodeConverter(strContent, oTempContent);
-            }
+                AscMath.CUnicodeConverter(MathText, oTempContent);
             else if (nInputType === Asc.c_oAscMathInputType.LaTeX)
-            {
-                AscMath.ConvertLaTeXToTokensList(strContent, oTempContent);
-            }
+                AscMath.ConvertLaTeXToTokensList(MathText, oTempContent);
 
             this.Remove_FromContent(intStart, intCount);
             this.RemoveSelection();
@@ -5709,7 +5759,7 @@ CMathContent.prototype.ConvertContentView = function(intStart, intEnd, nInputTyp
             this.Correct_Selection();
         }
     }
-};
+}
 CMathContent.prototype.SplitContentByContentPos = function()
 {
     var oCurrentObj = this.Content[this.CurPos];
@@ -6970,9 +7020,9 @@ CMathContent.prototype.IsOneTypeTokensInContent = function()
        return this.Content[0].CheckMathIsOneTypeOfContent();
    }
 };
-CMathContent.prototype.GetMultipleContentForGetText = function(isLaTeX, isBase)
+CMathContent.prototype.GetMultipleContentForGetText = function(isLaTeX, isBase, isOnlyText, arrStyles)
 {
-    let outputContent = this.GetTextOfElement(isLaTeX);
+    let outputContent = this.GetTextOfElement(isLaTeX, isOnlyText, arrStyles);
 
     if (this.IsOneTypeTokensInContent())
     {
@@ -7003,20 +7053,14 @@ CMathContent.prototype.GetMultipleContentForGetText = function(isLaTeX, isBase)
         return outputContent;
     }
 }
-CMathContent.prototype.GetTextOfElement = function(isLaTeX)
+CMathContent.prototype.GetTextOfElement = function(oMathText)
 {
-	let arrTextContent = [];
-
 	for (let i = 0; i < this.Content.length; i++)
     {
-        arrTextContent.push(this.Content[i].GetTextOfElement(isLaTeX));
+        oMathText.Add(this.Content[i]);
 	}
-
-    if (arrTextContent.length === 1)
-        return arrTextContent[0]
-	return arrTextContent;
 };
-CMathContent.prototype.GetTextContent = function(bSelectedText, isLaTeX)
+CMathContent.prototype.GetTextContent = function(bSelectedText, isLaTeX, isOnlyText)
 {
     if (undefined === isLaTeX || null === isLaTeX)
 		isLaTeX = false;
@@ -7026,22 +7070,27 @@ CMathContent.prototype.GetTextContent = function(bSelectedText, isLaTeX)
 	let EndPos = this.Content.length;
     let arr = []
 
-	if (bSelectedText) {
+	if (bSelectedText)
+    {
 		StartPos = (this.Selection.Use == true ? Math.min(this.Selection.StartPos, this.Selection.EndPos) : this.CurPos.ContentPos);
 		EndPos   = (this.Selection.Use == true ? Math.max(this.Selection.StartPos, this.Selection.EndPos) : this.CurPos.ContentPos);
 	}
 
+
+    let oMathText = new AscMath.MathTextAndStyles(isLaTeX, isOnlyText);
+
 	for (let i = StartPos; i <= EndPos; i++)
     {
-		if (this.Content[i] !== undefined)
-        {
-            let one = this.Content[i].GetTextOfElement(isLaTeX);
-            if (one)
-                arr.push(one);
-        }
+        let oElement = this.Content[i];
+
+        if (!oElement)
+            continue;
+
+        oMathText.Add(oElement);
 	}
 
-    str = AscMath.ConvertMathTextToText(arr);
+    if (isOnlyText)
+        return str;
 
 	return {str: str, content: arr};
 };

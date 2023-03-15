@@ -350,7 +350,6 @@
 			"\\longleftrightarrow" : "⟷",
 			"\\Longrightarrow" : "⟹",
 			"\\longrightarrow" : "⟶",
-			"\\naryand" : "▒",
 			"\\ne" : "≠",
 			"\\nearrow" : "↗",
 			"\\neg" : "¬",
@@ -358,7 +357,6 @@
 			"\\ni" : "∋",
 			"\\nwarrow" : "↖",
 			"\\odot" : "⊙",
-			"\\of" : "▒",
 			"\\ominus" : "⊖",
 			"\\oplus" : "⊕",
 			"\\oslash" : "⊘",
@@ -987,10 +985,10 @@
 		this.id = 26;
 		this.isClassEqalData = true;
 		this.Unicode = {
-			"┬" : 1,
-			"┴" : 1,
-			// "&" : 1,
-			// "@" : 1,
+			// "┬" : 1,
+			// "┴" : 1,
+			"&" : 1,
+			"@" : 1,
 		};
 		this.LaTeX = {
 			// "\\cases" : "Ⓒ",
@@ -1104,6 +1102,19 @@
 		}
 	};
 
+	function TokenOf()
+	{
+		this.id = 32;
+		this.Unicode = {};
+		this.LaTeX = {
+			"\\of" : "▒",
+			"\\naryand" : "▒",
+		};
+		this.Init();
+	}
+	TokenOf.prototype = Object.create(LexerLiterals.prototype)
+	TokenOf.prototype.constructor = TokenOf;
+
 	//---------------------------------------Initialize data for Tokenizer----------------------------------------------
 
 	// List of tokens types for parsers processing
@@ -1133,6 +1144,7 @@
 		invisible:		new TokenInvisibleOperators(),
 		alphanumeric:	new TokenAlphanumeric(),
 		font:			new TokenFont(),
+		of:				new TokenOf(),
 		//horizontal: 	new TokenHorizontalStretch()
 	};
 
@@ -1574,7 +1586,7 @@
 	function Tokenizer(isLaTeX)
 	{
 		this._string = [];
-		this._styles = [];
+		this._styles = {};
 		this._cursor = 0;
 
 		this.state = [];
@@ -1582,44 +1594,31 @@
 	}
 	Tokenizer.prototype.Init = function (string)
 	{
-		if (Array.isArray(string))
+		if (string instanceof MathTextAndStyles)
 		{
+			let arrContent = [];
+			let oStyles = {};
+			let nLength = 0;
 
-			let arr = ContentWithStylesIterator(string);
-			ContentWithStylesToText(string, this, function (obj, arr)
+			for (let nCounter = 0; nCounter < string.arr.length; nCounter++)
 			{
-				let oCurrentElement = arr[i];
-				let oStyleCopy = oCurrentElement.GetStyle();
+				let oCurrentElement 	= string.arr[nCounter];
+				let oCurrentStyle		= oCurrentElement.GetStyle();
+				let strCurrent 			= oCurrentElement.GetText();
+				nLength 				+= this.GetStringLength(strCurrent);
+				let arrCurrent 			= this.GetSymbols(strCurrent);
+				arrContent 				= arrContent.concat(arrCurrent);
 
-				if (oCurrentElement instanceof MathText)
-					this._styles.push(oStyleCopy);
-				else
-					this._styles.push(null);
-
-				if (oCurrentElement instanceof MathText)
-					oCurrentElement = oCurrentElement.GetText();
-
-				let arrNewTextContent = this.GetSymbols(oCurrentElement);
-
-				this._string = this._string.concat(arrNewTextContent);
-
-				if (arrNewTextContent.length > 1)
-				{
-					for (let j = 0; j < arrNewTextContent.length; j++) {
-						this._styles.push(oStyleCopy);
-					}
-				}
-			})
-
-			for (let i = 0; i < arr.length; i++)
-			{
-
+				oStyles[nLength] = oCurrentStyle;
 			}
+
+			this._string = arrContent;
+			this._styles = oStyles;
 		}
 		else
 		{
-			let arrContent = this.GetSymbols(string);
-			this._string = arrContent;
+			let arrContent 		= this.GetSymbols(string);
+			this._string 		= arrContent;
 		}
 	};
 	Tokenizer.prototype.GetSymbols = function (str)
@@ -1634,7 +1633,8 @@
 	Tokenizer.prototype.GetStringLength = function (str)
 	{
 		let intLen = 0;
-		for (let oIter = str.getUnicodeIterator(); oIter.check(); oIter.next()) {
+		for (let oIter = str.getUnicodeIterator(); oIter.check(); oIter.next())
+		{
 			intLen++;
 		}
 		return intLen;
@@ -1697,13 +1697,38 @@
 					: autoCorrectRule[1];
 			}
 
+			let oStyle = this.GetStyle(this._cursor);
+
 			return {
 				class: tokenClass,
 				data: tokenValue,
-				style: this._styles[this._cursor],
+				style: oStyle,
 			}
 		}
 	};
+	Tokenizer.prototype.GetStyle = function (nCursorPos)
+	{
+		let arrStyles = Object.keys(this._styles);
+		let prevStyle = null;
+
+		return this._styles[arrStyles[nCursorPos - 1]];
+		for (let nCounter = arrStyles.length - 1; nCounter >= 0; nCounter--)
+		{
+			let nCurrentPos = Number(arrStyles[nCounter]);
+			if (nCursorPos > nCurrentPos)
+			{
+				return prevStyle;
+			}
+			else if (nCurrentPos === nCursorPos)
+			{
+				return this._styles[nCurrentPos]
+			}
+			else
+			{
+				prevStyle = this._styles[nCurrentPos];
+			}
+		}
+	}
 	Tokenizer.prototype.ProcessString = function (str, char)
 	{
 		let intLenOfRule = 0;
@@ -1882,7 +1907,7 @@
 					}
 					else
 					{
-						oContext.Add_TextInLastParaRun(oTokens.value);
+						oContext.Add_TextInLastParaRun(oTokens.value, undefined,  Array.isArray(oTokens.style) ? oTokens.style[0] : oTokens.style);
 					}
 					break;
 				case oNamesOfLiterals.textPlainLiteral[num]:
@@ -1959,7 +1984,7 @@
 					);
 					break;
 				case MathStructures.sub_sub:
-					if (oTokens.value && oTokens.value.type === oNamesOfLiterals.functionLiteral[num])
+					if (oTokens.value && oTokens.value.type === MathStructures.func)
 					{
 						let oFunc = oContext.Add_Function({}, null, null);
 						let oFuncName = oFunc.getFName();
@@ -2003,7 +2028,7 @@
 							)
 						}
 					}
-					else if (oTokens.value && oTokens.value.type === oNamesOfLiterals.functionWithLimitLiteral[num])
+					else if (oTokens.value && oTokens.value.type === MathStructures.func_lim)
 					{
 						let oFuncWithLimit = oContext.Add_FunctionWithTypeLimit(
 							{},
@@ -2023,20 +2048,22 @@
 							.Content[0]
 							.getIterator();
 
-						if (oTokens.up || oTokens.down) {
+						if (oTokens.up || oTokens.down)
+						{
 							UnicodeArgument(
 								oTokens.up === undefined ? oTokens.down : oTokens.up,
 								MathStructures.bracket_block,
 								oLimitIterator
 							)
 						}
+
 						UnicodeArgument(
 							oTokens.third,
 							MathStructures.bracket_block,
 							oFuncWithLimit.getArgument()
 						)
 					}
-					else if (oTokens.value && oTokens.value.type === oNamesOfLiterals.opNaryLiteral[num])
+					else if (oTokens.value && oTokens.value.type === MathStructures.nary)
 					{
 						let Pr = {
 							chr: oTokens.value.value.charCodeAt(0),
@@ -2045,6 +2072,7 @@
 						}
 
 						let oNary = oContext.Add_NAry(Pr, null, null, null);
+
 						ConvertTokens(
 							oTokens.third,
 							oNary.getBase(),
@@ -2066,7 +2094,8 @@
 							((Array.isArray(oTokens.down) && oTokens.down.length > 0) || (!Array.isArray(oTokens.down) && oTokens.down !== undefined))
 
 						let Pr = {ctrPrp: new CTextPr()};
-						if (!isSubSup) {
+						if (!isSubSup)
+						{
 							if (oTokens.up)
 								Pr.type = DEGREE_SUPERSCRIPT;
 							else if (oTokens.down)
@@ -2617,6 +2646,14 @@
 			: AscMath.ConvertLaTeXToTokensList(strConversionData, oContext);
 	};
 
+	/**
+	 * Token position and it's type
+	 * @param {number} MathPos - Position in CMathContent
+	 * @param {number }RunPos - Position in ParaRun
+	 * @param {number }type - ID of type (MathLiterals[].id)
+	 * @param {ParaRun.Content} ref - ContentOfParaRun
+	 * @constructor
+	 */
 	function PositionIsCMathContent(MathPos, RunPos, type, ref)
 	{
 		this.position = [ MathPos, RunPos ];
@@ -2627,22 +2664,26 @@
 		 * Get position of token in CMathContent
 		 * @returns {number}
 		 */
-		this.GetMathPos = function () { return this.position[0] };
+		this.GetMathPos = function ()
+		{
+			return this.position[0]
+		};
 		/**
 		 * Get position of token in ParaRun
 		 * @returns {number}
 		 */
-		this.GetPosition = function () { return this.position[1] };
+		this.GetPosition = function ()
+		{
+			return this.position[1]
+		};
 		/**
 		 * Get MathLiterals type of token
 		 * @returns {number}
 		 */
-		this.GetType = function () { return this.type };
-		/**
-		 * Increase ParaRun position by one
-		 * @returns {*}
-		 */
-		this.AddOnePosition = function () { this.position[1]++ };
+		this.GetType = function ()
+		{
+			return this.type
+		};
 		/**
 		 * Get position of token in CMathContent
 		 * @returns {boolean}
@@ -2684,10 +2725,13 @@
 		 */
 		this.GetText = function()
 		{
+			if (!this.ref)
+				return "";
+
 			let oCMathText = this.ref[this.GetPosition()];
 			let strValue = String.fromCharCode(oCMathText.value);
 			return strValue;
-		}
+		};
 		/**
 		 * Return copy of given PositionIsCMathContent with position, type and ref
 		 * @returns {PositionIsCMathContent}
@@ -2702,8 +2746,15 @@
 				this.ref
 			);
 		};
+		/**
+		 * Increase ParaRun position by one, of need change CMathContent position
+		 * @return {boolean}
+		 */
 		this.IncreasePosition = function()
 		{
+			if (!this.ref)
+				return false;
+
 			let ParaRun = this.ref[0].Parent;
 			let CMathContent = ParaRun.Parent;
 
@@ -2719,22 +2770,29 @@
 			{
 				this.position[1]++;
 			}
-		}
+
+			return true;
+		};
+		/**
+		 * Decrease ParaRun position by one, of need change CMathContent position
+		 * @return {boolean}
+		 * @constructor
+		 */
 		this.DecreasePosition = function()
 		{
+			if (!this.ref)
+				return false;
+
 			let ParaRun = this.ref[0].Parent;
 			let CMathContent = ParaRun.Parent;
 
 			if (this.position[1] - 1 >= 0)
-			{
 				this.position[1]--;
-			}
 			else
-			{
-				this.position[0]--;
 				this.position[1] = CMathContent.Content[this.position[0]].Content.length - 1;
-			}
-		}
+
+			return true;
+		};
 	};
 
 	function ParaRunIterator(ParaRun)
@@ -2876,7 +2934,7 @@
 				CutContentFromEnd(oContent, oDelMark, false);
 
 				let strRule = ConvertRuleDataToText(intCurrentSymbol);
-				strRule += strOperator;
+				strRule += strOperator === " " ? "" : strOperator;
 				AddTextByPos(oContent, oDelMark, strRule);
 				
 				isConvert = true;
@@ -3005,7 +3063,7 @@
 	MathText.prototype.IsWrap = function()
 	{
 		return this.isWrap;
-	}
+	};
 
 	/**
 	 * Return token MathLiteral class
@@ -3038,47 +3096,64 @@
 				return true;
 		}
 
-	}
+	};
+
+	/**
+	 * Get information about specific tokens types determined by arrTypesForSearch
+	 * @param {CMathContent} oCMathContent - CMathContent to be searched
+	 * @param {array} arrTypesForSearch - Array with objects from MathLiterals (MathLiterals.operator, MathLiterals.space, e.g.)
+	 * @return {array}
+	 */
 	function GetInfoAboutCMathContent(oCMathContent, arrTypesForSearch)
 	{
-		const arrInfo = [];
-		const oContent = oCMathContent.Content;
+		const arrInfo 	= [];
+		const oContent 	= oCMathContent.Content;
 
-		for (let i = 0; i < oContent.length; i++)
+		for (let nCount = 0; nCount < oContent.length; nCount++)
 		{
-			if (oContent[i].Type === 49 && oContent[i].Content.length > 0)
-				arrInfo[i] = GetInfoFromParaRun(i, oContent[i], arrTypesForSearch);
+			if (oContent[nCount].Type === 49 && oContent[nCount].Content.length > 0)
+			{
+				arrInfo[nCount] = GetInfoFromParaRun(nCount, oContent[nCount], arrTypesForSearch);
+			}
 		}
 
 		return arrInfo;
 	};
-	function GetInfoFromParaRun(nCount, oRun, arrTypesForSearch)
+	/**
+	 * Get information about specific tokens types determined by arrTypesForSearch
+	 * @param {number} nPosInCMathContent - Position in CMathContent
+	 * @param {ParaRun} oRun - ParaRun to be searched
+	 * @param {array} arrTypesForSearch - Array with objects from MathLiterals (MathLiterals.operator, MathLiterals.space, e.g.)
+	 * @return {array}
+	 */
+	function GetInfoFromParaRun(nPosInCMathContent, oRun, arrTypesForSearch)
 	{
-		const arrBracketsInfo = [];
-		const oContent = oRun.Content;
-		const arrContent = [];
+		const arrBracketsInfo	= [];
+		const arrContent		= [];
+		const oContent 			= oRun.Content;
 
-		for (let intCounter = 0; intCounter < oContent.length; intCounter++)
+		for (let nCounter = 0; nCounter < oContent.length; nCounter++)
 		{
-			let CurrentElement = oContent[intCounter].value;
-			let strContent = String.fromCharCode(CurrentElement);
-			let intType = null;
+			let CurrentElement	= oContent[nCounter].value;
+			let strContent		= String.fromCharCode(CurrentElement);
+			let intType			= null;
 
 			intType = GetTokenType(strContent, arrTypesForSearch);
 			arrContent.push(strContent);
 
-			let oFunc = IsFunctionNameToken(arrContent, nCount, intCounter);
-			let nCopyCounter = intCounter;
+			let oFunc 			= IsFunctionNameToken(arrContent, nPosInCMathContent, nCounter);
+			let nCopyCounter 	= nCounter;
 
-			if (oFunc) {
-				intType = MathLiterals.func.id;
-				nCopyCounter = intCounter - (arrContent.length - 1);
+			if (oFunc)
+			{
+				intType 		= MathLiterals.func.id;
+				nCopyCounter 	= nCounter - (arrContent.length - 1);
 			}
 
 			if (false !== intType)
 			{
-				let pos = new PositionIsCMathContent(nCount, nCopyCounter, intType, oRun.Content);
-				arrBracketsInfo.push(pos);
+				let oNewCMathPos = new PositionIsCMathContent(nPosInCMathContent, nCopyCounter, intType, oRun.Content);
+				arrBracketsInfo.push(oNewCMathPos);
 			}
 		};
 
@@ -3105,6 +3180,7 @@
 		MathLiterals.rect,
 		MathLiterals.special,
 		MathLiterals.subSup,
+		MathLiterals.of,
 	];
 	const TokenSearch_NotBrackets = [
 		MathLiterals.operator,
@@ -3140,55 +3216,89 @@
 	function ProcessingBrackets ()
 	{
 		this.BracketsPair 	= [];
-		this.BacketNoPair 	= [];
+		this.BracketNoPair 	= [];
 		this.obj 			= {};
 		this.intCounter 	= 0;
 
+		/**
+		 * Add bracket pair to BracketsPair array
+		 * @param {PositionIsCMathContent} oStart
+		 * @param {PositionIsCMathContent} oEnd
+		 */
 		this.AddBracket	= function (oStart, oEnd)
 		{
 			this.BracketsPair.push([oStart, oEnd]);
 		};
+		/**
+		 * Add bracket without pair in specific BracketNoPair array
+		 * @param oPos
+		 * @constructor
+		 */
 		this.AddNoPair = function (oPos)
 		{
-			this.BacketNoPair.push(oPos);
+			this.BracketNoPair.push(oPos);
 		};
+		/**
+		 * Delete on specific level Position
+		 */
 		this.Shift = function ()
 		{
 			this.obj[this.intCounter] = undefined;
 		};
-		this.Add = function (oContent)
+		/**
+		 * Add on specific level given Position
+		 * @param {PositionIsCMathContent} oPosition
+		 */
+		this.Add = function (oPosition)
 		{
 			if (this.obj[this.intCounter] === undefined)
-				this.obj[this.intCounter] = oContent;
+			{
+				this.obj[this.intCounter] = oPosition;
+			}
 		};
+		/**
+		 * Get last bracket content
+		 * @return {PositionIsCMathContent}
+		 */
 		this.Get = function ()
 		{
 			let intCounter = this.intCounter - 1;
+
 			while (intCounter >= 0)
 			{
 				if (this.obj[intCounter] === undefined)
+				{
 					intCounter--;
+				}
 				else
 				{
-					let type = this.obj[intCounter];
-					if (!(type instanceof PositionIsCMathContent))
+					let oNewPos = this.obj[intCounter];
+
+					if (!oNewPos instanceof PositionIsCMathContent)
+					{
 						break;
-					return type;
+					}
+					return oNewPos;
 				}
 			}
-			return new PositionIsCMathContent(undefined, undefined, undefined);
+			//TODO Check safety:
+			return new PositionIsCMathContent(undefined, undefined, undefined, undefined);
 		};
-		this.Check = function (oContent)
+		/**
+		 * Check given bracket and proceed it
+		 * @param {PositionIsCMathContent} oPos
+		 */
+		this.Check = function (oPos)
 		{
 			let oPrevContent	= this.Get();
 
 			let intPrevType  	= oPrevContent.GetType();
-			let intCurrentType 	= oContent.GetType();
+			let intCurrentType 	= oPos.GetType();
 
 			// если открывающая скобка:  ) ] } ...
 			if (intCurrentType === MathLiterals.rBrackets.id)
 			{
-				this.Add(oContent);
+				this.Add(oPos);
 				this.intCounter++;
 			}
 			// если закрывающая скобка ( [ { ...
@@ -3197,15 +3307,16 @@
 				if (intPrevType === MathLiterals.rBrackets.id)
 				{
 					// нашли скобку
-					this.AddBracket(oPrevContent, oContent);
+					this.AddBracket(oPrevContent, oPos);
 					this.intCounter--;
 					this.Shift();
 				}
 				else
 				{
-					this.AddNoPair(oContent);
+					this.AddNoPair(oPos);
 				}
 			}
+			// TODO
 			else if (intCurrentType === MathLiterals.lrBrackets.id)
 			{
 				if (this.intCounter > 0)
@@ -3218,48 +3329,61 @@
 				}
 			}
 		};
-		this.GetContent = function () {
+		/**
+		 * Get brackets information
+		 * @return {{NoPair: [], Pairs: []}}
+		 * @constructor
+		 */
+		this.GetContent = function ()
+		{
 			return {
 				Pairs: this.BracketsPair,
-				NoPair: this.BacketNoPair,
+				NoPair: this.BracketNoPair,
 			};
-		}
+		};
 	};
 	function ProceedTokens(oCMathContent)
 	{
 		this.oCMathContent = oCMathContent;
 
-		// ---------------Init-------------------
+		/**
+		 * Generate this.Tokens and this.Brackets list
+		 */
 		this.Init = function ()
 		{
 			const arrData = GetInfoAboutCMathContent(this.oCMathContent, TokenSearch_All);
 
-			for (let i = arrData.length - 1; i >= 0; i--)
+			for (let nCount = arrData.length - 1; nCount >= 0; nCount--)
 			{
-				const CurrentContent = arrData[i];
+				const CurrentContent = arrData[nCount];
 
 				if (CurrentContent === undefined || (Array.isArray(CurrentContent) && CurrentContent.length === 0))
 					continue;
 
-				for (let j = CurrentContent.length - 1; j >= 0; j--)
+				for (let nPosInBlock = CurrentContent.length - 1; nPosInBlock >= 0; nPosInBlock--)
 				{
-					let oCurrent = CurrentContent[j];
-					let intCurrentType = oCurrent.GetType();
+					let oCurrent 		= CurrentContent[nPosInBlock];
+					let nCurrentType 	= oCurrent.GetType();
 
-					if (this.IsOtherId(intCurrentType))
+					if (this.IsOtherId(nCurrentType))
 					{
-						this.AddContent(intCurrentType, oCurrent);
+						this.AddContent(nCurrentType, oCurrent);
 					}
-					else if (this.IsBracketsId(intCurrentType))
+					else if (this.IsBracketsId(nCurrentType))
 					{
-						this.Brackets.Check(CurrentContent[j]);
-						this.AddContent(intCurrentType, oCurrent);
+						this.Brackets.Check(CurrentContent[nPosInBlock]);
+						this.AddContent(nCurrentType, oCurrent);
 					}
 				}
 			};
 
 			this.Tokens.brackets = this.Brackets.GetContent();
 		};
+		/**
+		 * Check given id is "other" (all tokens without brackets)
+		 * @param nId
+		 * @return {boolean}
+		 */
 		this.IsOtherId = function(nId)
 		{
 			return MathLiterals.operator.id === nId
@@ -3276,24 +3400,41 @@
 			|| MathLiterals.rect.id 		=== nId
 			|| MathLiterals.special.id 		=== nId
 			|| MathLiterals.subSup.id 		=== nId
+			|| MathLiterals.of.id			=== nId
 		};
+		/**
+		 * Check is given id is brackets id
+		 * @param nId
+		 * @return {boolean}
+		 */
 		this.IsBracketsId = function(nId)
 		{
 			return MathLiterals.rBrackets.id 	=== nId
 			|| MathLiterals.lBrackets.id 		=== nId
 			|| MathLiterals.lrBrackets.id 		=== nId
 		};
-		this.AddContent = function (nId, oContent)
+		/**
+		 * Add tokens to lists in this.Tokens
+		 * @param {number} nId - ID of token
+		 * @param {PositionIsCMathContent} oToken
+		 */
+		this.AddContent = function (nId, oToken)
 		{
-			this.AddById(nId, oContent);
-			this.AddToAll(oContent);
+			this.AddById(nId, oToken);
+			this.AddToAll(oToken);
 		};
-		this.AddById = function (nId, oContent)
+		/**
+		 * Add tokens to this.Tokens by grouping them on id
+		 * @param {number} nId
+		 * @param {PositionIsCMathContent} oInToken
+		 * @constructor
+		 */
+		this.AddById = function (nId, oInToken)
 		{
 			let oToken = {
-				data: oContent,
+				data: oInToken,
 				link: nId,
-				pos:  this.Tokens[name] ? this.Tokens[name].length : 0,
+				pos:  this.Tokens[nId] ? this.Tokens[nId].length : 0,
 			};
 
 			if (!this.Tokens[nId])
@@ -3301,11 +3442,15 @@
 
 			this.Tokens[nId].push(oToken);
 		};
-		this.AddToAll = function (oContent)
+		/**
+		 * Add tokens to this.Tokens.all array
+		 * @param {PositionIsCMathContent} oToken
+		 */
+		this.AddToAll = function (oToken)
 		{
-			this.Tokens.all.push(oContent);
+			this.Tokens.all.push(oToken);
 		};
-		// ---------------====-------------------
+
 
 		/**
 		 * Return MathLiteral class of last content block except:
@@ -3317,29 +3462,57 @@
 		 */
 		this.GetLast = function()
 		{
-			let all = this.Tokens.all;
+			let arrAllTokens = this.Tokens.all;
+			let oSubSup = null; // Last subSub token
 
-			if (all.length === 0)
+			if (!arrAllTokens || arrAllTokens.length === 0)
 				return false;
 
-			for (let nCounter = 0; nCounter < all.length; nCounter++)
+			for (let nCounter = 0; nCounter < arrAllTokens.length; nCounter++)
 			{
-				let oToken = all[nCounter];
-				let intType = oToken.GetType();
+				let oToken = arrAllTokens[nCounter];
+				let nType = oToken.GetType();
+				let oPos = this.IsStepInBracket(oToken);
 
-				if (MathLiterals.lrBrackets.id	 	=== intType
-					 || MathLiterals.lBrackets.id 	=== intType
-					 || MathLiterals.rBrackets.id 	=== intType
-					 || MathLiterals.space.id 		=== intType
+				if (oPos)
+				{
+					while (!oPos.IsEqualPosition(oToken))
+					{
+						nCounter++;
+						oToken = arrAllTokens[nCounter];
+					}
+					continue;
+				}
+
+				if ( MathLiterals.lrBrackets.id	 	=== nType
+					 || MathLiterals.lBrackets.id 	=== nType
+					 || MathLiterals.rBrackets.id 	=== nType
+					 || MathLiterals.space.id 		=== nType
 					 || this.IsInSomeBracket(oToken)
 				)
 				{
 					continue;
 				}
+				else if (nType === MathLiterals.subSup.id)
+				{
+					oSubSup = oToken;
+					continue;
+				}
 				else
 				{
+					if (oSubSup)
+						return oSubSup;
+
 					return oToken;
 				}
+
+				if (oToken)
+					return oToken;
+			}
+
+			if (oSubSup)
+			{
+				return oSubSup;
 			}
 		};
 		/**
@@ -3357,9 +3530,8 @@
 			if (oLastElem.Type === 49)
 			{
 				let oLastElement = oLastElem.Content[oLastElem.Content.length - 1];
-
-				let str = String.fromCharCode(oLastElement.value);
-				return GetTokenType(str, TokenSearch_Everything);
+				let strValue = String.fromCharCode(oLastElement.value);
+				return GetTokenType(strValue, TokenSearch_Everything);
 			}
 
 			return false;
@@ -3371,34 +3543,34 @@
 		this.GetAbsolutePreLast = function ()
 		{
 			let arrContent = this.oCMathContent.Content;
-			if (arrContent.length === 0)
+			if (!arrContent || arrContent.length === 0)
 				return false;
 
 			let oLastElem = arrContent[arrContent.length - 1];
 
 			if (oLastElem.Type === 49)
 			{
-				let intCount  = oLastElem.Content.length - 2;
-				if (intCount >= 0)
+				let nCount  = oLastElem.Content.length - 2;
+				if (nCount >= 0)
 				{
 					let oLastElement = oLastElem.Content[oLastElem.Content.length - 2];
-
-					let str = String.fromCharCode(oLastElement.value);
-					return GetTokenType(str, TokenSearch_Everything);
+					let strValue = String.fromCharCode(oLastElement.value);
+					return GetTokenType(strValue, TokenSearch_Everything);
 				}
 			}
 
 			return false;
 		};
 		/**
-		 * Check is given position is start or end of any bracket block.
+		 * Check is given position in any brackets pair. Return returns the opposite position of the parenthesis
 		 * @param {PositionIsCMathContent} oPos
-		 * @returns {PositionIsCMathContent|false}
+		 * @returns {PositionIsCMathContent | false}
 		 */
 		this.IsStepInBracket = function(oPos)
 		{
 			let arrBracketsPairs = this.Tokens.brackets.Pairs;
-			if (arrBracketsPairs.length === 0)
+
+			if (!arrBracketsPairs || arrBracketsPairs.length === 0)
 				return false;
 
 			for (let nCount = 0; nCount < arrBracketsPairs.length; nCount++)
@@ -3417,14 +3589,15 @@
 			return false;
 		};
 		/**
-		 * Check is given position in any brackets pair. Return returns the opposite position of the parenthesis
+		 * Check is given position is start or end of any bracket block.
 		 * @param {PositionIsCMathContent} oPos
 		 * @returns {boolean}
 		 */
 		this.IsInSomeBracket = function(oPos)
 		{
 			let arrBracketsPairs = this.Tokens.brackets.Pairs;
-			if (arrBracketsPairs.length === 0)
+
+			if (!arrBracketsPairs || arrBracketsPairs.length === 0)
 				return false;
 
 			for (let nCount = 0; nCount < arrBracketsPairs.length; nCount++)
@@ -3434,6 +3607,27 @@
 				let oEndPos = arrCurrentBracketPair[0];
 
 				if (oPos.IsBetween(oStartPos, oEndPos))
+					return true;
+			}
+
+			return false;
+		};
+		/**
+		 * Check token on given pos is operator
+		 * @param {PositionIsCMathContent} oPos
+		 * @return {boolean}
+		 */
+		this.IsOperator = function (oPos)
+		{
+			let arrOperators = this.Tokens[MathLiterals.operator.id];
+
+			if (!arrOperators || arrOperators.length === 0)
+				return false;
+
+			for (let i = 0; i < arrOperators.length; i++)
+			{
+				let oCurrentOperator = arrOperators[i];
+				if (oPos.IsEqualPosition(oCurrentOperator.data))
 					return true;
 			}
 
@@ -3467,34 +3661,18 @@
 			{
 				ConvertBracket(this.Tokens.brackets, this.oCMathContent);
 			}
-			else if (this.IsProcessingNormalFunc(oLast) && this.IsTrigger(lastElementMathId))
+			else if (this.IsPCFunction(oLast) && this.IsTrigger(lastElementMathId))
 			{
-				this.ProcessingNormalFunc(oLast);
+				this.PCFunctionProcessing(oLast);
 			}
-			else if (this.IsProcessingPreContentFunc(oLast) && this.IsTrigger(lastElementMathId))
+			else if (this.IsPRFunction(oLast) && this.IsTrigger(lastElementMathId))
 			{
-				this.ProcessPreContentFunc(oLast);
+				this.PRFunctionProcessing(oLast);
 			}
-			else if (this.IsProcessBeforeAfterContentFunc(oLast) && this.IsTrigger(lastElementMathId))
+			else if (this.IsBIFunctionProcessing(oLast) && this.IsTrigger(lastElementMathId))
 			{
-				this.ProcessBeforeAfterContentFunc(oLast);
+				this.BIFunctionProcessing(oLast);
 			}
-		};
-		this.IsCanAutocorrected = function()
-		{
-			let oContent = this.oCMathContent.Content;
-			let oLastElement = oContent[oContent.length - 1];
-
-			if (oLastElement.Type === 49) // ParaRun
-			{
-				let oParaRunContent = oLastElement.Content;
-				let oLastParaRunElem = oParaRunContent[oParaRunContent.length - 1];
-				let strLastValue = String.fromCharCode(oLastParaRunElem.value);
-
-				return GetTokenType(strLastValue, TokenSearch_Everything);
-			}
-
-			return false;
 		};
 
 		/**
@@ -3507,19 +3685,18 @@
 			let oStartPos = oPos.GetCopy();
 			oStartPos.IncreasePosition();
 
-			oCMathContent = this.oCMathContent;
 			let isParaPosUsed = false;
 			let nMathPos = oStartPos.GetMathPos();
 			let nParaPos = oStartPos.GetPosition();
 			let nEndMathPos = nMathPos;
 			let nEndParaPos = nParaPos;
 
-			if (nMathPos >= oCMathContent.Content.length || nMathPos < 0)
+			if (nMathPos >= this.oCMathContent.Content.length || nMathPos < 0)
 				return;
 
-			for (let i = nMathPos, nContentLength = oCMathContent.Content.length; i < nContentLength; i++)
+			for (let i = nMathPos, nContentLength = this.oCMathContent.Content.length; i < nContentLength; i++)
 			{
-				let oCurrentElement = oCMathContent.Content[i];
+				let oCurrentElement = this.oCMathContent.Content[i];
 				nEndMathPos = i;
 				nEndParaPos = 0;
 
@@ -3556,7 +3733,7 @@
 
 			return {
 				start: oPos,
-				end: new PositionIsCMathContent(nEndMathPos, nEndParaPos)
+				end: new PositionIsCMathContent(nEndMathPos, nEndParaPos, 0, null)
 			}
 		};
 		/**
@@ -3567,6 +3744,7 @@
 		this.GetContentBlockBefore = function (oStartPos)
 		{
 			oStartPos = oStartPos.GetCopy();
+			let isNary = oStartPos.GetText() === "▒";
 			oStartPos.DecreasePosition();
 
 			oCMathContent = this.oCMathContent;
@@ -3576,12 +3754,12 @@
 			let nEndMathPos = nMathPos;
 			let nEndParaPos = nParaPos;
 
-			if (nMathPos >= oCMathContent.Content.length || nMathPos < 0)
+			if (nMathPos >= this.oCMathContent.Content.length || nMathPos < 0)
 				return;
 
 			for (let i = nMathPos; i >= 0; i--)
 			{
-				let oCurrentElement = oCMathContent.Content[i];
+				let oCurrentElement = this.oCMathContent.Content[i];
 				nEndMathPos = i;
 				nEndParaPos = 0;
 
@@ -3595,21 +3773,23 @@
 						if (!isParaPosUsed)
 							isParaPosUsed = true;
 
-						let oEndPos = new PositionIsCMathContent(nEndMathPos, nEndParaPos)
+						let oEndPos = new PositionIsCMathContent(nEndMathPos, j, 0, oCurrentElement.Content);
+
 						let oPos = this.IsStepInBracket(oEndPos);
-
-						if (oPos)
+						if (oPos && isNary)
 						{
-							nEndMathPos = i = oPos.GetMathPos();
-							nEndParaPos = j = oPos.GetPosition();
-
-							return {
-								start: oStartPos,
-								end: new PositionIsCMathContent(nEndMathPos, nEndParaPos)
-							}
+							i = oPos.GetMathPos();
+							j = oPos.GetPosition();
 						}
 						else
 						{
+							if (this.IsOperator(oEndPos) || oEndPos.GetType() === MathLiterals.space.id)
+							{
+								return {
+									start: new PositionIsCMathContent(nEndMathPos, j, 0, this.oCMathContent.Content),
+									end: oStartPos
+								}
+							}
 							nEndParaPos = j;
 						}
 					}
@@ -3617,12 +3797,34 @@
 			}
 
 			return {
-				start: new PositionIsCMathContent(nEndMathPos, nEndParaPos),
+				start: new PositionIsCMathContent(nEndMathPos, nEndParaPos, 0, this.oCMathContent.Content),
 				end: oStartPos
 			}
 		};
 
-		this.IsProcessingNormalFunc = function(oLast)
+		/**
+		 * For convenience' sake
+		 *
+		 * Now all function in Unicode can be classified into three big types:
+		 *
+		 * 		1. PCFunction. When name of function located before it's content. For example cos(1/2) or √(2&1xg2).
+		 * 		Let's call it Normal Functions or Post-Content Function (PCFunction).
+		 *
+		 * 		2. PRFunction. When name of function located after it's content. For example: (1+2) ̂, 2 ̂x.
+		 * 		Let's call it Pre-Content Function (PRFunction).
+		 *
+		 * 		3. BIFunction. When name of function located between content's. For example: 1/2, s_d.
+		 * 		Let's call it Between-Function (BIFunction).
+		 */
+
+		/**
+		 * Is need to process current data as PCFunction type of math content.
+		 * For example cos(1/2) or √(2&1xg2).
+		 *
+		 * @param {PositionIsCMathContent} oLast
+		 * @return {boolean}
+		 */
+		this.IsPCFunction = function(oLast)
 		{
 			if (!oLast)
 				return false;
@@ -3638,22 +3840,19 @@
 				|| MathLiterals.underbar.id === intLastTokenType
 				|| MathLiterals.overbar.id 	=== intLastTokenType
 		};
-		this.ProcessingNormalFunc = function(oLast)
+		/**
+		 * Processing PCFunction type of math content.
+		 * For example cos(1/2) or √(2&1xg2).
+		 * @param {PositionIsCMathContent} oLast
+		 */
+		this.PCFunctionProcessing = function(oLast)
 		{
-			// 		func + content
-			// 		|| func
-
-			//	cos 5
-			// 	√(4+1)
-			//	∫fdc
-
 			let oConvertPos = this.GetContentBlockAfter(oLast);
 
 			if (oConvertPos)
 			{
-				let oStartPos 	= oConvertPos.start;
-				let oEndPos 	= oConvertPos.end;
-				let str 		= CutContentFromEnd(this.oCMathContent, oStartPos);
+				let oStartPos 	= oLast;
+				let str 		= CutContentFromEnd(this.oCMathContent, oStartPos, false);
 
 				GetConvertContent(0, str, this.oCMathContent);
 				this.oCMathContent.Correct_Content(true);
@@ -3661,13 +3860,20 @@
 			}
 			else
 			{
-				let str = CutContentFromEnd(this.oCMathContent, oLast);
-				GetConvertContent(0, str, this.oCMathContent);
+				let str = CutContentFromEnd(this.oCMathContent, oLast, false);
+				GetConvertContent(0, str.trim(), this.oCMathContent);
 				this.oCMathContent.Correct_Content(true);
 				this.oCMathContent.MoveCursorToEndPos();
 			}
 		};
-		this.IsProcessingPreContentFunc = function(oLast)
+		/**
+		 * Is need to process current data as PRFunction type of math content.
+		 * For example: (1+2) ̂, 2 ̂x.
+		 *
+		 * @param {PositionIsCMathContent} oLast
+		 * @return {boolean}
+		 */
+		this.IsPRFunction = function(oLast)
 		{
 			if (!oLast)
 				return false;
@@ -3675,11 +3881,14 @@
 			let intLastTokenType = oLast.GetType();
 			return MathLiterals.accent.id 	=== intLastTokenType
 		};
-		this.ProcessPreContentFunc = function(oLast)
+		/**
+		 * Processing PRFunction type of math content.
+		 * For example: (1+2) ̂, 2 ̂x.
+		 *
+		 * @param {PositionIsCMathContent} oLast
+		 */
+		this.PRFunctionProcessing = function(oLast)
 		{
-			//		content + func
-			// this.Accent		= [];
-
 			let oConvertPos = this.GetContentBlockBefore(oLast);
 
 			if (oConvertPos)
@@ -3698,7 +3907,14 @@
 			this.oCMathContent.Correct_Content(true);
 			this.oCMathContent.MoveCursorToEndPos();
 		};
-		this.IsProcessBeforeAfterContentFunc = function (oLast)
+		/**
+		 * Is need to process current data as BIFunction type of math content.
+		 * For example: 1/2, s_d.
+		 *
+		 * @param {PositionIsCMathContent} oLast
+		 * @return {boolean}
+		 */
+		this.IsBIFunctionProcessing = function (oLast)
 		{
 			if (!oLast)
 				return false;
@@ -3706,9 +3922,16 @@
 			let intLastTokenType = oLast.GetType();
 
 			return MathLiterals.subSup.id 	=== intLastTokenType
-				|| MathLiterals.divide.id 	=== intLastTokenType;
+				|| MathLiterals.divide.id 	=== intLastTokenType
+				|| MathLiterals.of.id		=== intLastTokenType;
 		};
-		this.ProcessBeforeAfterContentFunc = function(oLast)
+		/**
+		 * Processing BIFunction type of math content.
+		 * For example: 1/2, s_d.
+		 *
+		 * @param {PositionIsCMathContent} oLast
+		 */
+		this.BIFunctionProcessing = function(oLast)
 		{
 			let arrPreContent = this.GetContentBlockBefore(oLast);
 			let arrPostContent = this.GetContentBlockAfter(oLast);
@@ -3718,12 +3941,12 @@
 				let oStartPos 	= arrPreContent.start;
 				let oEndPos 	= arrPreContent.end;
 				let str 		= CutContentFromEnd(this.oCMathContent, oStartPos, true);
-				GetConvertContent(0, str, this.oCMathContent);
+				GetConvertContent(0, str.trim(), this.oCMathContent);
 			}
 			else
 			{
 				let str 		= CutContentFromEnd(this.oCMathContent, oLast, true);
-				GetConvertContent(0, str, this.oCMathContent);
+				GetConvertContent(0, str.trim(), this.oCMathContent);
 			}
 
 			// 		content + func + content
@@ -3733,6 +3956,7 @@
 			// this.Subsup		= [];
 			// this.Special	= []; // remove & and @ form MathLiterals.special
 		};
+
 		this.TriggersFunc = function()
 		{
 			// triggers
@@ -3740,15 +3964,13 @@
 			// this.Operators 	= [];
 		};
 
-		this.Tokens 	= {
+		this.Tokens 	= { // List of all specific tokens (which determined in this.Init()
 			all: [],
 		};
 		this.Brackets 	= new ProcessingBrackets();
 
 		this.Init();
-
-		if (this.Tokens.brackets.NoPair.length === 0)
-			this.StartAutoCorrection();
+		this.StartAutoCorrection();
 	};
 	function ConvertBracketContent(oTokens, oCMathContent)
 	{
@@ -3766,7 +3988,7 @@
 
 		// we don't need to convert the parenthesis block itself, only the content inside
 		if (isOnlyContent)
-			pos.AddOnePosition();
+			pos.IncreasePosition();
 
 		let strConvertContent	= CutContentFromEnd(oCMathContent, pos, false);
 
@@ -3824,11 +4046,23 @@
 		if (arr.length === 0)
 			return "";
 
+		if (arr instanceof MathText)
+		{
+			return arr.GetText();
+		}
+		else if (arr.Type)
+		{
+			return arr.GetTextOfElement(false, true)
+		}
+
 		let strContent = "";
 
 		for (let nCount = 0; nCount < arr.length; nCount++)
 		{
 			let CurrentElement = arr[nCount];
+
+			if (undefined === CurrentElement)
+				continue;
 
 			if (Array.isArray(CurrentElement))
 			{
@@ -3856,6 +4090,187 @@
 
 		return ConvertMathTextToText(one);
 	};
+
+
+	function PosInMathText(nPos, nLength)
+	{
+		this.pos = nPos; // EndPos
+		this.length = nLength; // Length of content
+	}
+	/**
+	 *
+	 * @param {boolean} LaTeX
+	 * @param {boolean} OnlyText
+	 * @constructor
+	 */
+	function MathTextAndStyles (LaTeX)
+	{
+		this.LaTeX = LaTeX;
+		this.OnlyText = false;
+		this.arr = [];
+		this.nPos = 0;
+
+		this.Positions = []
+	};
+	MathTextAndStyles.prototype.IsLaTeX = function()
+	{
+		return this.LaTeX;
+	};
+	MathTextAndStyles.prototype.IsOnlyText = function()
+	{
+		return this.OnlyText;
+	};
+	MathTextAndStyles.prototype.Add = function (oContent, isNeedWrap)
+	{
+		let nPosCopy = this.nPos;
+		oContent.GetTextOfElement(this);
+
+		return this.GetPosition(this.nPos - nPosCopy);
+	};
+	MathTextAndStyles.prototype.AddText = function (oContent)
+	{
+		this.arr.push(oContent);
+		this.Increase();
+	};
+	MathTextAndStyles.prototype.GetPosition = function (nLength)
+	{
+		let oPos = new PosInMathText(this.nPos, nLength);
+		this.AddPosition(oPos);
+		return oPos;
+	};
+	MathTextAndStyles.prototype.AddPosition = function (oPos)
+	{
+		let isExist = false;
+		for (let nCounter = 0; nCounter < this.Positions.length; nCounter++)
+		{
+			let oCurrentPos = this.Positions[nCounter];
+			if (oCurrentPos.pos === oPos.pos)
+			{
+				if (oCurrentPos.length === oPos.length)
+				{
+					isExist = true;
+				}
+				else
+				{
+					oCurrentPos.length = oPos.length;
+					isExist = true;
+				}
+			}
+		}
+
+		if (!isExist)
+			this.Positions.push(oPos);
+	};
+	MathTextAndStyles.prototype.GetExact = function (oPos, isText)
+	{
+		let oCurrent = this.arr[oPos.pos];
+
+		if (isText && oCurrent instanceof MathText)
+			return oCurrent.GetText();
+		else
+			return oCurrent;
+	};
+	MathTextAndStyles.prototype.IsExactCheck =  function (oFuncCheck, arrPos, isToken)
+	{
+		let oCurrent = this.GetExact(arrPos);
+
+		if (oCurrent instanceof MathText && !isToken)
+			return false;
+		else if (!oCurrent instanceof MathText && isToken)
+			return false;
+
+		return oFuncCheck(oCurrent);
+	};
+	MathTextAndStyles.prototype.GetPosAfter = function (oPos)
+	{
+		let arrAfterPos = [];
+
+		for (let nCounter = 0; nCounter < this.Positions.length; nCounter++)
+		{
+			let oCurrentPos = this.Positions[nCounter];
+			let nCurrentPos = oCurrentPos.pos;
+
+			if (nCurrentPos > oPos.pos)
+				arrAfterPos.push(oCurrentPos);
+		}
+		return arrAfterPos;
+	};
+	MathTextAndStyles.prototype.ChangePositions = function (arrPositions, oFunc)
+	{
+		for (let nCounter = 0; nCounter < arrPositions.length; nCounter++)
+		{
+			let arrCurrentPos = arrPositions[nCounter];
+			oFunc(arrCurrentPos);
+		}
+	};
+	MathTextAndStyles.prototype.AddAfter = function (oPos, oContent, isNotCopyStyle)
+	{
+		let arrPositions = this.GetPosAfter(oPos);
+		let oCurrent = !isNotCopyStyle ? this.GetExact(oPos).GetStyle() : undefined;
+		let oNew = new MathText(oContent, oCurrent);
+
+		this.arr.splice(oPos.pos + 1, 0, oNew);
+
+		this.nPos++;
+		this.ChangePositions(arrPositions, function(oPos) {oPos.pos++});
+	};
+	MathTextAndStyles.prototype.AddBefore = function (oPos, oContent)
+	{
+		let arrPositions = this.GetPosAfter(oPos);
+		this.arr.splice(oPos.pos - oPos.length, 0, oContent);
+		this.AddPosition(oPos);
+		this.nPos++;
+		this.ChangePositions(arrPositions, function(oPos) {oPos.pos++});
+	};
+	MathTextAndStyles.prototype.WrapExactElement = function (arrPos)
+	{
+		debugger
+		if (!this.IsLaTeX())
+		{
+			this.AddBefore(arrPos, "(");
+			this.AddAfter(arrPos, ")");
+		}
+		else
+		{
+			this.AddBefore(arrPos, "{");
+			this.AddAfter(arrPos, "}");
+		}
+	};
+	MathTextAndStyles.prototype.WrapStartEndElements = function (arrStartPos, arrEndPos)
+	{
+
+	}
+	MathTextAndStyles.prototype.Increase = function ()
+	{
+		this.nPos++;
+	};
+	MathTextAndStyles.prototype.GetText = function()
+	{
+		let strOutput = "";
+
+		for (let nCounter = 0; nCounter < this.arr.length; nCounter++)
+		{
+			let oCurrentElement = this.arr[nCounter];
+			if (oCurrentElement instanceof MathText)
+			{
+				strOutput += oCurrentElement.GetText();
+			}
+			else
+			{
+				strOutput += oCurrentElement;
+			}
+		}
+
+		return strOutput;
+	};
+	MathTextAndStyles.prototype.GetTextAndStyles = function()
+	{
+
+	};
+
+
+
+
 
 	//--------------------------------------------------------export----------------------------------------------------
 	window["AscMath"] = window["AscMath"] || {};
@@ -3886,6 +4301,7 @@
 	window["AscMath"].GetInfoAboutCMathContent = GetInfoAboutCMathContent;
 	window["AscMath"].ProceedTokens = ProceedTokens;
 	window["AscMath"].SearchFunctionName = SearchFunctionName;
+	window["AscMath"].MathTextAndStyles = MathTextAndStyles;
 
 
 })(window);

@@ -976,58 +976,59 @@ CMathMatrix.prototype.Is_DeletedItem = function (Action) {
 CMathMatrix.prototype.Get_DeletedItemsThroughInterface = function () {
 	return [];
 };
-CMathMatrix.prototype.GetTextOfElement = function (isLaTeX, strBrackets)
+CMathMatrix.prototype.GetTextOfElement = function (isLaTeX, isOnlyText)
 {
-	var strMatrixSymbol;
-	if (isLaTeX) {
-		switch (strBrackets) {
-			case undefined:
-				strMatrixSymbol = "\\matrix";
-				break;
-			case "()":
-				strMatrixSymbol = "\\pmatrix";
-				break;
-			case "[]":
-				strMatrixSymbol = "\\bmatrix";
-				break;
-			case "{}":
-				strMatrixSymbol = "\\Bmatrix";
-				break;
-			case "||":
-				strMatrixSymbol = "\\vmatrix";
-				break;
-			case "||":
-				strMatrixSymbol = "\\vmatrix";
-				break;
-			case "‖‖":
-				strMatrixSymbol = "\\Vmatrix";
-				break;
-		}
+	let strMatrixSymbol;
+
+	if (isLaTeX)
+	{
+		// switch (strBrackets) {
+		// 	case undefined:
+		// 		strMatrixSymbol = "\\matrix";
+		// 		break;
+		// 	case "()":
+		// 		strMatrixSymbol = "\\pmatrix";
+		// 		break;
+		// 	case "[]":
+		// 		strMatrixSymbol = "\\bmatrix";
+		// 		break;
+		// 	case "{}":
+		// 		strMatrixSymbol = "\\Bmatrix";
+		// 		break;
+		// 	case "||":
+		// 		strMatrixSymbol = "\\vmatrix";
+		// 		break;
+		// 	case "||":
+		// 		strMatrixSymbol = "\\vmatrix";
+		// 		break;
+		// 	case "‖‖":
+		// 		strMatrixSymbol = "\\Vmatrix";
+		// 		break;
+		// }
 	}
-	else {
+	else
+	{
 		strMatrixSymbol = "■";
 	}
 
-	var strStartBracet = this.GetStartBracetForGetTextContent(isLaTeX);
-	var strCloseBracet = this.GetEndBracetForGetTextContent(isLaTeX);
+	let strStartBracket = this.GetStartBracetForGetTextContent(isLaTeX);
+	let strCloseBracket = this.GetEndBracetForGetTextContent(isLaTeX);
+	let arrContent 		= [strMatrixSymbol, strStartBracket];
 
-	var strTemp = strMatrixSymbol + strStartBracet;
-
-	for (var nRow = 0; nRow < this.nRow; nRow++) {
-		for (var nCol = 0; nCol < this.nCol; nCol++) {
-
-			strTemp += this.getContentElement(nRow, nCol).GetTextOfElement(isLaTeX);
-			if (nCol < this.nCol - 1) {
-				strTemp += '&'
-			}
-			else if (nRow < this.nRow - 1) {
-				strTemp += isLaTeX ? "\\\\" : '@'
-			}
+	for (let nRow = 0; nRow < this.nRow; nRow++)
+	{
+		for (let nCol = 0; nCol < this.nCol; nCol++)
+		{
+			arrContent.push(this.getContentElement(nRow, nCol).GetTextOfElement(isLaTeX, isOnlyText))
+			if (nCol < this.nCol - 1)
+				arrContent.push("&");
+			else if (nRow < this.nRow - 1)
+				arrContent.push(isLaTeX ? "\\\\" : '@');
 		}
 	}
-	strTemp += strCloseBracet;
 
-	return strTemp;
+	arrContent.push(strCloseBracket);
+	return arrContent;
 };
 
 /**
@@ -1573,21 +1574,30 @@ CEqArray.prototype.Get_DeletedItemsThroughInterface = function () {
 CEqArray.prototype.IsEqArray = function () {
 	return true;
 };
-CEqArray.prototype.GetTextOfElement = function (isLaTeX) {
+CEqArray.prototype.GetTextOfElement = function (isLaTeX, isOnlyText)
+{
 	let strStart = isLaTeX ? "\\substack" : "█";
-	var strStartBracet = this.GetStartBracetForGetTextContent(isLaTeX);
-	var strCloseBracet = this.GetEndBracetForGetTextContent(isLaTeX);
+	let strStartBracet = this.GetStartBracetForGetTextContent(isLaTeX);
+	let strCloseBracet = this.GetEndBracetForGetTextContent(isLaTeX);
 
-	var strTemp = strStart+ strStartBracet;
+	let arrContent = [strStart, strStartBracet];
 
-	for (var i = 0; i < this.Pr.row; i++) {
-		strTemp += this.getElement(i).GetTextOfElement(isLaTeX);
-		if (i !== this.Pr.row - 1 ) {
-			strTemp += isLaTeX ? "\\\\" : '@';
+	for (let i = 0; i < this.Pr.row; i++)
+	{
+		arrContent.push(this.getElement(i).GetTextOfElement(isLaTeX, isOnlyText));
+
+		if (i !== this.Pr.row - 1 )
+		{
+			arrContent.push(isLaTeX ? "\\\\" : '@');
 		}
 	}
-	strTemp += strCloseBracet;
-	return strTemp;
+
+	arrContent.push(strCloseBracet);
+
+	if (isOnlyText)
+		return AscMath.ConvertMathTextToText(arrContent);
+
+	return arrContent;
 };
 
 /**

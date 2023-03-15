@@ -4044,7 +4044,7 @@ CDelimiter.prototype.private_GetRightOperator = function(bHide)
 
     return NewEndCode;
 };
-CDelimiter.prototype.GetTextOfElement = function(isLaTeX)
+CDelimiter.prototype.GetTextOfElement = function(isLaTeX, isOnlyText)
 {
 	//	Patterns:
 	//	if start bracket doesn't show:	├ ...) => ...)
@@ -4088,6 +4088,9 @@ CDelimiter.prototype.GetTextOfElement = function(isLaTeX)
         strEndSymbol = strEndSymbol === "" ? "┤" : strEndSymbol;
         arrContent.push(strEndSymbol);
     }
+
+    if (isOnlyText)
+        return AscMath.ConvertMathTextToText(arrContent);
 
 	return arrContent;
 }

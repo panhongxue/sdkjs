@@ -1776,17 +1776,18 @@ ParaMath.prototype.GetSelectedText = function(bAll, bClearText, oPr)
 		if (oPr && false === oPr.Math)
 			return "";
 
-		var res             = "";
-		var selectedContent = this.GetSelectContent(bAll);
-		if (selectedContent && selectedContent.Content && selectedContent.Content.GetTextContent)
+		let strContent             = "";
+        debugger
+		let oSelectedContent = this.GetSelectContent(bAll);
+		if (oSelectedContent && oSelectedContent.Content && oSelectedContent.Content.GetTextContent)
 		{
-			var textContent = selectedContent.Content.GetTextContent(!bAll);
-			if (textContent && textContent.str)
+			let strCurrentContent = oSelectedContent.Content.GetTextContent(!bAll);
+			if (strCurrentContent && strCurrentContent.str)
 			{
-				res = textContent.str;
+				strContent = strCurrentContent.str;
 			}
 		}
-		return res;
+		return strContent;
 	}
 	return "";
 };

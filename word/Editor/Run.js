@@ -531,19 +531,20 @@ ParaRun.prototype.GetText = function(oText)
 	return oText.Text;
 };
 
-ParaRun.prototype.GetTextOfElement = function(isLaTeX)
+ParaRun.prototype.GetTextOfElement = function(oTextMath)
 {
     let str = "";
-	if (this.Content.length === 0)
-		return;
 
 	for (let i = 0; i < this.Content.length; i++)
 	{
 		if (this.Content[i])
-			str += this.Content[i].GetTextOfElement(isLaTeX);
+			str += this.Content[i].GetTextOfElement(oTextMath instanceof AscMath.MathTextAndStyles ? oTextMath.IsLaTeX() : oTextMath);
 	}
 
-	return new AscMath.MathText(str, this.CompiledPr.Copy());
+	if (!oTextMath)
+		return new AscMath.MathText(str, this.CompiledPr.Copy())
+
+	oTextMath.AddText(new AscMath.MathText(str, this.CompiledPr.Copy()))
 };
 
 ParaRun.prototype.MathAutocorrection_GetOperatorInfo = function ()

@@ -26660,8 +26660,8 @@ CDocument.prototype.GetMathInputType = function()
  */
 CDocument.prototype.ConvertMathView = function(isToLinear)
 {
-	var oInfo = this.GetSelectedElementsInfo();
-	var oMath = oInfo.GetMath();
+	let oInfo = this.GetSelectedElementsInfo();
+	let oMath = oInfo.GetMath();
 	if (!oMath)
 		return;
 	

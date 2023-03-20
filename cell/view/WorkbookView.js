@@ -3570,7 +3570,7 @@
     var previewOleObjectContext = AscCommonExcel.getContext(sizes.width, sizes.height, this);
     previewOleObjectContext.DocumentRenderer = AscCommonExcel.getGraphics(previewOleObjectContext);
     previewOleObjectContext.isPreviewOleObjectContext = true;
-		previewOleObjectContext.isNotDrawBackground = !this.Api.isFromSheetEditor;
+		previewOleObjectContext.isNotDrawBackground = !(this.Api.frameManager && this.Api.frameManager.isFromSheetEditor);
     ws.drawForPrint(previewOleObjectContext, page, 0, 1);
     return previewOleObjectContext;
   };

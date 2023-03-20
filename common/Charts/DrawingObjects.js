@@ -2000,8 +2000,8 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
             const localUrl = aImagesSync[i];
             if(api.DocInfo && api.DocInfo.get_OfflineApp()) {
                 const urlWithMedia = AscCommon.g_oDocumentUrls.mediaPrefix + localUrl;
-                if (api.imagesFromGeneralEditor && api.imagesFromGeneralEditor[urlWithMedia]) {
-                    AscCommon.g_oDocumentUrls.addImageUrl(localUrl, api.imagesFromGeneralEditor[urlWithMedia]);
+                if (api.frameManager && api.frameManager.getGeneralImageUrl(urlWithMedia)) {
+                    AscCommon.g_oDocumentUrls.addImageUrl(localUrl, api.frameManager.getGeneralImageUrl(urlWithMedia));
                 } else {
                     AscCommon.g_oDocumentUrls.addImageUrl(localUrl, api.documentUrl + urlWithMedia);
                 }
@@ -2035,8 +2035,8 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
         for (let localUrl in oBulletImages) {
             if(api.DocInfo && api.DocInfo.get_OfflineApp()) {
                 const urlWithMedia = AscCommon.g_oDocumentUrls.mediaPrefix + localUrl;
-                if (api.imagesFromGeneralEditor && api.imagesFromGeneralEditor[urlWithMedia]) {
-                    AscCommon.g_oDocumentUrls.addImageUrl(localUrl, api.imagesFromGeneralEditor[urlWithMedia]);
+                if (api.frameManager && api.frameManager.getGeneralImageUrl(urlWithMedia)) {
+                    AscCommon.g_oDocumentUrls.addImageUrl(localUrl, api.frameManager.getGeneralImageUrl(urlWithMedia));
                 } else {
                     AscCommon.g_oDocumentUrls.addImageUrl(localUrl, api.documentUrl + urlWithMedia);
                 }

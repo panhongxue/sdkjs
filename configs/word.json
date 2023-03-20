@@ -110,6 +110,8 @@
 			"common/Drawings/DrawingObjectsHandlers.js",
 			"common/Drawings/TextDrawer.js",
 
+			"common/frameManager.js",
+
 			"common/Drawings/Externals.js",
 			"common/GlobalLoaders.js",
 			"common/Controls.js",

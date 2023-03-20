@@ -4419,83 +4419,19 @@ var editor;
    * @param {{}} [oOleObjectInfo] info from oleObject
    */
   spreadsheet_api.prototype.asc_addTableOleObjectInOleEditor = function(oOleObjectInfo) {
-      this.sync_StartAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Open);
-      // на случай, если изображение поставили на загрузку, закрыли редактор, и потом опять открыли
-      this.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.LoadImage);
-      this.sendFromFrameToGeneralEditor({
-          "type": AscCommon.c_oAscFrameDataType.OpenFrame
-      });
-      oOleObjectInfo = oOleObjectInfo || {"binary": AscCommon.getEmpty()};
-      const sStream = oOleObjectInfo["binary"];
-      const oThis = this;
-      const oFile = new AscCommon.OpenFileResult();
-      oFile.bSerFormat = AscCommon.checkStreamSignature(sStream, AscCommon.c_oSerFormat.Signature);
-      oFile.data = sStream;
-      this.isEditOleMode = true;
-      this.isChartEditor = false;
-      this.isFromSheetEditor = oOleObjectInfo["isFromSheetEditor"];
-      const oDocumentImageUrls = oOleObjectInfo["documentImageUrls"];
-      this.asc_CloseFile();
-      this.fAfterLoad = function () {
-          const nImageWidth = oOleObjectInfo["imageWidth"];
-          const nImageHeight = oOleObjectInfo["imageHeight"];
-          if (nImageWidth && nImageHeight) {
-              oThis.saveImageCoefficients = oThis.getScaleCoefficientsForOleTableImage(nImageWidth, nImageHeight);
-          }
-          oThis.wb.scrollToOleSize();
-          // добавляем первый поинт после загрузки, чтобы в локальную историю добавился либо стандартный oleSize, либо заданный пользователем
-          const oleSize = oThis.wb.getOleSize();
-          oleSize.addPointToLocalHistory();
-
-          oThis.wb.onOleEditorReady();
-          oThis.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Open);
-      }
-
-      this.imagesFromGeneralEditor = oDocumentImageUrls || {};
-      this.openDocument(oFile);
-    };
+	  this.isEditOleMode = true;
+	  this.isChartEditor = false;
+		this.frameManager = new AscCommon.COleCellFrameManager(this);
+	  this.frameManager.obtain(oOleObjectInfo || {"binary": AscCommon.getEmpty()});
+ 	};
   /**
    * get binary info about changed ole object
    * @returns {{}} binary info about oleObject
    */
   spreadsheet_api.prototype.asc_getBinaryInfoOleObject = function () {
-    const sDataUrl = this.wb.getImageFromTableOleObject();
-    const oBinaryFileWriter = new AscCommonExcel.BinaryFileWriter(this.wbModel);
-    const arrBinaryData = oBinaryFileWriter.Write().split(';');
-    const sCleanBinaryData = arrBinaryData[arrBinaryData.length - 1];
-    const oBinaryInfo = {};
-    const arrRasterImageIds = [];
-    const arrWorksheetLength = this.wbModel.aWorksheets.length;
-    for (let i = 0; i < arrWorksheetLength; i += 1) {
-      const oWorksheet = this.wbModel.aWorksheets[i];
-      const arrDrawings = oWorksheet.Drawings;
-      if (arrDrawings) {
-        for (let j = 0; j < arrDrawings.length; j += 1) {
-          const oDrawing = arrDrawings[j];
-          oDrawing.graphicObject.getAllRasterImages(arrRasterImageIds);
-        }
-      }
-    }
-    const urlsForAddToHistory = [];
-    for (let i = 0; i < arrRasterImageIds.length; i += 1) {
-      const url = AscCommon.g_oDocumentUrls.mediaPrefix + arrRasterImageIds[i];
-      if (!(this.imagesFromGeneralEditor && this.imagesFromGeneralEditor[url] && this.imagesFromGeneralEditor[url] === AscCommon.g_oDocumentUrls.getUrls()[url])) {
-        urlsForAddToHistory.push(arrRasterImageIds[i]);
-      }
-    }
-
-
-    oBinaryInfo["binary"] = sCleanBinaryData;
-    oBinaryInfo["base64Image"] = sDataUrl;
-    oBinaryInfo["isFromSheetEditor"] = this.isFromSheetEditor;
-    oBinaryInfo["imagesForAddToHistory"] = urlsForAddToHistory;
-    if (this.saveImageCoefficients) {
-      oBinaryInfo["widthCoefficient"] = this.saveImageCoefficients.widthCoefficient;
-      oBinaryInfo["heightCoefficient"] = this.saveImageCoefficients.heightCoefficient;
-      delete this.saveImageCoefficients;
-    }
-
-    return oBinaryInfo;
+		const oBinaryInfo = this.frameManager.getBinary();
+		delete this.frameManager;
+		return oBinaryInfo;
   }
 
 	spreadsheet_api.prototype.asc_toggleChangeVisibleAreaOleEditor = function (bForceValue) {

@@ -1293,6 +1293,7 @@ function(window, undefined) {
 		this.clrMapOvr = null;
 		this.date1904 = false;
 		this.externalData = null;
+		this.XLSX = null;
 		this.lang = null;
 		this.pivotSource = null;
 		this.printSettings = null;
@@ -3184,6 +3185,9 @@ function(window, undefined) {
 		if (this.externalData) {
 			copy.setExternalData(this.externalData.createDuplicate());
 		}
+		if (this.XLSX) {
+			copy.setXLSX(this.XLSX.slice());
+		}
 		copy.setLang(this.lang);
 		if (this.pivotSource) {
 			copy.setPivotSource(this.pivotSource.createDuplicate());
@@ -3638,6 +3642,10 @@ function(window, undefined) {
 		History.Add(new CChangesDrawingsObject(this, AscDFH.historyitem_ChartSpace_SetExternalData, this.externalData, externalData));
 		this.externalData = externalData;
 	};
+	CChartSpace.prototype.setXLSX = function (arrData)
+	{
+		this.XLSX = arrData;
+	}
 	CChartSpace.prototype.setLang = function (lang) {
 		History.Add(new CChangesDrawingsString(this, AscDFH.historyitem_ChartSpace_SetLang, this.lang, lang));
 		this.lang = lang;

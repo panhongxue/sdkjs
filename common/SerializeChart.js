@@ -1082,6 +1082,11 @@ BinaryChartWriter.prototype.WriteCT_extLst = function (oVal) {
 };
 BinaryChartWriter.prototype.WriteCT_ChartSpace = function (oVal) {
     var oThis = this;
+		if (null !== oVal.XLSX) {
+			this.bs.WriteItem(c_oserct_chartspaceXLSX, function () {
+				oThis.memory.WriteBuffer(oVal.XLSX, 0, oVal.XLSX.length);
+			});
+		}
     if (null != oVal.date1904) {
         this.bs.WriteItem(c_oserct_chartspaceDATE1904, function () {
             oThis.WriteCT_Boolean(oVal.date1904);
@@ -5890,7 +5895,9 @@ BinaryChartReader.prototype.ReadCT_ChartSpace = function (type, length, val, cur
             val.setThemeOverride(theme);
     }
     else if(c_oserct_chartspaceXLSX === type) {
-        //todo
+			const nCur = this.bcr.stream.cur;
+			const arrData = this.bcr.stream.data.slice(nCur, nCur + length);
+			val.setXLSX(arrData);
         res = c_oSerConstants.ReadUnknown;
     }
     else if(c_oserct_chartspaceSTYLES === type) {

@@ -2248,7 +2248,7 @@ function sendImgUrls(api, images, callback, bNotShowError, token) {
     }
     callback(data);
   };
-  if (api.isEditOleMode) {
+  if (api.frameManager) {
     const sendInformation = {
       "type": AscCommon.c_oAscFrameDataType.SendImageUrls,
       "information": {

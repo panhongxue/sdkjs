@@ -2083,7 +2083,7 @@
 		this.lastFindOptions = null;
 		this.lastFindCells = {};
 		this.oleSize = null;
-		if (oApi && oApi.isEditOleMode) {
+		if (oApi && oApi.frameManager && oApi.frameManager.isOleEditor()) {
 			this.oleSize = new AscCommonExcel.OleSizeSelectionRange(null, new Asc.Range(0, 0, 6, 9));
 		}
 

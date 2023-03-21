@@ -1750,7 +1750,7 @@ var editor;
 		//по идее нужно делать его полное зануление, а при открытии создавать заново. но есть функции, которые
 		//добавляются в интерфейсе и в случае с историей версий заново не добавляются
 		this.wb.removeHandlersList();
-		if (this.isEditOleMode) {
+		if (this.frameManager) {
 			this.wb.removeEventListeners();
 			var cellEditor = this.wb.cellEditor;
 			if (this.wb.cellEditor) {
@@ -3159,7 +3159,7 @@ var editor;
 
 		//история версий - возможно стоит грамотно чистить wbview, но не пересоздавать
 		var previousVersionZoom;
-		if ((this.VersionHistory || this.isEditOleMode) && this.controller) {
+		if ((this.VersionHistory || this.frameManager) && this.controller) {
 			var elem = document.getElementById("ws-v-scrollbar");
 			if (elem) {
 				elem.parentNode.removeChild(elem);
@@ -3226,7 +3226,7 @@ var editor;
 			this.sendEvent('asc_onError', c_oAscError.ID.OpenWarning, c_oAscError.Level.NoCritical);
 		}
 
-		if (this.VersionHistory || this.isEditOleMode) {
+		if (this.VersionHistory || this.frameManager) {
 			if (this.VersionHistory && this.VersionHistory.changes) {
 				this.VersionHistory.applyChanges(this);
 			}

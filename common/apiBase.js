@@ -429,7 +429,7 @@
 		return null;
 	};
 	baseEditorsApi.prototype.isFrameEditor = function () {
-		return !!(this.isChartEditor ||  this.isEditOleMode); // TODO: solve the confusion
+		return !!(this.frameManager); // TODO: solve the confusion
 	};
 	baseEditorsApi.prototype.asc_setCoreProps                = function(oProps)
 	{
@@ -2243,7 +2243,7 @@
 	};
 	baseEditorsApi.prototype.asc_addImage                        = function(obj)
 	{
-		if (this.isEditOleMode)
+		if (this.frameManager)
 		{
 			this.oSaveObjectForAddImage = obj;
 			this.sendFromFrameToGeneralEditor({

@@ -51,11 +51,14 @@
 	{
 		const arrRasterImageIds = [];
 		const arrWorksheetLength = this.api.wbModel.aWorksheets.length;
-		for (let i = 0; i < arrWorksheetLength; i += 1) {
+		for (let i = 0; i < arrWorksheetLength; i += 1)
+		{
 			const oWorksheet = this.api.wbModel.aWorksheets[i];
 			const arrDrawings = oWorksheet.Drawings;
-			if (arrDrawings) {
-				for (let j = 0; j < arrDrawings.length; j += 1) {
+			if (arrDrawings)
+			{
+				for (let j = 0; j < arrDrawings.length; j += 1)
+				{
 					const oDrawing = arrDrawings[j];
 					oDrawing.graphicObject.getAllRasterImages(arrRasterImageIds);
 				}
@@ -67,9 +70,11 @@
 	{
 		const arrRasterImageIds = this.getAllImageIds();
 		const urlsForAddToHistory = [];
-		for (let i = 0; i < arrRasterImageIds.length; i += 1) {
+		for (let i = 0; i < arrRasterImageIds.length; i += 1)
+		{
 			const url = AscCommon.g_oDocumentUrls.mediaPrefix + arrRasterImageIds[i];
-			if (!(this.generalDocumentUrls[url] && this.generalDocumentUrls[url] === AscCommon.g_oDocumentUrls.getUrls()[url])) {
+			if (!(this.generalDocumentUrls[url] && this.generalDocumentUrls[url] === AscCommon.g_oDocumentUrls.getUrls()[url]))
+			{
 				urlsForAddToHistory.push(arrRasterImageIds[i]);
 			}
 		}
@@ -111,8 +116,6 @@
 	};
 
 
-
-
 	function COleCellFrameManager(oApi)
 	{
 		CCellFrameManager.call(this, oApi);
@@ -120,6 +123,7 @@
 		this.imageHeightCoefficient = null;
 		this.isFromSheetEditor = false;
 	}
+
 	AscFormat.InitClassWithoutType(COleCellFrameManager, CCellFrameManager);
 
 	COleCellFrameManager.prototype.getBase64Image = function ()
@@ -137,11 +141,11 @@
 	COleCellFrameManager.prototype.getBinary = function ()
 	{
 		return {
-			'binary': this.getWorkbookBinary(),
-			'base64Image': this.getBase64Image(),
+			'binary'               : this.getWorkbookBinary(),
+			'base64Image'          : this.getBase64Image(),
 			'imagesForAddToHistory': this.getImagesForHistory(),
-			'widthCoefficient': this.getImageWidthCoefficient(),
-			'heightCoefficient': this.getImageHeightCoefficient()
+			'widthCoefficient'     : this.getImageWidthCoefficient(),
+			'heightCoefficient'    : this.getImageHeightCoefficient()
 		};
 	};
 	COleCellFrameManager.prototype.calculateImageSaveCoefficients = function (nImageHeight, nImageWidth)
@@ -185,7 +189,8 @@
 			"type": AscCommon.c_oAscFrameDataType.OpenFrame
 		});
 
-		oApi.fAfterLoad = function () {
+		oApi.fAfterLoad = function ()
+		{
 			oThis.api.wb.scrollToOleSize();
 			// добавляем первый поинт после загрузки, чтобы в локальную историю добавился либо стандартный oleSize, либо заданный пользователем
 			const oleSize = oThis.api.wb.getOleSize();
@@ -201,12 +206,10 @@
 		CCellFrameManager.prototype.openWorkbookData.call(this, sStream);
 	}
 
-	CDiagramCellFrameManager.prototype.isOleEditor = function ()
+	COleCellFrameManager.prototype.isOleEditor = function ()
 	{
-		return !this.isGeneralEditor;
+		return true;
 	};
-
-
 
 
 	function CDiagramCellFrameManager(oApi)
@@ -217,12 +220,224 @@
 
 	CDiagramCellFrameManager.prototype.isDiagramEditor = function ()
 	{
-		return !this.isGeneralEditor;
+		return true;
 	};
-	CDiagramCellFrameManager.prototype.obtain = function (oInfo)
+	CDiagramCellFrameManager.prototype.repairDiagramXLSX = function ()
 	{
+		const oThis = this;
+		AscFormat.ExecuteNoHistory(function ()
+		{
+			AscCommonExcel.executeInR1C1Mode(false,
+				function ()
+				{
+					oThis.fillWorkbookFromDiagramCache();
+				});
+		}, this, []);
+	}
+	CDiagramCellFrameManager.prototype.fillWorkbookFromDiagramCache = function ()
+	{
+		let max_r = 0, max_c = 0;
+		const parserHelp = AscCommon.parserHelp;
+		const series = this.mainDiagram.getAllSeries();
+		let ser;
+		const model = this.api.wb.getWorksheet().model;
+		const oThis = this;
+		function fFillCell(oCell, sNumFormat, value)
+		{
+			var oCellValue = new AscCommonExcel.CCellValue();
+			if (AscFormat.isRealNumber(value))
+			{
+				oCellValue.number = value;
+				oCellValue.type = AscCommon.CellValueType.Number;
+			} else
+			{
+				oCellValue.text = value;
+				oCellValue.type = AscCommon.CellValueType.String;
+			}
+			oCell.setNumFormat(sNumFormat);
+			oCell.setValueData(new AscCommonExcel.UndoRedoData_CellValueData(null, oCellValue));
+		}
 
-		CCellFrameManager.prototype.obtain.call(this, oInfo);
+		function fillTableFromRef(ref)
+		{
+			var cache = ref.numCache ? ref.numCache : (ref.strCache ? ref.strCache : null);
+			var lit_format_code;
+			if (cache)
+			{
+				lit_format_code = (typeof cache.formatCode === "string" && cache.formatCode.length > 0) ? cache.formatCode : "General";
+
+				var sFormula = ref.f + "";
+				if (sFormula[0] === '(')
+					sFormula = sFormula.slice(1);
+				if (sFormula[sFormula.length - 1] === ')')
+					sFormula = sFormula.slice(0, -1);
+				var f1 = sFormula;
+
+				var arr_f = f1.split(",");
+				var pt_index = 0, i, j, pt, nPtCount, k;
+				for (i = 0; i < arr_f.length; ++i)
+				{
+					var parsed_ref = parserHelp.parse3DRef(arr_f[i]);
+					if (parsed_ref)
+					{
+						var source_worksheet = oThis.api.wbModel.getWorksheetByName(parsed_ref.sheet);
+						if (source_worksheet === model)
+						{
+							var range = source_worksheet.getRange2(parsed_ref.range);
+							if (range)
+							{
+								range = range.bbox;
+
+								if (range.r1 > max_r)
+									max_r = range.r1;
+								if (range.r2 > max_r)
+									max_r = range.r2;
+
+								if (range.c1 > max_c)
+									max_c = range.c1;
+								if (range.c2 > max_c)
+									max_c = range.c2;
+
+								if (i === arr_f.length - 1)
+								{
+									nPtCount = cache.getPtCount();
+									if ((nPtCount - pt_index) <= (range.r2 - range.r1 + 1))
+									{
+										for (k = range.c1; k <= range.c2; ++k)
+										{
+											for (j = range.r1; j <= range.r2; ++j)
+											{
+												source_worksheet._getCell(j, k, function (cell)
+												{
+													pt = cache.getPtByIndex(pt_index + j - range.r1);
+													if (pt)
+													{
+														fFillCell(cell, typeof pt.formatCode === "string" && pt.formatCode.length > 0 ? pt.formatCode : lit_format_code, pt.val);
+													}
+												});
+											}
+										}
+										pt_index += (range.r2 - range.r1 + 1);
+									} else if ((nPtCount - pt_index) <= (range.c2 - range.c1 + 1))
+									{
+										for (k = range.r1; k <= range.r2; ++k)
+										{
+											for (j = range.c1; j <= range.c2; ++j)
+											{
+												source_worksheet._getCell(k, j, function (cell)
+												{
+													pt = cache.getPtByIndex(pt_index + j - range.c1);
+													if (pt)
+													{
+														fFillCell(cell, typeof pt.formatCode === "string" && pt.formatCode.length > 0 ? pt.formatCode : lit_format_code, pt.val);
+													}
+												});
+											}
+										}
+										pt_index += (range.c2 - range.c1 + 1);
+									}
+								} else
+								{
+									if (range.r1 === range.r2)
+									{
+										for (j = range.c1; j <= range.c2; ++j)
+										{
+											source_worksheet._getCell(range.r1, j, function (cell)
+											{
+												pt = cache.getPtByIndex(pt_index);
+												if (pt)
+												{
+													fFillCell(cell, typeof pt.formatCode === "string" && pt.formatCode.length > 0 ? pt.formatCode : lit_format_code, pt.val);
+												}
+												++pt_index;
+											});
+										}
+									} else
+									{
+										for (j = range.r1; j <= range.r2; ++j)
+										{
+											source_worksheet._getCell(j, range.c1, function (cell)
+											{
+												pt = cache.getPtByIndex(pt_index);
+												if (pt)
+												{
+													fFillCell(cell, typeof pt.formatCode === "string" && pt.formatCode.length > 0 ? pt.formatCode : lit_format_code, pt.val);
+												}
+												++pt_index;
+											});
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		var first_num_ref;
+		if (series[0])
+		{
+			if (series[0].val)
+				first_num_ref = series[0].val.numRef;
+			else if (series[0].yVal)
+				first_num_ref = series[0].yVal.numRef;
+		}
+		if (first_num_ref)
+		{
+			var resultRef = parserHelp.parse3DRef(first_num_ref.f);
+			if (resultRef)
+			{
+				model.workbook.aWorksheets[0].sName = resultRef.sheet;
+				var oCat, oVal;
+				for (var i = 0; i < series.length; ++i)
+				{
+					ser = series[i];
+					oVal = ser.val || ser.yVal;
+					if (oVal && oVal.numRef)
+					{
+						fillTableFromRef(oVal.numRef);
+					}
+					oCat = ser.cat || ser.xVal;
+					if (oCat)
+					{
+						if (oCat.numRef)
+						{
+							fillTableFromRef(oCat.numRef);
+						}
+						if (oCat.strRef)
+						{
+							fillTableFromRef(oCat.strRef);
+						}
+					}
+					if (ser.tx && ser.tx.strRef)
+					{
+						fillTableFromRef(ser.tx.strRef);
+					}
+				}
+			}
+		}
+
+		worksheet._updateRange(new Asc.Range(0, 0, max_c, max_r));
+		worksheet.draw();
+	}
+	CDiagramCellFrameManager.prototype.preObtain = function (oInfo)
+	{
+		const asc_chart_binary = new Asc.asc_CChartBinary();
+		asc_chart_binary.asc_setBinary(oInfo["binary"]);
+		const oModel = this.api.wb.getWorksheet().model;
+		const oNewChartSpace = asc_chart_binary.getChartSpace(oModel);
+		this.mainDiagram = oNewChartSpace;
+		if (oNewChartSpace.XLSX)
+		{
+			const nDataSize = oNewChartSpace.XLSX.length;
+			const sData = AscCommon.Base64.encode(oNewChartSpace.XLSX);
+
+			this.obtain({"binary": "XLSY;v2;" + nDataSize  + ";" + sData, "documentImageUrls": oInfo["documentImageUrls"]});
+		} else
+		{
+			// todo repair
+		}
 	}
 
 	AscCommon.CDiagramCellFrameManager = CDiagramCellFrameManager;

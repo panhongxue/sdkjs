@@ -4717,6 +4717,14 @@ var editor;
     var ws = this.wb.getWorksheet();
     return ws.objectRender.getWordChartObject();
   };
+	spreadsheet_api.prototype.asc_getBinaryFromDiagramFrame = function (bIsSave)
+	{
+		if (this.frameManager && this.frameManager.isDiagramEditor())
+		{
+			return this.frameManager.getBinary(bIsSave);
+		}
+		delete this.frameManager;
+	}
 
   spreadsheet_api.prototype.asc_cleanWorksheet = function() {
     var ws = this.wb.getWorksheet();	// Для удаления данных листа и диаграмм

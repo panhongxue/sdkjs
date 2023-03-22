@@ -5502,6 +5502,15 @@ CPresentation.prototype.CheckNotesShow = function () {
 	}
 };
 
+CPresentation.prototype.EditChart2 = function (binary) {
+	var _this = this;
+	_this.Slides[_this.CurPage].graphicObjects.editChart(binary);
+};
+CPresentation.prototype.updateChart = function (binary)
+{
+	this.Slides[this.CurPage].graphicObjects.updateChart(binary);
+}
+
 CPresentation.prototype.EditChart = function (binary) {
 	var _this = this;
 	_this.Slides[_this.CurPage] && _this.Slides[_this.CurPage].graphicObjects.checkSelectedObjectsAndCallback(function () {

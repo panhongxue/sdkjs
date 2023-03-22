@@ -2249,15 +2249,7 @@ function sendImgUrls(api, images, callback, bNotShowError, token) {
     callback(data);
   };
   if (api.frameManager) {
-    const sendInformation = {
-      "type": AscCommon.c_oAscFrameDataType.SendImageUrls,
-      "information": {
-          "images": images,
-          "bNotShowError": bNotShowError,
-          "token": token
-        }
-    }
-    api.sendFromFrameToGeneralEditor(sendInformation);
+	  api.frameManager.sendLoadImages(images, token, bNotShowError);
     return;
     }
   AscCommon.sendCommand(api, null, rData);

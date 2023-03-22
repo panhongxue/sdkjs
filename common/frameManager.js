@@ -114,7 +114,25 @@
 	{
 		return false;
 	};
+	CCellFrameManager.prototype.updateGeneralDiagramCache = function (aRanges)
+	{
 
+	}
+
+	CCellFrameManager.prototype.sendLoadImages = function (arrImages, token, bNotShowError)
+	{
+		this.sendFromFrameToGeneralEditor(new CFrameImageData(arrImages, token, bNotShowError));
+	}
+
+	CCellFrameManager.prototype.sendFromFrameToGeneralEditor = function (oSendObject)
+	{
+		this.api.sendFromFrameToGeneralEditor(oSendObject);
+	};
+
+	CCellFrameManager.prototype.sendFromGeneralToFrameEditor = function (oSendObject)
+	{
+		this.api.sendFromGeneralToFrameEditor(oSendObject);
+	};
 
 	function COleCellFrameManager(oApi)
 	{
@@ -163,14 +181,6 @@
 		this.calculateImageSaveCoefficients(oInfo["imageHeight"], oInfo["imageWidth"]);
 		CCellFrameManager.prototype.obtain.call(this, oInfo);
 	}
-	COleCellFrameManager.prototype.sendFromFrameToGeneralEditor = function (oSendObject)
-	{
-		this.api.sendFromFrameToGeneralEditor(oSendObject);
-	};
-	COleCellFrameManager.prototype.sendFromGeneralToFrameEditor = function (oSendObject)
-	{
-		this.api.sendFromGeneralToFrameEditor(oSendObject);
-	};
 	COleCellFrameManager.prototype.isFromSheetEditor = function ()
 	{
 		return this.isFromSheetEditor;
@@ -433,11 +443,63 @@
 			const nDataSize = oNewChartSpace.XLSX.length;
 			const sData = AscCommon.Base64.encode(oNewChartSpace.XLSX);
 
-			this.obtain({"binary": "XLSY;v2;" + nDataSize  + ";" + sData, "documentImageUrls": oInfo["documentImageUrls"]});
+			this.obtain({"binary": "XLSY;v2;" + nDataSize + ";" + sData, "documentImageUrls": oInfo["documentImageUrls"]});
 		} else
 		{
 			// todo repair
 		}
+	}
+	CDiagramCellFrameManager.prototype.getBinary = function (bIsSave)
+	{
+		const oRet = {
+			"saveHistoryPoint": !!bIsSave
+		};
+		if (bIsSave)
+		{
+			const oDiagramBinary = new Asc.asc_CChartBinary(this.mainDiagram);
+			oRet["workbookBinary"] = this.getWorkbookBinary();
+			oRet["imagesForAddToHistory"] = this.getImagesForHistory();
+			Object.assign(oRet, oDiagramBinary);
+		}
+		return oRet;
+	}
+
+	CDiagramCellFrameManager.prototype.updateGeneralDiagramCache = function (aRanges)
+	{
+		const aRefsToChange = [];
+		this.mainDiagram.collectIntersectionRefs(aRanges, aRefsToChange);
+		for (let i = 0; i < aRefsToChange.length; i += 1)
+		{
+			aRefsToChange[i].updateCacheAndCat();
+		}
+		this.sendUpdateDiagram();
+	};
+	CDiagramCellFrameManager.prototype.sendUpdateDiagram = function ()
+	{
+		this.sendFromFrameToGeneralEditor(new CFrameUpdateDiagramData(this.mainDiagram));
+	};
+
+	function CFrameUpdateDiagramData(oDiagram)
+	{
+		const oData = new Asc.asc_CChartBinary(oDiagram);
+		CFrameData.call(this, AscCommon.c_oAscFrameDataType.UpdateDiagram, oData);
+	}
+
+
+	function CFrameData(type, information)
+	{
+		this["information"] = information;
+		this["type"] = type;
+	}
+
+	function CFrameImageData(arrImages, token, bNotShowError)
+	{
+		const oData = {
+			"images"       : arrImages,
+			"token"        : token,
+			"bNotShowError": bNotShowError
+		}
+		CFrameData.call(this, AscCommon.c_oAscFrameDataType.SendImageUrls, oData);
 	}
 
 	AscCommon.CDiagramCellFrameManager = CDiagramCellFrameManager;

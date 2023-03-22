@@ -7724,6 +7724,19 @@ background-repeat: no-repeat;\
 
 	asc_docs_api.prototype.asc_editChartDrawingObject = function(chartBinary)
 	{
+		if (chartBinary["saveHistoryPoint"])
+		{
+			this.private_GetLogicDocument().FinalizeAction();
+			this.WordControl.m_oLogicDocument.updateChart(chartBinary);
+
+		}
+		else
+		{
+			this.private_GetLogicDocument().FinalizeAction();
+			this.Undo();
+			History.ClearRedo();
+			this.WordControl.m_oLogicDocument.Document_UpdateInterfaceState();
+		}
 		/**/
 
 		// Находим выделенную диаграмму и накатываем бинарник

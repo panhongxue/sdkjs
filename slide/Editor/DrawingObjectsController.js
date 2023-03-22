@@ -306,6 +306,26 @@ DrawingObjectsController.prototype.getColorMapOverride  =  function()
 {
     return this.drawingObjects.Get_ColorMap();
 };
+DrawingObjectsController.prototype.updateChart = function (binary)
+{
+	const by_types = AscFormat.getObjectsByTypesFromArr(this.selectedObjects, true);
+	const aSelectedCharts = [];
+	for(let i = 0; i < by_types.charts.length; ++i)
+	{
+		if(by_types.charts[i].selected)
+		{
+			aSelectedCharts.push(by_types.charts[i]);
+		}
+	}
+	if(aSelectedCharts.length === 1)
+	{
+		const oChart = aSelectedCharts[0];
+		if (!oChart.isExternal())
+		{
+			oChart.setXLSX(AscCommon.Base64.decode(binary["workbookBinary"]));
+		}
+	}
+};
 DrawingObjectsController.prototype.editChart = function(binary)
 {
     var chart_space = this.getChartSpace2(binary, null);

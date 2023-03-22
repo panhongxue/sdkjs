@@ -772,6 +772,16 @@
 			case c_oAscFrameDataType.StartUploadImageAction:
 			{
 				this.sync_StartAction(c_oAscAsyncActionType.BlockInteraction, c_oAscAsyncAction.UploadImage);
+				break;
+			}
+			case c_oAscFrameDataType.UpdateDiagram:
+			{
+				const oLogicDocument = this.private_GetLogicDocument();
+				if (oLogicDocument)
+				{
+					oLogicDocument.EditChart2(oInformation);
+				}
+				break;
 			}
 			default:
 			{

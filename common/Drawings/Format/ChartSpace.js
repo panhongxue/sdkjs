@@ -370,6 +370,34 @@ function(window, undefined) {
 	var drawingsChangesMap = window['AscDFH'].drawingsChangesMap;
 
 
+	function CChangesStartChartSpaceBinary(Class, Old, New, Color) {
+		AscDFH. CChangesStartBinaryData.call(this, Class, Old, New, AscDFH.historyitem_ChartSpace_SetStartBinaryData, Color);
+	}
+	CChangesStartChartSpaceBinary.prototype = Object.create(AscDFH.CChangesStartBinaryData.prototype);
+	CChangesStartChartSpaceBinary.prototype.constructor = CChangesStartChartSpaceBinary;
+	CChangesStartChartSpaceBinary.prototype.setBinaryDataToClass = function (oPr)
+	{
+		this.Class.XLSX = oPr;
+	}
+
+	function CChangesPartChartSpaceBinary(Class, Old, New, Color) {
+		AscDFH.CChangesPartBinaryData.call(this, Class, Old, New, AscDFH.historyitem_ChartSpace_SetPartBinaryData, Color);
+	}
+	CChangesPartChartSpaceBinary.prototype = Object.create(AscDFH.CChangesPartBinaryData.prototype);
+	CChangesPartChartSpaceBinary.prototype.constructor = CChangesPartChartSpaceBinary;
+
+	function CChangesEndChartSpaceBinary(Class, Old, New, Color) {
+		AscDFH.CChangesEndBinaryData.call(this, Class, Old, New, AscDFH.historyitem_ChartSpace_SetEndBinaryData, Color);
+	}
+	CChangesEndChartSpaceBinary.prototype = Object.create(AscDFH.CChangesEndBinaryData.prototype);
+	CChangesEndChartSpaceBinary.prototype.constructor = CChangesEndChartSpaceBinary;
+	CChangesEndChartSpaceBinary.prototype.setBinaryDataToClass = function (oPr)
+	{
+		this.Class.XLSX = oPr;
+	}
+	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetStartBinaryData] = CChangesStartChartSpaceBinary;
+	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetPartBinaryData] = CChangesPartChartSpaceBinary;
+	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetEndBinaryData] = CChangesEndChartSpaceBinary;
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetNvGrFrProps] = CChangesDrawingsObject;
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetThemeOverride] = CChangesDrawingsObject;
 	AscDFH.changesFactory[AscDFH.historyitem_ShapeSetBDeleted] = CChangesDrawingsBool;
@@ -1293,7 +1321,7 @@ function(window, undefined) {
 		this.clrMapOvr = null;
 		this.date1904 = false;
 		this.externalData = null;
-		this.XLSX = null;
+		this.XLSX = new Uint8Array(0);
 		this.lang = null;
 		this.pivotSource = null;
 		this.printSettings = null;
@@ -1339,6 +1367,11 @@ function(window, undefined) {
 
 	AscFormat.InitClass(CChartSpace, AscFormat.CGraphicObjectBase, AscDFH.historyitem_type_ChartSpace);
 
+	CChartSpace.prototype.isExternal = function()
+	{
+		// todo: change
+		return false;
+	}
 	CChartSpace.prototype.changeSize = CShape.prototype.changeSize;
 	CChartSpace.prototype.getDataRefs = function () {
 		if (!this.dataRefs) {
@@ -3644,6 +3677,7 @@ function(window, undefined) {
 	};
 	CChartSpace.prototype.setXLSX = function (arrData)
 	{
+		AscDFH.addBinaryDataToHistory(this, this.XLSX, arrData, CChangesStartChartSpaceBinary, CChangesPartChartSpaceBinary, CChangesEndChartSpaceBinary);
 		this.XLSX = arrData;
 	}
 	CChartSpace.prototype.setLang = function (lang) {

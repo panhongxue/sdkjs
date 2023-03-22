@@ -3732,6 +3732,9 @@
             }
             this.onShowDrawingObjects();
         }
+				if (this.Api.frameManager) {
+					this.Api.frameManager.updateGeneralDiagramCache(aRanges);
+				}
     };
     WorkbookView.prototype.handleChartsOnChangeSheetName = function (oWorksheet, sOldName, sNewName) {
         //change sheet name in chart references

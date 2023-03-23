@@ -1219,7 +1219,7 @@
 
 	asc_docs_api.prototype.isDocumentModified = function()
 	{
-		if (!this.canSave)
+		if (!this.canSave || this.isOpenedChartFrame)
 		{
 			// Пока идет сохранение, мы не закрываем документ
 			return true;
@@ -7695,15 +7695,23 @@ background-repeat: no-repeat;\
 	};
 
 	// Вставка диаграмм
-	asc_docs_api.prototype.asc_getChartObject = function(type)
+	asc_docs_api.prototype.asc_getChartObject = function (type, placeholder)
 	{
+		const oLogicDocument = this.private_GetLogicDocument();
+		if (!oLogicDocument)
+			return;
+
 		this.isChartEditor = true;		// Для совместного редактирования
-        if (!AscFormat.isRealNumber(type))
-        {
-            this.asc_onOpenChartFrame();
-            this.WordControl.m_oLogicDocument.Document_Is_SelectionLocked(AscCommon.changestype_Drawing_Props);
-        }
-		return this.WordControl.m_oLogicDocument.GetChartObject(type);
+		if (!AscFormat.isRealNumber(type))
+		{
+			this.asc_onOpenChartFrame();
+			oLogicDocument.Document_Is_SelectionLocked(AscCommon.changestype_Drawing_Props);
+		}
+		const oChartSpace = this.WordControl.m_oLogicDocument.GetChartObject(type);
+		const oChartBinary = new Asc.asc_CChartBinary(oChartSpace);
+		this.asc_addChartDrawingObject(oChartBinary, placeholder);
+
+		oLogicDocument.Slides[oLogicDocument.CurPage].showChartSettings();
 	};
 
 	asc_docs_api.prototype.asc_addChartDrawingObject = function(chartBinary, Placeholder)
@@ -7724,21 +7732,6 @@ background-repeat: no-repeat;\
 
 	asc_docs_api.prototype.asc_editChartDrawingObject = function(chartBinary)
 	{
-		if (chartBinary["saveHistoryPoint"])
-		{
-			this.private_GetLogicDocument().FinalizeAction();
-			this.WordControl.m_oLogicDocument.updateChart(chartBinary);
-
-		}
-		else
-		{
-			this.private_GetLogicDocument().FinalizeAction();
-			this.Undo();
-			History.ClearRedo();
-			this.WordControl.m_oLogicDocument.Document_UpdateInterfaceState();
-		}
-		/**/
-
 		// Находим выделенную диаграмму и накатываем бинарник
 		if (AscCommon.isRealObject(chartBinary))
 		{

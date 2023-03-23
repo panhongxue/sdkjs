@@ -1755,7 +1755,6 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
 
     Slide.prototype.showChartSettings = function()
     {
-			editor.private_GetLogicDocument().StartAction();
       editor.asc_onOpenChartFrame();
       editor.sendEvent("asc_doubleClickOnChart", this.graphicObjects.getChartObject());
       this.graphicObjects.changeCurrentState(new AscFormat.NullState(this.graphicObjects));

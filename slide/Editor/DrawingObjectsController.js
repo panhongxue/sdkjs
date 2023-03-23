@@ -306,26 +306,6 @@ DrawingObjectsController.prototype.getColorMapOverride  =  function()
 {
     return this.drawingObjects.Get_ColorMap();
 };
-DrawingObjectsController.prototype.updateChart = function (binary)
-{
-	const by_types = AscFormat.getObjectsByTypesFromArr(this.selectedObjects, true);
-	const aSelectedCharts = [];
-	for(let i = 0; i < by_types.charts.length; ++i)
-	{
-		if(by_types.charts[i].selected)
-		{
-			aSelectedCharts.push(by_types.charts[i]);
-		}
-	}
-	if(aSelectedCharts.length === 1)
-	{
-		const oChart = aSelectedCharts[0];
-		if (!oChart.isExternal())
-		{
-			oChart.setXLSX(AscCommon.Base64.decode(binary["workbookBinary"]));
-		}
-	}
-};
 DrawingObjectsController.prototype.editChart = function(binary)
 {
     var chart_space = this.getChartSpace2(binary, null);
@@ -342,6 +322,10 @@ DrawingObjectsController.prototype.editChart = function(binary)
     }
     if(aSelectedCharts.length === 1)
     {
+        if (!aSelectedCharts[0].isExternal() && binary["workbookBinary"])
+        {
+            chart_space.setXLSX(AscCommon.Base64.decode(binary["workbookBinary"]));
+        }
         if(aSelectedCharts[0].group)
         {
             var parent_group = aSelectedCharts[0].group;
@@ -373,8 +357,6 @@ DrawingObjectsController.prototype.editChart = function(binary)
             chart_space.spPr.xfrm.setOffY(aSelectedCharts[0].y);
             var pos = aSelectedCharts[0].deleteDrawingBase();
             chart_space.addToDrawingObjects(pos);
-            chart_space.setTitle(binary["cTitle"]);
-            chart_space.setDescription(binary["cDescription"]);
             this.resetSelection();
             this.selectObject(chart_space, this.drawingObjects.num);
             this.startRecalculate();
@@ -382,6 +364,30 @@ DrawingObjectsController.prototype.editChart = function(binary)
         }
     }
 };
+
+DrawingObjectsController.prototype.updateChart = function (binary)
+{
+	const oFrameChartSpace = this.getChartSpace2(binary, null);
+	const arrDrawingObjects = AscFormat.getObjectsByTypesFromArr(this.selectedObjects, true);
+	const arrSelectedCharts = [];
+	for (let i = 0; i < arrDrawingObjects.charts.length; ++i)
+	{
+		if (arrDrawingObjects.charts[i].selected)
+		{
+			arrSelectedCharts.push(arrDrawingObjects.charts[i]);
+		}
+	}
+	if (arrSelectedCharts.length === 1)
+	{
+		const oChart = oFrameChartSpace.chart;
+		oChart.setParent(arrSelectedCharts[0]);
+		arrSelectedCharts[0].setChart(oChart);
+		arrSelectedCharts[0].handleUpdateChart();
+		arrSelectedCharts[0].recalculate();
+	}
+};
+
+
 DrawingObjectsController.prototype.addImage = function(sImageUrl, nPixW, nPixH, videoUrl, audioUrl)
 {
     let oPresentation = this.getPresentation();

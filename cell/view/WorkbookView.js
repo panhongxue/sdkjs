@@ -2167,7 +2167,7 @@
     }
   };
 
-  WorkbookView.prototype.onOleEditorReady = function () {
+  WorkbookView.prototype.onFrameEditorReady = function () {
 	  this.handlers.trigger("asc_onOleEditorReady");
   };
 

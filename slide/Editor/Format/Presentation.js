@@ -5502,15 +5502,10 @@ CPresentation.prototype.CheckNotesShow = function () {
 	}
 };
 
-CPresentation.prototype.EditChart2 = function (binary) {
-	var _this = this;
-	_this.Slides[_this.CurPage].graphicObjects.editChart(binary);
-};
-CPresentation.prototype.updateChart = function (binary)
-{
+CPresentation.prototype.UpdateChart = function (binary) {
 	this.Slides[this.CurPage].graphicObjects.updateChart(binary);
-}
-
+	this.DrawingDocument.OnRecalculatePage(this.CurPage, this.Slides[this.CurPage]);
+};
 CPresentation.prototype.EditChart = function (binary) {
 	var _this = this;
 	_this.Slides[_this.CurPage] && _this.Slides[_this.CurPage].graphicObjects.checkSelectedObjectsAndCallback(function () {

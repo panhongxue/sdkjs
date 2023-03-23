@@ -206,8 +206,9 @@
 			const oleSize = oThis.api.wb.getOleSize();
 			oleSize.addPointToLocalHistory();
 
-			oThis.api.wb.onOleEditorReady();
+			oThis.api.wb.onFrameEditorReady();
 			oApi.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Open);
+			delete oApi.fAfterLoad;
 		}
 	};
 	COleCellFrameManager.prototype.openWorkbookData = function (sStream)
@@ -250,7 +251,8 @@
 		const parserHelp = AscCommon.parserHelp;
 		const series = this.mainDiagram.getAllSeries();
 		let ser;
-		const model = this.api.wb.getWorksheet().model;
+		const worksheet = this.api.wb.getWorksheet();
+		const model = worksheet.model;
 		const oThis = this;
 		function fFillCell(oCell, sNumFormat, value)
 		{
@@ -259,7 +261,8 @@
 			{
 				oCellValue.number = value;
 				oCellValue.type = AscCommon.CellValueType.Number;
-			} else
+			}
+			else
 			{
 				oCellValue.text = value;
 				oCellValue.type = AscCommon.CellValueType.String;
@@ -328,7 +331,8 @@
 											}
 										}
 										pt_index += (range.r2 - range.r1 + 1);
-									} else if ((nPtCount - pt_index) <= (range.c2 - range.c1 + 1))
+									}
+									else if ((nPtCount - pt_index) <= (range.c2 - range.c1 + 1))
 									{
 										for (k = range.r1; k <= range.r2; ++k)
 										{
@@ -346,7 +350,8 @@
 										}
 										pt_index += (range.c2 - range.c1 + 1);
 									}
-								} else
+								}
+								else
 								{
 									if (range.r1 === range.r2)
 									{
@@ -362,7 +367,8 @@
 												++pt_index;
 											});
 										}
-									} else
+									}
+									else
 									{
 										for (j = range.r1; j <= range.r2; ++j)
 										{
@@ -438,30 +444,44 @@
 		const oModel = this.api.wb.getWorksheet().model;
 		const oNewChartSpace = asc_chart_binary.getChartSpace(oModel);
 		this.mainDiagram = oNewChartSpace;
-		if (oNewChartSpace.XLSX)
+		if (oNewChartSpace.XLSX.length)
 		{
 			const nDataSize = oNewChartSpace.XLSX.length;
 			const sData = AscCommon.Base64.encode(oNewChartSpace.XLSX);
 
 			this.obtain({"binary": "XLSY;v2;" + nDataSize + ";" + sData, "documentImageUrls": oInfo["documentImageUrls"]});
-		} else
+		}
+		else
 		{
-			// todo repair
+			this.obtainWithRepair({"binary": AscCommon.getEmpty(), "documentImageUrls": oInfo["documentImageUrls"]});
 		}
 	}
-	CDiagramCellFrameManager.prototype.getBinary = function (bIsSave)
+	CDiagramCellFrameManager.prototype.obtainWithRepair = function (oInfo)
 	{
-		const oRet = {
-			"saveHistoryPoint": !!bIsSave
-		};
-		if (bIsSave)
+		this.setAfterLoadCallback();
+		this.obtain(oInfo);
+	}
+	CDiagramCellFrameManager.prototype.setAfterLoadCallback = function ()
+	{
+		const oApi = this.api;
+		const oThis = this;
+		oApi.fAfterLoad = function ()
 		{
-			const oDiagramBinary = new Asc.asc_CChartBinary(this.mainDiagram);
-			oRet["workbookBinary"] = this.getWorkbookBinary();
-			oRet["imagesForAddToHistory"] = this.getImagesForHistory();
-			Object.assign(oRet, oDiagramBinary);
+			oThis.repairDiagramXLSX();
+			// добавляем первый поинт после загрузки, чтобы в локальную историю добавился либо стандартный oleSize, либо заданный пользователем
+
+			oThis.api.wb.onFrameEditorReady();
+			oApi.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Open);
+			delete oApi.fAfterLoad;
 		}
-		return oRet;
+	}
+
+	CDiagramCellFrameManager.prototype.getBinary = function ()
+	{
+		const oDiagramBinary = new Asc.asc_CChartBinary(this.mainDiagram);
+		oDiagramBinary["workbookBinary"] = this.getWorkbookBinary();
+		oDiagramBinary["imagesForAddToHistory"] = this.getImagesForHistory();
+		return oDiagramBinary;
 	}
 
 	CDiagramCellFrameManager.prototype.updateGeneralDiagramCache = function (aRanges)
@@ -495,8 +515,8 @@
 	function CFrameImageData(arrImages, token, bNotShowError)
 	{
 		const oData = {
-			"images"       : arrImages,
-			"token"        : token,
+			"images": arrImages,
+			"token": token,
 			"bNotShowError": bNotShowError
 		}
 		CFrameData.call(this, AscCommon.c_oAscFrameDataType.SendImageUrls, oData);

@@ -779,7 +779,10 @@
 				const oLogicDocument = this.private_GetLogicDocument();
 				if (oLogicDocument)
 				{
-					oLogicDocument.EditChart2(oInformation);
+					AscFormat.ExecuteNoHistory(function ()
+					{
+						oLogicDocument.UpdateChart(oInformation);
+					});
 				}
 				break;
 			}

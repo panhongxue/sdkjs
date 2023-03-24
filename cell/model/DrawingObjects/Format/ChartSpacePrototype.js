@@ -246,7 +246,7 @@ CChartSpace.prototype.recalculateBounds = function()
 
 CChartSpace.prototype.recalculate = function()
 {
-    if(this.bDeleted)
+    if(this.bDeleted && !this.isFrameChart)
         return;
 
     var oController = this.getDrawingObjectsController();

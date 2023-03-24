@@ -1316,6 +1316,8 @@ function(window, undefined) {
 
 	function CChartSpace() {
 		AscFormat.CGraphicObjectBase.call(this);
+		this.isFrameChart = false;
+
 		this.nvGraphicFramePr = null;
 		this.chart = null;
 		this.clrMapOvr = null;
@@ -1367,6 +1369,10 @@ function(window, undefined) {
 
 	AscFormat.InitClass(CChartSpace, AscFormat.CGraphicObjectBase, AscDFH.historyitem_type_ChartSpace);
 
+	CChartSpace.prototype.setFrameChart = function (bPr)
+	{
+		this.isFrameChart = bPr;
+	};
 	CChartSpace.prototype.isExternal = function()
 	{
 		// todo: change

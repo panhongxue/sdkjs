@@ -66,6 +66,11 @@
 		}
 		return arrRasterImageIds;
 	}
+
+	CCellFrameManager.prototype.getChartObject = function ()
+	{
+
+	};
 	CCellFrameManager.prototype.getImagesForHistory = function ()
 	{
 		const arrRasterImageIds = this.getAllImageIds();
@@ -226,6 +231,7 @@
 	function CDiagramCellFrameManager(oApi)
 	{
 		CCellFrameManager.call(this, oApi);
+		this.arrAfterLoadCallbacks = [];
 	}
 	AscFormat.InitClassWithoutType(CDiagramCellFrameManager, CCellFrameManager);
 
@@ -437,19 +443,23 @@
 		worksheet._updateRange(new Asc.Range(0, 0, max_c, max_r));
 		worksheet.draw();
 	}
-	CDiagramCellFrameManager.prototype.preObtain = function (oInfo)
+	CDiagramCellFrameManager.prototype.setMainDiagram = function (oInfo)
 	{
 		const asc_chart_binary = new Asc.asc_CChartBinary();
 		asc_chart_binary.asc_setBinary(oInfo["binary"]);
 		const oModel = this.api.wb.getWorksheet().model;
 		const oNewChartSpace = asc_chart_binary.getChartSpace(oModel);
-		this.mainDiagram = oNewChartSpace;
-		if (oNewChartSpace.XLSX.length)
-		{
-			const nDataSize = oNewChartSpace.XLSX.length;
-			const sData = AscCommon.Base64.encode(oNewChartSpace.XLSX);
+		oNewChartSpace.setWorksheet(oModel);
 
-			this.obtain({"binary": "XLSY;v2;" + nDataSize + ";" + sData, "documentImageUrls": oInfo["documentImageUrls"]});
+		oNewChartSpace.setFrameChart(true);
+		this.mainDiagram = oNewChartSpace;
+	}
+	CDiagramCellFrameManager.prototype.preObtain = function (oInfo)
+	{
+		this.setAfterLoadCallback(oInfo);
+		if (oInfo["workbookBinary"])
+		{
+			this.obtain({"binary": oInfo["workbookBinary"], "documentImageUrls": oInfo["documentImageUrls"]});
 		}
 		else
 		{
@@ -458,18 +468,24 @@
 	}
 	CDiagramCellFrameManager.prototype.obtainWithRepair = function (oInfo)
 	{
-		this.setAfterLoadCallback();
+		this.setRepairAfterLoadCallback();
 		this.obtain(oInfo);
 	}
-	CDiagramCellFrameManager.prototype.setAfterLoadCallback = function ()
+	CDiagramCellFrameManager.prototype.setRepairAfterLoadCallback = function ()
+	{
+		this.arrAfterLoadCallbacks.push(this.repairDiagramXLSX.bind(this));
+	}
+	CDiagramCellFrameManager.prototype.setAfterLoadCallback = function (oInfo)
 	{
 		const oApi = this.api;
 		const oThis = this;
 		oApi.fAfterLoad = function ()
 		{
-			oThis.repairDiagramXLSX();
-			// добавляем первый поинт после загрузки, чтобы в локальную историю добавился либо стандартный oleSize, либо заданный пользователем
-
+			oThis.setMainDiagram(oInfo);
+			for (let i = 0; i < oThis.arrAfterLoadCallbacks.length; i += 1)
+			{
+				oThis.arrAfterLoadCallbacks[i]();
+			}
 			oThis.api.wb.onFrameEditorReady();
 			oApi.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Open);
 			delete oApi.fAfterLoad;
@@ -497,6 +513,17 @@
 	CDiagramCellFrameManager.prototype.sendUpdateDiagram = function ()
 	{
 		this.sendFromFrameToGeneralEditor(new CFrameUpdateDiagramData(this.mainDiagram));
+	};
+
+	CDiagramCellFrameManager.prototype.getChartObject = function ()
+	{
+		const oGraphicController = this.api.getGraphicController();
+		if (oGraphicController)
+		{
+			const oProps = oGraphicController.getPropsFromChart(this.mainDiagram);
+			oProps.setFUpdateGeneralChart(this.sendUpdateDiagram.bind(this));
+			return oProps;
+		}
 	};
 
 	function CFrameUpdateDiagramData(oDiagram)

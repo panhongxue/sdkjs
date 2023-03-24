@@ -431,6 +431,12 @@ function asc_CChartBinary(chart) {
         writer.WriteCT_ChartSpace(chart);
         this["binary"] = writer.memory.pos + ";" + writer.memory.GetBase64Memory();
         this["documentImageUrls"] = JSON.stringify(AscCommon.g_oDocumentUrls.getUrls());
+				if (chart.XLSX.length)
+				{
+					const nDataSize = chart.XLSX.length;
+					const sData = AscCommon.Base64.encode(chart.XLSX);
+					this["workbookBinary"] = "XLSY;v2;" + nDataSize + ";" + sData;
+				}
     }
 }
 

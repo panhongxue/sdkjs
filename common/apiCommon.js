@@ -1286,6 +1286,7 @@
 
 		this.sRange = null;
 
+		this.fUpdateGeneralChart = null;
 
 		this.showMarker = null;
 		this.bLine = null;
@@ -1890,8 +1891,19 @@
 	asc_ChartSettings.prototype.updateChart = function() {
 		if(this.chartSpace) {
 			this.chartSpace.onDataUpdate();
+			this.updateGeneralChart();
 		}
 	};
+	asc_ChartSettings.prototype.setFUpdateGeneralChart = function(fUpdate) {
+		this.fUpdateGeneralChart = fUpdate;
+	};
+	asc_ChartSettings.prototype.updateGeneralChart = function ()
+	{
+		if (this.fUpdateGeneralChart)
+		{
+			this.fUpdateGeneralChart();
+		}
+	}
 	asc_ChartSettings.prototype.read = function(_params, _cursor) {
 		var _continue = true;
 		var oAxPr;

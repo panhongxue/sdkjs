@@ -4148,7 +4148,13 @@ var editor;
     ws = this.wb.getWorksheet();
     ws.setSelection(1 === d.length ? d[0].getBBox0() : d);
   };
-
+	spreadsheet_api.prototype.asc_getFrameChartObject = function ()
+	{
+		if (this.frameManager)
+		{
+			return this.frameManager.getChartObject();
+		}
+	}
 	spreadsheet_api.prototype.asc_closeCellEditor = function (cancel) {
 		var result = true;
 		if (this.wb) {

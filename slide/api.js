@@ -654,6 +654,8 @@
 
 		this.isOnlyDemonstration = false;
 
+		this.frameLoader = null;
+
 		if (window.editor == undefined)
 		{
 			window.editor = this;
@@ -7712,6 +7714,14 @@ background-repeat: no-repeat;\
 		this.asc_addChartDrawingObject(oChartBinary, placeholder);
 
 		oLogicDocument.Slides[oLogicDocument.CurPage].showChartSettings();
+	};
+	asc_docs_api.prototype.setFrameLoader = function (oLoader)
+	{
+		this.frameLoader = oLoader;
+	};
+	asc_docs_api.prototype.destroyFrameLoader = function ()
+	{
+		this.frameLoader = null;
 	};
 
 	asc_docs_api.prototype.asc_addChartDrawingObject = function(chartBinary, Placeholder)

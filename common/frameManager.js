@@ -549,6 +549,187 @@
 		CFrameData.call(this, AscCommon.c_oAscFrameDataType.SendImageUrls, oData);
 	}
 
+
+	function CFrameBinaryLoader(oApi)
+	{
+		this.api = oApi;
+		this.binary = null;
+	}
+	CFrameBinaryLoader.prototype.loadFrame = function ()
+	{
+
+	}
+	CFrameBinaryLoader.prototype.isOpenedFrame = function ()
+	{
+		return true;
+	}
+	CFrameBinaryLoader.prototype.isOpenedChartFrame = function ()
+	{
+		return false;
+	};
+	CFrameBinaryLoader.prototype.isOpenedOleFrame = function ()
+	{
+		return false;
+	};
+	CFrameBinaryLoader.prototype.destroy = function ()
+	{
+		this.api.frameLoader = null;
+	}
+
+
+	function CFrameDiagramBinaryLoader(oApi, oChart)
+	{
+		CFrameBinaryLoader.call(this, oApi);
+		this.chart = oChart;
+		this.canLoad = true;
+		this.XLSXBase64 = null;
+	}
+	AscFormat.InitClassWithoutType(CFrameDiagramBinaryLoader, CFrameBinaryLoader);
+
+	CFrameDiagramBinaryLoader.prototype.createChartSpace = function (nType, oPlaceholder)
+	{
+
+	};
+	CFrameDiagramBinaryLoader.prototype.isOpenedChartFrame = function ()
+	{
+		return true;
+	};
+
+	CFrameDiagramBinaryLoader.prototype.canLoadFrame = function ()
+	{
+		return this.canLoad;
+	};
+	CFrameDiagramBinaryLoader.prototype.getBinaryChart = function ()
+	{
+		const oBinaryChart = new Asc.asc_CChartBinary(this.chart);
+		oBinaryChart.setWorkbookBinary(this.XLSXBase64);
+		return oBinaryChart;
+
+	};
+	CFrameDiagramBinaryLoader.prototype.setXLSX = function (arrStream)
+	{
+		if (arrStream && arrStream.length)
+		{
+			const nDataSize = arrStream.length;
+			const sData = AscCommon.Base64.encode(arrStream);
+			this.XLSXBase64 = "XLSY;v2;" + nDataSize + ";" + sData;
+
+		}
+		else
+		{
+			this.XLSXBase64 = null;
+		}
+	};
+	CFrameDiagramBinaryLoader.prototype.resolvePromise = function (arrStream)
+	{
+		if (this.isTruthStream(arrStream))
+		{
+			this.setXLSX(arrStream);
+			this.loadFrame();
+		}
+	};
+	CFrameDiagramBinaryLoader.prototype.rejectPromise = function ()
+	{
+
+	}
+	CFrameDiagramBinaryLoader.prototype.setCanLoad = function (bPr)
+	{
+		this.canLoad = bPr;
+	}
+	CFrameDiagramBinaryLoader.prototype.isExternal = function ()
+	{
+		return this.chart.isExternal()
+	}
+	CFrameDiagramBinaryLoader.prototype.isTruthStream = function (arrStream)
+	{
+		return (arrStream && (arrStream.length !== 0)) || !this.isExternal();
+	}
+	CFrameDiagramBinaryLoader.prototype.tryOpen = function ()
+	{
+		const oPromise = this.getPromise();
+		oPromise.then(this.resolvePromise.bind(this));
+	};
+	CFrameDiagramBinaryLoader.prototype.loadFrame = function ()
+	{
+		this.api.asc_onOpenChartFrame();
+		this.api.sendEvent('asc_doubleClickOnChart', this.getBinaryChart());
+	};
+
+	CFrameDiagramBinaryLoader.prototype.getPromise = function ()
+	{
+		if (this.isExternal())
+		{
+			return this.getExternalPromise();
+		}
+			return this.getNestedPromise();
+	};
+	CFrameDiagramBinaryLoader.prototype.getExternalPromise = function ()
+	{
+		const oExternalDataChartManager = new CFrameDiagramExternalDataManager(this.chart);
+		return oExternalDataChartManager.getPromise();
+	}
+	CFrameDiagramBinaryLoader.prototype.getNestedPromise = function ()
+	{
+		const oThis = this;
+		return new Promise(function (resolve)
+		{
+			resolve(oThis.chart.XLSX);
+		});
+	}
+
+	function CFrameDiagramExternalDataManager(oChart)
+	{
+		this.chart = oChart;
+		this.externalLink = this.chart.externalPath;
+	}
+	CFrameDiagramExternalDataManager.prototype.isLocalDesktop = function ()
+	{
+		return window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
+	}
+	CFrameDiagramExternalDataManager.prototype.getLocalFilePromise = function ()
+	{
+		const oThis = this;
+		return new Promise(function (resolve)
+		{
+			window["AscDesktopEditor"]["convertFile"](oThis.getLocalFileLink(), 0x2002, function (_file) {
+				let stream = null;
+				if (_file) {
+					stream = _file["get"](/*Editor.bin*/);
+					_file["close"]();
+				}
+				resolve(stream ? new Uint8Array(stream) : null);
+			});
+		});
+	};
+	CFrameDiagramExternalDataManager.prototype.getLocalFileLink = function ()
+	{
+		return this.externalLink.replace('file:\\', '');
+	};
+	CFrameDiagramExternalDataManager.prototype.isLocalLink = function ()
+	{
+		//todo
+		return true;
+	};
+	CFrameDiagramExternalDataManager.prototype.isExternalLink = function ()
+	{
+		//todo
+		return false;
+	}
+	CFrameDiagramExternalDataManager.prototype.getPromise = function ()
+	{
+		if (this.isLocalDesktop() && this.isLocalLink())
+		{
+				return this.getLocalFilePromise();
+		}
+		else if (this.isExternalLink())
+		{
+
+		}
+	};
+
+
 	AscCommon.CDiagramCellFrameManager = CDiagramCellFrameManager;
 	AscCommon.COleCellFrameManager = COleCellFrameManager;
+	AscCommon.CFrameDiagramBinaryLoader = CFrameDiagramBinaryLoader;
+
 })(window);

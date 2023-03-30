@@ -407,6 +407,7 @@ function(window, undefined) {
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetDate1904] = CChangesDrawingsBool;
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetExternalData] = CChangesDrawingsObject;
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetLang] = CChangesDrawingsString;
+	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetExternalPath] = CChangesDrawingsString;
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetPivotSource] = CChangesDrawingsObject;
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetPrintSettings] = CChangesDrawingsObject;
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetProtection] = CChangesDrawingsObject;
@@ -571,6 +572,9 @@ function(window, undefined) {
 	};
 	drawingsChangesMap[AscDFH.historyitem_ChartSpace_SetLang] = function (oClass, value) {
 		oClass.lang = value;
+	};
+	drawingsChangesMap[AscDFH.historyitem_ChartSpace_SetExternalPath] = function (oClass, value) {
+		oClass.externalPath = value;
 	};
 	drawingsChangesMap[AscDFH.historyitem_ChartSpace_SetPivotSource] = function (oClass, value) {
 		oClass.pivotSource = value;
@@ -1324,6 +1328,7 @@ function(window, undefined) {
 		this.date1904 = false;
 		this.externalData = null;
 		this.XLSX = new Uint8Array(0);
+		this.externalPath = null;
 		this.lang = null;
 		this.pivotSource = null;
 		this.printSettings = null;
@@ -1375,8 +1380,7 @@ function(window, undefined) {
 	};
 	CChartSpace.prototype.isExternal = function()
 	{
-		// todo: change
-		return false;
+		return !!this.externalPath;
 	}
 	CChartSpace.prototype.changeSize = CShape.prototype.changeSize;
 	CChartSpace.prototype.getDataRefs = function () {
@@ -3685,6 +3689,11 @@ function(window, undefined) {
 	{
 		AscDFH.addBinaryDataToHistory(this, this.XLSX, arrData, CChangesStartChartSpaceBinary, CChangesPartChartSpaceBinary, CChangesEndChartSpaceBinary);
 		this.XLSX = arrData;
+	}
+	CChartSpace.prototype.setExternalPath = function (sPath)
+	{
+		History.Add(new CChangesDrawingsString(this, AscDFH.historyitem_ChartSpace_SetExternalPath, this.externalPath, sPath));
+		this.externalPath = sPath;
 	}
 	CChartSpace.prototype.setLang = function (lang) {
 		History.Add(new CChangesDrawingsString(this, AscDFH.historyitem_ChartSpace_SetLang, this.lang, lang));

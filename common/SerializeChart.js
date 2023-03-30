@@ -218,6 +218,7 @@ var c_oserct_chartspaceTHEMEOVERRIDE = 15;
 var c_oserct_chartspaceXLSX = 16;
 var c_oserct_chartspaceSTYLES = 17;
 var c_oserct_chartspaceCOLORS = 18;
+var c_oserct_chartspaceXLSXEXTERNAL = 19;
 
 
 var c_oserct_usershapes_COUNT = 0;
@@ -1082,7 +1083,12 @@ BinaryChartWriter.prototype.WriteCT_extLst = function (oVal) {
 };
 BinaryChartWriter.prototype.WriteCT_ChartSpace = function (oVal) {
     var oThis = this;
-		if (null !== oVal.XLSX) {
+		if (null !== oVal.externalPath) {
+			this.bs.WriteItem(c_oserct_chartspaceXLSXEXTERNAL, function () {
+				oThis.memory.WriteString4(oVal.externalPath);
+			});
+		}
+		if (oVal.XLSX && oVal.XLSX.length) {
 			this.bs.WriteItem(c_oserct_chartspaceXLSX, function () {
 				oThis.memory.WriteBuffer(oVal.XLSX, 0, oVal.XLSX.length);
 			});
@@ -1150,12 +1156,12 @@ BinaryChartWriter.prototype.WriteCT_ChartSpace = function (oVal) {
             oThis.WriteTxPr(oVal.txPr);
         });
     }
-    //var oCurVal = oVal.m_externalData;
-    //if (null != oCurVal) {
-    //    this.bs.WriteItem(c_oserct_chartspaceEXTERNALDATA, function () {
-    //        oThis.WriteCT_ExternalData(oCurVal);
-    //    });
-    //}
+    var oCurVal = oVal.m_externalData;
+    if (null != oCurVal) {
+       this.bs.WriteItem(c_oserct_chartspaceEXTERNALDATA, function () {
+           oThis.WriteCT_ExternalData(oCurVal);
+       });
+    }
     if (null != oVal.printSettings) {
         this.bs.WriteItem(c_oserct_chartspacePRINTSETTINGS, function () {
             oThis.WriteCT_PrintSettings(oVal.printSettings);
@@ -5862,14 +5868,18 @@ BinaryChartReader.prototype.ReadCT_ChartSpace = function (type, length, val, cur
         val.setTxPr(this.ReadTxPr(length));
         val.txPr.setParent(val);
     }
-    //else if (c_oserct_chartspaceEXTERNALDATA === type) {
-    //    oNewVal;
-    //    oNewVal = {};
-    //    res = this.bcr.Read1(length, function (t, l) {
-    //        return oThis.ReadCT_ExternalData(t, l, oNewVal);
-    //    });
-    //    val.m_externalData = oNewVal;
-    //}
+    else if (c_oserct_chartspaceEXTERNALDATA === type) {
+       oNewVal;
+       oNewVal = {};
+       res = this.bcr.Read1(length, function (t, l) {
+           return oThis.ReadCT_ExternalData(t, l, oNewVal);
+       });
+       val.m_externalData = oNewVal;
+    }
+		else if (c_oserct_chartspaceXLSXEXTERNAL === type) {
+	    val.externalPath = this.bcr.stream.GetString2LE(length);
+			res = c_oSerConstants.ReadOk;
+    }
     else if (c_oserct_chartspacePRINTSETTINGS === type) {
         oNewVal = new AscFormat.CPrintSettings();
         res = this.bcr.Read1(length, function (t, l) {

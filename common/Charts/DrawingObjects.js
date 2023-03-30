@@ -431,12 +431,6 @@ function asc_CChartBinary(chart) {
         writer.WriteCT_ChartSpace(chart);
         this["binary"] = writer.memory.pos + ";" + writer.memory.GetBase64Memory();
         this["documentImageUrls"] = JSON.stringify(AscCommon.g_oDocumentUrls.getUrls());
-				if (chart.XLSX.length)
-				{
-					const nDataSize = chart.XLSX.length;
-					const sData = AscCommon.Base64.encode(chart.XLSX);
-					this["workbookBinary"] = "XLSY;v2;" + nDataSize + ";" + sData;
-				}
     }
 }
 
@@ -454,7 +448,9 @@ asc_CChartBinary.prototype = {
         var oBinaryChartReader = new AscCommon.BinaryChartReader(stream);
         oBinaryChartReader.ExternalReadCT_ChartSpace(stream.size , oNewChartSpace, workSheet);
         return oNewChartSpace;
-    }
+    },
+		getWorkbookBinary: function() { return this["workbookBinary"]; },
+		setWorkbookBinary: function(val) { this["workbookBinary"] = val; },
 };
 
 /** @constructor */
@@ -4331,10 +4327,6 @@ ClickCounter.prototype.getClickCount = function() {
     prot = asc_CChartBinary.prototype;
     prot["asc_getBinary"] = prot.asc_getBinary;
     prot["asc_setBinary"] = prot.asc_setBinary;
-    prot["asc_getThemeBinary"] = prot.asc_getThemeBinary;
-    prot["asc_setThemeBinary"] = prot.asc_setThemeBinary;
-    prot["asc_setColorMapBinary"] = prot.asc_setColorMapBinary;
-    prot["asc_getColorMapBinary"] = prot.asc_getColorMapBinary;
 
     window["AscFormat"].asc_CChartSeria = asc_CChartSeria;
     prot = asc_CChartSeria.prototype;

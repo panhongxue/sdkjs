@@ -1756,8 +1756,9 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
 
     Slide.prototype.showChartSettings = function()
     {
-      editor.asc_onOpenChartFrame();
-      editor.sendEvent("asc_doubleClickOnChart", this.graphicObjects.getChartObject());
+			const oChartLoader = new AscCommon.CFrameDiagramBinaryLoader(editor, this.graphicObjects.getChartObject());
+			editor.setFrameLoader(oChartLoader);
+	    oChartLoader.tryOpen();
       this.graphicObjects.changeCurrentState(new AscFormat.NullState(this.graphicObjects));
     };
 

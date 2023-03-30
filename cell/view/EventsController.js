@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -760,9 +760,9 @@
 			this.handlers.trigger("moveRangeHandleDone", ctrlKey);
 		};
 
-		asc_CEventsController.prototype._moveResizeRangeHandleDone = function () {
+		asc_CEventsController.prototype._moveResizeRangeHandleDone = function (isPageBreakPreview) {
 			// Закончили перемещение диапазона, пересчитаем
-			this.handlers.trigger("moveResizeRangeHandleDone");
+			this.handlers.trigger("moveResizeRangeHandleDone", isPageBreakPreview);
 		};
 
 		/** @param event {jQuery.Event} */
@@ -961,6 +961,7 @@
 					t.handlers.trigger("stopAddShape");
 					t.handlers.trigger("cleanCutData", true, true);
 					t.handlers.trigger("cleanCopyData", true, true);
+					t.view.Api.cancelEyedropper();
 					window['AscCommon'].g_specialPasteHelper.SpecialPasteButton_Hide();
 					return result;
 
@@ -976,8 +977,9 @@
 						return true;
 					}
 					var isSelectColumns = ctrlKey;
+					var isSelectAllMacOs = isSelectColumns && shiftKey && macOs;
 					// Обработать как обычный текст
-					if (!isSelectColumns && !shiftKey) {
+					if ((!isSelectColumns && !shiftKey) || isSelectAllMacOs) {
 						//теперь пробел обрабатывается на WindowKeyDown
 						//вторыы аргументом передаю true, чтобы два раза пробел не добавлялся и сработало событие CellEditor.prototype._onWindowKeyDown
 						//задача функции EnterText в данном случае - либо добавить данные в графику, либо открыть редактор ячейки, чтобы потом
@@ -991,9 +993,19 @@
 					stop();
 					if (isSelectColumns) {
 						t.handlers.trigger("selectColumnsByRange");
-					} else if (shiftKey) {
+					}
+					if (shiftKey) {
 						t.handlers.trigger("selectRowsByRange");
 					}
+					return result;
+
+				case 110: //NumpadDecimal
+					if (!canEdit || t.getCellEditMode() || selectionDialogMode) {
+						return true;
+					}
+					window["Asc"]["editor"].wb.EnterText(this.view.Api.asc_getDecimalSeparator().charCodeAt(0), true);
+					//stop to prevent double enter
+					stop();
 					return result;
 
 				case 33: // PageUp
@@ -1480,7 +1492,7 @@
 
 			if (this.isMoveResizeRange) {
 				this.isMoveResizeRange = false;
-				this.handlers.trigger("moveResizeRangeHandleDone");
+				this._moveResizeRangeHandleDone(this.targetInfo && this.targetInfo.isPageBreakPreview);
 			}
 			// Режим установки закреплённых областей
 			if (this.frozenAnchorMode) {
@@ -1565,7 +1577,9 @@
 
 			AscCommon.global_mouseEvent.LockMouse();
 
-
+			if(t.view.Api.isEyedropperStarted()) {
+				return ;
+			}
 			if (t.handlers.trigger("isGlobalLockEditCell")) {
 				return;
 			}
@@ -1663,7 +1677,7 @@
 						if (0 === button) {
 							if (t.targetInfo.isDataValidation) {
 								this.handlers.trigger('onDataValidation');
-							} else if (t.targetInfo.idPivot && Asc.CT_pivotTableDefinition.prototype.asc_filterByCell) {
+							} else if (t.targetInfo.idPivot) {
 								this.handlers.trigger("pivotFiltersClick", t.targetInfo.idPivot);
 							} else if (t.targetInfo.idPivotCollapse) {
 								this.handlers.trigger("pivotCollapseClick", t.targetInfo.idPivotCollapse);
@@ -1769,8 +1783,14 @@
 				return true;
 			}
 
-			// Shapes
 			var coord = this._getCoordinates(event);
+			if(this.view.Api.isEyedropperStarted()) {
+				this.view.Api.finishEyedropper();
+				var t = this;
+				t.handlers.trigger("updateWorksheet", coord.x, coord.y, false, function(info){t.targetInfo = info;});
+				return true;
+			}
+			// Shapes
 			event.isLocked = this.isMousePressed = false;
 
 			if (this.isShapeAction) {
@@ -1813,7 +1833,7 @@
 
 			if (this.isMoveResizeRange) {
 				this.isMoveResizeRange = false;
-				this._moveResizeRangeHandleDone();
+				this._moveResizeRangeHandleDone(this.targetInfo && this.targetInfo.isPageBreakPreview);
 				return true;
 			}
 			// Режим установки закреплённых областей
@@ -1840,6 +1860,11 @@
 
 			t.hasCursor = true;
 
+			if(t.view.Api.isEyedropperStarted()) {
+				t.view.Api.checkEyedropperColor(coord.x, coord.y);
+				t.handlers.trigger("updateWorksheet", coord.x, coord.y, ctrlKey, function(info){t.targetInfo = info;});
+				return true;
+			}
 			// Shapes
 			var graphicsInfo = t.handlers.trigger("getGraphicsInfo", coord.x, coord.y);
 			if ( graphicsInfo )

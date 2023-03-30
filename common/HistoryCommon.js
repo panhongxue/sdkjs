@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -3971,6 +3971,62 @@
 
 	AscDFH.historyitem_ViewPrGuideOrient         = AscDFH.historyitem_type_ViewPrGuide | 1;
 	AscDFH.historyitem_ViewPrGuidePos            = AscDFH.historyitem_type_ViewPrGuide | 2;
+	AscDFH.historyitem_UserMasterUserId       = AscDFH.historyitem_type_UserMaster | 1;
+	AscDFH.historyitem_UserMasterSignInfo     = AscDFH.historyitem_type_UserMaster | 2;
+	AscDFH.historyitem_UserMasterCipherInfo   = AscDFH.historyitem_type_UserMaster | 3;
+	AscDFH.historyitem_UserMasterRole         = AscDFH.historyitem_type_UserMaster | 4;
+	AscDFH.historyitem_UserMasterUser         = AscDFH.historyitem_type_UserMaster | 5;
+
+	AscDFH.historyitem_UserEmail             = AscDFH.historyitem_type_User | 1;
+	AscDFH.historyitem_UserTelephone         = AscDFH.historyitem_type_User | 2;
+
+	AscDFH.historyitem_SignInfo_PublicKey       = AscDFH.historyitem_type_SignInfo | 1;
+	AscDFH.historyitem_SignInfo_X509            = AscDFH.historyitem_type_SignInfo | 2;
+	AscDFH.historyitem_SignInfo_ImageValid      = AscDFH.historyitem_type_SignInfo | 3;
+	AscDFH.historyitem_SignInfo_ImageInvalid    = AscDFH.historyitem_type_SignInfo | 4;
+
+	AscDFH.historyitem_CipherInfo_PublicKey    = AscDFH.historyitem_type_CipherInfo | 1;
+
+	AscDFH.historyitem_FormFieldMaster_FieldId     = AscDFH.historyitem_type_FormFieldMaster | 1;
+	AscDFH.historyitem_FormFieldMaster_User        = AscDFH.historyitem_type_FormFieldMaster | 2;
+	AscDFH.historyitem_FormFieldMaster_Field       = AscDFH.historyitem_type_FormFieldMaster | 3;
+	AscDFH.historyitem_FormFieldMaster_SignRequest = AscDFH.historyitem_type_FormFieldMaster | 4;
+
+	AscDFH.historyitem_FormField_EncryptedData = AscDFH.historyitem_type_FormField | 1;
+	AscDFH.historyitem_FormField_Content       = AscDFH.historyitem_type_FormField | 2;
+	AscDFH.historyitem_FormField_FieldMaster   = AscDFH.historyitem_type_FormField | 3;
+
+	AscDFH.historyitem_EncryptedData_Method   = AscDFH.historyitem_type_EncryptedData | 1;
+	AscDFH.historyitem_EncryptedData_Value    = AscDFH.historyitem_type_EncryptedData | 2;
+	AscDFH.historyitem_EncryptedData_KeyInfo  = AscDFH.historyitem_type_EncryptedData | 3;
+
+
+	AscDFH.historyitem_KeyInfo_User    = AscDFH.historyitem_type_KeyInfo | 1;
+	AscDFH.historyitem_KeyInfo_Value   = AscDFH.historyitem_type_KeyInfo | 2;
+
+	AscDFH.historyitem_MainDocument_Author = AscDFH.historyitem_type_MainDocument | 1;
+	AscDFH.historyitem_MainDocument_Date = AscDFH.historyitem_type_MainDocument | 2;
+	AscDFH.historyitem_MainDocument_Description = AscDFH.historyitem_type_MainDocument | 32;
+	AscDFH.historyitem_MainDocument_Type = AscDFH.historyitem_type_MainDocument | 4;
+	AscDFH.historyitem_MainDocument_Application = AscDFH.historyitem_type_MainDocument | 5;
+	AscDFH.historyitem_MainDocument_DocumentId = AscDFH.historyitem_type_MainDocument | 6;
+	AscDFH.historyitem_MainDocument_FieldsGroups = AscDFH.historyitem_type_MainDocument | 7;
+	AscDFH.historyitem_MainDocument_User = AscDFH.historyitem_type_MainDocument | 8;
+
+
+	AscDFH.historyitem_FieldsGroup_Id = AscDFH.historyitem_type_FieldsGroup | 1;
+	AscDFH.historyitem_FieldsGroup_Weight = AscDFH.historyitem_type_FieldsGroup | 2;
+	AscDFH.historyitem_FieldsGroup_Field = AscDFH.historyitem_type_FieldsGroup | 3;
+
+
+	AscDFH.historyitem_FormDate_Format = AscDFH.historyitem_type_FormDate | 1;
+	AscDFH.historyitem_FormDate_Value = AscDFH.historyitem_type_FormDate | 2;
+
+	AscDFH.historyitem_SignRequest_User = AscDFH.historyitem_type_SignRequest | 1;
+
+	AscDFH.historyitem_FieldContent_AddItem    = AscDFH.historyitem_type_FieldContent | 1;
+	AscDFH.historyitem_FieldContent_RemoveItem = AscDFH.historyitem_type_FieldContent | 2;
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//
@@ -4399,6 +4455,10 @@
 	window['AscDFH'].historydescription_OForm_RemoveRole                            = 0x019e;
 	window['AscDFH'].historydescription_OForm_EditRole                              = 0x019f;
 	window['AscDFH'].historydescription_OForm_ChangeRoleOrder                       = 0x01a0;
+	window['AscDFH'].historydescription_Document_AddAddinField                      = 0x01a1;
+	window['AscDFH'].historydescription_Document_UpdateAddinFields                  = 0x01a2;
+	window['AscDFH'].historydescription_Document_RemoveComplexFieldWrapper          = 0x01a3;
+	window['AscDFH'].historydescription_Document_MergeDocuments                     = 0x01a4;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4672,13 +4732,27 @@
 		else
 		{
 			let Pos = this.Pos;
-			for (let nIndex = 0, nCount = this.Items.length; nIndex < nCount; ++nIndex)
+			if (this.Add)
 			{
-				arrActions.push({
-					Item : this.Items[nIndex],
-					Pos  : Pos + nIndex,
-					Add  : this.Add
-				});
+				for (let nIndex = 0, nCount = this.Items.length; nIndex < nCount; ++nIndex)
+				{
+					arrActions.push({
+						Item : this.Items[nIndex],
+						Pos  : Pos + nIndex,
+						Add  : true
+					});
+				}
+			}
+			else
+			{
+				for (let nIndex = 0, nCount = this.Items.length; nIndex < nCount; ++nIndex)
+				{
+					arrActions.push({
+						Item : this.Items[nIndex],
+						Pos  : Pos,
+						Add  : false
+					});
+				}
 			}
 		}
 
@@ -4981,6 +5055,8 @@
 
 		if (undefined !== this.Old && this.Old.Write_ToBinary)
 			this.Old.Write_ToBinary(Writer);
+		
+		this.WriteAdditional(Writer);
 	};
 	CChangesBaseObjectProperty.prototype.ReadFromBinary = function(Reader)
 	{
@@ -5025,6 +5101,14 @@
 			if (this.Old && this.Old.Read_FromBinary)
 				this.Old.Read_FromBinary(Reader);
 		}
+		
+		this.ReadAdditional(Reader);
+	};
+	CChangesBaseObjectProperty.prototype.WriteAdditional = function(writer)
+	{
+	};
+	CChangesBaseObjectProperty.prototype.ReadAdditional = function(reader)
+	{
 	};
 	CChangesBaseObjectProperty.prototype.private_CreateObject = function()
 	{

@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -222,6 +222,10 @@
 		this.binaryChanges = false;
 
 		this.isBlurEditor = false;
+
+
+		this.formatPainter = new AscCommon.CFormatPainter(this);
+		this.eyedropper = new AscCommon.CEyedropper(this);
 		this._correctEmbeddedWork();
 
 		return this;
@@ -283,12 +287,12 @@
 			window.onerror = oldOnError;
 			let editorInfo = t.getEditorErrorInfo();
 			let memoryInfo = AscCommon.getMemoryInfo();
-			var msg = 'Error: ' + errorMsg + '\nScript: ' + url + '\nLine: ' + lineNumber + ':' + column +
-				'\nuserAgent: ' + (navigator.userAgent || navigator.vendor || window.opera) + '\nplatform: ' +
-				navigator.platform + '\nisLoadFullApi: ' + t.isLoadFullApi + '\nisDocumentLoadComplete: ' +
-				t.isDocumentLoadComplete + (editorInfo ? '\n' + editorInfo : "") +
-				(memoryInfo ? '\nperformance.memory: ' + memoryInfo : "") +
-				'\nStackTrace: ' + (errorObj ? errorObj.stack : "");
+			var msg = 'Error: ' + errorMsg + '\n Script: ' + url + '\n Line: ' + lineNumber + ':' + column +
+				'\n userAgent: ' + (navigator.userAgent || navigator.vendor || window.opera) + '\n platform: ' +
+				navigator.platform + '\n isLoadFullApi: ' + t.isLoadFullApi + '\n isDocumentLoadComplete: ' +
+				t.isDocumentLoadComplete + (editorInfo ? '\n ' + editorInfo : "") +
+				(memoryInfo ? '\n performance.memory: ' + memoryInfo : "") +
+				'\n StackTrace: ' + (errorObj ? errorObj.stack : "");
 			AscCommon.sendClientLog("error", "changesError: " + msg, t);
 			if (t.isLoadFullApi ) {
 				if(t.isDocumentLoadComplete) {
@@ -466,10 +470,19 @@
 			//чтобы в versionHistory был один documentId для auth и open
 			this.CoAuthoringApi.setDocId(this.documentId);
 
-			if (this.documentOpenOptions && this.documentOpenOptions["watermark"])
+			if (this.documentOpenOptions)
 			{
-				this.watermarkDraw = new AscCommon.CWatermarkOnDraw(this.documentOpenOptions["watermark"], this);
-				this.watermarkDraw.CheckParams(this);
+				if (this.documentOpenOptions["watermark"])
+				{
+					this.watermarkDraw = new AscCommon.CWatermarkOnDraw(this.documentOpenOptions["watermark"], this);
+					this.watermarkDraw.CheckParams(this);
+				}
+
+				if (false === this.documentOpenOptions["oform"] && AscCommon.IsSupportOFormFeature())
+				{
+					window["Asc"]["Addons"]["forms"] = false;
+					AscCommon.g_oTableId.InitOFormClasses();
+				}
 			}
 		}
 
@@ -640,7 +653,7 @@
 		// editor.removeRestriction(Asc.c_oAscRestrictionType.OnlySignatures)
 		if (this.restrictions & Asc.c_oAscRestrictionType.OnlySignatures)
 			return;
-		
+
 		this.restrictions = val;
 		this.onUpdateRestrictions(additionalSettings);
 	};
@@ -2328,28 +2341,40 @@
 
 	baseEditorsApi.prototype.asc_addOleObject = function(oPluginData)
 	{
-		if(this.isViewMode){
+		if(this.isViewMode) {
 			return;
 		}
-		var oThis      = this;
-		var sImgSrc    = oPluginData["imgSrc"];
-		var nWidthPix  = oPluginData["widthPix"];
-		var nHeightPix = oPluginData["heightPix"];
-		var fWidthMM   = oPluginData["width"];
-		var fHeightMM  = oPluginData["height"];
-		var sData      = oPluginData["data"];
-		var sGuid      = oPluginData["guid"];
-		var bSelect    = (oPluginData["select"] === true || oPluginData["select"] === false) ? oPluginData["select"] : true;
+		let oThis      = this;
+		let sImgSrc    = oPluginData["imgSrc"];
+		let nWidthPix  = oPluginData["widthPix"];
+		let nHeightPix = oPluginData["heightPix"];
+		let fWidthMM   = oPluginData["width"];
+		let fHeightMM  = oPluginData["height"];
+		let sData      = oPluginData["data"];
+		let sGuid      = oPluginData["guid"];
+		let bSelect    = (oPluginData["select"] === true || oPluginData["select"] === false) ? oPluginData["select"] : true;
+		let bPlugin    = oPluginData["plugin"] === true && !!window.g_asc_plugins;
 		if (typeof sImgSrc === "string" && sImgSrc.length > 0 && typeof sData === "string"
 			&& typeof sGuid === "string" && sGuid.length > 0
 			/*&& AscFormat.isRealNumber(nWidthPix) && AscFormat.isRealNumber(nHeightPix)*/
 			&& AscFormat.isRealNumber(fWidthMM) && AscFormat.isRealNumber(fHeightMM)
 		)
-
-		this.asc_checkImageUrlAndAction(sImgSrc, function(oImage)
 		{
-			oThis.asc_addOleObjectAction(AscCommon.g_oDocumentUrls.getImageLocal(oImage.src), sData, sGuid, fWidthMM, fHeightMM, nWidthPix, nHeightPix, bSelect);
-		});
+			let sMethodGuid;
+			if(bPlugin)
+			{
+				sMethodGuid = window.g_asc_plugins.setPluginMethodReturnAsync();
+			}
+			this.asc_checkImageUrlAndAction(sImgSrc, function(oImage)
+			{
+				oThis.asc_addOleObjectAction(AscCommon.g_oDocumentUrls.getImageLocal(oImage.src), sData, sGuid, fWidthMM, fHeightMM, nWidthPix, nHeightPix, bSelect);
+				if(bPlugin)
+				{
+					window.g_asc_plugins.onPluginMethodReturn(sMethodGuid);
+				}
+			});
+		}
+
 	};
 
 	baseEditorsApi.prototype.asc_editOleObject = function(oPluginData)
@@ -2550,14 +2575,14 @@
 	{
 		if (!this.canUndoRedoByRestrictions())
 			return false;
-		
+
 		return AscCommon.History.Can_Undo();
 	};
 	baseEditorsApi.prototype.asc_getCanRedo = function()
 	{
 		if (!this.canUndoRedoByRestrictions())
 			return false;
-		
+
 		return AscCommon.History.Can_Redo();
 	};
 	// Offline mode
@@ -2903,10 +2928,10 @@
 		if (null != this.pluginsManager)
 			this.pluginsManager.runResize(pluginData);
 	};
-	baseEditorsApi.prototype.asc_pluginButtonClick = function(id)
+	baseEditorsApi.prototype.asc_pluginButtonClick = function(id, guid, windowId)
 	{
 		if (null != this.pluginsManager)
-			this.pluginsManager.buttonClick(id);
+			this.pluginsManager.buttonClick(id, guid, windowId);
 	};
 
 	baseEditorsApi.prototype.asc_pluginEnableMouseEvents = function(isEnable)
@@ -3534,6 +3559,116 @@
 		this.asc_setCurrentPassword("");
 	};
 
+	baseEditorsApi.prototype.asc_GetPossibleNumberingLanguage = function () {};
+	baseEditorsApi.prototype.CheckDeprecatedBulletPreviewInfo = function (arrDrawingInfo, nTypeOfPreview)
+	{
+		const arrAdaptedDrawingInfo = [];
+
+		for (let i = 0; i < arrDrawingInfo.length; i += 1)
+		{
+			let sDivId;
+			let oNumberingInfo;
+
+			// Это верный тип передачи информации
+			if (arrDrawingInfo[i]["numberingInfo"])
+			{
+				arrAdaptedDrawingInfo.push(arrDrawingInfo[i]);
+			}
+			else if (arrDrawingInfo[i]["divId"])
+			{
+				sDivId = arrDrawingInfo[i]["divId"];
+				let sResult = null;
+				switch (arrDrawingInfo[i]["type"])
+				{
+					case 0:
+					{
+						break;
+					}
+					case 1:
+					{
+						const oBullet = new AscFormat.CBullet();
+						oBullet.fillBulletFromCharAndFont(arrDrawingInfo[i]["char"], arrDrawingInfo[i]["specialFont"] || "Arial");
+						oNumberingInfo = oBullet.getJsonBullet();
+						break;
+					}
+					case 2:
+					{
+						const oBullet = new AscFormat.CBullet();
+						oBullet.fillBulletImage(arrDrawingInfo[i]["imageId"]);
+						oNumberingInfo = oBullet.getJsonBullet();
+						break;
+					}
+					case 3:
+					{
+						switch (arrDrawingInfo[i]["numberingType"])
+						{
+							case Asc.c_oAscNumberingLevel.UpperLetterDot_Left: sResult = '{"bulletTypeface":{"type":"bufont","typeface":"Arial"},"bulletType":{"type":"autonum","char":null,"autoNumType":"alphaUcPeriod","startAt":null}}'; break;
+							case Asc.c_oAscNumberingLevel.LowerLetterBracket_Left: sResult = '{"bulletTypeface":{"type":"bufont","typeface":"Arial"},"bulletType":{"type":"autonum","char":null,"autoNumType":"alphaLcParenR","startAt":null}}'; break;
+							case Asc.c_oAscNumberingLevel.LowerLetterDot_Left: sResult = '{"bulletTypeface":{"type":"bufont","typeface":"Arial"},"bulletType":{"type":"autonum","char":null,"autoNumType":"alphaLcPeriod","startAt":null}}'; break;
+							case Asc.c_oAscNumberingLevel.DecimalDot_Right: sResult = '{"bulletTypeface":{"type":"bufont","typeface":"Arial"},"bulletType":{"type":"autonum","char":null,"autoNumType":"arabicPeriod","startAt":null}}'; break;
+							case Asc.c_oAscNumberingLevel.DecimalBracket_Right: sResult = '{"bulletTypeface":{"type":"bufont","typeface":"Arial"},"bulletType":{"type":"autonum","char":null,"autoNumType":"arabicParenR","startAt":null}}'; break;
+							case Asc.c_oAscNumberingLevel.UpperRomanDot_Right: sResult = '{"bulletTypeface":{"type":"bufont","typeface":"Arial"},"bulletType":{"type":"autonum","char":null,"autoNumType":"romanUcPeriod","startAt":null}}'; break;
+							case Asc.c_oAscNumberingLevel.LowerRomanDot_Right: sResult = '{"bulletTypeface":{"type":"bufont","typeface":"Arial"},"bulletType":{"type":"autonum","char":null,"autoNumType":"romanLcPeriod","startAt":null}}'; break;
+							default: break;
+						}
+						break;
+					}
+					default: break;
+				}
+				if (sResult !== null)
+					oNumberingInfo = JSON.parse(sResult);
+				arrAdaptedDrawingInfo.push({"divId": sDivId, "numberingInfo": {"bullet": oNumberingInfo}});
+			}
+		}
+
+		return arrAdaptedDrawingInfo;
+	};
+	baseEditorsApi.prototype.ParseBulletPreviewInformation = function (arrDrawingInfo)
+	{
+		const arrNumberingLvls = [];
+		AscFormat.ExecuteNoHistory(function ()
+		{
+			for (let i = 0; i < arrDrawingInfo.length; i += 1)
+			{
+				const oDrawInfo = arrDrawingInfo[i];
+				const oNumberingInfo = oDrawInfo["numberingInfo"];
+				if (!oNumberingInfo) continue;
+				const sDivId = oDrawInfo["divId"];
+				if (!oNumberingInfo["bullet"])
+				{
+					const oPresentationBullet = new AscCommonWord.CPresentationBullet();
+					const oTextPr = new AscCommonWord.CTextPr();
+					oPresentationBullet.m_sChar = AscCommon.translateManager.getValue("None");
+					oPresentationBullet.m_nType = AscFormat.numbering_presentationnumfrmt_Char;
+					oPresentationBullet.m_bFontTx = false;
+					oPresentationBullet.m_sFont   = "Arial";
+					oTextPr.Unifill = AscFormat.CreateSolidFillRGB(0, 0, 0);
+					oTextPr.FontSize = oTextPr.FontSizeCS = 65;
+					oPresentationBullet.MergeTextPr(oTextPr);
+					arrNumberingLvls.push({divId: sDivId, arrLvls: [oPresentationBullet], isRemoving: true});
+				}
+				else
+				{
+					const oBullet = window['AscJsonConverter'].ReaderFromJSON.prototype.BulletFromJSON(oNumberingInfo["bullet"]);
+					const oPresentationBullet = oBullet.getPresentationBullet(AscFormat.GetDefaultTheme(), AscFormat.GetDefaultColorMap());
+					oPresentationBullet.m_bFontTx = false;
+					const oTextPr = new AscCommonWord.CTextPr();
+					oTextPr.Unifill = AscFormat.CreateSolidFillRGB(0, 0, 0);
+					oTextPr.FontSize = oTextPr.FontSizeCS = 65;
+					oPresentationBullet.MergeTextPr(oTextPr);
+					arrNumberingLvls.push({divId: sDivId, arrLvls: [oPresentationBullet]});
+				}
+			}
+		}, this);
+		return arrNumberingLvls;
+	};
+	baseEditorsApi.prototype.SetDrawImagePreviewBulletForMenu = function(arrDrawingInfo, nType)
+	{
+		const arrAdaptedDrawingInfo = this.CheckDeprecatedBulletPreviewInfo(arrDrawingInfo, nType);
+		const arrParsedInfo = this.ParseBulletPreviewInformation(arrAdaptedDrawingInfo);
+		const oDrawer = new AscCommon.CBulletPreviewDrawer(arrParsedInfo, nType);
+		oDrawer.checkFontsAndDraw();
+	};
 	baseEditorsApi.prototype.asc_setMacros = function(sData)
 	{
 		if (!this.macros)
@@ -4138,6 +4273,119 @@
 		this.hideVideoControl();
 	};
 
+
+	baseEditorsApi.prototype.getPluginContextMenuInfo = function()
+	{
+		return new AscCommon.CPluginCtxMenuInfo();
+	};
+
+	// context menu items
+	baseEditorsApi.prototype["onPluginContextMenuShow"] = function()
+	{
+		let contextMenuInfo = this.getPluginContextMenuInfo();
+		let plugins = window.g_asc_plugins.onPluginEvent("onContextMenuShow", contextMenuInfo);
+		if (0 === plugins.length)
+		{
+			if (this.contextMenuPlugins)
+				delete this.contextMenuPlugins;
+			return true;
+		}
+
+		if (!this.contextMenuPlugins)
+		{
+			this.contextMenuPlugins = {
+				items : {},
+				itemsCount : 0,
+				processItems : {},
+				processItemsCount : 0
+			};
+		}
+
+		for (let i = 0, len = plugins.length; i < len; i++)
+		{
+			if (!this.contextMenuPlugins.processItems[plugins[i]])
+			{
+				this.contextMenuPlugins.processItems[plugins[i]] = 0;
+				this.contextMenuPlugins.processItemsCount++;
+			}
+			++this.contextMenuPlugins.processItems[plugins[i]];
+		}
+
+		return false;
+	};
+	baseEditorsApi.prototype["onPluginContextMenuItemClick"] = function(guid, itemId)
+	{
+		let guids = {}; guids[guid] = true;
+		window.g_asc_plugins.onPluginEvent2("onContextMenuClick", itemId, guids);
+	};
+	baseEditorsApi.prototype.onPluginCloseContextMenuItem = function(guid)
+	{
+		if (!this.contextMenuPlugins)
+			return;
+
+		let isUpdate = false;
+		if (this.contextMenuPlugins.processItems[guid])
+		{
+			delete this.contextMenuPlugins.processItems[guid];
+			this.contextMenuPlugins.processItemsCount--;
+			isUpdate = true;
+		}
+
+		if (this.contextMenuPlugins.items[guid])
+		{
+			delete this.contextMenuPlugins.items[guid];
+			this.contextMenuPlugins.itemsCount--;
+			isUpdate = true;
+		}
+
+		if (isUpdate)
+			this.onPluginCheckContextMenuItems();
+	};
+	baseEditorsApi.prototype.onPluginAddContextMenuItem = function(items)
+	{
+		if (!this.contextMenuPlugins)
+			return;
+
+		let guid = items["guid"];
+		if (this.contextMenuPlugins.processItems[guid])
+		{
+			this.contextMenuPlugins.processItems[guid]--;
+			// не копим.
+			this.contextMenuPlugins.processItems[guid] = 0;
+			if (this.contextMenuPlugins.processItems[guid] === 0)
+			{
+				delete this.contextMenuPlugins.processItems[guid];
+				this.contextMenuPlugins.processItemsCount--;
+			}
+		}
+
+		if (!this.contextMenuPlugins.items[guid])
+			this.contextMenuPlugins.itemsCount++;
+
+		this.contextMenuPlugins.items[guid] = items;
+
+		this.onPluginCheckContextMenuItems();
+	};
+	baseEditorsApi.prototype.onPluginCheckContextMenuItems = function()
+	{
+		if (0 !== this.contextMenuPlugins.processItemsCount)
+			return;
+
+		let items = [];
+		for (let item in this.contextMenuPlugins.items)
+		{
+			if (this.contextMenuPlugins.items.hasOwnProperty(item))
+				items.push(this.contextMenuPlugins.items[item]);
+		}
+
+		delete this.contextMenuPlugins;
+		this.sendEvent("onPluginContextMenu", items);
+	};
+	baseEditorsApi.prototype.onPluginUpdateContextMenuItem = function(items)
+	{
+		this.sendEvent("onPluginContextMenu", items);
+	};
+
 	// ---------------------------------------------------- wopi ---------------------------------------------
 	baseEditorsApi.prototype.asc_wopi_renameFile = function(name) {
 		var t = this;
@@ -4163,7 +4411,7 @@
 		return null;
 	};
 
-	baseEditorsApi.prototype.putImageToSelection = function (sImageSrc, nWidth, nHeight)
+	baseEditorsApi.prototype.putImageToSelection = function (sImageSrc, nWidth, nHeight, replaceMode)
 	{
 	};
 
@@ -4192,6 +4440,78 @@
 		this.asc_pluginRun(plugin.guid, 0, startData);
 	};
 
+
+	baseEditorsApi.prototype.retrieveFormatPainterData = function() {
+		return null;
+	};
+	baseEditorsApi.prototype.getFormatPainter = function() {
+		return this.formatPainter;
+	};
+	baseEditorsApi.prototype.getFormatPainterState = function() {
+		return this.formatPainter.getState();
+	};
+	baseEditorsApi.prototype.isFormatPainterOn = function() {
+		return this.formatPainter.isOn();
+	};
+	baseEditorsApi.prototype.checkFormatPainterData = function() {
+		return this.formatPainter.checkData();
+	};
+	baseEditorsApi.prototype.getFormatPainterData = function() {
+		return this.formatPainter.data;
+	};
+	baseEditorsApi.prototype.clearFormatPainterData = function() {
+		return this.formatPainter.clearData();
+	};
+	baseEditorsApi.prototype.sendPaintFormatEvent = function(_value)
+	{
+		let value = ( true === _value ? AscCommon.c_oAscFormatPainterState.kOn : ( false === _value ? AscCommon.c_oAscFormatPainterState.kOff : _value ) );
+		this.formatPainter.putState(value);
+		this.sendEvent("asc_onPaintFormatChanged", value);
+		if(value === AscCommon.c_oAscFormatPainterState.kOff)
+		{
+			this.sendEvent('asc_onStopFormatPainter');
+		}
+	};
+	baseEditorsApi.prototype.getEyedropperImgData = function()
+	{
+		return null;
+	};
+	baseEditorsApi.prototype.clearEyedropperImgData = function()
+	{
+		this.eyedropper.clearImageData();
+	};
+	baseEditorsApi.prototype.asc_startEyedropper = function(fEndCallback)
+	{
+		this.eyedropper.start(fEndCallback);
+	};
+	baseEditorsApi.prototype.finishEyedropper = function()
+	{
+		this.eyedropper.finish();
+	};
+	baseEditorsApi.prototype.asc_finishEyedropper = function()
+	{
+		this.finishEyedropper();
+	};
+	baseEditorsApi.prototype.cancelEyedropper = function()
+	{
+		this.eyedropper.cancel();
+	};
+	baseEditorsApi.prototype.asc_cancelEyedropper = function()
+	{
+		this.cancelEyedropper();
+	};
+	baseEditorsApi.prototype.isEyedropperStarted = function()
+	{
+		return this.eyedropper.isStarted();
+	};
+	baseEditorsApi.prototype.getEyedropperColor = function()
+	{
+		return this.eyedropper.getColor();
+	};
+	baseEditorsApi.prototype.checkEyedropperColor = function(nX, nY)
+	{
+		this.eyedropper.checkColor(nX, nY);
+	};
 	//----------------------------------------------------------export----------------------------------------------------
 	window['AscCommon']                = window['AscCommon'] || {};
 	window['AscCommon'].baseEditorsApi = baseEditorsApi;
@@ -4243,7 +4563,12 @@
 	prot['setOpenedAt'] = prot.setOpenedAt;
 	prot['asc_SaveDrawingAsPicture'] = prot.asc_SaveDrawingAsPicture;
 	prot['AddImageUrl'] = prot.AddImageUrl;
+	prot['asc_SetDrawImagePreviewBulletForMenu'] = prot['SetDrawImagePreviewBulletForMenu'] = prot.SetDrawImagePreviewBulletForMenu;
+	prot['asc_GetPossibleNumberingLanguage'] = prot.asc_GetPossibleNumberingLanguage;
 
 	prot['asc_isCrypto'] = prot.asc_isCrypto;
+	prot['asc_startEyedropper'] = prot.asc_startEyedropper;
+	prot['asc_finishEyedropper'] = prot.asc_finishEyedropper;
+	prot['asc_cancelEyedropper'] = prot.asc_cancelEyedropper;
 
 })(window);

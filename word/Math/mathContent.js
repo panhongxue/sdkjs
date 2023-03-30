@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -2401,7 +2401,13 @@ CMathContent.prototype.CopyTo = function(OtherContent, Selected, oPr)
     }
     if(oPr && oPr.Comparison)
     {
-        oPr.Comparison.updateReviewInfo(OtherContent, reviewtype_Add);
+        if (oPr.SkipUpdateInfo) {
+            oPr.Comparison.saveReviewInfo(OtherContent, OtherContent);
+        } else if (oPr.bSaveCustomReviewType) {
+            oPr.Comparison.saveCustomReviewInfo(OtherContent, OtherContent, oPr.Comparison.nInsertChangesType);
+        } else {
+            oPr.Comparison.updateReviewInfo(OtherContent, oPr.Comparison.nInsertChangesType);
+        }
     }
 };
 CMathContent.prototype.getElem = function(nNum)
@@ -3793,12 +3799,12 @@ CMathContent.prototype.Get_ParaContentPos = function(bSelection, bStart, Content
 			if (true === bStart && nPos > 0)
 			{
 				ContentPos.Add(nPos - 1);
-				this.Content[nPos - 1].Get_EndPos(false, ContentPos, ContentPos.Get_Depth() + 1);
+				this.Content[nPos - 1].Get_EndPos(false, ContentPos, ContentPos.GetDepth() + 1);
 			}
 			else
 			{
 				ContentPos.Add(nPos + 1);
-				this.Content[nPos + 1].Get_StartPos(ContentPos, ContentPos.Get_Depth() + 1);
+				this.Content[nPos + 1].Get_StartPos(ContentPos, ContentPos.GetDepth() + 1);
 			}
 		}
 		else
@@ -5618,7 +5624,7 @@ CMathContent.prototype.private_IsMenuPropsForContent = function(Action)
 CMathContent.prototype.MergeParaRuns = function ()
 {
 	if (this.Content.length > 0) {
-		
+
         for(let i = 0; i < this.Content.length; i++) {
 
 			if (this.Content[i].Type === 49) {
@@ -5715,7 +5721,7 @@ CMathContent.prototype.ConvertContentView = function(intStart, intEnd, nInputTyp
                 MathText.Add(oElement);
         }
 
-        if (isToLinear || undefined === nInputType || null === nInputType)
+        if ((isToLinear || undefined === nInputType || null === nInputType) && strContent !== "")
         {
             this.Remove_FromContent(intStart, intCount);
             this.Add_MathStyleText(intStart, MathText);

@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -93,6 +93,23 @@
      * @example
      * {"Id": 100, "Tag": "CC_Tag", "Lock": 3}
      */
+	
+	/**
+	 * @typedef {('none' | 'comments' | 'forms' | 'readOnly')} DocumentEditingRestrictions
+	 * A value that specifies editing restriction of the document:
+	 * * <b>none</b> - no editing restrictions
+	 * * <b>comments</b> - allow editing of comments
+	 * * <b>forms</b> - allow editing of form fields
+	 * * <b>readOnly</b> - allow no editing
+	 */
+	
+	/**
+	 * @typedef {("entirely" | "beforeCursor" | "afterCursor")} TextPartType
+	 * A value that defines if it is possible to delete and/or edit the content control or not:
+	 * * <b>entirely</b> - replace all text with the specified one
+	 * * <b>beforeCursor</b> - replace only the part of the word that is before cursor
+	 * * <b>beforeCursor</b> - replace only the part of the word that is after cursor
+	 */
 
     var Api = window["asc_docs_api"];
 
@@ -748,6 +765,14 @@
 	 * @property {?number} WidthPix - The OLE object image width in pixels.
 	 * @property {?number} HeightPix - The OLE object image height in pixels.
 	 */
+	
+	/**
+	 * @typedef {Object} AddinFieldData
+	 * The addin field data.
+	 * @property {string} FieldId - An identifier of the field
+	 * @property {string} Value - The value of the field.
+	 * @property {string} Content - The text content of the field.
+	 */
 
 	/**
 	 * Returns all OLE object data for objects which can be opened by the specified plugin.
@@ -847,6 +872,7 @@
 		oPluginData["data"] = NewObject["Data"];
 		oPluginData["guid"] = NewObject["ApplicationId"];
 		oPluginData["select"] = bSelect;
+		oPluginData["plugin"] = true;
 		this.asc_addOleObject(oPluginData);
 	};
 
@@ -947,6 +973,11 @@
 					oImagesMap[oData["ImageData"]] = oData["ImageData"];
 				}
 				let oApi = this;
+				let sGuid;
+				if(window.g_asc_plugins)
+				{
+					sGuid = window.g_asc_plugins.setPluginMethodReturnAsync();
+				}
 				AscCommon.Check_LoadingDataBeforePrepaste(this, {}, oImagesMap, function() {
 					oLogicDocument.Reassign_ImageUrls(oImagesMap);
 					oLogicDocument.Recalculate();
@@ -954,6 +985,10 @@
 					oLogicDocument.LoadDocumentState(oStartState);
 					oLogicDocument.UpdateSelection();
 					oLogicDocument.FinalizeAction();
+					if(window.g_asc_plugins)
+					{
+						window.g_asc_plugins.onPluginMethodReturn(sGuid);
+					}
 				});
 			}
 			else
@@ -1015,6 +1050,208 @@
 			this.asc_GetPrevRevisionsChange();
 		else
 			this.asc_GetNextRevisionsChange();
+	};
+	/**
+	 * Get all addin fields from the current document
+	 * @memberof Api
+	 * @typeofeditors ["CDE"]
+	 * @alias GetAllAddinFields
+	 * @since 7.3.3
+	 * @example
+	 * window.Asc.plugin.executeMethod("GetAllAddinFields");
+	 */
+	window["asc_docs_api"].prototype["pluginMethod_GetAllAddinFields"] = function()
+	{
+		let logicDocument = this.private_GetLogicDocument();
+		if (!logicDocument)
+			return [];
+		
+		let result = [];
+		let fields = logicDocument.GetAllAddinFields();
+		fields.forEach(function(field)
+		{
+			let fieldData = AscWord.CAddinFieldData.FromField(field);
+			if (fieldData)
+				result.push(fieldData.ToJson());
+		});
+		
+		return result;
+	};
+	/**
+	 * Update addin fields with the specified data
+	 * @memberof Api
+	 * @typeofeditors ["CDE"]
+	 * @alias UpdateAddinFields
+	 * @param {AddinFieldData[]} arrData - An array of addin field data
+	 * @since 7.3.3
+	 * @example
+	 * window.Asc.plugin.executeMethod("UpdateAddinFields");
+	 */
+	window["asc_docs_api"].prototype["pluginMethod_UpdateAddinFields"] = function(arrData)
+	{
+		let logicDocument = this.private_GetLogicDocument();
+		if (!logicDocument || !Array.isArray(arrData))
+			return;
+		
+		let arrAddinData = [];
+		arrData.forEach(function(data)
+		{
+			arrAddinData.push(AscWord.CAddinFieldData.FromJson(data));
+		})
+		
+		logicDocument.UpdateAddinFieldsByData(arrAddinData);
+	};
+	/**
+	 * Create new addin field
+	 * @memberof Api
+	 * @typeofeditors ["CDE"]
+	 * @alias AddAddinField
+	 * @param {AddinFieldData} data - addin field data
+	 * @since 7.3.3
+	 * @example
+	 * window.Asc.plugin.executeMethod("AddAddinField");
+	 */
+	window["asc_docs_api"].prototype["pluginMethod_AddAddinField"] = function(data)
+	{
+		let logicDocument = this.private_GetLogicDocument();
+		if (!logicDocument)
+			return;
+		
+		logicDocument.AddAddinField(AscWord.CAddinFieldData.FromJson(data));
+	};
+	/**
+	 * Remove field wrapper, leave only the content of the field
+	 * @memberof Api
+	 * @typeofeditors ["CDE"]
+	 * @alias RemoveFieldWrapper
+	 * @param {string} [fieldId=undefined] - remove wrapper for specified field, if not specified then remove from current field
+	 * @since 7.3.3
+	 * @example
+	 * window.Asc.plugin.executeMethod("RemoveFieldWrapper");
+	 */
+	window["asc_docs_api"].prototype["pluginMethod_RemoveFieldWrapper"] = function(fieldId)
+	{
+		let logicDocument = this.private_GetLogicDocument();
+		if (!logicDocument)
+			return;
+		
+		logicDocument.RemoveComplexFieldWrapper(fieldId);
+	};
+	/**
+	 * Set document editing restrictions
+	 * @memberof Api
+	 * @typeofeditors ["CDE"]
+	 * @alias SetEditingRestrictions
+	 * @param {DocumentEditingRestrictions} restrictions
+	 * @since 7.3.3
+	 * @example
+	 * window.Asc.plugin.executeMethod("SetEditingRestrictions");
+	 */
+	window["asc_docs_api"].prototype["pluginMethod_SetEditingRestrictions"] = function(restrictions)
+	{
+		let logicDocument = this.private_GetLogicDocument();
+		if (!logicDocument)
+			return;
+		
+		let _restrictions = null;
+		switch (restrictions)
+		{
+			case "comments": _restrictions = Asc.c_oAscRestrictionType.OnlyComments; break;
+			case "forms": _restrictions = Asc.c_oAscRestrictionType.OnlyForms; break;
+			case "readOnly": _restrictions = Asc.c_oAscRestrictionType.View; break;
+			case "none": _restrictions = Asc.c_oAscRestrictionType.None; break;
+		}
+		
+		if (null === _restrictions)
+			return;
+		
+		this.asc_setRestriction(_restrictions);
+	};
+	/**
+	 * Get the current word
+	 * @memberof Api
+	 * @typeofeditors ["CDE"]
+	 * @alias GetCurrentWord
+	 * @param {TextPartType} [type="entirely"]
+	 * @since 7.4.0
+	 * @example
+	 * window.Asc.plugin.executeMethod("GetCurrentWord");
+	 */
+	window["asc_docs_api"].prototype["pluginMethod_GetCurrentWord"] = function(type)
+	{
+		let logicDocument = this.private_GetLogicDocument();
+		if (!logicDocument)
+			return "";
+		
+		let direction = 0;
+		switch (AscBuilder.GetStringParameter(type, "entirely"))
+		{
+			case "beforeCursor":
+				direction = -1;
+				break;
+			case "afterCursor":
+				direction = 1;
+				break;
+			case "entirely":
+			default:
+				direction = 0;
+				break;
+		}
+		
+		return logicDocument.GetCurrentWord(direction);
+	};
+	/**
+	 * Get the current word
+	 * @memberof Api
+	 * @typeofeditors ["CDE"]
+	 * @alias ReplaceCurrentWord
+	 * @param {string} replaceString
+	 * @param {TextPartType} [type="entirely"]
+	 * @since 7.4.0
+	 * @example
+	 * window.Asc.plugin.executeMethod("ReplaceCurrentWord");
+	 */
+	window["asc_docs_api"].prototype["pluginMethod_ReplaceCurrentWord"] = function(replaceString, type)
+	{
+		let _replaceString = "" === replaceString ? "" : AscBuilder.GetStringParameter(replaceString, null);
+
+		let logicDocument = this.private_GetLogicDocument();
+		if (!logicDocument || null === _replaceString)
+			return;
+		
+		let direction = 0;
+		switch (AscBuilder.GetStringParameter(type, "entirely"))
+		{
+			case "beforeCursor":
+				direction = -1;
+				break;
+			case "afterCursor":
+				direction = 1;
+				break;
+			case "entirely":
+			default:
+				direction = 0;
+				break;
+		}
+		
+		logicDocument.ReplaceCurrentWord(direction, _replaceString);
+	};
+	/**
+	 * Get the current sentence
+	 * @memberof Api
+	 * @typeofeditors ["CDE"]
+	 * @alias GetCurrentSentence
+	 * @since 7.4.0
+	 * @example
+	 * window.Asc.plugin.executeMethod("GetCurrentSentence");
+	 */
+	window["asc_docs_api"].prototype["pluginMethod_GetCurrentSentence"] = function()
+	{
+		let logicDocument = this.private_GetLogicDocument();
+		if (!logicDocument)
+			return "";
+		
+		return logicDocument.GetCurrentSentence();
 	};
 
 	function private_ReadContentControlCommonPr(commonPr)

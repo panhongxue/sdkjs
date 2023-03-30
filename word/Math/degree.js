@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -183,7 +183,7 @@ CDegreeBase.prototype.GetSizeSup = function(oMeasure, Metric)
     {
         lastElem = this.baseContent.GetLastElement();
 
-        var bSameFontSize  = lastElem.Type == para_Math_Run && lastElem.Math_CompareFontSize(mgCtrPrp.FontSize, false);
+        var bSameFontSize  = lastElem.Type == para_Math_Run && (mgCtrPrp.FontSize === lastElem.Math_GetFontSize(false));
         bTextElement = bSameFontSize || (lastElem.Type !== para_Math_Run && lastElem.IsJustDraw());
     }
 
@@ -264,7 +264,7 @@ CDegreeBase.prototype.GetSizeSubScript = function(oMeasure, Metric)
     {
         var lastElem = this.baseContent.GetLastElement();
 
-        var bSameFontSize  = lastElem.Type == para_Math_Run && lastElem.Math_CompareFontSize(mgCtrPrp.FontSize, false);
+        var bSameFontSize  = lastElem.Type == para_Math_Run && (mgCtrPrp.FontSize === lastElem.Math_GetFontSize(false));
         bTextElement      = bSameFontSize || (lastElem.Type !== para_Math_Run && lastElem.IsJustDraw());
     }
 
@@ -789,7 +789,7 @@ CDegreeSubSupBase.prototype.GetSize = function(oMeasure, Metric)
         var bFirstItem = this.Pr.type == DEGREE_SubSup;
         var BaseItem = bFirstItem ? this.baseContent.GetLastElement() : this.baseContent.GetFirstElement();
 
-        var bSameFontSize  = BaseItem.Type == para_Math_Run && BaseItem.Math_CompareFontSize(mgCtrPrp.FontSize, bFirstItem);
+        var bSameFontSize  = BaseItem.Type == para_Math_Run && (mgCtrPrp.FontSize === BaseItem.Math_GetFontSize(bFirstItem));
         TextElement  = bSameFontSize || (BaseItem.Type !== para_Math_Run && BaseItem.IsJustDraw());
     }
 
@@ -1204,33 +1204,39 @@ CDegreeSubSup.prototype.Can_ModifyArgSize = function()
 {
     return this.CurPos !== 0 && false === this.Is_SelectInside(); // находимся в итераторе
 };
-CDegreeSubSup.prototype.GetTextOfElement = function(isLaTeX, isOnlyText)
+CDegreeSubSup.prototype.GetTextOfElement = function(isLaTeX)
 {
-	let arrContent = [];
-	let oBase = this.getBase().GetMultipleContentForGetText(isLaTeX, true);
-	let oLower = this.getLowerIterator().GetMultipleContentForGetText(isLaTeX);
-	let oUpper = this.getUpperIterator().GetMultipleContentForGetText(isLaTeX);
+	let strTemp = "";
+	let Base = this.getBase().GetMultipleContentForGetText(isLaTeX);
+	let strLower = this.getLowerIterator().GetMultipleContentForGetText(isLaTeX);
+	let strUpper = this.getUpperIterator().GetMultipleContentForGetText(isLaTeX);
+
 	let isPreScript = this.Pr.type === -1;
 	
     if (isLaTeX)
     {
+		if(strLower.length === 0 || strLower === '⬚')
+			strLower = '{}'
+		if(strUpper.length === 0 || strUpper === '⬚')
+			strUpper = '{}'
+
 		if (true === isPreScript)
-			arrContent.push('{', '_', oLower, '^', oUpper, '}', oBase);
+			strTemp = '{' + '_' + strLower + '^' + strUpper + '}' + Base;
         else
-			arrContent.push(oBase, '_', oLower, '^', oUpper);
+			strTemp = Base + '_' + strLower + '^' + strUpper;
 	}
     else
     {
+
 		if (true === isPreScript)
-            arrContent.push('(', '_', oLower, '^', oUpper, ')', oBase);
-        else
-            arrContent.push(oBase, '_', oLower, '^', oUpper);
+			strTemp = '(' + '_' + strLower + '^' + strUpper + ')' + Base;
+        else {
+            strTemp = Base + '_' + strLower + '^' + strUpper;
+        }
+
+        strTemp += " ";
 	}
-
-    if (isOnlyText)
-        return AscMath.ConvertMathTextToText(arrContent);
-
-	return arrContent;
+	return strTemp;
 };
 
 /**

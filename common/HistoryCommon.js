@@ -2428,7 +2428,7 @@
 	window['AscDFH'].historyitem_ChartSpace_SetStartBinaryData = window['AscDFH'].historyitem_type_ChartSpace | 22;
 	window['AscDFH'].historyitem_ChartSpace_SetPartBinaryData  = window['AscDFH'].historyitem_type_ChartSpace | 23;
 	window['AscDFH'].historyitem_ChartSpace_SetEndBinaryData   = window['AscDFH'].historyitem_type_ChartSpace | 24;
-	window['AscDFH'].historyitem_ChartSpace_SetExternalPath    = window['AscDFH'].historyitem_type_ChartSpace | 24;
+	window['AscDFH'].historyitem_ChartSpace_SetExternalPath    = window['AscDFH'].historyitem_type_ChartSpace | 25;
 
 	window['AscDFH'].historyitem_Legend_SetLayout      = window['AscDFH'].historyitem_type_Legend | 1;
 	window['AscDFH'].historyitem_Legend_AddLegendEntry = window['AscDFH'].historyitem_type_Legend | 2;

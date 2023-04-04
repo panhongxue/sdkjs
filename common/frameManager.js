@@ -445,14 +445,17 @@
 	}
 	CDiagramCellFrameManager.prototype.setMainDiagram = function (oInfo)
 	{
-		const asc_chart_binary = new Asc.asc_CChartBinary();
-		asc_chart_binary.asc_setBinary(oInfo["binary"]);
-		const oModel = this.api.wb.getWorksheet().model;
-		const oNewChartSpace = asc_chart_binary.getChartSpace(oModel);
-		oNewChartSpace.setWorksheet(oModel);
+		AscFormat.ExecuteNoHistory(function ()
+		{
+			const asc_chart_binary = new Asc.asc_CChartBinary();
+			asc_chart_binary.asc_setBinary(oInfo["binary"]);
+			const oModel = this.api.wb.getWorksheet().model;
+			const oNewChartSpace = asc_chart_binary.getChartSpace(oModel);
+			oNewChartSpace.setWorksheet(oModel);
 
-		oNewChartSpace.setFrameChart(true);
-		this.mainDiagram = oNewChartSpace;
+			oNewChartSpace.setFrameChart(true);
+			this.mainDiagram = oNewChartSpace;
+		}, this, []);
 	}
 	CDiagramCellFrameManager.prototype.preObtain = function (oInfo)
 	{
@@ -586,6 +589,13 @@
 	}
 	AscFormat.InitClassWithoutType(CFrameDiagramBinaryLoader, CFrameBinaryLoader);
 
+	CFrameDiagramBinaryLoader.getBase64 = function (arrStream)
+	{
+		const nDataSize = arrStream.length;
+		const sData = AscCommon.Base64.encode(arrStream);
+		return "XLSY;v2;" + nDataSize + ";" + sData;
+	};
+
 	CFrameDiagramBinaryLoader.prototype.createChartSpace = function (nType, oPlaceholder)
 	{
 
@@ -606,25 +616,29 @@
 		return oBinaryChart;
 
 	};
-	CFrameDiagramBinaryLoader.prototype.setXLSX = function (arrStream)
+	CFrameDiagramBinaryLoader.prototype.setXLSX = function (sStream)
 	{
-		if (arrStream && arrStream.length)
+		if (sStream && sStream.length)
 		{
-			const nDataSize = arrStream.length;
-			const sData = AscCommon.Base64.encode(arrStream);
-			this.XLSXBase64 = "XLSY;v2;" + nDataSize + ";" + sData;
-
+			if (typeof sStream === 'string')
+			{
+				this.XLSXBase64 = sStream;
+			}
+			else
+			{
+				this.XLSXBase64 = Array.from(sStream);
+			}
 		}
 		else
 		{
 			this.XLSXBase64 = null;
 		}
 	};
-	CFrameDiagramBinaryLoader.prototype.resolvePromise = function (arrStream)
+	CFrameDiagramBinaryLoader.prototype.resolvePromise = function (sStream)
 	{
-		if (this.isTruthStream(arrStream))
+		if (this.isTruthStream(sStream))
 		{
-			this.setXLSX(arrStream);
+			this.setXLSX(sStream);
 			this.loadFrame();
 		}
 	};
@@ -661,7 +675,7 @@
 		{
 			return this.getExternalPromise();
 		}
-			return this.getNestedPromise();
+		return this.getNestedPromise();
 	};
 	CFrameDiagramBinaryLoader.prototype.getExternalPromise = function ()
 	{
@@ -673,7 +687,7 @@
 		const oThis = this;
 		return new Promise(function (resolve)
 		{
-			resolve(oThis.chart.XLSX);
+			resolve(oThis.chart.XLSX.length ? CFrameDiagramBinaryLoader.getBase64(oThis.chart.XLSX) : null);
 		});
 	}
 
@@ -691,13 +705,30 @@
 		const oThis = this;
 		return new Promise(function (resolve)
 		{
-			window["AscDesktopEditor"]["convertFile"](oThis.getLocalFileLink(), 0x2002, function (_file) {
+			window["AscDesktopEditor"]["convertFile"](oThis.getLocalFileLink(), 0x2002, function (_file)
+			{
 				let stream = null;
-				if (_file) {
-					stream = _file["get"](/*Editor.bin*/);
+				if (_file)
+				{
+					stream = _file["get"]();
 					_file["close"]();
 				}
-				resolve(stream ? new Uint8Array(stream) : null);
+				if (stream)
+				{
+					stream = new Uint8Array(stream);
+					const nEditor = AscCommon.getEditorByBinSignature(stream);
+					if (nEditor !== AscCommon.c_oEditorId.Spreadsheet) {
+						resolve(null);
+					}
+					else
+					{
+						resolve(stream);
+					}
+				}
+				else
+				{
+					resolve( null);
+				}
 			});
 		});
 	};
@@ -707,8 +738,7 @@
 	};
 	CFrameDiagramExternalDataManager.prototype.isLocalLink = function ()
 	{
-		//todo
-		return true;
+		return this.externalLink.indexOf('file:') === 0;
 	};
 	CFrameDiagramExternalDataManager.prototype.isExternalLink = function ()
 	{
@@ -719,7 +749,11 @@
 	{
 		if (this.isLocalDesktop() && this.isLocalLink())
 		{
-				return this.getLocalFilePromise();
+			return this.getLocalFilePromise();
+		}
+		else if (this.isExternalLink())
+		{
+
 		}
 		else if (this.isExternalLink())
 		{

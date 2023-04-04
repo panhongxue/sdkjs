@@ -371,7 +371,7 @@ function(window, undefined) {
 
 
 	function CChangesStartChartSpaceBinary(Class, Old, New, Color) {
-		AscDFH. CChangesStartBinaryData.call(this, Class, Old, New, AscDFH.historyitem_ChartSpace_SetStartBinaryData, Color);
+		AscDFH.CChangesStartBinaryData.call(this, Class, Old, New, AscDFH.historyitem_ChartSpace_SetStartBinaryData, Color);
 	}
 	CChangesStartChartSpaceBinary.prototype = Object.create(AscDFH.CChangesStartBinaryData.prototype);
 	CChangesStartChartSpaceBinary.prototype.constructor = CChangesStartChartSpaceBinary;
@@ -3230,6 +3230,9 @@ function(window, undefined) {
 		}
 		if (this.XLSX) {
 			copy.setXLSX(this.XLSX.slice());
+		}
+		if (this.externalPath) {
+			copy.setExternalPath(this.externalPath);
 		}
 		copy.setLang(this.lang);
 		if (this.pivotSource) {

@@ -612,7 +612,8 @@ var lcid_haLatn = 0x7c68; // Hausa, Latin
 		GetUrlsFromImageDialog: 4,
 		SkipStartEndAction: 5,
 		StartUploadImageAction: 6,
-		UpdateDiagram: 7
+		UpdateDiagramInGeneral: 7,
+		UpdateDiagramInFrame: 8
 	};
 
 	var CellValueType = {

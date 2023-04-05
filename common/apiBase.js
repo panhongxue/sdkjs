@@ -774,16 +774,45 @@
 				this.sync_StartAction(c_oAscAsyncActionType.BlockInteraction, c_oAscAsyncAction.UploadImage);
 				break;
 			}
-			case c_oAscFrameDataType.UpdateDiagram:
+			case c_oAscFrameDataType.UpdateDiagramInGeneral:
 			{
 				const oLogicDocument = this.private_GetLogicDocument();
+				const oBinaryData = oInformation["binary"];
 				if (oLogicDocument)
 				{
-					AscFormat.ExecuteNoHistory(function ()
+					if (oInformation["noHistory"])
 					{
-						oLogicDocument.UpdateChart(oInformation);
-					});
+						AscFormat.ExecuteNoHistory(function ()
+						{
+							oLogicDocument.UpdateChart(oBinaryData);
+						});
+					}
+					else
+					{
+						oLogicDocument.EditChart(oBinaryData);
+					}
+
 				}
+				break;
+			}
+			case c_oAscFrameDataType.UpdateDiagramInFrame:
+			{
+				const sBase64 = oInformation["workbookBinary"];
+				const wbModel = new AscCommonExcel.Workbook(this.handlers, this);
+				const oOldWbModel = this.wbModel;
+				this.wbModel = wbModel;
+				const oReader = new AscCommonExcel.BinaryFileReader();
+				oReader.Read(sBase64, wbModel);
+				const oChartSpaceBinary = new Asc.asc_CChartBinary();
+				oChartSpaceBinary.asc_setBinary(oInformation["binary"]);
+				const oWorksheet = wbModel.getWorksheet(0);
+				const oChartSpace = oChartSpaceBinary.getChartSpace(oWorksheet);
+				oChartSpace.setWorksheet(oWorksheet);
+				oChartSpace.setFrameChart(true);
+				oChartSpace.handleUpdateChart();
+				oChartSpace.recalculate();
+				this.wbModel = oOldWbModel;
+				this.sendFromFrameToGeneralEditor(new AscCommon.CFrameUpdateDiagramData(oChartSpace));
 				break;
 			}
 			default:

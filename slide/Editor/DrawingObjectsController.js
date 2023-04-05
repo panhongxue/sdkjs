@@ -306,38 +306,48 @@ DrawingObjectsController.prototype.getColorMapOverride  =  function()
 {
     return this.drawingObjects.Get_ColorMap();
 };
+DrawingObjectsController.prototype.getSingleSelectedChart = function ()
+{
+	const arrByTypes = AscFormat.getObjectsByTypesFromArr(this.selectedObjects, true);
+	const arrSelectedCharts = [];
+
+	for(let i = 0; i < arrByTypes.charts.length; ++i)
+	{
+		if(arrByTypes.charts[i].selected)
+		{
+			arrSelectedCharts.push(arrByTypes.charts[i]);
+		}
+	}
+	if (arrSelectedCharts.length === 1)
+	{
+		return arrSelectedCharts[0];
+	}
+	return null;
+};
 DrawingObjectsController.prototype.editChart = function(binary)
 {
     var chart_space = this.getChartSpace2(binary, null);
     chart_space.setParent(this.drawingObjects);
-    var by_types, i;
-    by_types = AscFormat.getObjectsByTypesFromArr(this.selectedObjects, true);
-    var aSelectedCharts = [];
-    for(i = 0; i < by_types.charts.length; ++i)
+		const oSelectedChart = this.getSingleSelectedChart();
+
+    if(oSelectedChart)
     {
-        if(by_types.charts[i].selected)
-        {
-            aSelectedCharts.push(by_types.charts[i]);
-        }
-    }
-    if(aSelectedCharts.length === 1)
-    {
-        if (!aSelectedCharts[0].isExternal() && binary["workbookBinary"])
+        if (!oSelectedChart.isExternal() && binary["workbookBinary"])
         {
             chart_space.setXLSX(AscCommon.Base64.decode(binary["workbookBinary"]));
         }
-        if(aSelectedCharts[0].group)
+        if(oSelectedChart.group)
         {
-            var parent_group = aSelectedCharts[0].group;
-            var major_group = aSelectedCharts[0].getMainGroup();
+            var parent_group = oSelectedChart.group;
+            var major_group = oSelectedChart.getMainGroup();
             for(i = parent_group.spTree.length -1; i > -1; --i)
             {
-                if(parent_group.spTree[i] === aSelectedCharts[0])
+                if(parent_group.spTree[i] === oSelectedChart)
                 {
                     parent_group.removeFromSpTreeByPos(i);
                     chart_space.setGroup(parent_group);
-                    chart_space.spPr.xfrm.setOffX(aSelectedCharts[0].spPr.xfrm.offX);
-                    chart_space.spPr.xfrm.setOffY(aSelectedCharts[0].spPr.xfrm.offY);
+                    chart_space.spPr.xfrm.setOffX(oSelectedChart.spPr.xfrm.offX);
+                    chart_space.spPr.xfrm.setOffY(oSelectedChart.spPr.xfrm.offY);
                     parent_group.addToSpTree(i, chart_space);
                     parent_group.updateCoordinatesAfterInternalResize();
                     major_group.recalculate();
@@ -353,9 +363,9 @@ DrawingObjectsController.prototype.editChart = function(binary)
         }
         else
         {
-            chart_space.spPr.xfrm.setOffX(aSelectedCharts[0].x);
-            chart_space.spPr.xfrm.setOffY(aSelectedCharts[0].y);
-            var pos = aSelectedCharts[0].deleteDrawingBase();
+            chart_space.spPr.xfrm.setOffX(oSelectedChart.x);
+            chart_space.spPr.xfrm.setOffY(oSelectedChart.y);
+            var pos = oSelectedChart.deleteDrawingBase();
             chart_space.addToDrawingObjects(pos);
             this.resetSelection();
             this.selectObject(chart_space, this.drawingObjects.num);

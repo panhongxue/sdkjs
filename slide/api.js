@@ -2300,6 +2300,16 @@ background-repeat: no-repeat;\
 			}, undefined, true);
 		}
 	};
+	asc_docs_api.prototype.asc_updateChartData = function ()
+	{
+		const oGraphicController = this.getGraphicController();
+		const oChart = oGraphicController && oGraphicController.getSingleSelectedChart();
+		if (oChart)
+		{
+			const oUpdater = new AscCommon.CDiagramUpdater(this, oChart);
+			oUpdater.update();
+		}
+	};
 	asc_docs_api.prototype._autoSaveInner = function () {
 		if (this.WordControl.DemonstrationManager && this.WordControl.DemonstrationManager.Mode) {
 			return;
@@ -8968,6 +8978,7 @@ background-repeat: no-repeat;\
 	asc_docs_api.prototype['asc_moveAnimationEarlier']            = asc_docs_api.prototype.asc_moveAnimationEarlier;
 	asc_docs_api.prototype['asc_moveAnimationLater']              = asc_docs_api.prototype.asc_moveAnimationLater;
 	asc_docs_api.prototype['asc_onShowAnimTab']                   = asc_docs_api.prototype.asc_onShowAnimTab;
+	asc_docs_api.prototype['asc_updateChartData']                 = asc_docs_api.prototype.asc_updateChartData;
 
 
 	asc_docs_api.prototype['StartAddShape']                       = asc_docs_api.prototype.StartAddShape;

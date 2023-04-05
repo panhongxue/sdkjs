@@ -232,6 +232,7 @@
 	{
 		CCellFrameManager.call(this, oApi);
 		this.arrAfterLoadCallbacks = [];
+		this.mainDiagram = null;
 	}
 	AscFormat.InitClassWithoutType(CDiagramCellFrameManager, CCellFrameManager);
 
@@ -515,7 +516,7 @@
 	};
 	CDiagramCellFrameManager.prototype.sendUpdateDiagram = function ()
 	{
-		this.sendFromFrameToGeneralEditor(new CFrameUpdateDiagramData(this.mainDiagram));
+		this.sendFromFrameToGeneralEditor(new CFrameUpdateDiagramData(this.mainDiagram, true));
 	};
 
 	CDiagramCellFrameManager.prototype.getChartObject = function ()
@@ -529,10 +530,16 @@
 		}
 	};
 
-	function CFrameUpdateDiagramData(oDiagram)
+	function CFrameUpdateDiagramData(oDiagram, bNoHistory)
 	{
-		const oData = new Asc.asc_CChartBinary(oDiagram);
-		CFrameData.call(this, AscCommon.c_oAscFrameDataType.UpdateDiagram, oData);
+		const oBinary = new Asc.asc_CChartBinary(oDiagram);
+		const oData = {"binary": oBinary, "noHistory": !!bNoHistory};
+		CFrameData.call(this, AscCommon.c_oAscFrameDataType.UpdateDiagramInGeneral, oData);
+	}
+
+	function CGeneralUpdateDiagramData(oData)
+	{
+		CFrameData.call(this, AscCommon.c_oAscFrameDataType.UpdateDiagramInFrame, oData);
 	}
 
 
@@ -545,8 +552,8 @@
 	function CFrameImageData(arrImages, token, bNotShowError)
 	{
 		const oData = {
-			"images": arrImages,
-			"token": token,
+			"images"       : arrImages,
+			"token"        : token,
 			"bNotShowError": bNotShowError
 		}
 		CFrameData.call(this, AscCommon.c_oAscFrameDataType.SendImageUrls, oData);
@@ -658,14 +665,24 @@
 	{
 		return (arrStream && (arrStream.length !== 0)) || !this.isExternal();
 	}
+	CFrameDiagramBinaryLoader.prototype.startLoadWorksheet = function ()
+	{
+		this.api.sync_StartAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Waiting);
+	};
+	CFrameDiagramBinaryLoader.prototype.endLoadWorksheet = function ()
+	{
+		this.api.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Waiting);
+	};
 	CFrameDiagramBinaryLoader.prototype.tryOpen = function ()
 	{
+		this.startLoadWorksheet();
 		const oPromise = this.getPromise();
 		oPromise.then(this.resolvePromise.bind(this));
 	};
 	CFrameDiagramBinaryLoader.prototype.loadFrame = function ()
 	{
 		this.api.asc_onOpenChartFrame();
+		this.endLoadWorksheet();
 		this.api.sendEvent('asc_doubleClickOnChart', this.getBinaryChart());
 	};
 
@@ -717,7 +734,8 @@
 				{
 					stream = new Uint8Array(stream);
 					const nEditor = AscCommon.getEditorByBinSignature(stream);
-					if (nEditor !== AscCommon.c_oEditorId.Spreadsheet) {
+					if (nEditor !== AscCommon.c_oEditorId.Spreadsheet)
+					{
 						resolve(null);
 					}
 					else
@@ -727,7 +745,7 @@
 				}
 				else
 				{
-					resolve( null);
+					resolve(null);
 				}
 			});
 		});
@@ -755,15 +773,52 @@
 		{
 
 		}
-		else if (this.isExternalLink())
-		{
+	};
 
+	function CDiagramUpdater(oApi, oChart)
+	{
+		this.chart = oChart;
+		this.api = oApi;
+		this.frameLoader = new CFrameDiagramBinaryLoader(this.api, this.chart);
+	}
+
+	CDiagramUpdater.prototype.update = function ()
+	{
+		const oPromise = this.frameLoader.getPromise();
+		if (oPromise)
+		{
+			oPromise.then(this.resolvePromise.bind(this));
 		}
 	};
+
+	CDiagramUpdater.prototype.getChartBinary = function ()
+	{
+		return new Asc.asc_CChartBinary(this.chart);
+	};
+
+	CDiagramUpdater.prototype.resolvePromise = function (sStream)
+	{
+		if (sStream)
+		{
+			const oBinaryData = this.getChartBinary();
+			oBinaryData.setWorkbookBinary(sStream);
+			this.sendToFrameEditor(oBinaryData);
+		}
+		else
+		{
+			// todo
+		}
+	};
+
+	CDiagramUpdater.prototype.sendToFrameEditor = function (oBinary)
+	{
+		this.api.sendFromGeneralToFrameEditor(new CGeneralUpdateDiagramData(oBinary));
+	}
 
 
 	AscCommon.CDiagramCellFrameManager = CDiagramCellFrameManager;
 	AscCommon.COleCellFrameManager = COleCellFrameManager;
 	AscCommon.CFrameDiagramBinaryLoader = CFrameDiagramBinaryLoader;
-
+	AscCommon.CDiagramUpdater = CDiagramUpdater;
+	AscCommon.CFrameUpdateDiagramData = CFrameUpdateDiagramData;
 })(window);

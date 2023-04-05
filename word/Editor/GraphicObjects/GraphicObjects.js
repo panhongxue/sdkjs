@@ -1202,35 +1202,44 @@ CGraphicObjects.prototype =
         }
     },
 
+	getSingleSelectedChart: function ()
+	{
+		const arrByTypes = AscFormat.getObjectsByTypesFromArr(this.selectedObjects, true);
+		const arrSelectedCharts = [];
+
+		for(let i = 0; i < arrByTypes.charts.length; ++i)
+		{
+			if(arrByTypes.charts[i].selected)
+			{
+				arrSelectedCharts.push(arrByTypes.charts[i]);
+			}
+		}
+		if (arrSelectedCharts.length === 1)
+		{
+			return arrSelectedCharts[0];
+		}
+		return null;
+	},
+
     editChart: function(chart)
     {
         var chart_space = this.getChartSpace2(chart, null), select_start_page;
-        var by_types;
-        by_types = AscFormat.getObjectsByTypesFromArr(this.selectedObjects, true);
 
-        var aSelectedCharts = [];
-        for(i = 0; i < by_types.charts.length; ++i)
+				const oSelectedChart  = this.getSingleSelectedChart();
+        if(oSelectedChart)
         {
-            if(by_types.charts[i].selected)
+            if(oSelectedChart.group)
             {
-                aSelectedCharts.push(by_types.charts[i]);
-            }
-        }
-
-        if(aSelectedCharts.length === 1)
-        {
-            if(aSelectedCharts[0].group)
-            {
-                var parent_group = aSelectedCharts[0].group;
-                var major_group = aSelectedCharts[0].getMainGroup();
+                var parent_group = oSelectedChart.group;
+                var major_group = oSelectedChart.getMainGroup();
                 for(var i = parent_group.spTree.length -1; i > -1; --i)
                 {
-                    if(parent_group.spTree[i] === aSelectedCharts[0])
+                    if(parent_group.spTree[i] === oSelectedChart)
                     {
                         parent_group.removeFromSpTreeByPos(i);
                         chart_space.setGroup(parent_group);
-                        chart_space.spPr.xfrm.setOffX(aSelectedCharts[0].spPr.xfrm.offX);
-                        chart_space.spPr.xfrm.setOffY(aSelectedCharts[0].spPr.xfrm.offY);
+                        chart_space.spPr.xfrm.setOffX(oSelectedChart.spPr.xfrm.offX);
+                        chart_space.spPr.xfrm.setOffY(oSelectedChart.spPr.xfrm.offY);
                         parent_group.addToSpTree(i, chart_space);
                         major_group.updateCoordinatesAfterInternalResize();
                         major_group.parent.CheckWH();
@@ -1250,14 +1259,14 @@ CGraphicObjects.prototype =
             {
                 chart_space.spPr.xfrm.setOffX(0);
                 chart_space.spPr.xfrm.setOffY(0);
-                select_start_page = aSelectedCharts[0].selectStartPage;
-                chart_space.setParent(aSelectedCharts[0].parent);
-                aSelectedCharts[0].parent.Set_GraphicObject(chart_space);
-                aSelectedCharts[0].parent.docPr.setTitle(chart["cTitle"]);
-                aSelectedCharts[0].parent.docPr.setDescr(chart["cDescription"]);
+                select_start_page = oSelectedChart.selectStartPage;
+                chart_space.setParent(oSelectedChart.parent);
+                oSelectedChart.parent.Set_GraphicObject(chart_space);
+                oSelectedChart.parent.docPr.setTitle(chart["cTitle"]);
+                oSelectedChart.parent.docPr.setDescr(chart["cDescription"]);
                 this.resetSelection();
                 this.selectObject(chart_space, select_start_page);
-                aSelectedCharts[0].parent.CheckWH();
+                oSelectedChart.parent.CheckWH();
                 this.document.Recalculate();
                 this.document.Document_UpdateInterfaceState();
             }

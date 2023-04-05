@@ -251,7 +251,7 @@ CChartSpace.prototype.recalculate = function()
 
     var oController = this.getDrawingObjectsController();
     //Use this check to prevent charts recalculation on not initialized sheets bug 50467
-    if(!oController) {
+    if(!oController && !this.isFrameChart) {
         return;
     }
     //---------------------------------------------------

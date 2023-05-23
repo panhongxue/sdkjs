@@ -762,36 +762,38 @@ CRadical.prototype.Is_ContentUse = function(MathContent)
 
     return false;
 };
-CRadical.prototype.GetTextOfElement = function(isLaTeX, isOnlyText)
+CRadical.prototype.GetTextOfElement = function(oMathText)
 {
-	let arrContent  = [];
-	let oDegree     = this.getDegree().GetMultipleContentForGetText(isLaTeX);
-	let oBase       = this.getBase().GetMultipleContentForGetText(isLaTeX);
+    let oDegree = this.getDegree();
+    let oBase = this.getBase();
 
-	if (isLaTeX)
+    let oPosDegree = oMathText.Add(oDegree, true);
+    let oPosBase = oMathText.Add(oBase, true);
+
+	if (oMathText.IsLaTeX())
     {
-        if (oDegree.text.length > 0)
-            oDegree.text = '[' + oDegree.text + ']';
+        oMathText.AddBefore(oPosDegree, "\\sqrt");
+        if (oMathText.GetLengthOfContentByPos(oPosDegree) > 1)
+        {
+            let oElementDegree = oMathText.GetExact(oPosDegree);
+            oElementDegree.Wrap("[", "]");
+        }
 
-        arrContent.push('\\sqrt', oDegree, "{", oBase, "}");
+        let oElementBase = oMathText.GetExact(oPosBase);
+        oElementBase.Wrap("{", "}");
     }
 	else
     {
 		let strRadicalSymbol = "√";
 
-        if (oDegree.text === "3" || oDegree.text === "4")
-            strRadicalSymbol = oDegree.text === "3" ?  "∛" : "∜";
-
-        if (oDegree.text.length > 0)
-            oDegree.text = oDegree.text + '&';
-
-        arrContent.push(strRadicalSymbol, "(", oDegree, oBase, ")");
+        let oStart = oMathText.AddBefore(oPosDegree, strRadicalSymbol);
+        if  (oMathText.GetLengthOfContentByPos(oPosDegree) > 1)
+        {
+            oMathText.AddBefore(oPosDegree, "(");
+            oMathText.AddBefore(oPosBase, "&");
+            oMathText.AddAfter(oPosBase, ")");
+        }
 	}
-
-    if (isOnlyText)
-        return AscMath.ConvertMathTextToText(arrContent);
-
-    return arrContent;
 };
 
 /**

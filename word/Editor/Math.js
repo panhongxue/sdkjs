@@ -1777,7 +1777,6 @@ ParaMath.prototype.GetSelectedText = function(bAll, bClearText, oPr)
 			return "";
 
 		let strContent             = "";
-        debugger
 		let oSelectedContent = this.GetSelectContent(bAll);
 		if (oSelectedContent && oSelectedContent.Content && oSelectedContent.Content.GetTextContent)
 		{
@@ -3260,7 +3259,6 @@ ParaMath.prototype.Get_EndPos = function(BehindEnd, ContentPos, Depth)
 //-----------------------------------------------------------------------------------
 ParaMath.prototype.Set_SelectionContentPos = function(StartContentPos, EndContentPos, Depth, StartFlag, EndFlag)
 {
-    //debugger
     this.Root.Set_SelectionContentPos(StartContentPos, EndContentPos, Depth, StartFlag, EndFlag);
     this.bSelectionUse = true;
 };

@@ -3851,8 +3851,7 @@
 
 			if (oConvertPos)
 			{
-				let oStartPos 	= oLast;
-				let str 		= CutContentFromEnd(this.oCMathContent, oStartPos, false);
+				let str 		= CutContentFromEnd(this.oCMathContent, oLast, false);
 
 				GetConvertContent(0, str, this.oCMathContent);
 				this.oCMathContent.Correct_Content(true);
@@ -3894,7 +3893,6 @@
 			if (oConvertPos)
 			{
 				let oStartPos 	= oConvertPos.start;
-				let oEndPos 	= oConvertPos.end;
 				let str 		= CutContentFromEnd(this.oCMathContent, oStartPos, true);
 				GetConvertContent(0, str, this.oCMathContent);
 			}
@@ -3975,7 +3973,7 @@
 	function ConvertBracketContent(oTokens, oCMathContent)
 	{
 		return ConvertBracket(oTokens, oCMathContent, true);
-	};
+	}
 	function ConvertBracket(oTokens, oCMathContent, isOnlyContent)
 	{
 		let arrBrackets = oTokens.Pairs;
@@ -3997,14 +3995,14 @@
 
 		GetConvertContent(0, strConvertContent, oCMathContent);
 		return true;
-	};
+	}
 	function IsInBracket(oBracketPositions, oTokenPositions)
 	{
 		if (!oBracketPositions || !oTokenPositions)
 			return;
 
 		oTokenPositions.IsBetween(oBracketPositions[1], oBracketPositions[0]);
-	};
+	}
 	function ContentWithStylesIterator(arr)
 	{
 		let oArr = [];
@@ -4027,7 +4025,7 @@
 			}
 		}
 		return oArr;
-	};
+	}
 	function ContentWithStylesToText(arr)
 	{
 		let arrInput = ContentWithStylesIterator(arr);
@@ -4040,7 +4038,7 @@
 		}
 
 		return str;
-	};
+	}
 	function ConvertMathTextToText(arr)
 	{
 		if (arr.length === 0)
@@ -4083,22 +4081,21 @@
 		}
 
 		return strContent;
-	};
+	}
 	function GetOnlyText(oContent, nInputType)
 	{
 		let one = oContent.GetTextOfElement(nInputType);
 
 		return ConvertMathTextToText(one);
-	};
+	}
 
 
 	function PosInMathText(nPos, nLength)
 	{
-		this.pos = nPos; // EndPos
-		this.length = nLength; // Length of content
+		this.pos = nPos; 		// EndPos
+		this.length = nLength;	// Length of content
 	}
 	/**
-	 *
 	 * @param {boolean} LaTeX
 	 * @param {boolean} OnlyText
 	 * @constructor
@@ -4109,79 +4106,118 @@
 		this.OnlyText = false;
 		this.arr = [];
 		this.nPos = 0;
+		this.isNeedWrap = false;
 
-		this.Positions = []
+		this.Positions = [];
+	}
+	MathTextAndStyles.prototype.CreateInnerCopy = function()
+	{
+		return new MathTextAndStyles(this.LaTeX);
+	};
+	MathTextAndStyles.prototype.AddContainer = function()
+	{
+		let oMathTextAndStyles = this.CreateInnerCopy();
+		this.arr.push(oMathTextAndStyles);
+		return oMathTextAndStyles;
 	};
 	MathTextAndStyles.prototype.IsLaTeX = function()
 	{
 		return this.LaTeX;
 	};
-	MathTextAndStyles.prototype.IsOnlyText = function()
+	MathTextAndStyles.prototype.GetLengthOfContentByPos =  function(oPos)
 	{
-		return this.OnlyText;
-	};
-	MathTextAndStyles.prototype.Add = function (oContent, isNeedWrap)
+		let oContentElement = this.GetExact(oPos);
+		if (oContentElement instanceof MathTextAndStyles)
+		{
+			return oContentElement.arr.length > 1;
+		}
+	}
+	MathTextAndStyles.prototype.Add = function(oContent, isStart, isNotWrap)
 	{
 		let nPosCopy = this.nPos;
-		oContent.GetTextOfElement(this);
+		if (isStart)
+		{
+			let oMath = this.AddContainer();
+			oContent.GetTextOfElement(oMath);
+			this.Increase();
+			let oPos = this.AddPosition(this.nPos - nPosCopy);
 
-		return this.GetPosition(this.nPos - nPosCopy);
+			if (oMath.IsNeedWrap() && !isNotWrap)
+			{
+				this.WrapExactElement(oPos);
+			}
+
+			return oPos;
+		}
+		else
+		{
+			oContent.GetTextOfElement(this);
+			return this.AddPosition(this.nPos - nPosCopy);
+		}
 	};
-	MathTextAndStyles.prototype.AddText = function (oContent)
+	MathTextAndStyles.prototype.AddText = function(oContent, isNew)
 	{
-		this.arr.push(oContent);
-		this.Increase();
+		if (this.arr[this.arr.length - 1] && !isNew)
+		{
+			this.arr[this.arr.length - 1].text += oContent.text;
+		}
+		else
+		{
+			this.arr.push(oContent);
+			this.Increase();
+		}
 	};
-	MathTextAndStyles.prototype.GetPosition = function (nLength)
+	MathTextAndStyles.prototype.Get_Position = function()
 	{
-		let oPos = new PosInMathText(this.nPos, nLength);
-		this.AddPosition(oPos);
-		return oPos;
-	};
-	MathTextAndStyles.prototype.AddPosition = function (oPos)
-	{
-		let isExist = false;
 		for (let nCounter = 0; nCounter < this.Positions.length; nCounter++)
 		{
 			let oCurrentPos = this.Positions[nCounter];
-			if (oCurrentPos.pos === oPos.pos)
+			if (oCurrentPos.pos === this.nPos)
 			{
-				if (oCurrentPos.length === oPos.length)
-				{
-					isExist = true;
-				}
-				else
-				{
-					oCurrentPos.length = oPos.length;
-					isExist = true;
-				}
+				return oCurrentPos;
 			}
 		}
-
-		if (!isExist)
-			this.Positions.push(oPos);
 	};
-	MathTextAndStyles.prototype.GetExact = function (oPos, isText)
+	MathTextAndStyles.prototype.AddPosition = function(nLength, nPos)
 	{
-		let oCurrent = this.arr[oPos.pos];
+		let oPos;
+
+		if (nPos !== undefined)
+		{
+			oPos = new PosInMathText(nPos, nLength);
+			for (let i = 0; i < this.Positions.length; i++)
+			{
+				let oCurrentPos = this.Positions[i];
+				if (oCurrentPos.pos > nPos)
+				{
+					this.Positions.splice(i, 0, oPos);
+					return oPos;
+				}
+			}
+
+			return
+		}
+
+		oPos = this.Get_Position();
+
+		if (!oPos)
+		{
+			oPos = new PosInMathText(this.nPos, nLength);
+			this.Positions.push(oPos);
+		}
+
+		return oPos;
+	};
+	MathTextAndStyles.prototype.GetExact = function(oPos, isText)
+	{
+		let oCurrent = this.arr[oPos.pos - 1];
 
 		if (isText && oCurrent instanceof MathText)
 			return oCurrent.GetText();
 		else
 			return oCurrent;
 	};
-	MathTextAndStyles.prototype.IsExactCheck =  function (oFuncCheck, arrPos, isToken)
-	{
-		let oCurrent = this.GetExact(arrPos);
-
-		if (oCurrent instanceof MathText && !isToken)
-			return false;
-		else if (!oCurrent instanceof MathText && isToken)
-			return false;
-
-		return oFuncCheck(oCurrent);
-	};
-	MathTextAndStyles.prototype.GetPosAfter = function (oPos)
+	MathTextAndStyles.prototype.GetArrPos = function(oPos, isBefore)
 	{
 		let arrAfterPos = [];
 
@@ -4190,12 +4226,20 @@
 			let oCurrentPos = this.Positions[nCounter];
 			let nCurrentPos = oCurrentPos.pos;
 
-			if (nCurrentPos > oPos.pos)
-				arrAfterPos.push(oCurrentPos);
+			if (isBefore)
+			{
+				if (nCurrentPos > oPos.pos - 1)
+					arrAfterPos.push(oCurrentPos);
+			}
+			else
+			{
+				if (nCurrentPos > oPos.pos )
+					arrAfterPos.push(oCurrentPos);
+			}
 		}
 		return arrAfterPos;
 	};
-	MathTextAndStyles.prototype.ChangePositions = function (arrPositions, oFunc)
+	MathTextAndStyles.prototype.ChangePositions = function(arrPositions, oFunc)
 	{
 		for (let nCounter = 0; nCounter < arrPositions.length; nCounter++)
 		{
@@ -4203,44 +4247,52 @@
 			oFunc(arrCurrentPos);
 		}
 	};
-	MathTextAndStyles.prototype.AddAfter = function (oPos, oContent, isNotCopyStyle)
+	MathTextAndStyles.prototype.AddAfter = function(oPos, oContent, isNotCopyStyle)
 	{
-		let arrPositions = this.GetPosAfter(oPos);
-		let oCurrent = !isNotCopyStyle ? this.GetExact(oPos).GetStyle() : undefined;
+		let arrPositions = this.GetArrPos(oPos);
+		let oCurrentContainer = this.GetExact(oPos);
+		let oCurrent = !isNotCopyStyle && oCurrentContainer instanceof MathText ? oCurrentContainer.GetStyle() : undefined;
 		let oNew = new MathText(oContent, oCurrent);
 
-		this.arr.splice(oPos.pos + 1, 0, oNew);
+		this.arr.splice(oPos.pos, 0, oNew);
 
 		this.nPos++;
 		this.ChangePositions(arrPositions, function(oPos) {oPos.pos++});
+		return  this.AddPosition(oContent.length, oPos.pos + 1);
 	};
-	MathTextAndStyles.prototype.AddBefore = function (oPos, oContent)
+	MathTextAndStyles.prototype.AddBefore = function(oPos, oContent, isNotCopyStyle)
 	{
-		let arrPositions = this.GetPosAfter(oPos);
-		this.arr.splice(oPos.pos - oPos.length, 0, oContent);
-		this.AddPosition(oPos);
+		let arrPositions = this.GetArrPos(oPos, true);
+		let oCurrentContainer = this.GetExact(oPos);
+		let oCurrent = !isNotCopyStyle && oCurrentContainer instanceof MathText ?  oCurrentContainer.GetStyle() : undefined;
+		let oNew = new MathText(oContent, oCurrent);
+		let nPos = oPos.pos - oPos.length;
+
+		this.arr.splice(nPos, 0, oNew);
+
 		this.nPos++;
 		this.ChangePositions(arrPositions, function(oPos) {oPos.pos++});
+		return this.AddPosition(oContent.length, nPos);
 	};
-	MathTextAndStyles.prototype.WrapExactElement = function (arrPos)
+	MathTextAndStyles.prototype.Wrap = function(strStart, strEnd)
 	{
-		debugger
+		this.AddBefore(this.Positions[0], strStart);
+		this.AddAfter(this.Positions[this.Positions.length - 1], strEnd);
+	};
+	MathTextAndStyles.prototype.IsNeedWrap = function()
+	{
+		return this.arr.length > 1;
+	};
+	MathTextAndStyles.prototype.WrapExactElement = function(oPos)
+	{
+		let oToken = this.GetExact(oPos);
+
 		if (!this.IsLaTeX())
-		{
-			this.AddBefore(arrPos, "(");
-			this.AddAfter(arrPos, ")");
-		}
+			oToken.Wrap("(", ")");
 		else
-		{
-			this.AddBefore(arrPos, "{");
-			this.AddAfter(arrPos, "}");
-		}
+			oToken.Wrap("{", "}");
 	};
-	MathTextAndStyles.prototype.WrapStartEndElements = function (arrStartPos, arrEndPos)
-	{
-
-	}
-	MathTextAndStyles.prototype.Increase = function ()
+	MathTextAndStyles.prototype.Increase = function()
 	{
 		this.nPos++;
 	};
@@ -4255,6 +4307,10 @@
 			{
 				strOutput += oCurrentElement.GetText();
 			}
+			else if (oCurrentElement instanceof MathTextAndStyles)
+			{
+				strOutput += oCurrentElement.GetText();
+			}
 			else
 			{
 				strOutput += oCurrentElement;
@@ -4263,14 +4319,16 @@
 
 		return strOutput;
 	};
+	MathTextAndStyles.prototype.ChangeContent = function (str)
+	{
+		this.Positions = [];
+		this.arr = [];
+		this.AddText(new AscMath.MathText(str));
+	}
 	MathTextAndStyles.prototype.GetTextAndStyles = function()
 	{
 
 	};
-
-
-
-
 
 	//--------------------------------------------------------export----------------------------------------------------
 	window["AscMath"] = window["AscMath"] || {};

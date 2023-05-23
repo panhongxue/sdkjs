@@ -533,18 +533,19 @@ ParaRun.prototype.GetText = function(oText)
 
 ParaRun.prototype.GetTextOfElement = function(oTextMath)
 {
-    let str = "";
+	let isLatex = oTextMath.IsLaTeX();
+	let isOperator = false;
 
 	for (let i = 0; i < this.Content.length; i++)
 	{
-		if (this.Content[i])
-			str += this.Content[i].GetTextOfElement(oTextMath instanceof AscMath.MathTextAndStyles ? oTextMath.IsLaTeX() : oTextMath);
+		let oCurrentElement = this.Content[i];
+		let strCurrentElement = oCurrentElement.GetTextOfElement(isLatex);
+
+		if (AscMath.MathLiterals.operator.SearchU(strCurrentElement))
+			isOperator = true;
+
+		oTextMath.AddText(new AscMath.MathText(strCurrentElement, this.CompiledPr.Copy()), isOperator)
 	}
-
-	if (!oTextMath)
-		return new AscMath.MathText(str, this.CompiledPr.Copy())
-
-	oTextMath.AddText(new AscMath.MathText(str, this.CompiledPr.Copy()))
 };
 
 ParaRun.prototype.MathAutocorrection_GetOperatorInfo = function ()

@@ -545,10 +545,10 @@ CDegree.prototype.GetTextOfElement = function(oMathText)
 {
 	let oBase           = this.getBase();
 	let oIterator       = this.getIterator();
-    let arrPosBase      = oMathText.Add(oBase);
-    let arrPosIterator  = oMathText.Add(oIterator);
+    let oPosBase      = oMathText.Add(oBase, true);
+    let oPosIterator  = oMathText.Add(oIterator, true);
 
-    oMathText.AddAfter(arrPosBase, this.Pr.type === 1 ? '^' : '_');
+    oMathText.AddAfter(oPosBase, this.Pr.type === 1 ? '^' : '_');
 };
 
 /**
@@ -1204,39 +1204,31 @@ CDegreeSubSup.prototype.Can_ModifyArgSize = function()
 {
     return this.CurPos !== 0 && false === this.Is_SelectInside(); // находимся в итераторе
 };
-CDegreeSubSup.prototype.GetTextOfElement = function(isLaTeX)
+CDegreeSubSup.prototype.GetTextOfElement = function(oMathText)
 {
-	let strTemp = "";
-	let Base = this.getBase().GetMultipleContentForGetText(isLaTeX);
-	let strLower = this.getLowerIterator().GetMultipleContentForGetText(isLaTeX);
-	let strUpper = this.getUpperIterator().GetMultipleContentForGetText(isLaTeX);
-
-	let isPreScript = this.Pr.type === -1;
-	
-    if (isLaTeX)
+    let oBase                = this.getBase();
+    let oLowerIterator       = this.getLowerIterator();
+    let oUpperIterator       = this.getUpperIterator();
+    let isPreScript = this.Pr.type === -1;
+    if (isPreScript)
     {
-		if(strLower.length === 0 || strLower === '⬚')
-			strLower = '{}'
-		if(strUpper.length === 0 || strUpper === '⬚')
-			strUpper = '{}'
+        let oPosLowerIterator  = oMathText.Add(oLowerIterator, true);
+        let oPosUpperIterator  = oMathText.Add(oUpperIterator, true);
+        let oPosBase           = oMathText.Add(oBase, true);
 
-		if (true === isPreScript)
-			strTemp = '{' + '_' + strLower + '^' + strUpper + '}' + Base;
-        else
-			strTemp = Base + '_' + strLower + '^' + strUpper;
-	}
+        oMathText.AddBefore(oPosLowerIterator, "(_");
+        oMathText.AddAfter(oPosLowerIterator, "^");
+        oMathText.AddAfter(oPosUpperIterator, ")");
+    }
     else
     {
+        let oPosBase            = oMathText.Add(oBase, true);
+        let oPosLowerIterator  = oMathText.Add(oLowerIterator, true);
+        let oPosUpperIterator  = oMathText.Add(oUpperIterator, true);
 
-		if (true === isPreScript)
-			strTemp = '(' + '_' + strLower + '^' + strUpper + ')' + Base;
-        else {
-            strTemp = Base + '_' + strLower + '^' + strUpper;
-        }
-
-        strTemp += " ";
-	}
-	return strTemp;
+        oMathText.AddAfter(oPosBase, '_');
+        oMathText.AddAfter(oPosLowerIterator, '^');
+    }
 };
 
 /**

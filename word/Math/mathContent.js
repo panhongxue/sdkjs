@@ -3355,7 +3355,7 @@ CMathContent.prototype.Add_TextOnPos = function(nPos, sText, Paragraph, MathStyl
 };
 /**
  *
- * @param {number} nPos
+ * @param {object} nPos
  * @param {MathTextAndStyles} oMathText
  */
 CMathContent.prototype.Add_MathStyleText = function(nPos, oMathText)
@@ -3392,15 +3392,19 @@ CMathContent.prototype.Add_MathStyleText = function(nPos, oMathText)
             if (undefined !== MathStyle && null !== MathStyle)
                 MathRun.Apply_Pr(MathStyle);
 
-            this.Internal_Content_Add(nPos, MathRun, false);
+            this.Internal_Content_Add(nPos.pos, MathRun, false);
             this.CurPos++;
+        }
+        else if (oCurrentElement instanceof AscMath.MathTextAndStyles)
+        {
+            this.Add_MathStyleText(nPos, oCurrentElement);
         }
         else
         {
-            this.Add_TextOnPos(nPos, oCurrentElement, this.Paragraph);
+            this.Add_TextOnPos(nPos.pos, oCurrentElement, this.Paragraph);
         }
 
-        nPos++;
+        nPos.pos++;
     }
 };
 CMathContent.prototype.Add_Symbol = function(Code, TextPr, MathPr)
@@ -5721,10 +5725,11 @@ CMathContent.prototype.ConvertContentView = function(intStart, intEnd, nInputTyp
                 MathText.Add(oElement);
         }
 
-        if ((isToLinear || undefined === nInputType || null === nInputType) && strContent !== "")
+        if ((isToLinear || undefined === nInputType || null === nInputType))
         {
             this.Remove_FromContent(intStart, intCount);
-            this.Add_MathStyleText(intStart, MathText);
+
+            this.Add_MathStyleText({pos:intStart}, MathText);
             this.Content[intStart].SelectAll();
 
             this.Selection.Use      = true;

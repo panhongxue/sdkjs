@@ -5773,14 +5773,23 @@ CMathContent.prototype.ConvertContentView = function(intStart, intEnd, nInputTyp
 }
 CMathContent.prototype.SplitContentByContentPos = function()
 {
-    var oCurrentObj = this.Content[this.CurPos];
-    var CursorPos = oCurrentObj.State.ContentPos;
-    var arrContent = [];
+    let oCurrentObj = this.Content[this.CurPos];
+    let nCursorPos = oCurrentObj.State.ContentPos;
+    let arrContent = [];
 
-    if (CursorPos < oCurrentObj.Content.length)
+    if (nCursorPos < oCurrentObj.Content.length)
     {
-        var oNewRun = oCurrentObj.Split_Run(CursorPos);
-        arrContent.push(oNewRun);
+        if (oCurrentObj.Split_Run)
+        {
+            let oNewRun = oCurrentObj.Split_Run(nCursorPos);
+            arrContent.push(oNewRun);
+        }
+        else
+        {
+            // контент в котором мы находимся не является ParaRun
+            // значит делить не нужно т.к мы в обертке - выходим и отменяем автокоррекцию
+            return false;
+        }
     }
 
     for (let i = this.CurPos + 1; i < this.Content.length; i++)
@@ -5839,10 +5848,46 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
 
     let isConvert = false;
 
+    let lastElement = this.GetLastTextElement();
+
     // split content by cursor position
     const arrNextContent = this.SplitContentByContentPos();
 
-    let lastElement = this.GetLastTextElement();
+    if (arrNextContent === false)
+        return;
+
+    if (this.CorrectSpecialWordOnCursor(nInputType))
+    {
+        if (arrNextContent)
+            this.ConcatToContent(this.Content.length, arrNextContent);
+
+        return;
+    }
+
+    // convert word near cursor (\int, \sqrt, \alpha...)
+    // if (oElement.value === 32 || this.IsLastElement(AscMath.MathLiterals.operators))
+    // {
+    //     if (oElement.value === 32)
+    //     {
+    //         if (this.CorrectWordOnCursor(nInputType === 1))
+    //         {
+    //             if (arrNextContent)
+    //                 this.ConcatToContent(this.Content.length, arrNextContent);
+    //
+    //             return;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         if (this.CorrectWordOnCursor(nInputType === 1, true))
+    //         {
+    //             if (arrNextContent)
+    //                 this.ConcatToContent(this.Content.length, arrNextContent);
+    //
+    //             return;
+    //         }
+    //     }
+    // }
 
     if (nInputType === 0)
     {
@@ -5907,7 +5952,7 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
 
     if (arrNextContent.length > 0)
         this.AddContentForAutoCorrection(arrNextContent, true);
-};
+}
 CMathContent.prototype.GetLastContent = function ()
 {
     let oContent = this;
@@ -6573,83 +6618,16 @@ ContentIterator.prototype.CheckRules = function ()
         [true, "┬", true],
         [true, "┴", true],
 
-        ["s","i","n"],
-        ["t","a","n"],
-        ["t","a","n","h"],
-        ["s","u","p"],
-        ["s","i","n","h"],
-        ["s","e","c"],
-        ["k"],
-        ["h","o","m"],
-        ["a","r","g"],
-        ["a","r","c","y","a","n"],
-        ["a","r","c","s","i","n"],
-        ["a","r","c","s","e","c"],
-        ["a","r","c","c","s","c"],
-        ["a","r","c","c","o","t"],
-        ["a","r","c","c","o","s"],
-        ["i","n","f"],
-        ["g","c","d"],
-        ["e","x","p"],
-        ["d","i","m"],
-        ["d","e","t"],
-        ["d","e","g"],
-        ["c","s","c"],
-        ["c","o","t","h"],
-        ["c","o","t"],
-        ["c","o","s","h"],
-        ["c","o","s"],
-        ["P","r"],
-        ["l","g"],
-        ["l","n"],
-        ["l","o","g"],
-        ["s","g","n"],
-        ["s","e","c","h"],
-        ["l","i","m"],
-        ["m","i","n"],
-        ["m","a","x"],
-
-        ["s","i","n", true],
-        ["t","a","n", true],
-        ["t","a","n","h", true],
-        ["s","u","p", true],
-        ["s","i","n","h", true],
-        ["s","e","c", true],
-        ["k", true],
-        ["h","o","m", true],
-        ["a","r","g", true],
-        ["a","r","c","y","a","n", true],
-        ["a","r","c","s","i","n", true],
-        ["a","r","c","s","e","c", true],
-        ["a","r","c","c","s","c", true],
-        ["a","r","c","c","o","t", true],
-        ["a","r","c","c","o","s", true],
-        ["i","n","f", true],
-        ["g","c","d", true],
-        ["e","x","p", true],
-        ["d","i","m", true],
-        ["d","e","t", true],
-        ["d","e","g", true],
-        ["c","s","c", true],
-        ["c","o","t","h", true],
-        ["c","o","t", true],
-        ["c","o","s","h", true],
-        ["c","o","s", true],
-        ["P","r", true],
-        ["l","g", true],
-        ["l","n", true],
-        ["l","o","g", true],
-        ["s","g","n", true],
-        ["s","e","c","h", true],
-        ["l","i","m", true],
-        ["m","i","n", true],
-        ["m","a","x", true],
+        ["s","i","n"],["t","a","n"],["t","a","n","h"],["s","u","p"],["s","i","n","h"],["s","e","c"],
+        ["h","o","m"],["a","r","g"],["a","r","c","y","a","n"],["a","r","c","s","i","n"],["a","r","c","s","e","c"],
+        ["a","r","c","c","s","c"],["a","r","c","c","o","t"],["a","r","c","c","o","s"],["i","n","f"],["g","c","d"],
+        ["e","x","p"],["d","i","m"],["d","e","t"],["d","e","g"],["c","s","c"],["c","o","t","h"],["c","o","t"],
+        ["c","o","s","h"],["c","o","s"],["P","r"],["l","g"],["l","n"],["l","o","g"],["s","g","n"],["s","e","c","h"],
+        ["l","i","m"],["m","i","n"],["m","a","x"],
 
         [true, "/", true],
         [true, "^", true],
         [true, "_", true],
-        [true, "^", true, true],
-        [true, "_", true, true],
 
         ['\\frac', true, true],
 
@@ -6660,12 +6638,9 @@ ContentIterator.prototype.CheckRules = function ()
         ["/", true],
         [true, "/"],
 
-        [true, "_"],
-        [true, "^"],
-        ["■", true],
-
         [true, "┬"],
         [true, "┴"],
+        ["/"],
 
         [true, "́" ],
         [true, "̂" ],
@@ -6677,21 +6652,6 @@ ContentIterator.prototype.CheckRules = function ()
         [true, "⃛" ],
         [true, "̄" ],
         [true, "⃗" ],
-        [true, "⁗"],
-        [true, "‴"],
-        [true, "″"],
-        [true, "′"],
-
-        ["⁗"],
-        ["‴"],
-        ["″"],
-        ["′"],
-
-        ["/"],
-
-        ["∛"],
-        ["∜"],
-        ["▭"],
         [true],
     ];
 
@@ -7679,13 +7639,13 @@ var g_DefaultAutoCorrectMathSymbolsList =
     ['\\zwnj', 0x200C],
     ['\\zwsp', 0x200B]
 ];
-var g_AutoCorrectMathSymbols = JSON.parse(JSON.stringify(AscMath.AutoCorrection));
-var g_AutoCorrectMathFuncs = JSON.parse(JSON.stringify(AscMath.MathAutoCorrectionFuncNames));
+var g_AutoCorrectMathSymbols = JSON.parse(JSON.stringify(g_DefaultAutoCorrectMathSymbolsList));
+var g_AutoCorrectMathFuncs = JSON.parse(JSON.stringify(g_DefaultAutoCorrectMathFuncs));
 var g_AutoCorrectMathsList = {
-    DefaultAutoCorrectMathSymbolsList   :   AscMath.AutoCorrection,
-    AutoCorrectMathSymbols              :   g_AutoCorrectMathSymbols,
-    DefaultAutoCorrectMathFuncs         :   AscMath.MathAutoCorrectionFuncNames,
-    AutoCorrectMathFuncs                :   g_AutoCorrectMathFuncs
+    DefaultAutoCorrectMathSymbolsList : g_DefaultAutoCorrectMathSymbolsList,
+    AutoCorrectMathSymbols : g_AutoCorrectMathSymbols,
+    DefaultAutoCorrectMathFuncs : g_DefaultAutoCorrectMathFuncs,
+    AutoCorrectMathFuncs : g_AutoCorrectMathFuncs
 };
 //символы для mathfunc (интеграл, сумма...)
 var q_aMathAutoCorrectControlAggregationCodes =

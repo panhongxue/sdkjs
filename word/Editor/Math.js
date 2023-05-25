@@ -1069,7 +1069,7 @@ function ParaMath()
     this.DefaultTextPr.RFonts.SetAll("Cambria Math", -1);
 
     // Добавляем данный класс в таблицу Id (обязательно в конце конструктора)
-	g_oTableId.Add( this, this.Id );
+    AscCommon.g_oTableId.Add( this, this.Id );
 }
 
 ParaMath.prototype = Object.create(CParagraphContentWithContentBase.prototype);
@@ -1793,22 +1793,11 @@ ParaMath.prototype.GetSelectedText = function(bAll, bClearText, oPr)
 	return "";
 };
 
-ParaMath.prototype.GetText = function(isLaTeX, isNotOnlyText)
+ParaMath.prototype.GetText = function(isLaTeX)
 {
-    let res = "";
-    if (this.Root && this.Root.GetTextContent)
-    {
-        var textContent = this.Root.GetTextContent(false, isLaTeX);
-        if (textContent && textContent.str && !isNotOnlyText)
-        {
-            res = textContent.str;
-        }
-        else
-        {
-            res = textContent.content;
-        }
-    }
-    return res;
+    let oMathTextAndStyles = new AscMath.MathTextAndStyles(isLaTeX);
+    this.Root.GetTextOfElement(oMathTextAndStyles);
+    return oMathTextAndStyles.GetText();
 };
 
 ParaMath.prototype.GetSelectDirection = function()
@@ -3752,7 +3741,8 @@ ParaMath.prototype.ConvertFromUnicodeMath = function()
 {
     this.Root.CorrectAllMathWords(false);
     //this.Root.ConvertAllSpecialWords(false);
-	var strUnicode = this.GetText(false, true);
+
+	let strUnicode = this.GetText(false, true);
 	this.Root.Remove_Content(0,this.Root.Content.length);
     this.Root.CurPos = 0;
 	AscMath.CUnicodeConverter(strUnicode, this.Root);

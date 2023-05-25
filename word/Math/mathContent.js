@@ -5848,7 +5848,7 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
 
     let isConvert = false;
 
-    let lastElement = this.GetLastTextElement();
+  //  let lastElement = this.GetLastTextElement();
 
     // split content by cursor position
     const arrNextContent = this.SplitContentByContentPos();
@@ -5856,13 +5856,13 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
     if (arrNextContent === false)
         return;
 
-    if (this.CorrectSpecialWordOnCursor(nInputType))
-    {
-        if (arrNextContent)
-            this.ConcatToContent(this.Content.length, arrNextContent);
-
-        return;
-    }
+    // if (this.CorrectSpecialWordOnCursor(nInputType))
+    // {
+    //     if (arrNextContent)
+    //         this.ConcatToContent(this.Content.length, arrNextContent);
+    //
+    //     return;
+    // }
 
     // convert word near cursor (\int, \sqrt, \alpha...)
     // if (oElement.value === 32 || this.IsLastElement(AscMath.MathLiterals.operators))
@@ -5891,67 +5891,67 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
 
     if (nInputType === 0)
     {
-        if (AscMath.AutoCorrectOnCursor(lastElement, this, nInputType))
-            return;
+        // if (AscMath.AutoCorrectOnCursor(lastElement, this, nInputType))
+        //     return;
 
         const Tokens = new AscMath.ProceedTokens(this);
+        //this.Correct_Content(false)
 
         // if (this.ConvertContentInLastBracketBlock(nInputType))
         //     return;
+        //this.MoveCursorToEndPos();
     }
 
-    // LaTeX autocorrection disabled
-    if (nInputType === 1 || oElement.value === 39 || oElement.value === 34)
-        return;
+    // // LaTeX autocorrection disabled
+    // if (nInputType === 1 || oElement.value === 39 || oElement.value === 34)
+    //     return;
 
     if (arrNextContent.length > 0)
         this.AddContentForAutoCorrection(arrNextContent, true);
 
-    return
-
-    if (this.IsLastElement(AscMath.MathLiterals.operator))
-    {
-        let strPreLast = this.GetPreLastTextElement();
-        if (strPreLast === "_" || strPreLast === "^")
-        {
-            return
-        }
-    }
-
-    // check is needed start autocorrection
-    if (!this.IsStartAutoCorrection(nInputType, oElement.value))
-    {
-        this.AddContentForAutoCorrection(arrNextContent, true);
-        return;
-    }
-
-    if (lastElement === "&" || lastElement === "@")
-        return;
-
-    // Unicode
-    if (nInputType === 0)
-    {
-        // proceed bracket block () -> CDelimiter
-        let Bracket = this.CheckAutoCorrectionBrackets(nInputType, true);
-
-        // proceed rules (1/2, 1_2 ...)
-        isConvert = Bracket.intCounter >= 0 ? this.CheckAutoCorrectionRules(nInputType, Bracket) : false;
-
-        // else - convert content until first operator
-        if (isConvert === false && Bracket.intCounter >= 0 && Bracket.isConvert === false)
-            this.CheckWhileOperatorContent(Bracket.OperatorsPos, nInputType, true);
-    }
-    else // LaTex
-    {
-        let Bracket = this.CheckAutoCorrectionBrackets(nInputType);
-        if (Bracket.intCounter === 0)
-            this.CheckWhileOperatorContent(Bracket.OperatorsPos, nInputType, true);
-    }
-
-    this.MoveCursorToEndPos();
-
-    if (arrNextContent.length > 0)
-        this.AddContentForAutoCorrection(arrNextContent, true);
+    // if (this.IsLastElement(AscMath.MathLiterals.operator))
+    // {
+    //     let strPreLast = this.GetPreLastTextElement();
+    //     if (strPreLast === "_" || strPreLast === "^")
+    //     {
+    //         return
+    //     }
+    // }
+    //
+    // // check is needed start autocorrection
+    // if (!this.IsStartAutoCorrection(nInputType, oElement.value))
+    // {
+    //     this.AddContentForAutoCorrection(arrNextContent, true);
+    //     return;
+    // }
+    //
+    // if (lastElement === "&" || lastElement === "@")
+    //     return;
+    //
+    // // Unicode
+    // if (nInputType === 0)
+    // {
+    //     // proceed bracket block () -> CDelimiter
+    //     let Bracket = this.CheckAutoCorrectionBrackets(nInputType, true);
+    //
+    //     // proceed rules (1/2, 1_2 ...)
+    //     isConvert = Bracket.intCounter >= 0 ? this.CheckAutoCorrectionRules(nInputType, Bracket) : false;
+    //
+    //     // else - convert content until first operator
+    //     if (isConvert === false && Bracket.intCounter >= 0 && Bracket.isConvert === false)
+    //         this.CheckWhileOperatorContent(Bracket.OperatorsPos, nInputType, true);
+    // }
+    // else // LaTex
+    // {
+    //     let Bracket = this.CheckAutoCorrectionBrackets(nInputType);
+    //     if (Bracket.intCounter === 0)
+    //         this.CheckWhileOperatorContent(Bracket.OperatorsPos, nInputType, true);
+    // }
+    //
+    // this.MoveCursorToEndPos();
+    //
+    // if (arrNextContent.length > 0)
+    //     this.AddContentForAutoCorrection(arrNextContent, true);
 }
 CMathContent.prototype.GetLastContent = function ()
 {
@@ -7026,10 +7026,19 @@ CMathContent.prototype.GetMultipleContentForGetText = function(isLaTeX, isBase, 
 }
 CMathContent.prototype.GetTextOfElement = function(oMathText)
 {
+    let isReturn = false;
+    if (!oMathText)
+    {
+        isReturn = true;
+        oMathText = new AscMath.MathTextAndStyles(false);
+    }
 	for (let i = 0; i < this.Content.length; i++)
     {
         oMathText.Add(this.Content[i]);
 	}
+
+    if (isReturn)
+        return oMathText;
 };
 CMathContent.prototype.GetTextContent = function(bSelectedText, isLaTeX, isOnlyText)
 {

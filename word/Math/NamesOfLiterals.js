@@ -2755,6 +2755,11 @@
 			if (!this.ref)
 				return false;
 
+			if (!this.ref[0].Parent)
+			{
+				this.position[1]++;
+				return true;
+			}
 			let ParaRun = this.ref[0].Parent;
 			let CMathContent = ParaRun.Parent;
 
@@ -2782,6 +2787,12 @@
 		{
 			if (!this.ref)
 				return false;
+
+			if (!this.ref[0].Parent)
+			{
+				this.position[1]--;
+				return true;
+			}
 
 			let ParaRun = this.ref[0].Parent;
 			let CMathContent = ParaRun.Parent;
@@ -2982,16 +2993,20 @@
 				}
 				else
 				{
-					str = oCurrentElement.GetTextOfElement(false, true).text + str;
+					let oMathTextAndStyles = new MathTextAndStyles(false);
+					oCurrentElement.GetTextOfElement(oMathTextAndStyles);
+					str = oMathTextAndStyles.GetText() + str;
 					oContent.Remove_FromContent(nPosCMathContent, 1);
 				}
 			}
 			else
 			{
+				let oMathTextAndStyles = new MathTextAndStyles(false);
+				oCurrentElement.GetTextOfElement(oMathTextAndStyles);
 				if (isWrapFirstContent)
-					str = "〖" + oCurrentElement.GetTextOfElement(false, true) + "〗" + str;
+					str = "〖" + oMathTextAndStyles.GetText() + "〗" + str;
 				else
-					str = oCurrentElement.GetTextOfElement(false, true) + str;
+					str = oMathTextAndStyles.GetText() + str;
 
 				oContent.Remove_FromContent(nPosCMathContent, 1);
 			}
@@ -3345,7 +3360,6 @@
 	function ProceedTokens(oCMathContent)
 	{
 		this.oCMathContent = oCMathContent;
-
 		/**
 		 * Generate this.Tokens and this.Brackets list
 		 */
@@ -3656,10 +3670,12 @@
 			else if (!oLast && MathLiterals.rBrackets.id === lastElementMathId)
 			{
 				ConvertBracketContent(this.Tokens.brackets, this.oCMathContent);
+				this.oCMathContent.MoveCursorToEndPos();
 			}
 			else if (!oLast && MathLiterals.rBrackets.id === preLastElementMathId)
 			{
 				ConvertBracket(this.Tokens.brackets, this.oCMathContent);
+				this.oCMathContent.MoveCursorToEndPos();
 			}
 			else if (this.IsPCFunction(oLast) && this.IsTrigger(lastElementMathId))
 			{

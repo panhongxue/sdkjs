@@ -359,7 +359,7 @@
 			"\\odot" : "⊙",
 			"\\ominus" : "⊖",
 			"\\oplus" : "⊕",
-			"\\oslash" : "⊘",
+			//"\\oslash" : "⊘", // todo
 			"\\otimes" : "⊗",
 			"\\parallel" : "∥",
 			"\\prcue" : "≼",
@@ -1145,6 +1145,7 @@
 		alphanumeric:	new TokenAlphanumeric(),
 		font:			new TokenFont(),
 		of:				new TokenOf(),
+		delimiter:		new TokenDelimiter(),
 		//horizontal: 	new TokenHorizontalStretch()
 	};
 
@@ -1152,6 +1153,7 @@
 	// the higher an element is, the lower its priority
 	const arrTokensCheckerList = [
 		MathLiterals.char,
+		MathLiterals.delimiter,
 		MathLiterals.special,
 		MathLiterals.number,
 		MathLiterals.accent,
@@ -1971,7 +1973,6 @@
 						null,
 						null
 					);
-
 					UnicodeArgument(
 						oTokens.up,
 						MathStructures.bracket_block,
@@ -3797,15 +3798,22 @@
 							i = oPos.GetMathPos();
 							j = oPos.GetPosition();
 						}
+						else if (this.IsOperator(oEndPos) || oEndPos.GetType() === MathLiterals.space.id)
+						{
+							return {
+								start: new PositionIsCMathContent(nEndMathPos, j, 0, this.oCMathContent.Content),
+								end: oStartPos
+							}
+						}
+						else if (oPos)
+						{
+							return {
+								start: oPos,
+								end: oStartPos
+							}
+						}
 						else
 						{
-							if (this.IsOperator(oEndPos) || oEndPos.GetType() === MathLiterals.space.id)
-							{
-								return {
-									start: new PositionIsCMathContent(nEndMathPos, j, 0, this.oCMathContent.Content),
-									end: oStartPos
-								}
-							}
 							nEndParaPos = j;
 						}
 					}
@@ -4118,13 +4126,15 @@
 	 */
 	function MathTextAndStyles (LaTeX)
 	{
-		this.LaTeX = LaTeX;
-		this.OnlyText = false;
-		this.arr = [];
-		this.nPos = 0;
-		this.isNeedWrap = false;
-
+		this.LaTeX				= LaTeX;
+		this.arr				= [];
+		this.nPos				= 0;
+		this.IsNotNeedToWrap	= false;
 		this.Positions = [];
+	}
+	MathTextAndStyles.prototype.SetIsNotWrap = function (isNotWrap)
+	{
+		this.IsNotNeedToWrap = isNotWrap;
 	}
 	MathTextAndStyles.prototype.CreateInnerCopy = function()
 	{
@@ -4148,17 +4158,17 @@
 			return oContentElement.arr.length > 1;
 		}
 	}
-	MathTextAndStyles.prototype.Add = function(oContent, isStart, isNotWrap)
+	MathTextAndStyles.prototype.Add = function(oContent, isNew, isNotWrap)
 	{
 		let nPosCopy = this.nPos;
-		if (isStart)
+		if (isNew)
 		{
 			let oMath = this.AddContainer();
 			oContent.GetTextOfElement(oMath);
 			this.Increase();
 			let oPos = this.AddPosition(this.nPos - nPosCopy);
 
-			if (oMath.IsNeedWrap() && !isNotWrap)
+			if (oMath.IsNeedWrap() && !isNotWrap && !this.IsNotNeedToWrap)
 			{
 				this.WrapExactElement(oPos);
 			}
@@ -4168,6 +4178,8 @@
 		else
 		{
 			oContent.GetTextOfElement(this);
+			if (this.nPos === nPosCopy)
+				return;
 			return this.AddPosition(this.nPos - nPosCopy);
 		}
 	};

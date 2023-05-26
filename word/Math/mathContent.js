@@ -5809,7 +5809,6 @@ CMathContent.prototype.ConvertSpacesAfterConvertOldEquation = function ()
         {
             if (oContent.Type === 52) // CMathText
             {
-                console.log(oContent);
                 switch (oContent.value)
                 {
                     case 8202:
@@ -5848,7 +5847,7 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
 
     let isConvert = false;
 
-  //  let lastElement = this.GetLastTextElement();
+    //  let lastElement = this.GetLastTextElement();
 
     // split content by cursor position
     const arrNextContent = this.SplitContentByContentPos();
@@ -5856,38 +5855,35 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
     if (arrNextContent === false)
         return;
 
-    // if (this.CorrectSpecialWordOnCursor(nInputType))
-    // {
-    //     if (arrNextContent)
-    //         this.ConcatToContent(this.Content.length, arrNextContent);
-    //
-    //     return;
-    // }
+    if (this.CorrectSpecialWordOnCursor(nInputType))
+    {
+        if (arrNextContent)
+            this.ConcatToContent(this.Content.length, arrNextContent);
+        return;
+    }
+    else if (oElement.value === 32 || this.IsLastElement(AscMath.MathLiterals.operator)) //  convert word near cursor (\int, \sqrt, \alpha...)
+    {
+        if (oElement.value === 32)
+        {
+            if (this.CorrectWordOnCursor(nInputType === 1))
+            {
+                if (arrNextContent)
+                    this.ConcatToContent(this.Content.length, arrNextContent);
 
-    // convert word near cursor (\int, \sqrt, \alpha...)
-    // if (oElement.value === 32 || this.IsLastElement(AscMath.MathLiterals.operators))
-    // {
-    //     if (oElement.value === 32)
-    //     {
-    //         if (this.CorrectWordOnCursor(nInputType === 1))
-    //         {
-    //             if (arrNextContent)
-    //                 this.ConcatToContent(this.Content.length, arrNextContent);
-    //
-    //             return;
-    //         }
-    //     }
-    //     else
-    //     {
-    //         if (this.CorrectWordOnCursor(nInputType === 1, true))
-    //         {
-    //             if (arrNextContent)
-    //                 this.ConcatToContent(this.Content.length, arrNextContent);
-    //
-    //             return;
-    //         }
-    //     }
-    // }
+                return;
+            }
+        }
+        else
+        {
+            if (this.CorrectWordOnCursor(nInputType === 1, true))
+            {
+                if (arrNextContent)
+                    this.ConcatToContent(this.Content.length, arrNextContent);
+
+                return;
+            }
+        }
+    }
 
     if (nInputType === 0)
     {

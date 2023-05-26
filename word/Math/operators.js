@@ -4044,55 +4044,45 @@ CDelimiter.prototype.private_GetRightOperator = function(bHide)
 
     return NewEndCode;
 };
-CDelimiter.prototype.GetTextOfElement = function(isLaTeX, isOnlyText)
+CDelimiter.prototype.GetTextOfElement = function(oMathText)
 {
-	//	Patterns:
-	//	if start bracket doesn't show:	├ ...) => ...)
-	//	if end bracket doesn't show:	(...┤ => (...
-	//	else:							(...) => (...)
+    //	Patterns:
+    //	if start bracket doesn't show:	├ ...) => ...)
+    //	if end bracket doesn't show:	(...┤ => (...
+    //	else:							(...) => (...)
     //
-	// if start and close brackets non-standard add \open, \close
+    // if start and close brackets non-standard add \open, \close
 
-	let arrContent          = [];
-	let strStartSymbol      = this.Pr.begChr === -1 ? "" : String.fromCharCode((this.begOper.code || this.Pr.begChr) || 40);
-	let strEndSymbol        = this.Pr.endChr === -1 ? "" : String.fromCharCode((this.endOper.code || this.Pr.endChr) || 41);
-	let strSeparatorSymbol  = isLaTeX ? "\\mid " : "∣";
+    oMathText.SetIsNotWrap(true);
 
-    if (isLaTeX)
+    let strStartSymbol		= this.Pr.begChr === -1 ? "" : String.fromCharCode((this.begOper.code || this.Pr.begChr) || 40);
+    let strEndSymbol		= this.Pr.endChr === -1 ? "" : String.fromCharCode((this.endOper.code || this.Pr.endChr) || 41);
+    let strSeparatorSymbol	= oMathText.IsLaTeX() ? "\\mid " : "∣";
+
+    if (oMathText.IsLaTeX())
     {
-        strStartSymbol      = strStartSymbol === "" ? "." : strStartSymbol;
-        arrContent.push("\\left", strStartSymbol);
+        oMathText.AddText(new AscMath.MathText(strStartSymbol === "" ? "." : strStartSymbol));
     }
     else
     {
-        strStartSymbol = strStartSymbol === "" ? "├" : strStartSymbol;
-        arrContent.push(strStartSymbol);
+        oMathText.AddText(new AscMath.MathText(strStartSymbol === "" ? "├" : strStartSymbol));
     }
 
-	for (let intCount = 0; intCount < this.Content.length; intCount++)
+    for (let intCount = 0; intCount < this.getColumnsCount(); intCount++)
     {
-        let oCurrent = this.Content[intCount].GetTextOfElement(isLaTeX);
-        arrContent.push(oCurrent);
+        let oCurrentPos = oMathText.Add(this.Content[intCount], true);
+        if (strSeparatorSymbol && this.Content.length > 1 && intCount < this.Content.length - 1)
+            oMathText.AddAfter(oCurrentPos, strSeparatorSymbol);
+    }
 
-		if (strSeparatorSymbol && this.Content.length > 1 && intCount < this.Content.length - 1)
-            arrContent.push(strSeparatorSymbol);
-	}
-
-    if (isLaTeX)
+    if (oMathText.IsLaTeX())
     {
-        strEndSymbol = strEndSymbol === "" ? "." : strEndSymbol;
-        arrContent.push("\\right", strEndSymbol);
+        oMathText.AddText(new AscMath.MathText(strEndSymbol === "\\right" ? "\\right." : strEndSymbol), true);
     }
     else
     {
-        strEndSymbol = strEndSymbol === "" ? "┤" : strEndSymbol;
-        arrContent.push(strEndSymbol);
+        oMathText.AddText(new AscMath.MathText(strEndSymbol === "" ? "┤" : strEndSymbol), true);
     }
-
-    if (isOnlyText)
-        return AscMath.ConvertMathTextToText(arrContent);
-
-	return arrContent;
 }
 
 /**

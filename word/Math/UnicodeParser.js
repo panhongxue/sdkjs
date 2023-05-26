@@ -605,8 +605,7 @@
     };
     CUnicodeParser.prototype.IsFunctionLiteral = function ()
     {
-        return (
-            this.IsRootLiteral() ||
+        return this.IsRootLiteral() ||
             this.IsCubertLiteral() ||
             this.IsFourthrtLiteral() ||
             this.IsNthrtLiteral() ||
@@ -614,8 +613,7 @@
             this.isRectLiteral() ||
             this.IsHBracketLiteral() ||
             this.IsGetNameOfFunction() ||
-            this.oLookahead.class === "▁" || this.oLookahead.class === "¯"
-        );
+            this.oLookahead.class === "▁" || this.oLookahead.class === "¯";
     };
     CUnicodeParser.prototype.GetFunctionLiteral = function ()
     {
@@ -743,12 +741,11 @@
         let arrContent = [];
         let intCountOfBracketBlock = 1;
 
-        while (this.IsExpLiteral() || this.oLookahead.data === "∣" || this.oLookahead.data === "│" || this.oLookahead.data === "ⓜ" || this.oLookahead.data === "│")
+        while (this.IsExpLiteral() || this.oLookahead.class === Literals.delimiter.id || this.oLookahead.data === "ⓜ")
         {
             if (this.IsExpLiteral())
             {
                 let oToken = this.GetExpLiteral();
-
                 if ((oToken && !Array.isArray(oToken)) || Array.isArray(oToken) && oToken.length > 0)
                     arrContent.push(oToken)
             }
@@ -758,7 +755,6 @@
                 intCountOfBracketBlock++;
             }
         }
-
         return [arrContent, intCountOfBracketBlock];
     }
     CUnicodeParser.prototype.GetPreScriptLiteral = function ()
@@ -1208,6 +1204,7 @@
     };
     CUnicodeParser.prototype.GetFractionLiteral = function (oNumerator)
     {
+        debugger
         let oOperand,
             strOpOver;
 
@@ -1227,20 +1224,6 @@
 
             this.EatOneSpace();
 
-            if (strOpOver === "⊘")
-            {
-                return {
-                    type: Struc.box,
-                    argSize: -1,
-                    value: {
-                        type: Struc.frac,
-                        up: oNumerator || {},
-                        down: oOperand || {},
-                        fracType: this.GetFractionType("/"),
-                    },
-                };
-            }
-
             return {
                 type: Struc.frac,
                 up: oNumerator || {},
@@ -1257,14 +1240,10 @@
     {
         switch (str)
         {
-            case "/" :
-                return BAR_FRACTION;
-            case "⁄" :
-                return SKEWED_FRACTION;
-            case "∕" :
-                return LINEAR_FRACTION;
-            case "¦" :
-                return NO_BAR_FRACTION;
+            case "/"	:	return BAR_FRACTION;
+            case "⁄"	:	return SKEWED_FRACTION;
+            case "⊘"	:	return LINEAR_FRACTION;
+            case "¦"	:	return NO_BAR_FRACTION;
         }
     }
     CUnicodeParser.prototype.IsFractionLiteral = function ()
@@ -1281,12 +1260,12 @@
     };
     CUnicodeParser.prototype.GetOperatorLiteral = function ()
     {
-    	const oOperator = this.EatToken(Literals.operator.id);
-    	this.EatOneSpace();
-    	return {
-    		type: Literals.operator.id,
-    		value: oOperator.data,
-    	};
+        const oOperator = this.EatToken(Literals.operator.id);
+        this.EatOneSpace();
+        return {
+            type: Literals.operator.id,
+            value: oOperator.data,
+        };
     };
     CUnicodeParser.prototype.GetASCIILiteral = function ()
     {
@@ -1838,11 +1817,12 @@
         return this.IsElementLiteral()
             || this.IsFractionWithoutNumeratorLiteral()
             || this.IsSpaceLiteral()
+            || this.IsSubOrSupWithoutContentLiteral()
             || this.oLookahead.class === Literals.operator.id
     };
     CUnicodeParser.prototype.GetFractionWithoutNumeratorLiteral = function()
     {
-        let strDivideSymbol = this.EatToken(this.oLookahead.class);
+        let strDivideSymbol = this.EatToken(this.oLookahead.class).data;
         let oDenominator = {};
         if (this.IsOperandLiteral())
             oDenominator = this.GetOperandLiteral();
@@ -1858,18 +1838,54 @@
     {
         return this.oLookahead.class === Literals.divide.id;
     }
+    CUnicodeParser.prototype.IsSubOrSupWithoutContentLiteral = function ()
+    {
+        return this.oLookahead.data === "_" || this.oLookahead.data === "^";
+    }
+    CUnicodeParser.prototype.GetSubOrSupWithoutContentLiteral = function()
+    {
+        if (this.oLookahead.data === "_")
+        {
+            this.EatToken(this.oLookahead.class);
+            return {
+                type: Struc.sub_sub,
+                value: undefined,
+                down: this.oLookahead.data ? this.GetSoOperandLiteral("_") : {},
+                up: undefined,
+                third: undefined,
+            }
+        }
+        else if (this.oLookahead.data === "^")
+        {
+            this.EatToken(this.oLookahead.class);
+            return {
+                type: Struc.sub_sub,
+                value: undefined,
+                down: undefined,
+				up: this.oLookahead.data ? this.GetSoOperandLiteral("^") : {},
+                third: undefined,
+            }
+        }
+    }
     CUnicodeParser.prototype.GetExpLiteral = function ()
     {
         const oExpLiteral = [];
 
         while (this.IsExpLiteral())
         {
+            debugger
             if (this.IsFractionWithoutNumeratorLiteral())
             {
                 oExpLiteral.push(this.GetFractionWithoutNumeratorLiteral());
             }
+            else if (this.IsSubOrSupWithoutContentLiteral())
+            {
+                oExpLiteral.push(this.GetSubOrSupWithoutContentLiteral())
+            }
             else if (this.IsSpaceLiteral())
+            {
                 oExpLiteral.push(this.GetSpaceLiteral());
+            }
             else if (this.IsElementLiteral())
             {
                 oExpLiteral.push(this.GetElementLiteral());
@@ -1877,7 +1893,8 @@
                 if (this.isOtherLiteral())
                     oExpLiteral.push(this.GetOtherLiteral());
             }
-            else if (this.oLookahead.class === Literals.operator.id) {
+            else if (this.oLookahead.class === Literals.operator.id)
+            {
                 oExpLiteral.push(this.GetOperatorLiteral())
             }
         }
@@ -1928,6 +1945,9 @@
             this.arrSavedTokens.push(this.oLookahead);
 
         this.oLookahead = this.oTokenizer.GetNextToken();
+
+        if (this.oLookahead.data === "∣")
+            debugger;
         return token;
     };
     CUnicodeParser.prototype.GetContentOfLiteral = function (oContent)

@@ -1204,7 +1204,6 @@
     };
     CUnicodeParser.prototype.GetFractionLiteral = function (oNumerator)
     {
-        debugger
         let oOperand,
             strOpOver;
 
@@ -1873,7 +1872,6 @@
 
         while (this.IsExpLiteral())
         {
-            debugger
             if (this.IsFractionWithoutNumeratorLiteral())
             {
                 oExpLiteral.push(this.GetFractionWithoutNumeratorLiteral());
@@ -1946,8 +1944,6 @@
 
         this.oLookahead = this.oTokenizer.GetNextToken();
 
-        if (this.oLookahead.data === "∣")
-            debugger;
         return token;
     };
     CUnicodeParser.prototype.GetContentOfLiteral = function (oContent)

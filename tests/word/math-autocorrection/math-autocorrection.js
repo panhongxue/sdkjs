@@ -971,6 +971,108 @@ $(function () {
 		assert.strictEqual(r.GetText(), "((a+c))¦d", "Check linear content");
 	});
 
+	QUnit.module("Fractions words - Autocorrection");
+
+	QUnit.test("\\sdiv", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\sdiv ");
+		assert.ok(true, "Add '\\sdiv '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "⁄", "Check correction");
+	});
+	QUnit.test("\\atop", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\atop ");
+		assert.ok(true, "Add '\\atop '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "¦", "Check correction");
+	});
+	QUnit.test("\\ldiv", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\ldiv ");
+		assert.ok(true, "Add '\\ldiv '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "∕", "Check correction");
+	});
+	QUnit.test("\\ndiv", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\ndiv ");
+		assert.ok(true, "Add '\\ndiv '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "⊘", "Check correction");
+	});
+
+	QUnit.module("Fractions words - Convert");
+
+	QUnit.test("\\atop", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\atop");
+		assert.ok(true, "Add '\\atop'");
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "¦", "Check correction");
+	});
+	QUnit.test("\\sdiv", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\sdiv");
+		assert.ok(true, "Add '\\sdiv'");
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "⁄", "Check correction");
+	});
+	QUnit.test("\\ldiv", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\ldiv");
+		assert.ok(true, "Add '\\ldiv'");
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "∕", "Check correction");
+	});
+	QUnit.test("\\ndiv", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\ndiv");
+		assert.ok(true, "Add '\\ndiv'");
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "⊘", "Check correction");
+	});
+
 	QUnit.module("Stacked Fraction - Autocorrection");
 
 	QUnit.test("Add empty fraction", function (assert)
@@ -2004,7 +2106,7 @@ $(function () {
 		let strBase = oDegree.getBase().GetTextOfElement().GetText();
 		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
 
-		assert.strictEqual(strBase, "x*y", "Check content of degree base");
+		assert.strictEqual(strBase, "(x*y)", "Check content of degree base");
 		assert.strictEqual(strIterator, "2+x", "Check content of degree iterator");
 
 		r.ConvertView(true, 0);
@@ -2029,7 +2131,7 @@ $(function () {
 		let strBase = oDegree.getBase().GetTextOfElement().GetText();
 		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
 
-		assert.strictEqual(strBase, "x*y", "Check content of degree base");
+		assert.strictEqual(strBase, "(x*y)", "Check content of degree base");
 		assert.strictEqual(strIterator, "2+x", "Check content of degree iterator");
 
 		r.ConvertView(true, 0);
@@ -2159,7 +2261,7 @@ $(function () {
 		let strUpperIterator = oDegreeSubSup.getUpperIterator().GetTextOfElement().GetText();
 		let strLowerIterator = oDegreeSubSup.getLowerIterator().GetTextOfElement().GetText();
 
-		assert.strictEqual(strBase, "x*c", "Check content of degree base");
+		assert.strictEqual(strBase, "(x*c)", "Check content of degree base");
 		assert.strictEqual(strUpperIterator, "2+y", "Check content of degree iterator");
 		assert.strictEqual(strLowerIterator, "x+b", "Check content of degree iterator");
 
@@ -2185,7 +2287,7 @@ $(function () {
 		let strUpperIterator = oDegreeSubSup.getUpperIterator().GetTextOfElement().GetText();
 		let strLowerIterator = oDegreeSubSup.getLowerIterator().GetTextOfElement().GetText();
 
-		assert.strictEqual(strBase, "x*c", "Check content of degree base");
+		assert.strictEqual(strBase, "(x*c)", "Check content of degree base");
 		assert.strictEqual(strUpperIterator, "2+y", "Check content of degree iterator");
 		assert.strictEqual(strLowerIterator, "x+b", "Check content of degree iterator");
 
@@ -2388,7 +2490,7 @@ $(function () {
 		let strBase = oDegree.getBase().GetTextOfElement().GetText();
 		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
 
-		assert.strictEqual(strBase, "x*y", "Check content of degree base");
+		assert.strictEqual(strBase, "(x*y)", "Check content of degree base");
 		assert.strictEqual(strIterator, "2+x", "Check content of degree iterator");
 
 		r.ConvertView(true, 0);
@@ -2410,7 +2512,7 @@ $(function () {
 		let strBase = oDegree.getBase().GetTextOfElement().GetText();
 		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
 
-		assert.strictEqual(strBase, "x*y", "Check content of degree base");
+		assert.strictEqual(strBase, "(x*y)", "Check content of degree base");
 		assert.strictEqual(strIterator, "2+x", "Check content of degree iterator");
 
 		r.ConvertView(true, 0);
@@ -2525,7 +2627,7 @@ $(function () {
 		let strUpperIterator = oDegreeSubSup.getUpperIterator().GetTextOfElement().GetText();
 		let strLowerIterator = oDegreeSubSup.getLowerIterator().GetTextOfElement().GetText();
 
-		assert.strictEqual(strBase, "x*c", "Check content of degree base");
+		assert.strictEqual(strBase, "(x*c)", "Check content of degree base");
 		assert.strictEqual(strUpperIterator, "2+y", "Check content of degree iterator");
 		assert.strictEqual(strLowerIterator, "x+b", "Check content of degree iterator");
 
@@ -2548,7 +2650,7 @@ $(function () {
 		let strUpperIterator = oDegreeSubSup.getUpperIterator().GetTextOfElement().GetText();
 		let strLowerIterator = oDegreeSubSup.getLowerIterator().GetTextOfElement().GetText();
 
-		assert.strictEqual(strBase, "x*c", "Check content of degree base");
+		assert.strictEqual(strBase, "(x*c)", "Check content of degree base");
 		assert.strictEqual(strUpperIterator, "2+y", "Check content of degree iterator");
 		assert.strictEqual(strLowerIterator, "x+b", "Check content of degree iterator");
 
@@ -2556,4 +2658,251 @@ $(function () {
 		assert.ok(true, "Convert to professional");
 		assert.strictEqual(r.GetText(), "(x*c)_(x+b)^(2+y)", "Check linear content");
 	});
+
+	QUnit.test("Add chain up script", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("x^2^3^4^5^6^7 ");
+		assert.ok(true, "Add 'x^2^3^4^5^6^7 '");
+
+		let oDegree = r.Root.Content[1];
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.ok(oDegree.Pr.type === 1, "Upper CDegree type");
+
+		let strBase = oDegree.getBase().GetTextOfElement().GetText();
+		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "6", "Check content of degree base");
+		assert.strictEqual(strIterator, "7", "Check content of degree iterator");
+
+		AddTextToRoot(" ");
+		oDegree = r.Root.Content[1];
+		strBase = oDegree.getBase().GetTextOfElement().GetText();
+		strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5", "Check content of degree base");
+		assert.strictEqual(strIterator, "6^7", "Check content of degree iterator");
+
+		AddTextToRoot(" ");
+		oDegree = r.Root.Content[1];
+		strBase = oDegree.getBase().GetTextOfElement().GetText();
+		strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "4", "Check content of degree base");
+		assert.strictEqual(strIterator, "5^(6^7)", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "x^2^3^4^(5^(6^7))", "Check linear content");
+	});
+	QUnit.test("Add chain down script", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("x_2_3_4_5_6_7 ");
+		assert.ok(true, "Add 'x_2_3_4_5_6_7 '");
+
+		let oDegree = r.Root.Content[1];
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.ok(oDegree.Pr.type === -1, "Down CDegree type");
+
+		let strBase = oDegree.getBase().GetTextOfElement().GetText();
+		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "6", "Check content of degree base");
+		assert.strictEqual(strIterator, "7", "Check content of degree iterator");
+
+		AddTextToRoot(" ");
+		oDegree = r.Root.Content[1];
+		strBase = oDegree.getBase().GetTextOfElement().GetText();
+		strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5", "Check content of degree base");
+		assert.strictEqual(strIterator, "6_7", "Check content of degree iterator");
+
+		AddTextToRoot(" ");
+		oDegree = r.Root.Content[1];
+		strBase = oDegree.getBase().GetTextOfElement().GetText();
+		strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "4", "Check content of degree base");
+		assert.strictEqual(strIterator, "5_(6_7)", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "x_2_3_4_(5_(6_7))", "Check linear content");
+	});
+
+	//todo prescript
+
+	QUnit.module("Radicals words - Convert");
+
+	QUnit.test("\\sqrt", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\sqrt");
+		assert.ok(true, "Add '\\sqrt'");
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "√", "Check correction");
+	});
+	QUnit.test("\\cbrt", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\cbrt");
+		assert.ok(true, "Add '\\cbrt'");
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "∛", "Check correction");
+	});
+	QUnit.test("\\qdrt", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\qdrt");
+		assert.ok(true, "Add '\\qdrt'");
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "∜", "Check correction");
+	});
+
+	QUnit.module("Radicals - Convert");
+	QUnit.test("Add empty radical", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("√");
+		assert.ok(true, "Add '√'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "", "Check content of degree base");
+		assert.strictEqual(strDegree, "", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "√", "Check linear content");
+	});
+	QUnit.test("Add radical", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("√5");
+		assert.ok(true, "Add '√5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5", "Check content of degree base");
+		assert.strictEqual(strDegree, "", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "√5", "Check linear content");
+	});
+	QUnit.test("Add block radical", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("√(5+x)");
+		assert.ok(true, "Add '√(5+x)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5+x", "Check content of degree base");
+		assert.strictEqual(strDegree, "", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "√(5+x)", "Check linear content");
+	});
+	QUnit.test("Add block radical with degree", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("√(2&5+x)");
+		assert.ok(true, "Add '√(2&5+x)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5+x", "Check content of degree base");
+		assert.strictEqual(strDegree, "2", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "√(2&5+x)", "Check linear content");
+	});
+	QUnit.test("Add block radical with degree", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("√(2+y&5+x)");
+		assert.ok(true, "Add '√(2+y&5+x)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5+x", "Check content of degree base");
+		assert.strictEqual(strDegree, "2+y", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "√(2+y&5+x)", "Check linear content");
+	});
+
+
+	// QUnit.module("Radicals - Autocorrection");
+
 })

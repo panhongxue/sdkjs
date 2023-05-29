@@ -545,7 +545,7 @@ CDegree.prototype.GetTextOfElement = function(oMathText)
 {
 	let oBase           = this.getBase();
 	let oIterator       = this.getIterator();
-    let oPosBase      = oMathText.Add(oBase, true);
+    let oPosBase      = oMathText.Add(oBase, true, true);
     let oPosIterator  = oMathText.Add(oIterator, true);
 
     oMathText.AddAfter(oPosBase, this.Pr.type === 1 ? '^' : '_');
@@ -1222,7 +1222,7 @@ CDegreeSubSup.prototype.GetTextOfElement = function(oMathText)
     }
     else
     {
-        let oPosBase            = oMathText.Add(oBase, true);
+        let oPosBase            = oMathText.Add(oBase, true, true);
         let oPosLowerIterator  = oMathText.Add(oLowerIterator, true);
         let oPosUpperIterator  = oMathText.Add(oUpperIterator, true);
 

@@ -767,8 +767,8 @@ CRadical.prototype.GetTextOfElement = function(oMathText)
     let oDegree = this.getDegree();
     let oBase = this.getBase();
 
-    let oPosDegree = oMathText.Add(oDegree, true);
-    let oPosBase = oMathText.Add(oBase, true);
+    let oPosDegree = oDegree.GetTextOfElement().GetText();
+    let oPosBase = oMathText.Add(oBase, true, true);
 
 	if (oMathText.IsLaTeX())
     {
@@ -783,16 +783,10 @@ CRadical.prototype.GetTextOfElement = function(oMathText)
         oElementBase.Wrap("{", "}");
     }
 	else
-    {
+	{
 		let strRadicalSymbol = "√";
-
-        let oStart = oMathText.AddBefore(oPosDegree, strRadicalSymbol);
-        if  (oMathText.GetLengthOfContentByPos(oPosDegree) > 1)
-        {
-            oMathText.AddBefore(oPosDegree, "(");
-            oMathText.AddBefore(oPosBase, "&");
-            oMathText.AddAfter(oPosBase, ")");
-        }
+		oMathText.AddBefore(oPosBase, oPosDegree.trim() === "" ? strRadicalSymbol + "(" : strRadicalSymbol + "(" + oPosDegree + "&");
+		oMathText.AddAfter(oPosBase, ")");
 	}
 };
 

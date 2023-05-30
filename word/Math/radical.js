@@ -762,31 +762,65 @@ CRadical.prototype.Is_ContentUse = function(MathContent)
 
     return false;
 };
+/**
+ *
+ * @param {MathTextAndStyles} oMathText
+ * @constructor
+ */
 CRadical.prototype.GetTextOfElement = function(oMathText)
 {
-    let oDegree = this.getDegree();
-    let oBase = this.getBase();
-
-    let oPosDegree = oDegree.GetTextOfElement().GetText();
-    let oPosBase = oMathText.Add(oBase, true, true);
+	let oDegree		= this.getDegree();
+	let oBase		= this.getBase();
 
 	if (oMathText.IsLaTeX())
-    {
-        oMathText.AddBefore(oPosDegree, "\\sqrt");
-        if (oMathText.GetLengthOfContentByPos(oPosDegree) > 1)
-        {
-            let oElementDegree = oMathText.GetExact(oPosDegree);
-            oElementDegree.Wrap("[", "]");
-        }
+	{
+		let oPosSqrt		= oMathText.AddText("\\sqrt");
+		let oPosDegree		= oMathText.Add(oDegree);
 
-        let oElementBase = oMathText.GetExact(oPosBase);
-        oElementBase.Wrap("{", "}");
-    }
+		if (oMathText.GetLengthOfContentByPos(oPosDegree) > 1)
+		{
+			let oElementDegree = oMathText.GetExact(oPosDegree);
+			oElementDegree.Wrap("[", "]");
+		}
+
+		let oPosBase		= oMathText.Add(oBase);
+		if (oMathText.GetLengthOfContentByPos(oPosBase) > 1)
+		{
+			let oElementBase = oMathText.GetExact(oPosBase);
+			oElementBase.Wrap("{", "}");
+		}
+	}
 	else
 	{
-		let strRadicalSymbol = "√";
-		oMathText.AddBefore(oPosBase, oPosDegree.trim() === "" ? strRadicalSymbol + "(" : strRadicalSymbol + "(" + oPosDegree + "&");
-		oMathText.AddAfter(oPosBase, ")");
+		let oDegreeText		= oDegree.GetTextOfElement();
+		let oPosSqrt		= oMathText.AddText("√");
+		let nLengthOfDegree	= oDegreeText.GetLength();
+
+		if (nLengthOfDegree === 0 || !oDegreeText.IsHasText())
+		{
+			let oBaseText	= oBase.GetTextOfElement();
+			let nMathBase	= oBaseText.GetLength();
+
+			if (nMathBase <= 1 || !oBaseText.IsHasText())
+			{
+				oMathText.AddAfter(oPosSqrt, oBaseText);
+			}
+			else
+			{
+				let oStartPos	= oMathText.AddAfter(oPosSqrt,"(");
+				let oPosBase	= oMathText.AddAfter(oStartPos, oBaseText);
+				oMathText.AddAfter(oPosBase,")");
+			}
+		}
+		else
+		{
+			let oPosStartBracket	= oMathText.AddAfter(oPosSqrt, "(");
+			let oPosDegree			= oMathText.AddAfter(oPosStartBracket, oDegreeText);
+			oMathText.AddAfter(oPosDegree,"&");
+
+			let oPosBase = oMathText.Add(oBase, true, true);
+			oMathText.AddAfter(oPosBase, ")");
+		}
 	}
 };
 

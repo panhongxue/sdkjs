@@ -3739,7 +3739,7 @@ ParaMath.prototype.ConvertToLaTeX = function()
 };
 ParaMath.prototype.ConvertFromUnicodeMath = function()
 {
-    this.Root.CorrectAllMathWords(false);
+    //this.Root.CorrectAllMathWords(false);
     //this.Root.ConvertAllSpecialWords(false);
 
 	let strUnicode = this.GetText(false, true);

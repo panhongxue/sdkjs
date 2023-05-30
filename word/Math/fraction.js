@@ -614,12 +614,17 @@ CFraction.prototype.raw_SetFractionType = function(FractionType)
 	this.Pr.type = FractionType;
 	this.fillContent();
 };
+/**
+ *
+ * @param {MathTextAndStyles} oMathText
+ * @constructor
+ */
 CFraction.prototype.GetTextOfElement = function(oMathText)
 {
 	let oNumerator			= this.getNumerator();
 	let oDenominator		= this.getDenominator();
-	let oPosNumerator		= oMathText.Add(oNumerator, true);
-	let oPosDenominator		= oMathText.Add(oDenominator, true);
+	let oPosNumerator		= oMathText.Add(oNumerator, true, false, true);
+	let oPosDenominator		= oMathText.Add(oDenominator, true, false, true);
 
 	if (!oMathText.IsLaTeX())
 	{
@@ -628,9 +633,9 @@ CFraction.prototype.GetTextOfElement = function(oMathText)
 		{
 			case 0:		frac = '/';	break;
 			case 1:		frac = '⁄';	break;
-			case 2:		frac = '⊘';	break;
-			case 3:		frac = String.fromCharCode(166);	break;
-			default:	frac = String.fromCharCode(47);	break;
+			case 2:		frac = '∕';	break;
+			case 3:		frac = '¦';	break;
+			default:	frac = '/';	break;
 		}
 		oMathText.AddAfter(oPosNumerator, frac);
 	}

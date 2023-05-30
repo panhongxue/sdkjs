@@ -960,18 +960,28 @@ CBox.prototype.Apply_ForcedBreak = function(Props)
     if(Props.Action & c_oMathMenuAction.DeleteForcedBreak)
         Props.Action ^= c_oMathMenuAction.DeleteForcedBreak;
 };
-CBox.prototype.GetTextOfElement = function(isLaTeX, isOnlyText)
+/**
+ *
+ * @param {MathTextAndStyles} oMathText
+ * @constructor
+ */
+CBox.prototype.GetTextOfElement = function(oMathText)
 {
-	let arrContent  = [];
-	let strSymbol   = (true === isLaTeX) ? "\\box" : "□";
-	let oBase       = this.getBase().GetMultipleContentForGetText(isLaTeX);
+	let oBase = this.getBase();
 
-    arrContent.push(strSymbol, oBase);
-
-    if (isOnlyText)
-        return AscMath.ConvertMathTextToText(arrContent);
-
-	return arrContent;
+	if (oMathText.IsLaTeX())
+	{
+		oMathText.AddText("\\box");
+		let oBasePos = oMathText.Add(oBase, false, false, false);
+		if (oMathText.GetExact(oBasePos).GetLength() > 1)
+			oMathText.WrapExactElement(oBasePos);
+	}
+	else
+	{
+		debugger
+		oMathText.AddText("□");
+		let oBasePos = oMathText.Add(oBase, true, false, false)
+	}
 };
 
 /**

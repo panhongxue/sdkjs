@@ -1923,7 +1923,7 @@
 						)
 					}
 					break;
-				case oNamesOfLiterals.preScriptLiteral[num]:
+				case MathStructures.pre_script:
 					let oPreSubSup = oContext.Add_Script(
 						oTokens.up && oTokens.down,
 						{ctrPrp: new CTextPr(), type: DEGREE_PreSubSup},
@@ -1960,21 +1960,43 @@
 					break;
 				case oNamesOfLiterals.skewedFractionLiteral[num]:
 				case MathStructures.frac:
-					let oFraction = oContext.Add_Fraction(
-						{ctrPrp: new CTextPr(), type: oTokens.fracType},
-						null,
-						null
-					);
-					UnicodeArgument(
-						oTokens.up,
-						MathStructures.bracket_block,
-						oFraction.getNumeratorMathContent()
-					);
-					UnicodeArgument(
-						oTokens.down,
-						MathStructures.bracket_block,
-						oFraction.getDenominatorMathContent()
-					);
+					if (oTokens.fracType === LITTLE_FRACTION)
+					{
+						let oBox = new CBox({ctrPrp: new CTextPr()});
+						oContext.Add_Element(oBox);
+						let BoxMathContent = oBox.getBase();
+						BoxMathContent.SetArgSize(-1);
+						let oFraction = BoxMathContent.Add_Fraction({ctrPrp: new CTextPr(), type: BAR_FRACTION}, null, null);
+
+						UnicodeArgument(
+							oTokens.up,
+							MathStructures.bracket_block,
+							oFraction.getNumeratorMathContent()
+						);
+						UnicodeArgument(
+							oTokens.down,
+							MathStructures.bracket_block,
+							oFraction.getDenominatorMathContent()
+						);
+					}
+					else
+					{
+						let oFraction = oContext.Add_Fraction(
+							{ctrPrp: new CTextPr(), type: oTokens.fracType},
+							null,
+							null
+						);
+						UnicodeArgument(
+							oTokens.up,
+							MathStructures.bracket_block,
+							oFraction.getNumeratorMathContent()
+						);
+						UnicodeArgument(
+							oTokens.down,
+							MathStructures.bracket_block,
+							oFraction.getDenominatorMathContent()
+						);
+					}
 					break;
 				case MathStructures.sub_sub:
 					if (oTokens.value && oTokens.value.type === MathStructures.func)
@@ -2795,7 +2817,9 @@
 
 			if (this.position[1] === 0)
 			{
-				this.position[0]--;
+				if (this.position[0] - 1 >= 0)
+					this.position[0]--;
+
 				this.position[1] = CMathContent.Content[this.position[0]].Content.length - 1;
 				return true;
 			}
@@ -2976,8 +3000,12 @@
 	 * @param {number} intWordLength - The length of the word to be removed.
 	 * @param {boolean} isWrapFirstContent - Is need to wrap custom block (CFraction, CDelimiter, CDegree, CMatrix e.g.) with 〖〗 brackets.
 	 */
-	function CutContentFromEnd(oContent, oDelMark, isWrapFirstContent)
+	function CutContentFromEnd(oContent, oDelMark, isWrapFirstContent, isCopy)
 	{
+		if (isCopy === true)
+		{
+			oContent = oContent.Copy();
+		}
 		let intMathContent = oDelMark.GetMathPos();
 		let intRunContent = oDelMark.GetPosition();
 
@@ -3471,7 +3499,6 @@
 			this.Tokens.all.push(oToken);
 		};
 
-
 		/**
 		 * Return MathLiteral class of last content block except:
 		 * brackets,
@@ -3658,8 +3685,7 @@
 		 */
 		this.StartAutoCorrection = function ()
 		{
-			// todo prescript
-
+			debugger
 			let oLast 					= this.GetLast();
 			let lastElementMathId 		= this.GetAbsoluteLast();
 			let preLastElementMathId	= this.GetAbsolutePreLast();
@@ -3678,6 +3704,10 @@
 				ConvertBracket(this.Tokens.brackets, this.oCMathContent);
 				this.oCMathContent.MoveCursorToEndPos();
 			}
+			else if (!oLast && this.IsPreScript() && MathLiterals.char.id === preLastElementMathId)
+			{
+				this.ConvertPreScript(oLast);
+			}
 			else if (this.IsPCFunction(oLast) && this.IsTrigger(lastElementMathId))
 			{
 				this.PCFunctionProcessing(oLast);
@@ -3691,6 +3721,23 @@
 				this.BIFunctionProcessing(oLast);
 			}
 		};
+
+		this.IsPreScript = function ()
+		{
+			if ( this.Tokens.brackets.Pairs.length > 0)
+			{
+				let str = CutContentFromEnd(this.oCMathContent, this.Tokens.brackets.Pairs[0][1], true, true);
+				if (str.split("_").length === 2 && str.split("^").length === 2)
+				{
+					return this.Tokens.brackets.Pairs.length > 0;
+				}
+			}
+		}
+		this.ConvertPreScript = function ()
+		{
+			let str 		= CutContentFromEnd(this.oCMathContent, this.Tokens.brackets.Pairs[0][1], true);
+			GetConvertContent(0, str.trim(), this.oCMathContent);
+		}
 
 		/**
 		 * Get content after given position
@@ -3762,8 +3809,9 @@
 		{
 			oStartPos = oStartPos.GetCopy();
 			let isSubSup = oStartPos.GetType() === MathLiterals.subSup.id;
+			let isNary = oStartPos.GetType() === MathLiterals.of.id;
 			let strSubSupType = isSubSup ? oStartPos.GetText() : undefined;
-			let isNary =  oStartPos.GetType() === MathLiterals.of.id;
+
 
 			oStartPos.DecreasePosition();
 
@@ -3810,11 +3858,6 @@
 							}
 							continue;
 						}
-						// else if (oPos && isNary)
-						// {
-						// 	i = oPos.GetMathPos();
-						// 	j = oPos.GetPosition();
-						// }
 						else if (this.IsOperator(oEndPos) || oEndPos.GetType() === MathLiterals.space.id)
 						{
 							return {
@@ -3822,7 +3865,15 @@
 								end: oStartPos
 							}
 						}
-						else if (oEndPos.GetType() === MathLiterals.subSup.id) // если _ или ^, то прерываемся
+						else if (oEndPos.GetType() === MathLiterals.of.id)
+						{
+							oEndPos.IncreasePosition()
+							return {
+								start: oEndPos,
+								end: oStartPos
+							}
+						}
+						else if (oEndPos.GetType() === MathLiterals.subSup.id && !isNary) // если _ или ^, то прерываемся
 						{
 							if (isSubSup)
 							{
@@ -4188,17 +4239,33 @@
 			return oContentElement.arr.length > 1;
 		}
 	};
-	MathTextAndStyles.prototype.Add = function(oContent, isNew, isNotWrap)
+	/**
+	 *
+	 * @param oContent
+	 * @param isNew {boolean} - Нужно ли отделять текущий контент в отдельный MathTextAndStyles
+	 * @param isNotWrap	{boolean} - Нужно ли обрамлять считанный контент в скобки
+	 * @param isWrapForRules - Нужно ли обрамлять контент в скобки даже если он обрамлен
+	 * @return {PosInMathText}
+	 * @constructor
+	 */
+	MathTextAndStyles.prototype.Add = function(oContent, isNew, isNotWrap, isWrapForRules)
 	{
 		let nPosCopy = this.nPos;
+
 		if (isNew)
 		{
 			let oMath = this.AddContainer();
 			oContent.GetTextOfElement(oMath);
 			this.Increase();
+
 			let oPos = this.AddPosition(this.nPos - nPosCopy);
 
-			if (oMath.IsNeedWrap() && oMath.IsNotNeedToWrap !==  true && !isNotWrap && !this.IsNotNeedToWrap)
+			if (oMath.IsNeedWrap()
+				&& oMath.IsNotNeedToWrap !== true
+				&& !this.IsNotNeedToWrap
+				&& !isNotWrap
+				|| (isWrapForRules && oMath.IsNotNeedToWrap === true && oMath.GetLength() > 1)
+			)
 			{
 				this.WrapExactElement(oPos);
 			}
@@ -4215,6 +4282,7 @@
 	};
 	MathTextAndStyles.prototype.AddText = function(oContent, isNew)
 	{
+		let nPosCopy = this.nPos;
 		if (this.arr[this.arr.length - 1] && !isNew)
 		{
 			this.arr[this.arr.length - 1].text += oContent.text;
@@ -4224,6 +4292,8 @@
 			this.arr.push(oContent);
 			this.Increase();
 		}
+
+		return this.AddPosition(this.nPos - nPosCopy);
 	};
 	MathTextAndStyles.prototype.Get_Position = function()
 	{
@@ -4252,8 +4322,6 @@
 					return oPos;
 				}
 			}
-
-			return
 		}
 
 		oPos = this.Get_Position();
@@ -4310,7 +4378,7 @@
 		let arrPositions = this.GetArrPos(oPos);
 		let oCurrentContainer = this.GetExact(oPos);
 		let oCurrent = !isNotCopyStyle && oCurrentContainer instanceof MathText ? oCurrentContainer.GetStyle() : undefined;
-		let oNew = new MathText(oContent, oCurrent);
+		let oNew = oContent instanceof MathTextAndStyles ? oContent :new MathText(oContent, oCurrent);
 
 		this.arr.splice(oPos.pos, 0, oNew);
 
@@ -4323,7 +4391,7 @@
 		let arrPositions = this.GetArrPos(oPos, true);
 		let oCurrentContainer = this.GetExact(oPos);
 		let oCurrent = !isNotCopyStyle && oCurrentContainer instanceof MathText ?  oCurrentContainer.GetStyle() : undefined;
-		let oNew = new MathText(oContent, oCurrent);
+		let oNew = oContent instanceof MathTextAndStyles ? oContent :new MathText(oContent, oCurrent);
 		let nPos = oPos.pos - oPos.length;
 
 		this.arr.splice(nPos, 0, oNew);
@@ -4341,6 +4409,10 @@
 	{
 		return this.arr.length > 1;
 	};
+	MathTextAndStyles.prototype.GetLength = function ()
+	{
+		return this.arr.length;
+	}
 	MathTextAndStyles.prototype.WrapExactElement = function(oPos)
 	{
 		let oToken = this.GetExact(oPos);
@@ -4377,6 +4449,10 @@
 
 		return strOutput;
 	};
+	MathTextAndStyles.prototype.IsHasText = function ()
+	{
+		return this.GetText().trim().length > 0;
+	}
 	MathTextAndStyles.prototype.ChangeContent = function (str)
 	{
 		this.Positions = [];

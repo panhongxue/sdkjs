@@ -522,8 +522,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⊘");
-		assert.ok(true, "Add '⊘'");
+		AddTextToRoot("∕");
+		assert.ok(true, "Add '∕'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -540,15 +540,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⊘", "Check linear content");
+		assert.strictEqual(r.GetText(), "∕", "Check linear content");
 	});
 	QUnit.test("Add fraction with pre-content", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("1⊘");
-		assert.ok(true, "Add '1⊘'");
+		AddTextToRoot("1∕");
+		assert.ok(true, "Add '1∕'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -565,15 +565,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "1⊘", "Check linear content");
+		assert.strictEqual(r.GetText(), "1∕", "Check linear content");
 	});
 	QUnit.test("Add fraction with post-content", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⊘x");
-		assert.ok(true, "Add '⊘x'");
+		AddTextToRoot("∕x");
+		assert.ok(true, "Add '∕x'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -590,15 +590,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⊘x", "Check linear content");
+		assert.strictEqual(r.GetText(), "∕x", "Check linear content");
 	});
 	QUnit.test("Add fraction with bi-content", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("y⊘x");
-		assert.ok(true, "Add 'y⊘x'");
+		AddTextToRoot("y∕x");
+		assert.ok(true, "Add 'y∕x'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -615,15 +615,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "y⊘x", "Check linear content");
+		assert.strictEqual(r.GetText(), "y∕x", "Check linear content");
 	});
 	QUnit.test("Add fraction with pre block content", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("(1+2)⊘");
-		assert.ok(true, "Add '(1+2)⊘'");
+		AddTextToRoot("(1+2)∕");
+		assert.ok(true, "Add '(1+2)∕'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -640,15 +640,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "(1+2)⊘", "Check linear content");
+		assert.strictEqual(r.GetText(), "(1+2)∕", "Check linear content");
 	});
 	QUnit.test("Add fraction with post block content", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⊘(1+2)");
-		assert.ok(true, "Add '⊘(1+2)'");
+		AddTextToRoot("∕(1+2)");
+		assert.ok(true, "Add '∕(1+2)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -665,15 +665,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⊘(1+2)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∕(1+2)", "Check linear content");
 	});
 	QUnit.test("Add fraction with bi block content", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("(1+y)⊘(x+d)");
-		assert.ok(true, "Add '(1+y)⊘(x+d)'");
+		AddTextToRoot("(1+y)∕(x+d)");
+		assert.ok(true, "Add '(1+y)∕(x+d)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -690,15 +690,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "(1+y)⊘(x+d)", "Check linear content");
+		assert.strictEqual(r.GetText(), "(1+y)∕(x+d)", "Check linear content");
 	});
 	QUnit.test("Add long numerator content fraction", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("23245yhgfvdsw34354⊘");
-		assert.ok(true, "Add '23245yhgfvdsw34354⊘'");
+		AddTextToRoot("23245yhgfvdsw34354∕");
+		assert.ok(true, "Add '23245yhgfvdsw34354∕'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -715,15 +715,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "23245yhgfvdsw34354⊘", "Check linear content");
+		assert.strictEqual(r.GetText(), "23245yhgfvdsw34354∕", "Check linear content");
 	});
 	QUnit.test("Add inner bracket in fraction", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("((a+c))⊘d");
-		assert.ok(true, "Add '((a+c))⊘d'");
+		AddTextToRoot("((a+c))∕d");
+		assert.ok(true, "Add '((a+c))∕d'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -740,7 +740,7 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "((a+c))⊘d", "Check linear content");
+		assert.strictEqual(r.GetText(), "((a+c))∕d", "Check linear content");
 	});
 
 	QUnit.module("Binomial Fraction - Convert");
@@ -1013,61 +1013,6 @@ $(function () {
 
 		AddTextToRoot("\\ndiv ");
 		assert.ok(true, "Add '\\ndiv '");
-
-		let strWord = r.Root.GetTextOfElement().GetText();
-		assert.strictEqual(strWord, "⊘", "Check correction");
-	});
-
-	QUnit.module("Fractions words - Convert");
-
-	QUnit.test("\\atop", function (assert)
-	{
-		let r = Create();
-		assert.ok(true, "Create math equation");
-
-		AddTextToRoot("\\atop");
-		assert.ok(true, "Add '\\atop'");
-		r.ConvertView(false, 0);
-		assert.ok(true, "Convert to professional");
-
-		let strWord = r.Root.GetTextOfElement().GetText();
-		assert.strictEqual(strWord, "¦", "Check correction");
-	});
-	QUnit.test("\\sdiv", function (assert)
-	{
-		let r = Create();
-		assert.ok(true, "Create math equation");
-
-		AddTextToRoot("\\sdiv");
-		assert.ok(true, "Add '\\sdiv'");
-		r.ConvertView(false, 0);
-		assert.ok(true, "Convert to professional");
-
-		let strWord = r.Root.GetTextOfElement().GetText();
-		assert.strictEqual(strWord, "⁄", "Check correction");
-	});
-	QUnit.test("\\ldiv", function (assert)
-	{
-		let r = Create();
-		assert.ok(true, "Create math equation");
-
-		AddTextToRoot("\\ldiv");
-		assert.ok(true, "Add '\\ldiv'");
-		r.ConvertView(false, 0);
-		assert.ok(true, "Convert to professional");
-
-		let strWord = r.Root.GetTextOfElement().GetText();
-		assert.strictEqual(strWord, "∕", "Check correction");
-	});
-	QUnit.test("\\ndiv", function (assert)
-	{
-		let r = Create();
-		assert.ok(true, "Create math equation");
-
-		AddTextToRoot("\\ndiv");
-		assert.ok(true, "Add '\\ndiv'");
-		r.ConvertView(false, 0);
-		assert.ok(true, "Convert to professional");
 
 		let strWord = r.Root.GetTextOfElement().GetText();
 		assert.strictEqual(strWord, "⊘", "Check correction");
@@ -1490,8 +1435,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⊘ ");
-		assert.ok(true, "Add '⊘ '");
+		AddTextToRoot("∕ ");
+		assert.ok(true, "Add '∕ '");
 
 		let oFraction = r.Root.Content[1];
 		assert.ok(oFraction instanceof CFraction, "Created CFraction");
@@ -1505,15 +1450,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⊘", "Check linear content");
+		assert.strictEqual(r.GetText(), "∕", "Check linear content");
 	});
 	QUnit.test("Add fraction with pre-content", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("1⊘ ");
-		assert.ok(true, "Add '1⊘ '");
+		AddTextToRoot("1∕ ");
+		assert.ok(true, "Add '1∕ '");
 
 		let oFraction = r.Root.Content[1];
 		assert.ok(oFraction instanceof CFraction, "Created CFraction");
@@ -1527,15 +1472,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "1⊘", "Check linear content");
+		assert.strictEqual(r.GetText(), "1∕", "Check linear content");
 	});
 	QUnit.test("Add fraction with post-content", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⊘x ");
-		assert.ok(true, "Add '⊘x '");
+		AddTextToRoot("∕x ");
+		assert.ok(true, "Add '∕x '");
 
 		let oFraction = r.Root.Content[1];
 		assert.ok(oFraction instanceof CFraction, "Created CFraction");
@@ -1549,15 +1494,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⊘x", "Check linear content");
+		assert.strictEqual(r.GetText(), "∕x", "Check linear content");
 	});
 	QUnit.test("Add fraction with bi-content", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("y⊘x ");
-		assert.ok(true, "Add 'y⊘x '");
+		AddTextToRoot("y∕x ");
+		assert.ok(true, "Add 'y∕x '");
 
 		let oFraction = r.Root.Content[1];
 		assert.ok(oFraction instanceof CFraction, "Created CFraction");
@@ -1571,15 +1516,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "y⊘x", "Check linear content");
+		assert.strictEqual(r.GetText(), "y∕x", "Check linear content");
 	});
 	QUnit.test("Add fraction with pre block content", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("(1+2)⊘ ");
-		assert.ok(true, "Add '(1+2)⊘ '");
+		AddTextToRoot("(1+2)∕ ");
+		assert.ok(true, "Add '(1+2)∕ '");
 
 		let oFraction = r.Root.Content[1];
 		assert.ok(oFraction instanceof CFraction, "Created CFraction");
@@ -1593,15 +1538,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "(1+2)⊘", "Check linear content");
+		assert.strictEqual(r.GetText(), "(1+2)∕", "Check linear content");
 	});
 	QUnit.test("Add fraction with post block content", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⊘(1+2) ");
-		assert.ok(true, "Add '⊘(1+2) '");
+		AddTextToRoot("∕(1+2) ");
+		assert.ok(true, "Add '∕(1+2) '");
 
 		let oFraction = r.Root.Content[1];
 		assert.ok(oFraction instanceof CFraction, "Created CFraction");
@@ -1615,15 +1560,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⊘(1+2)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∕(1+2)", "Check linear content");
 	});
 	QUnit.test("Add fraction with bi block content", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("(1+y)⊘(x+d) ");
-		assert.ok(true, "Add '(1+y)⊘(x+d) '");
+		AddTextToRoot("(1+y)∕(x+d) ");
+		assert.ok(true, "Add '(1+y)∕(x+d) '");
 
 		let oFraction = r.Root.Content[1];
 		assert.ok(oFraction instanceof CFraction, "Created CFraction");
@@ -1637,15 +1582,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "(1+y)⊘(x+d)", "Check linear content");
+		assert.strictEqual(r.GetText(), "(1+y)∕(x+d)", "Check linear content");
 	});
 	QUnit.test("Add long numerator content fraction", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("23245yhgfvdsw34354⊘ ");
-		assert.ok(true, "Add '23245yhgfvdsw34354⊘ '");
+		AddTextToRoot("23245yhgfvdsw34354∕ ");
+		assert.ok(true, "Add '23245yhgfvdsw34354∕ '");
 
 		let oFraction = r.Root.Content[1];
 		assert.ok(oFraction instanceof CFraction, "Created CFraction");
@@ -1659,15 +1604,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "23245yhgfvdsw34354⊘", "Check linear content");
+		assert.strictEqual(r.GetText(), "23245yhgfvdsw34354∕", "Check linear content");
 	});
 	QUnit.test("Add inner bracket in fraction", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("((a+c))⊘d ");
-		assert.ok(true, "Add '((a+c))⊘d '");
+		AddTextToRoot("((a+c))∕d ");
+		assert.ok(true, "Add '((a+c))∕d '");
 
 		let oFraction = r.Root.Content[1];
 		assert.ok(oFraction instanceof CFraction, "Created CFraction");
@@ -1681,7 +1626,7 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "((a+c))⊘d", "Check linear content");
+		assert.strictEqual(r.GetText(), "((a+c))∕d", "Check linear content");
 	});
 
 	QUnit.module("Binomial Fraction - Autocorrection");
@@ -2738,17 +2683,15 @@ $(function () {
 
 	//todo prescript
 
-	QUnit.module("Radicals words - Convert");
+	QUnit.module("Radicals words - Autocorrection");
 
 	QUnit.test("\\sqrt", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("\\sqrt");
-		assert.ok(true, "Add '\\sqrt'");
-		r.ConvertView(false, 0);
-		assert.ok(true, "Convert to professional");
+		AddTextToRoot("\\sqrt ");
+		assert.ok(true, "Add '\\sqrt '");
 
 		let strWord = r.Root.GetTextOfElement().GetText();
 		assert.strictEqual(strWord, "√", "Check correction");
@@ -2758,10 +2701,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("\\cbrt");
-		assert.ok(true, "Add '\\cbrt'");
-		r.ConvertView(false, 0);
-		assert.ok(true, "Convert to professional");
+		AddTextToRoot("\\cbrt ");
+		assert.ok(true, "Add '\\cbrt '");
 
 		let strWord = r.Root.GetTextOfElement().GetText();
 		assert.strictEqual(strWord, "∛", "Check correction");
@@ -2771,10 +2712,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("\\qdrt");
-		assert.ok(true, "Add '\\qdrt'");
-		r.ConvertView(false, 0);
-		assert.ok(true, "Convert to professional");
+		AddTextToRoot("\\qdrt ");
+		assert.ok(true, "Add '\\qdrt '");
 
 		let strWord = r.Root.GetTextOfElement().GetText();
 		assert.strictEqual(strWord, "∜", "Check correction");

@@ -1241,8 +1241,9 @@
         {
             case "/"	:	return BAR_FRACTION;
             case "⁄"	:	return SKEWED_FRACTION;
-            case "⊘"	:	return LINEAR_FRACTION;
+            case "⊘"	:	return LITTLE_FRACTION;
             case "¦"	:	return NO_BAR_FRACTION;
+			case "∕"	:	return LINEAR_FRACTION;
         }
     }
     CUnicodeParser.prototype.IsFractionLiteral = function ()
@@ -1821,7 +1822,8 @@
     };
     CUnicodeParser.prototype.GetFractionWithoutNumeratorLiteral = function()
     {
-        let strDivideSymbol = this.EatToken(this.oLookahead.class).data;
+		debugger
+        let strDivideSymbol = this.EatToken().data;
         let oDenominator = {};
         if (this.IsOperandLiteral())
             oDenominator = this.GetOperandLiteral();
@@ -1995,6 +1997,8 @@
     {
         if (undefined === str || null === str)
             return;
+
+		debugger
 
         const oParser = new CUnicodeParser();
         const oTokens = oParser.Parse(str);

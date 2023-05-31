@@ -769,6 +769,9 @@ CRadical.prototype.Is_ContentUse = function(MathContent)
  */
 CRadical.prototype.GetTextOfElement = function(oMathText)
 {
+	if (!oMathText)
+		oMathText = new AscMath.MathTextAndStyles(false);
+
 	let oDegree		= this.getDegree();
 	let oBase		= this.getBase();
 
@@ -818,7 +821,7 @@ CRadical.prototype.GetTextOfElement = function(oMathText)
 			let oPosDegree			= oMathText.AddAfter(oPosStartBracket, oDegreeText);
 			oMathText.AddAfter(oPosDegree,"&");
 
-			let oPosBase = oMathText.Add(oBase, true, true);
+			let oPosBase = oMathText.Add(oBase, true, false);
 			oMathText.AddAfter(oPosBase, ")");
 		}
 	}

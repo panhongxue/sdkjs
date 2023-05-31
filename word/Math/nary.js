@@ -815,17 +815,25 @@ CNary.prototype.Can_ModifyArgSize = function()
 {
     return this.CurPos !== 2 && false === this.Is_SelectInside();
 };
-CNary.prototype.GetTextOfElement = function(isLaTeX, isOne)
+/**
+ *
+ * @param {MathTextAndStyles} oMathText
+ * @return {*}
+ * @constructor
+ */
+CNary.prototype.GetTextOfElement = function(oMathText)
 {
-	let arrContent      = [];
-	let strStartCode    = String.fromCharCode(this.Pr.chr || this.getSign().chrCode);
-	let oSup            = this.getSupMathContent().GetMultipleContentForGetText(isLaTeX);
-	let oSub            = this.getSubMathContent().GetMultipleContentForGetText(isLaTeX);
-	let oBase           = this.getBase().GetMultipleContentForGetText(isLaTeX);
+	if (!oMathText)
+		oMathText = new AscMath.MathTextAndStyles(false);
 
-    if (true === isLaTeX)
+	let strStartCode;
+	let oBase	= this.getBase();
+	let oUpper	= this.getUpperIterator();
+	let oLower	= this.getLowerIterator();
+
+    if (oMathText.IsLaTeX())
     {
-        switch (strStartCode.codePointAt())
+        switch (this.Pr.chr)
         {
             case 8747:	strStartCode = '\\int';			break;
             case 8748:	strStartCode = '\\iint';		break;
@@ -849,29 +857,35 @@ CNary.prototype.GetTextOfElement = function(isLaTeX, isOne)
             case 10752: strStartCode = '\\bigodot';		break;
             default: break;
         }
-        if (oSup.length === 0 && oSub.length === 0)
-        {
-            strStartCode += " ";
-        }
+
+		let oPosNaryChar = oMathText.AddText(strStartCode);
     }
-    else if (false === isLaTeX && oBase.length > 0)
-    {
-        oBase.text = '▒' + oBase.text;
-	}
+    else {
+		let oLastPos = oMathText.AddText(String.fromCharCode(this.Pr.chr));
+		let isScript = false;
 
-    arrContent.push(strStartCode);
+		if (oLower)
+		{
+			isScript = true;
+			oLastPos = oMathText.Add(oLower, true, true);
+			oMathText.AddBefore(oLastPos, "_");
+		}
 
-	if (oSup.length > 0)
-    {
-		arrContent.push("^", oSup);
-	}
-	if (oSub.length > 0)
-    {
-        arrContent.push("_", oSub);
-	}
+		if (oUpper)
+		{
+			isScript = true;
+			oLastPos = oMathText.Add(oUpper, true, true);
+			oMathText.AddBefore(oLastPos, "^");
+		}
 
-    arrContent.push(oBase);
-	return arrContent;
+		if (oBase)
+		{
+			oLastPos = oMathText.Add(oBase, true, true);
+			let oBaseText = oMathText.GetExact(oLastPos);
+			if (isScript && oBaseText.GetLength() > 0 && oBaseText.IsHasText())
+				oMathText.AddBefore(oLastPos, "▒");
+		}
+	}
 };
 
 /**

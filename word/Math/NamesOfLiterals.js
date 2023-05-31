@@ -1154,6 +1154,7 @@
 		MathLiterals.char,
 		MathLiterals.delimiter,
 		MathLiterals.special,
+		MathLiterals.of,
 		MathLiterals.number,
 		MathLiterals.accent,
 		MathLiterals.space,
@@ -3685,7 +3686,6 @@
 		 */
 		this.StartAutoCorrection = function ()
 		{
-			debugger
 			let oLast 					= this.GetLast();
 			let lastElementMathId 		= this.GetAbsoluteLast();
 			let preLastElementMathId	= this.GetAbsolutePreLast();
@@ -4210,12 +4210,13 @@
 		this.LaTeX				= isLaTeX;
 		this.arr				= [];
 		this.nPos				= 0;
-		this.IsNotNeedToWrap	= false;
+		this.IsWrap				= false;
+		this.IsBracket			= false;
 		this.Positions			= [];
 	}
-	MathTextAndStyles.prototype.SetIsNotWrap = function (isNotWrap)
+	MathTextAndStyles.prototype.SetIsWrap = function (isWrap)
 	{
-		this.IsNotNeedToWrap = isNotWrap;
+		this.IsWrap = isWrap;
 	};
 	MathTextAndStyles.prototype.CreateInnerCopy = function()
 	{
@@ -4243,12 +4244,11 @@
 	 *
 	 * @param oContent
 	 * @param isNew {boolean} - Нужно ли отделять текущий контент в отдельный MathTextAndStyles
-	 * @param isNotWrap	{boolean} - Нужно ли обрамлять считанный контент в скобки
-	 * @param isWrapForRules - Нужно ли обрамлять контент в скобки даже если он обрамлен
+	 * @param Wrap {boolean|Array|String} - Если false конвертации не будет, если true, то если нужно будет конвертация - конвертируется, массив как true
 	 * @return {PosInMathText}
 	 * @constructor
 	 */
-	MathTextAndStyles.prototype.Add = function(oContent, isNew, isNotWrap, isWrapForRules)
+	MathTextAndStyles.prototype.Add = function(oContent, isNew, Wrap)
 	{
 		let nPosCopy = this.nPos;
 
@@ -4257,17 +4257,33 @@
 			let oMath = this.AddContainer();
 			oContent.GetTextOfElement(oMath);
 			this.Increase();
-
 			let oPos = this.AddPosition(this.nPos - nPosCopy);
 
-			if (oMath.IsNeedWrap()
-				&& oMath.IsNotNeedToWrap !== true
-				&& !this.IsNotNeedToWrap
-				&& !isNotWrap
-				|| (isWrapForRules && oMath.IsNotNeedToWrap === true && oMath.GetLength() > 1)
-			)
+			if (Wrap === false)
+			{
+				return oPos;
+			}
+			else if (Wrap === "always")
 			{
 				this.WrapExactElement(oPos);
+			}
+			else if (oMath.GetLength() > 1)
+			{
+				if (Array.isArray(Wrap) && Wrap.length === 2)
+				{
+					this.WrapExactElement(oPos, Wrap[0], Wrap[1]);
+				}
+				else
+				{
+					if (Wrap === "notBracket" && oMath.IsBracket === true)
+					{
+
+					}
+					else
+					{
+						this.WrapExactElement(oPos);
+					}
+				}
 			}
 
 			return oPos;
@@ -4276,7 +4292,8 @@
 		{
 			oContent.GetTextOfElement(this);
 			if (this.nPos === nPosCopy)
-				return;
+				return this.Get_Position();
+
 			return this.AddPosition(this.nPos - nPosCopy);
 		}
 	};
@@ -4413,9 +4430,15 @@
 	{
 		return this.arr.length;
 	}
-	MathTextAndStyles.prototype.WrapExactElement = function(oPos)
+	MathTextAndStyles.prototype.WrapExactElement = function(oPos, strOne, strTwo)
 	{
 		let oToken = this.GetExact(oPos);
+
+		if (strOne && strTwo)
+		{
+			oToken.Wrap(strOne, strTwo);
+			return;
+		}
 
 		if (!this.IsLaTeX())
 			oToken.Wrap("(", ")");

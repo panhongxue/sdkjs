@@ -2841,7 +2841,11447 @@ $(function () {
 		assert.strictEqual(r.GetText(), "√(2+y&5+x)", "Check linear content");
 	});
 
+	QUnit.test("Add empty cbrt", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
 
-	// QUnit.module("Radicals - Autocorrection");
+		AddTextToRoot("∛");
+		assert.ok(true, "Add '∛'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "", "Check content of degree base");
+		assert.strictEqual(strDegree, "3", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∛", "Check linear content");
+	});
+	QUnit.test("Add cbrt", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∛5");
+		assert.ok(true, "Add '∛5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5", "Check content of degree base");
+		assert.strictEqual(strDegree, "3", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∛5", "Check linear content");
+	});
+	QUnit.test("Add block cbrt", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∛(5+x)");
+		assert.ok(true, "Add '∛(5+x)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5+x", "Check content of degree base");
+		assert.strictEqual(strDegree, "3", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∛(5+x)", "Check linear content");
+	});
+
+	QUnit.test("Add empty qdrt", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∜");
+		assert.ok(true, "Add '∜'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "", "Check content of degree base");
+		assert.strictEqual(strDegree, "4", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∜", "Check linear content");
+	});
+	QUnit.test("Add qdrt", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∜5");
+		assert.ok(true, "Add '∜5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5", "Check content of degree base");
+		assert.strictEqual(strDegree, "4", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∜5", "Check linear content");
+	});
+	QUnit.test("Add block qdrt", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∜(5+x)");
+		assert.ok(true, "Add '∜(5+x)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5+x", "Check content of degree base");
+		assert.strictEqual(strDegree, "4", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∜(5+x)", "Check linear content");
+	});
+
+	QUnit.module("Radicals - Autocorrection");
+
+	QUnit.test("Add empty radical", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("√ ");
+		assert.ok(true, "Add '√ '");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "", "Check content of degree base");
+		assert.strictEqual(strDegree, "", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "√", "Check linear content");
+	});
+	QUnit.test("Add radical", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("√5 ");
+		assert.ok(true, "Add '√5 '");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5", "Check content of degree base");
+		assert.strictEqual(strDegree, "", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "√5", "Check linear content");
+	});
+	QUnit.test("Add block radical", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("√(5+x) ");
+		assert.ok(true, "Add '√(5+x) '");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5+x", "Check content of degree base");
+		assert.strictEqual(strDegree, "", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "√(5+x)", "Check linear content");
+	});
+	QUnit.test("Add block radical with degree", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("√(2&5+x) ");
+		assert.ok(true, "Add '√(2&5+x) '");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5+x", "Check content of degree base");
+		assert.strictEqual(strDegree, "2", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "√(2&5+x)", "Check linear content");
+	});
+	QUnit.test("Add block radical with degree", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("√(2+y&5+x) ");
+		assert.ok(true, "Add '√(2+y&5+x) '");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5+x", "Check content of degree base");
+		assert.strictEqual(strDegree, "2+y", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "√(2+y&5+x)", "Check linear content");
+	});
+
+	QUnit.test("Add empty cbrt", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∛ ");
+		assert.ok(true, "Add '∛ '");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "", "Check content of degree base");
+		assert.strictEqual(strDegree, "3", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∛", "Check linear content");
+	});
+	QUnit.test("Add cbrt", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∛5 ");
+		assert.ok(true, "Add '∛5 '");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5", "Check content of degree base");
+		assert.strictEqual(strDegree, "3", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∛5", "Check linear content");
+	});
+	QUnit.test("Add block cbrt", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∛(5+x) ");
+		assert.ok(true, "Add '∛(5+x) '");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5+x", "Check content of degree base");
+		assert.strictEqual(strDegree, "3", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∛(5+x)", "Check linear content");
+	});
+
+	QUnit.test("Add empty qdrt", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∜ ");
+		assert.ok(true, "Add '∜ '");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "", "Check content of degree base");
+		assert.strictEqual(strDegree, "4", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∜", "Check linear content");
+	});
+	QUnit.test("Add qdrt", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∜5 ");
+		assert.ok(true, "Add '∜5 '");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5", "Check content of degree base");
+		assert.strictEqual(strDegree, "4", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∜5", "Check linear content");
+	});
+	QUnit.test("Add block qdrt", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∜(5+x) ");
+		assert.ok(true, "Add '∜(5+x) '");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5+x", "Check content of degree base");
+		assert.strictEqual(strDegree, "4", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∜(5+x)", "Check linear content");
+	});
+
+	QUnit.module("Nary words - Autocorrection");
+
+	QUnit.test("\\int", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\int ");
+		assert.ok(true, "Add '\\int '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "∫", "Check correction");
+	});
+	QUnit.test("\\iint", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\iint ");
+		assert.ok(true, "Add '\\iint '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "∬", "Check correction");
+	});
+	QUnit.test("\\iiint", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\iiint ");
+		assert.ok(true, "Add '\\iiint '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "∭", "Check correction");
+	});
+	QUnit.test("\\iiiint", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\iiiint ");
+		assert.ok(true, "Add '\\iiiint '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "⨌", "Check correction");
+	});
+	QUnit.test("\\oint", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\oint ");
+		assert.ok(true, "Add '\\oint '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "∮", "Check correction");
+	});
+	QUnit.test("\\oiint", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\oiint ");
+		assert.ok(true, "Add '\\oiint '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "∯", "Check correction");
+	});
+	QUnit.test("\\oiiint", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\oiiint ");
+		assert.ok(true, "Add '\\oiiint '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "∰", "Check correction");
+	});
+	QUnit.test("\\prod", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\prod ");
+		assert.ok(true, "Add '\\prod '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "∏", "Check correction");
+	});
+	QUnit.test("\\sum", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\sum ");
+		assert.ok(true, "Add '\\sum '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "∑", "Check correction");
+	});
+	QUnit.test("\\coint", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\coint ");
+		assert.ok(true, "Add '\\coint '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "∲", "Check correction");
+	});
+	QUnit.test("\\amalg", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\amalg ");
+		assert.ok(true, "Add '\\amalg '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "∐", "Check correction");
+	});
+	QUnit.test("\\aoint", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\aoint ");
+		assert.ok(true, "Add '\\aoint '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "∳", "Check correction");
+	});
+	QUnit.test("\\bigcap", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\bigcap ");
+		assert.ok(true, "Add '\\bigcap '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "⋂", "Check correction");
+	});
+	QUnit.test("\\bigcup", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\bigcup ");
+		assert.ok(true, "Add '\\bigcup '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "⋃", "Check correction");
+	});
+	QUnit.test("\\bigodot", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\bigodot ");
+		assert.ok(true, "Add '\\bigodot '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "⨀", "Check correction");
+	});
+	QUnit.test("\\bigoplus", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\bigoplus ");
+		assert.ok(true, "Add '\\bigoplus '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "⨁", "Check correction");
+	});
+	QUnit.test("\\bigotimes", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\bigotimes ");
+		assert.ok(true, "Add '\\bigotimes '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "⨂", "Check correction");
+	});
+	QUnit.test("\\bigsqcup", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\bigsqcup ");
+		assert.ok(true, "Add '\\bigsqcup '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "⨆", "Check correction");
+	});
+	QUnit.test("\\biguplus", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\biguplus ");
+		assert.ok(true, "Add '\\biguplus '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "⨄", "Check correction");
+	});
+	QUnit.test("\\bigvee", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\bigvee ");
+		assert.ok(true, "Add '\\bigvee '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "⋁", "Check correction");
+	});
+	QUnit.test("\\bigwedge", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\bigwedge ");
+		assert.ok(true, "Add '\\bigwedge '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "⋀", "Check correction");
+	});
+
+	QUnit.module("Nary - Convert");
+
+	QUnit.test("Add integral empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫");
+		assert.ok(true, "Add '∫'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫", "Check linear content");
+	});
+	QUnit.test("Add integral lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫_2");
+		assert.ok(true, "Add '∫_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫_2", "Check linear content");
+	});
+	QUnit.test("Add integral lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫_(2+1)");
+		assert.ok(true, "Add '∫_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add integral upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫^2");
+		assert.ok(true, "Add '∫^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫^2", "Check linear content");
+	});
+	QUnit.test("Add integral upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫^(2+1)");
+		assert.ok(true, "Add '∫^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add integral upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫^2_x");
+		assert.ok(true, "Add '∫^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫_x^2", "Check linear content");
+	});
+	QUnit.test("Add integral upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫^(2+1)_(x+1)");
+		assert.ok(true, "Add '∫^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add integral with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫5");
+		assert.ok(true, "Add '∫5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫5", "Check linear content");
+	});
+	QUnit.test("Add integral with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫(5+1)");
+		assert.ok(true, "Add '∫(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add iintegral empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬");
+		assert.ok(true, "Add '∬'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬", "Check linear content");
+	});
+	QUnit.test("Add iintegral lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬_2");
+		assert.ok(true, "Add '∬_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬_2", "Check linear content");
+	});
+	QUnit.test("Add iintegral lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬_(2+1)");
+		assert.ok(true, "Add '∬_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iintegral upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬^2");
+		assert.ok(true, "Add '∬^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬^2", "Check linear content");
+	});
+	QUnit.test("Add iintegral upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬^(2+1)");
+		assert.ok(true, "Add '∬^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iintegral upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬^2_x");
+		assert.ok(true, "Add '∬^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬_x^2", "Check linear content");
+	});
+	QUnit.test("Add iintegral upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬^(2+1)_(x+1)");
+		assert.ok(true, "Add '∬^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iintegral with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬5");
+		assert.ok(true, "Add '∬5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬5", "Check linear content");
+	});
+	QUnit.test("Add iintegral with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬(5+1)");
+		assert.ok(true, "Add '∬(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add iiintegral empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭");
+		assert.ok(true, "Add '∭'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭", "Check linear content");
+	});
+	QUnit.test("Add iiintegral lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭_2");
+		assert.ok(true, "Add '∭_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭_2", "Check linear content");
+	});
+	QUnit.test("Add iiintegral lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭_(2+1)");
+		assert.ok(true, "Add '∭_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iiintegral upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭^2");
+		assert.ok(true, "Add '∭^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭^2", "Check linear content");
+	});
+	QUnit.test("Add iiintegral upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭^(2+1)");
+		assert.ok(true, "Add '∭^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iiintegral upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭^2_x");
+		assert.ok(true, "Add '∭^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭_x^2", "Check linear content");
+	});
+	QUnit.test("Add iiintegralupper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭^(2+1)_(x+1)");
+		assert.ok(true, "Add '∭^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iiintegral with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭5");
+		assert.ok(true, "Add '∭5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭5", "Check linear content");
+	});
+	QUnit.test("Add iiintegral with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭(5+1)");
+		assert.ok(true, "Add '∭(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add iiiintegral empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌");
+		assert.ok(true, "Add '⨌'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌", "Check linear content");
+	});
+	QUnit.test("Add iiiintegral lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌_2");
+		assert.ok(true, "Add '⨌_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌_2", "Check linear content");
+	});
+	QUnit.test("Add iiiintegral lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌_(2+1)");
+		assert.ok(true, "Add '⨌_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iiiintegral upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌^2");
+		assert.ok(true, "Add '⨌^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌^2", "Check linear content");
+	});
+	QUnit.test("Add iiiintegral upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌^(2+1)");
+		assert.ok(true, "Add '⨌^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iiiintegral upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌^2_x");
+		assert.ok(true, "Add '⨌^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌_x^2", "Check linear content");
+	});
+	QUnit.test("Add iiiintegral upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌^(2+1)_(x+1)");
+		assert.ok(true, "Add '⨌^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iiiintegral with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌5");
+		assert.ok(true, "Add '⨌5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌5", "Check linear content");
+	});
+	QUnit.test("Add iiiintegral with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌(5+1)");
+		assert.ok(true, "Add '⨌(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add oint empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮");
+		assert.ok(true, "Add '∮'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮", "Check linear content");
+	});
+	QUnit.test("Add oint lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮_2");
+		assert.ok(true, "Add '∮_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮_2", "Check linear content");
+	});
+	QUnit.test("Add oint lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮_(2+1)");
+		assert.ok(true, "Add '∮_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oint upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮^2");
+		assert.ok(true, "Add '∮^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮^2", "Check linear content");
+	});
+	QUnit.test("Add oint upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮^(2+1)");
+		assert.ok(true, "Add '∮^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oint upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮^2_x");
+		assert.ok(true, "Add '∮^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮_x^2", "Check linear content");
+	});
+	QUnit.test("Add oint upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮^(2+1)_(x+1)");
+		assert.ok(true, "Add '∮^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oint with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮5");
+		assert.ok(true, "Add '∮5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮5", "Check linear content");
+	});
+	QUnit.test("Add oint with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮(5+1)");
+		assert.ok(true, "Add '∮(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add oiint empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯");
+		assert.ok(true, "Add '∯'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯", "Check linear content");
+	});
+	QUnit.test("Add oiint lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯_2");
+		assert.ok(true, "Add '∯_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯_2", "Check linear content");
+	});
+	QUnit.test("Add oiint lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯_(2+1)");
+		assert.ok(true, "Add '∯_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oiint upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯^2");
+		assert.ok(true, "Add '∯^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯^2", "Check linear content");
+	});
+	QUnit.test("Add oiint upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯^(2+1)");
+		assert.ok(true, "Add '∯^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oiint upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯^2_x");
+		assert.ok(true, "Add '∯^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯_x^2", "Check linear content");
+	});
+	QUnit.test("Add oiint upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯^(2+1)_(x+1)");
+		assert.ok(true, "Add '∯^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oiint with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯5");
+		assert.ok(true, "Add '∯5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯5", "Check linear content");
+	});
+	QUnit.test("Add oiint with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯(5+1)");
+		assert.ok(true, "Add '∯(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add oiiint empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰");
+		assert.ok(true, "Add '∰'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰", "Check linear content");
+	});
+	QUnit.test("Add oiiint lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰_2");
+		assert.ok(true, "Add '∰_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰_2", "Check linear content");
+	});
+	QUnit.test("Add oiiint lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰_(2+1)");
+		assert.ok(true, "Add '∰_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oiiint upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰^2");
+		assert.ok(true, "Add '∰^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰^2", "Check linear content");
+	});
+	QUnit.test("Add oiiint upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰^(2+1)");
+		assert.ok(true, "Add '∰^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oiiint upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰^2_x");
+		assert.ok(true, "Add '∰^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰_x^2", "Check linear content");
+	});
+	QUnit.test("Add oiiint upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰^(2+1)_(x+1)");
+		assert.ok(true, "Add '∰^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oiiint with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰5");
+		assert.ok(true, "Add '∰5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰5", "Check linear content");
+	});
+	QUnit.test("Add oiiint with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰(5+1)");
+		assert.ok(true, "Add '∰(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add prod empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏");
+		assert.ok(true, "Add '∏'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏", "Check linear content");
+	});
+	QUnit.test("Add prod lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏_2");
+		assert.ok(true, "Add '∏_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏_2", "Check linear content");
+	});
+	QUnit.test("Add prod lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏_(2+1)");
+		assert.ok(true, "Add '∏_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add prod upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏^2");
+		assert.ok(true, "Add '∏^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏^2", "Check linear content");
+	});
+	QUnit.test("Add prod upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏^(2+1)");
+		assert.ok(true, "Add '∏^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add prod upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏^2_x");
+		assert.ok(true, "Add '∏^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏_x^2", "Check linear content");
+	});
+	QUnit.test("Add prod upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏^(2+1)_(x+1)");
+		assert.ok(true, "Add '∏^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add prod with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏5");
+		assert.ok(true, "Add '∏5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏5", "Check linear content");
+	});
+	QUnit.test("Add prod with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏(5+1)");
+		assert.ok(true, "Add '∏(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add sum empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑");
+		assert.ok(true, "Add '∑'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑", "Check linear content");
+	});
+	QUnit.test("Add sum lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑_2");
+		assert.ok(true, "Add '∑_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑_2", "Check linear content");
+	});
+	QUnit.test("Add sum lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑_(2+1)");
+		assert.ok(true, "Add '∑_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add sum upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑^2");
+		assert.ok(true, "Add '∑^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑^2", "Check linear content");
+	});
+	QUnit.test("Add sum upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑^(2+1)");
+		assert.ok(true, "Add '∑^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add sum upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑^2_x");
+		assert.ok(true, "Add '∑^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑_x^2", "Check linear content");
+	});
+	QUnit.test("Add sum upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑^(2+1)_(x+1)");
+		assert.ok(true, "Add '∑^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add sum with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑5");
+		assert.ok(true, "Add '∑5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑5", "Check linear content");
+	});
+	QUnit.test("Add sum with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑(5+1)");
+		assert.ok(true, "Add '∑(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add coint empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲");
+		assert.ok(true, "Add '∲'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲", "Check linear content");
+	});
+	QUnit.test("Add coint lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲_2");
+		assert.ok(true, "Add '∲_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲_2", "Check linear content");
+	});
+	QUnit.test("Add coint lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲_(2+1)");
+		assert.ok(true, "Add '∲_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add coint upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲^2");
+		assert.ok(true, "Add '∲^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲^2", "Check linear content");
+	});
+	QUnit.test("Add coint upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲^(2+1)");
+		assert.ok(true, "Add '∲^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add coint upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲^2_x");
+		assert.ok(true, "Add '∲^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲_x^2", "Check linear content");
+	});
+	QUnit.test("Add coint upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲^(2+1)_(x+1)");
+		assert.ok(true, "Add '∲^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add coint with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲5");
+		assert.ok(true, "Add '∲5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲5", "Check linear content");
+	});
+	QUnit.test("Add coint with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲(5+1)");
+		assert.ok(true, "Add '∲(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add amalg empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐");
+		assert.ok(true, "Add '∐'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐", "Check linear content");
+	});
+	QUnit.test("Add amalg lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐_2");
+		assert.ok(true, "Add '∐_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐_2", "Check linear content");
+	});
+	QUnit.test("Add amalg lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐_(2+1)");
+		assert.ok(true, "Add '∐_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add amalg upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐^2");
+		assert.ok(true, "Add '∐^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐^2", "Check linear content");
+	});
+	QUnit.test("Add amalg upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐^(2+1)");
+		assert.ok(true, "Add '∐^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add amalg upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐^2_x");
+		assert.ok(true, "Add '∐^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐_x^2", "Check linear content");
+	});
+	QUnit.test("Add amalg upper lower block ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐^(2+1)_(x+1)");
+		assert.ok(true, "Add '∐^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add amalg with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐5");
+		assert.ok(true, "Add '∐5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐5", "Check linear content");
+	});
+	QUnit.test("Add amalg with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐(5+1)");
+		assert.ok(true, "Add '∐(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add aoint empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳");
+		assert.ok(true, "Add '∳'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳", "Check linear content");
+	});
+	QUnit.test("Add aoint lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳_2");
+		assert.ok(true, "Add '∳_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳_2", "Check linear content");
+	});
+	QUnit.test("Add aoint lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳_(2+1)");
+		assert.ok(true, "Add '∳_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add aoint upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳^2");
+		assert.ok(true, "Add '∳^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳^2", "Check linear content");
+	});
+	QUnit.test("Add aoint upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳^(2+1)");
+		assert.ok(true, "Add '∳^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add aoint upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳^2_x");
+		assert.ok(true, "Add '∳^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳_x^2", "Check linear content");
+	});
+	QUnit.test("Add aoint upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳^(2+1)_(x+1)");
+		assert.ok(true, "Add '∳^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add aoint with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳5");
+		assert.ok(true, "Add '∳5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳5", "Check linear content");
+	});
+	QUnit.test("Add aoint with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳(5+1)");
+		assert.ok(true, "Add '∳(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add bigcap empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂");
+		assert.ok(true, "Add '⋂'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂", "Check linear content");
+	});
+	QUnit.test("Add bigcap lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂_2");
+		assert.ok(true, "Add '⋂_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂_2", "Check linear content");
+	});
+	QUnit.test("Add bigcap lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂_(2+1)");
+		assert.ok(true, "Add '⋂_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigcap upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂^2");
+		assert.ok(true, "Add '⋂^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂^2", "Check linear content");
+	});
+	QUnit.test("Add bigcap upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂^(2+1)");
+		assert.ok(true, "Add '⋂^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigcap upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂^2_x");
+		assert.ok(true, "Add '⋂^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂_x^2", "Check linear content");
+	});
+	QUnit.test("Add bigcap upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂^(2+1)_(x+1)");
+		assert.ok(true, "Add '⋂^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigcap with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂5");
+		assert.ok(true, "Add '⋂5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂5", "Check linear content");
+	});
+	QUnit.test("Add bigcap with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂(5+1)");
+		assert.ok(true, "Add '⋂(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add bigcup empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃");
+		assert.ok(true, "Add '⋃'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃", "Check linear content");
+	});
+	QUnit.test("Add bigcup lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃_2");
+		assert.ok(true, "Add '⋃_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃_2", "Check linear content");
+	});
+	QUnit.test("Add bigcup lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃_(2+1)");
+		assert.ok(true, "Add '⋃_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigcup upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃^2");
+		assert.ok(true, "Add '⋃^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃^2", "Check linear content");
+	});
+	QUnit.test("Add bigcup upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃^(2+1)");
+		assert.ok(true, "Add '⋃^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigcup upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃^2_x");
+		assert.ok(true, "Add '⋃^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃_x^2", "Check linear content");
+	});
+	QUnit.test("Add bigcup upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃^(2+1)_(x+1)");
+		assert.ok(true, "Add '⋃^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigcup with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃5");
+		assert.ok(true, "Add '⋃5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃5", "Check linear content");
+	});
+	QUnit.test("Add bigcup with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃(5+1)");
+		assert.ok(true, "Add '⋃(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add bigodot empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀");
+		assert.ok(true, "Add '⨀'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀", "Check linear content");
+	});
+	QUnit.test("Add bigodot lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀_2");
+		assert.ok(true, "Add '⨀_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀_2", "Check linear content");
+	});
+	QUnit.test("Add bigodot lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀_(2+1)");
+		assert.ok(true, "Add '⨀_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigodot upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀^2");
+		assert.ok(true, "Add '⨀^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀^2", "Check linear content");
+	});
+	QUnit.test("Add bigodot upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀^(2+1)");
+		assert.ok(true, "Add '⨀^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigodot upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀^2_x");
+		assert.ok(true, "Add '⨀^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀_x^2", "Check linear content");
+	});
+	QUnit.test("Add bigodot upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀^(2+1)_(x+1)");
+		assert.ok(true, "Add '⨀^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigodot with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀5");
+		assert.ok(true, "Add '⨀5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀5", "Check linear content");
+	});
+	QUnit.test("Add bigodot with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀(5+1)");
+		assert.ok(true, "Add '⨀(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add bigoplus empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁");
+		assert.ok(true, "Add '⨁'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁", "Check linear content");
+	});
+	QUnit.test("Add bigoplus lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁_2");
+		assert.ok(true, "Add '⨁_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁_2", "Check linear content");
+	});
+	QUnit.test("Add bigoplus lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁_(2+1)");
+		assert.ok(true, "Add '⨁_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigoplus upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁^2");
+		assert.ok(true, "Add '⨁^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁^2", "Check linear content");
+	});
+	QUnit.test("Add bigoplus upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁^(2+1)");
+		assert.ok(true, "Add '⨁^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigoplus upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁^2_x");
+		assert.ok(true, "Add '⨁^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁_x^2", "Check linear content");
+	});
+	QUnit.test("Add bigoplus upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁^(2+1)_(x+1)");
+		assert.ok(true, "Add '⨁^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigoplus with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁5");
+		assert.ok(true, "Add '⨁5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁5", "Check linear content");
+	});
+	QUnit.test("Add bigoplus with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁(5+1)");
+		assert.ok(true, "Add '⨁(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add bigotimes empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂");
+		assert.ok(true, "Add '⨂'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂", "Check linear content");
+	});
+	QUnit.test("Add bigotimes lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂_2");
+		assert.ok(true, "Add '⨂_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂_2", "Check linear content");
+	});
+	QUnit.test("Add bigotimes lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂_(2+1)");
+		assert.ok(true, "Add '⨂_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigotimes upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂^2");
+		assert.ok(true, "Add '⨂^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂^2", "Check linear content");
+	});
+	QUnit.test("Add bigotimes upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂^(2+1)");
+		assert.ok(true, "Add '⨂^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigotimes upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂^2_x");
+		assert.ok(true, "Add '⨂^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂_x^2", "Check linear content");
+	});
+	QUnit.test("Add bigotimes upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂^(2+1)_(x+1)");
+		assert.ok(true, "Add '⨂^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigotimes with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂5");
+		assert.ok(true, "Add '⨂5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂5", "Check linear content");
+	});
+	QUnit.test("Add bigotimes with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂(5+1)");
+		assert.ok(true, "Add '⨂(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add bigsqcup empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆");
+		assert.ok(true, "Add '⨆'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆", "Check linear content");
+	});
+	QUnit.test("Add bigsqcup lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆_2");
+		assert.ok(true, "Add '⨆_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆_2", "Check linear content");
+	});
+	QUnit.test("Add bigsqcup lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆_(2+1)");
+		assert.ok(true, "Add '⨆_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigsqcup upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆^2");
+		assert.ok(true, "Add '⨆^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆^2", "Check linear content");
+	});
+	QUnit.test("Add bigsqcup upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆^(2+1)");
+		assert.ok(true, "Add '⨆^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigsqcup upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆^2_x");
+		assert.ok(true, "Add '⨆^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆_x^2", "Check linear content");
+	});
+	QUnit.test("Add bigsqcup upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆^(2+1)_(x+1)");
+		assert.ok(true, "Add '⨆^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigsqcup with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆5");
+		assert.ok(true, "Add '⨆5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆5", "Check linear content");
+	});
+	QUnit.test("Add bigsqcup with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆(5+1)");
+		assert.ok(true, "Add '⨆(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add biguplus empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄");
+		assert.ok(true, "Add '⨄'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄", "Check linear content");
+	});
+	QUnit.test("Add biguplus lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄_2");
+		assert.ok(true, "Add '⨄_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄_2", "Check linear content");
+	});
+	QUnit.test("Add biguplus lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄_(2+1)");
+		assert.ok(true, "Add '⨄_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add biguplus upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄^2");
+		assert.ok(true, "Add '⨄^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄^2", "Check linear content");
+	});
+	QUnit.test("Add biguplus upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄^(2+1)");
+		assert.ok(true, "Add '⨄^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add biguplus upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄^2_x");
+		assert.ok(true, "Add '⨄^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄_x^2", "Check linear content");
+	});
+	QUnit.test("Add biguplus upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄^(2+1)_(x+1)");
+		assert.ok(true, "Add '⨄^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add biguplus with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄5");
+		assert.ok(true, "Add '⨄5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄5", "Check linear content");
+	});
+	QUnit.test("Add biguplus with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄(5+1)");
+		assert.ok(true, "Add '⨄(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add bigvee empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁");
+		assert.ok(true, "Add '⋁'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁", "Check linear content");
+	});
+	QUnit.test("Add bigvee lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁_2");
+		assert.ok(true, "Add '⋁_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁_2", "Check linear content");
+	});
+	QUnit.test("Add bigvee lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁_(2+1)");
+		assert.ok(true, "Add '⋁_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigvee upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁^2");
+		assert.ok(true, "Add '⋁^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁^2", "Check linear content");
+	});
+	QUnit.test("Add bigvee upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁^(2+1)");
+		assert.ok(true, "Add '⋁^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigvee upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁^2_x");
+		assert.ok(true, "Add '⋁^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁_x^2", "Check linear content");
+	});
+	QUnit.test("Add bigvee upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁^(2+1)_(x+1)");
+		assert.ok(true, "Add '⋁^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigvee with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁5");
+		assert.ok(true, "Add '⋁5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁5", "Check linear content");
+	});
+	QUnit.test("Add bigvee with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁(5+1)");
+		assert.ok(true, "Add '⋁(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add bigwedge empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀");
+		assert.ok(true, "Add '⋀'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀", "Check linear content");
+	});
+	QUnit.test("Add bigwedge lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀_2");
+		assert.ok(true, "Add '⋀_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀_2", "Check linear content");
+	});
+	QUnit.test("Add bigwedge lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀_(2+1)");
+		assert.ok(true, "Add '⋀_(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigwedge upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀^2");
+		assert.ok(true, "Add '⋀^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀^2", "Check linear content");
+	});
+	QUnit.test("Add bigwedge upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀^(2+1)");
+		assert.ok(true, "Add '⋀^(2+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigwedge upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀^2_x");
+		assert.ok(true, "Add '⋀^2_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀_x^2", "Check linear content");
+	});
+	QUnit.test("Add bigwedge upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀^(2+1)_(x+1)");
+		assert.ok(true, "Add '⋀^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigwedge with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀5");
+		assert.ok(true, "Add '⋀5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀5", "Check linear content");
+	});
+	QUnit.test("Add bigwedge with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀(5+1)");
+		assert.ok(true, "Add '⋀(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀(5+1)", "Check linear content");
+	});
+
+
+
+	QUnit.module("Nary - Autocorrection");
+
+	QUnit.test("Add integral empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫ ");
+		assert.ok(true, "Add '∫ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫", "Check linear content");
+	});
+	QUnit.test("Add integral lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫_2 ");
+		assert.ok(true, "Add '∫_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫_2", "Check linear content");
+	});
+	QUnit.test("Add integral lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫_(2+1) ");
+		assert.ok(true, "Add '∫_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add integral upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫^2 ");
+		assert.ok(true, "Add '∫^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫^2", "Check linear content");
+	});
+	QUnit.test("Add integral upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫^(2+1) ");
+		assert.ok(true, "Add '∫^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add integral upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫^2_x ");
+		assert.ok(true, "Add '∫^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫_x^2", "Check linear content");
+	});
+	QUnit.test("Add integral upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫^(2+1)_(x+1) ");
+		assert.ok(true, "Add '∫^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add integral with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫5 ");
+		assert.ok(true, "Add '∫5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫5", "Check linear content");
+	});
+	QUnit.test("Add integral with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∫(5+1) ");
+		assert.ok(true, "Add '∫(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8747, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∫(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add iintegral empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬ ");
+		assert.ok(true, "Add '∬ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬", "Check linear content");
+	});
+	QUnit.test("Add iintegral lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬_2 ");
+		assert.ok(true, "Add '∬_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬_2", "Check linear content");
+	});
+	QUnit.test("Add iintegral lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬_(2+1) ");
+		assert.ok(true, "Add '∬_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iintegral upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬^2 ");
+		assert.ok(true, "Add '∬^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬^2", "Check linear content");
+	});
+	QUnit.test("Add iintegral upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬^(2+1) ");
+		assert.ok(true, "Add '∬^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iintegral upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬^2_x ");
+		assert.ok(true, "Add '∬^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬_x^2", "Check linear content");
+	});
+	QUnit.test("Add iintegral upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬^(2+1)_(x+1) ");
+		assert.ok(true, "Add '∬^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iintegral with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬5 ");
+		assert.ok(true, "Add '∬5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬5", "Check linear content");
+	});
+	QUnit.test("Add iintegral with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∬(5+1) ");
+		assert.ok(true, "Add '∬(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8748, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∬(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add iiintegral empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭ ");
+		assert.ok(true, "Add '∭ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭", "Check linear content");
+	});
+	QUnit.test("Add iiintegral lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭_2 ");
+		assert.ok(true, "Add '∭_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭_2", "Check linear content");
+	});
+	QUnit.test("Add iiintegral lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭_(2+1) ");
+		assert.ok(true, "Add '∭_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iiintegral upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭^2 ");
+		assert.ok(true, "Add '∭^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭^2", "Check linear content");
+	});
+	QUnit.test("Add iiintegral upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭^(2+1) ");
+		assert.ok(true, "Add '∭^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iiintegral upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭^2_x ");
+		assert.ok(true, "Add '∭^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭_x^2", "Check linear content");
+	});
+	QUnit.test("Add iiintegralupper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭^(2+1)_(x+1) ");
+		assert.ok(true, "Add '∭^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iiintegral with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭5 ");
+		assert.ok(true, "Add '∭5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭5", "Check linear content");
+	});
+	QUnit.test("Add iiintegral with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∭(5+1) ");
+		assert.ok(true, "Add '∭(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8749, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∭(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add iiiintegral empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌ ");
+		assert.ok(true, "Add '⨌ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌", "Check linear content");
+	});
+	QUnit.test("Add iiiintegral lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌_2 ");
+		assert.ok(true, "Add '⨌_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌_2", "Check linear content");
+	});
+	QUnit.test("Add iiiintegral lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌_(2+1) ");
+		assert.ok(true, "Add '⨌_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iiiintegral upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌^2 ");
+		assert.ok(true, "Add '⨌^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌^2", "Check linear content");
+	});
+	QUnit.test("Add iiiintegral upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌^(2+1) ");
+		assert.ok(true, "Add '⨌^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iiiintegral upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌^2_x ");
+		assert.ok(true, "Add '⨌^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌_x^2", "Check linear content");
+	});
+	QUnit.test("Add iiiintegral upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌^(2+1)_(x+1) ");
+		assert.ok(true, "Add '⨌^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add iiiintegral with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌5 ");
+		assert.ok(true, "Add '⨌5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌5", "Check linear content");
+	});
+	QUnit.test("Add iiiintegral with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨌(5+1) ");
+		assert.ok(true, "Add '⨌(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10764, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨌(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add oint empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮ ");
+		assert.ok(true, "Add '∮ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮", "Check linear content");
+	});
+	QUnit.test("Add oint lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮_2 ");
+		assert.ok(true, "Add '∮_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮_2", "Check linear content");
+	});
+	QUnit.test("Add oint lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮_(2+1) ");
+		assert.ok(true, "Add '∮_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oint upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮^2 ");
+		assert.ok(true, "Add '∮^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮^2", "Check linear content");
+	});
+	QUnit.test("Add oint upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮^(2+1) ");
+		assert.ok(true, "Add '∮^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oint upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮^2_x ");
+		assert.ok(true, "Add '∮^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮_x^2", "Check linear content");
+	});
+	QUnit.test("Add oint upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮^(2+1)_(x+1) ");
+		assert.ok(true, "Add '∮^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oint with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮5 ");
+		assert.ok(true, "Add '∮5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮5", "Check linear content");
+	});
+	QUnit.test("Add oint with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∮(5+1) ");
+		assert.ok(true, "Add '∮(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8750, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∮(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add oiint empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯ ");
+		assert.ok(true, "Add '∯ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯", "Check linear content");
+	});
+	QUnit.test("Add oiint lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯_2 ");
+		assert.ok(true, "Add '∯_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯_2", "Check linear content");
+	});
+	QUnit.test("Add oiint lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯_(2+1) ");
+		assert.ok(true, "Add '∯_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oiint upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯^2 ");
+		assert.ok(true, "Add '∯^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯^2", "Check linear content");
+	});
+	QUnit.test("Add oiint upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯^(2+1) ");
+		assert.ok(true, "Add '∯^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oiint upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯^2_x ");
+		assert.ok(true, "Add '∯^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯_x^2", "Check linear content");
+	});
+	QUnit.test("Add oiint upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯^(2+1)_(x+1) ");
+		assert.ok(true, "Add '∯^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oiint with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯5");
+		assert.ok(true, "Add '∯5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯5", "Check linear content");
+	});
+	QUnit.test("Add oiint with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∯(5+1) ");
+		assert.ok(true, "Add '∯(5+1) '");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8751, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∯(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add oiiint empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰ ");
+		assert.ok(true, "Add '∰ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰", "Check linear content");
+	});
+	QUnit.test("Add oiiint lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰_2 ");
+		assert.ok(true, "Add '∰_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰_2", "Check linear content");
+	});
+	QUnit.test("Add oiiint lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰_(2+1) ");
+		assert.ok(true, "Add '∰_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oiiint upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰^2 ");
+		assert.ok(true, "Add '∰^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰^2", "Check linear content");
+	});
+	QUnit.test("Add oiiint upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰^(2+1) ");
+		assert.ok(true, "Add '∰^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oiiint upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰^2_x ");
+		assert.ok(true, "Add '∰^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰_x^2", "Check linear content");
+	});
+	QUnit.test("Add oiiint upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰^(2+1)_(x+1) ");
+		assert.ok(true, "Add '∰^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add oiiint with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰5 ");
+		assert.ok(true, "Add '∰5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰5", "Check linear content");
+	});
+	QUnit.test("Add oiiint with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∰(5+1) ");
+		assert.ok(true, "Add '∰(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∰(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add prod empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏ ");
+		assert.ok(true, "Add '∏ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏", "Check linear content");
+	});
+	QUnit.test("Add prod lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏_2 ");
+		assert.ok(true, "Add '∏_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏_2", "Check linear content");
+	});
+	QUnit.test("Add prod lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏_(2+1) ");
+		assert.ok(true, "Add '∏_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add prod upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏^2 ");
+		assert.ok(true, "Add '∏^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏^2", "Check linear content");
+	});
+	QUnit.test("Add prod upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏^(2+1) ");
+		assert.ok(true, "Add '∏^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add prod upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏^2_x ");
+		assert.ok(true, "Add '∏^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏_x^2", "Check linear content");
+	});
+	QUnit.test("Add prod upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏^(2+1)_(x+1) ");
+		assert.ok(true, "Add '∏^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add prod with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏5 ");
+		assert.ok(true, "Add '∏5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏5", "Check linear content");
+	});
+	QUnit.test("Add prod with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∏(5+1) ");
+		assert.ok(true, "Add '∏(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8719, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∏(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add sum empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑ ");
+		assert.ok(true, "Add '∑ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑", "Check linear content");
+	});
+	QUnit.test("Add sum lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑_2 ");
+		assert.ok(true, "Add '∑_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑_2", "Check linear content");
+	});
+	QUnit.test("Add sum lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑_(2+1) ");
+		assert.ok(true, "Add '∑_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add sum upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑^2 ");
+		assert.ok(true, "Add '∑^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑^2", "Check linear content");
+	});
+	QUnit.test("Add sum upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑^(2+1) ");
+		assert.ok(true, "Add '∑^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add sum upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑^2_x ");
+		assert.ok(true, "Add '∑^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑_x^2", "Check linear content");
+	});
+	QUnit.test("Add sum upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑^(2+1)_(x+1) ");
+		assert.ok(true, "Add '∑^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add sum with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑5 ");
+		assert.ok(true, "Add '∑5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑5", "Check linear content");
+	});
+	QUnit.test("Add sum with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∑(5+1) ");
+		assert.ok(true, "Add '∑(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8721, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∑(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add coint empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲ ");
+		assert.ok(true, "Add '∲ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲", "Check linear content");
+	});
+	QUnit.test("Add coint lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲_2 ");
+		assert.ok(true, "Add '∲_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲_2", "Check linear content");
+	});
+	QUnit.test("Add coint lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲_(2+1) ");
+		assert.ok(true, "Add '∲_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add coint upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲^2 ");
+		assert.ok(true, "Add '∲^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲^2", "Check linear content");
+	});
+	QUnit.test("Add coint upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲^(2+1) ");
+		assert.ok(true, "Add '∲^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add coint upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲^2_x ");
+		assert.ok(true, "Add '∲^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲_x^2", "Check linear content");
+	});
+	QUnit.test("Add coint upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲^(2+1)_(x+1) ");
+		assert.ok(true, "Add '∲^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add coint with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲5 ");
+		assert.ok(true, "Add '∲5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲5", "Check linear content");
+	});
+	QUnit.test("Add coint with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∲(5+1) ");
+		assert.ok(true, "Add '∲(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∲(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add amalg empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐ ");
+		assert.ok(true, "Add '∐ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐", "Check linear content");
+	});
+	QUnit.test("Add amalg lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐_2 ");
+		assert.ok(true, "Add '∐_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐_2", "Check linear content");
+	});
+	QUnit.test("Add amalg lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐_(2+1) ");
+		assert.ok(true, "Add '∐_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add amalg upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐^2 ");
+		assert.ok(true, "Add '∐^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐^2", "Check linear content");
+	});
+	QUnit.test("Add amalg upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐^(2+1) ");
+		assert.ok(true, "Add '∐^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add amalg upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐^2_x ");
+		assert.ok(true, "Add '∐^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐_x^2", "Check linear content");
+	});
+	QUnit.test("Add amalg upper lower block ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐^(2+1)_(x+1) ");
+		assert.ok(true, "Add '∐^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add amalg with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐5 ");
+		assert.ok(true, "Add '∐5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐5", "Check linear content");
+	});
+	QUnit.test("Add amalg with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∐(5+1) ");
+		assert.ok(true, "Add '∐(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8720, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∐(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add aoint empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳ ");
+		assert.ok(true, "Add '∳ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳", "Check linear content");
+	});
+	QUnit.test("Add aoint lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳_2 ");
+		assert.ok(true, "Add '∳_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳_2", "Check linear content");
+	});
+	QUnit.test("Add aoint lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳_(2+1) ");
+		assert.ok(true, "Add '∳_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add aoint upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳^2 ");
+		assert.ok(true, "Add '∳^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳^2", "Check linear content");
+	});
+	QUnit.test("Add aoint upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳^(2+1) ");
+		assert.ok(true, "Add '∳^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add aoint upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳^2_x ");
+		assert.ok(true, "Add '∳^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳_x^2", "Check linear content");
+	});
+	QUnit.test("Add aoint upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳^(2+1)_(x+1) ");
+		assert.ok(true, "Add '∳^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add aoint with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳5 ");
+		assert.ok(true, "Add '∳5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳5", "Check linear content");
+	});
+	QUnit.test("Add aoint with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("∳(5+1) ");
+		assert.ok(true, "Add '∳(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8755, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "∳(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add bigcap empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂ ");
+		assert.ok(true, "Add '⋂ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂", "Check linear content");
+	});
+	QUnit.test("Add bigcap lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂_2 ");
+		assert.ok(true, "Add '⋂_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂_2", "Check linear content");
+	});
+	QUnit.test("Add bigcap lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂_(2+1) ");
+		assert.ok(true, "Add '⋂_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigcap upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂^2 ");
+		assert.ok(true, "Add '⋂^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂^2", "Check linear content");
+	});
+	QUnit.test("Add bigcap upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂^(2+1) ");
+		assert.ok(true, "Add '⋂^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigcap upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂^2_x ");
+		assert.ok(true, "Add '⋂^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂_x^2", "Check linear content");
+	});
+	QUnit.test("Add bigcap upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂^(2+1)_(x+1) ");
+		assert.ok(true, "Add '⋂^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigcap with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂5 ");
+		assert.ok(true, "Add '⋂5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂5", "Check linear content");
+	});
+	QUnit.test("Add bigcap with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋂(5+1) ");
+		assert.ok(true, "Add '⋂(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8898, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋂(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add bigcup empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃ ");
+		assert.ok(true, "Add '⋃ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃", "Check linear content");
+	});
+	QUnit.test("Add bigcup lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃_2 ");
+		assert.ok(true, "Add '⋃_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃_2", "Check linear content");
+	});
+	QUnit.test("Add bigcup lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃_(2+1) ");
+		assert.ok(true, "Add '⋃_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigcup upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃^2 ");
+		assert.ok(true, "Add '⋃^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃^2", "Check linear content");
+	});
+	QUnit.test("Add bigcup upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃^(2+1) ");
+		assert.ok(true, "Add '⋃^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigcup upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃^2_x ");
+		assert.ok(true, "Add '⋃^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃_x^2", "Check linear content");
+	});
+	QUnit.test("Add bigcup upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃^(2+1)_(x+1) ");
+		assert.ok(true, "Add '⋃^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigcup with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃5 ");
+		assert.ok(true, "Add '⋃5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃5", "Check linear content");
+	});
+	QUnit.test("Add bigcup with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋃(5+1) ");
+		assert.ok(true, "Add '⋃(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8899, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋃(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add bigodot empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀ ");
+		assert.ok(true, "Add '⨀ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀", "Check linear content");
+	});
+	QUnit.test("Add bigodot lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀_2 ");
+		assert.ok(true, "Add '⨀_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀_2", "Check linear content");
+	});
+	QUnit.test("Add bigodot lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀_(2+1) ");
+		assert.ok(true, "Add '⨀_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigodot upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀^2 ");
+		assert.ok(true, "Add '⨀^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀^2", "Check linear content");
+	});
+	QUnit.test("Add bigodot upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀^(2+1) ");
+		assert.ok(true, "Add '⨀^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigodot upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀^2_x ");
+		assert.ok(true, "Add '⨀^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀_x^2", "Check linear content");
+	});
+	QUnit.test("Add bigodot upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀^(2+1)_(x+1) ");
+		assert.ok(true, "Add '⨀^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigodot with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀5 ");
+		assert.ok(true, "Add '⨀5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀5", "Check linear content");
+	});
+	QUnit.test("Add bigodot with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨀(5+1) ");
+		assert.ok(true, "Add '⨀(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10752, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨀(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add bigoplus empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁ ");
+		assert.ok(true, "Add '⨁ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁", "Check linear content");
+	});
+	QUnit.test("Add bigoplus lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁_2 ");
+		assert.ok(true, "Add '⨁_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁_2", "Check linear content");
+	});
+	QUnit.test("Add bigoplus lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁_(2+1) ");
+		assert.ok(true, "Add '⨁_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigoplus upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁^2 ");
+		assert.ok(true, "Add '⨁^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁^2", "Check linear content");
+	});
+	QUnit.test("Add bigoplus upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁^(2+1) ");
+		assert.ok(true, "Add '⨁^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigoplus upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁^2_x ");
+		assert.ok(true, "Add '⨁^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁_x^2", "Check linear content");
+	});
+	QUnit.test("Add bigoplus upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁^(2+1)_(x+1) ");
+		assert.ok(true, "Add '⨁^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigoplus with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁5 ");
+		assert.ok(true, "Add '⨁5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁5", "Check linear content");
+	});
+	QUnit.test("Add bigoplus with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨁(5+1) ");
+		assert.ok(true, "Add '⨁(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10753, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨁(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add bigotimes empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂ ");
+		assert.ok(true, "Add '⨂ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂", "Check linear content");
+	});
+	QUnit.test("Add bigotimes lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂_2 ");
+		assert.ok(true, "Add '⨂_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂_2", "Check linear content");
+	});
+	QUnit.test("Add bigotimes lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂_(2+1) ");
+		assert.ok(true, "Add '⨂_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigotimes upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂^2 ");
+		assert.ok(true, "Add '⨂^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂^2", "Check linear content");
+	});
+	QUnit.test("Add bigotimes upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂^(2+1) ");
+		assert.ok(true, "Add '⨂^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigotimes upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂^2_x ");
+		assert.ok(true, "Add '⨂^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂_x^2", "Check linear content");
+	});
+	QUnit.test("Add bigotimes upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂^(2+1)_(x+1) ");
+		assert.ok(true, "Add '⨂^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigotimes with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂5 ");
+		assert.ok(true, "Add '⨂5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂5", "Check linear content");
+	});
+	QUnit.test("Add bigotimes with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨂(5+1) ");
+		assert.ok(true, "Add '⨂(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10754, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨂(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add bigsqcup empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆ ");
+		assert.ok(true, "Add '⨆ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆", "Check linear content");
+	});
+	QUnit.test("Add bigsqcup lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆_2 ");
+		assert.ok(true, "Add '⨆_2 '");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆_2", "Check linear content");
+	});
+	QUnit.test("Add bigsqcup lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆_(2+1) ");
+		assert.ok(true, "Add '⨆_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigsqcup upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆^2 ");
+		assert.ok(true, "Add '⨆^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆^2", "Check linear content");
+	});
+	QUnit.test("Add bigsqcup upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆^(2+1) ");
+		assert.ok(true, "Add '⨆^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigsqcup upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆^2_x ");
+		assert.ok(true, "Add '⨆^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆_x^2", "Check linear content");
+	});
+	QUnit.test("Add bigsqcup upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆^(2+1)_(x+1) ");
+		assert.ok(true, "Add '⨆^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigsqcup with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆5 ");
+		assert.ok(true, "Add '⨆5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆5", "Check linear content");
+	});
+	QUnit.test("Add bigsqcup with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨆(5+1) ");
+		assert.ok(true, "Add '⨆(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10758, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨆(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add biguplus empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄ ");
+		assert.ok(true, "Add '⨄ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄", "Check linear content");
+	});
+	QUnit.test("Add biguplus lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄_2 ");
+		assert.ok(true, "Add '⨄_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄_2", "Check linear content");
+	});
+	QUnit.test("Add biguplus lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄_(2+1) ");
+		assert.ok(true, "Add '⨄_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add biguplus upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄^2 ");
+		assert.ok(true, "Add '⨄^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄^2", "Check linear content");
+	});
+	QUnit.test("Add biguplus upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄^(2+1) ");
+		assert.ok(true, "Add '⨄^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add biguplus upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄^2_x ");
+		assert.ok(true, "Add '⨄^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄_x^2", "Check linear content");
+	});
+	QUnit.test("Add biguplus upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄^(2+1)_(x+1) ");
+		assert.ok(true, "Add '⨄^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add biguplus with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄5 ");
+		assert.ok(true, "Add '⨄5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄5", "Check linear content");
+	});
+	QUnit.test("Add biguplus with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⨄(5+1) ");
+		assert.ok(true, "Add '⨄(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 10756, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⨄(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add bigvee empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁ ");
+		assert.ok(true, "Add '⋁ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁", "Check linear content");
+	});
+	QUnit.test("Add bigvee lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁_2 ");
+		assert.ok(true, "Add '⋁_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁_2", "Check linear content");
+	});
+	QUnit.test("Add bigvee lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁_(2+1) ");
+		assert.ok(true, "Add '⋁_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigvee upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁^2 ");
+		assert.ok(true, "Add '⋁^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁^2", "Check linear content");
+	});
+	QUnit.test("Add bigvee upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁^(2+1) ");
+		assert.ok(true, "Add '⋁^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigvee upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁^2_x ");
+		assert.ok(true, "Add '⋁^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁_x^2", "Check linear content");
+	});
+	QUnit.test("Add bigvee upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁^(2+1)_(x+1) ");
+		assert.ok(true, "Add '⋁^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigvee with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁5 ");
+		assert.ok(true, "Add '⋁5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁5", "Check linear content");
+	});
+	QUnit.test("Add bigvee with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋁(5+1) ");
+		assert.ok(true, "Add '⋁(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8897, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋁(5+1)", "Check linear content");
+	});
+
+	QUnit.test("Add bigwedge empty ", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀ ");
+		assert.ok(true, "Add '⋀ '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀", "Check linear content");
+	});
+	QUnit.test("Add bigwedge lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀_2 ");
+		assert.ok(true, "Add '⋀_2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀_2", "Check linear content");
+	});
+	QUnit.test("Add bigwedge lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀_(2+1) ");
+		assert.ok(true, "Add '⋀_(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "2+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀_(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigwedge upper", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀^2 ");
+		assert.ok(true, "Add '⋀^2 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀^2", "Check linear content");
+	});
+	QUnit.test("Add bigwedge upper block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀^(2+1) ");
+		assert.ok(true, "Add '⋀^(2+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigwedge upper lower", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀^2_x ");
+		assert.ok(true, "Add '⋀^2_x '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀_x^2", "Check linear content");
+	});
+	QUnit.test("Add bigwedge upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀^(2+1)_(x+1) ");
+		assert.ok(true, "Add '⋀^(2+1)_(x+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "", "Check content of nary base");
+		assert.strictEqual(strLower, "x+1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "2+1", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀_(x+1)^(2+1)", "Check linear content");
+	});
+	QUnit.test("Add bigwedge with base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀5 ");
+		assert.ok(true, "Add '⋀5 '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀5", "Check linear content");
+	});
+	QUnit.test("Add bigwedge with block base", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀(5+1) ");
+		assert.ok(true, "Add '⋀(5+1) '");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strLower, "", "Check content of nary lower");
+		assert.strictEqual(strUpper, "", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀(5+1)", "Check linear content");
+	});
 
 })

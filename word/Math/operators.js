@@ -4046,6 +4046,10 @@ CDelimiter.prototype.private_GetRightOperator = function(bHide)
 };
 CDelimiter.prototype.GetTextOfElement = function(oMathText)
 {
+	if (!oMathText)
+	{
+		oMathText = new AscMath.MathTextAndStyles(false);
+	}
     //	Patterns:
     //	if start bracket doesn't show:	├ ...) => ...)
     //	if end bracket doesn't show:	(...┤ => (...
@@ -4053,7 +4057,7 @@ CDelimiter.prototype.GetTextOfElement = function(oMathText)
     //
     // if start and close brackets non-standard add \open, \close
 
-    oMathText.SetIsNotWrap(true);
+    oMathText.IsBracket = true;
 
     let strStartSymbol		= this.Pr.begChr === -1 ? "" : String.fromCharCode((this.begOper.code || this.Pr.begChr) || 40);
     let strEndSymbol		= this.Pr.endChr === -1 ? "" : String.fromCharCode((this.endOper.code || this.Pr.endChr) || 41);
@@ -4070,7 +4074,7 @@ CDelimiter.prototype.GetTextOfElement = function(oMathText)
 
     for (let intCount = 0; intCount < this.getColumnsCount(); intCount++)
     {
-        let oCurrentPos = oMathText.Add(this.Content[intCount], true);
+        let oCurrentPos = oMathText.Add(this.Content[intCount], true, false);
         if (strSeparatorSymbol && this.Content.length > 1 && intCount < this.Content.length - 1)
             oMathText.AddAfter(oCurrentPos, strSeparatorSymbol);
     }

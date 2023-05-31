@@ -185,20 +185,21 @@
     CUnicodeParser.prototype.GetOpNaryLiteral = function ()
     {
         let oContent;
-        const oOpNaryLiteral = this.EatToken(Literals.nary.id);
+        let strNaryLiteral = this.EatToken(Literals.nary.id).data;
 
-        if (this.oLookahead.class === "▒")
+        if (this.oLookahead.class === Literals.of.id)
         {
-            this.EatToken("▒");
+            this.EatToken( Literals.of.id);
             oContent = this.GetElementLiteral()
-
-            if (oContent.type === Literals.bracket.id && oContent.left === "(" && oContent.right === ")")
-                oContent = oContent.value;
         }
+		else if (this.oLookahead.class !== Literals.subSup.id)
+		{
+			oContent = this.GetElementLiteral()
+		}
 
         return {
             type: Struc.nary,
-            value: oOpNaryLiteral.data,
+            value: strNaryLiteral,
             third: oContent,
         }
 
@@ -1000,7 +1001,7 @@
 
         this.EatOneSpace();
 
-        if (this.oLookahead.class === "▒")
+        if (this.oLookahead.class === Literals.of.id)
         {
             if (oBase.type === Struc.radical ||
                 oBase.type === Struc.nary ||
@@ -1008,7 +1009,7 @@
                 oBase.type === Struc.func_lim
             )
             {
-                this.EatToken("▒");
+                this.EatToken();
                 oThirdSoOperand = this.GetElementLiteral();
                 return {
                     type: Struc.sub_sub,
@@ -1822,7 +1823,6 @@
     };
     CUnicodeParser.prototype.GetFractionWithoutNumeratorLiteral = function()
     {
-		debugger
         let strDivideSymbol = this.EatToken().data;
         let oDenominator = {};
         if (this.IsOperandLiteral())
@@ -1997,8 +1997,6 @@
     {
         if (undefined === str || null === str)
             return;
-
-		debugger
 
         const oParser = new CUnicodeParser();
         const oTokens = oParser.Parse(str);

@@ -621,10 +621,13 @@ CFraction.prototype.raw_SetFractionType = function(FractionType)
  */
 CFraction.prototype.GetTextOfElement = function(oMathText)
 {
+	if (!oMathText)
+		oMathText = new AscMath.MathTextAndStyles(false);
+
 	let oNumerator			= this.getNumerator();
 	let oDenominator		= this.getDenominator();
-	let oPosNumerator		= oMathText.Add(oNumerator, true, false, true);
-	let oPosDenominator		= oMathText.Add(oDenominator, true, false, true);
+	let oPosNumerator		= oMathText.Add(oNumerator, true, true);
+	let oPosDenominator		= oMathText.Add(oDenominator, true, true);
 
 	if (!oMathText.IsLaTeX())
 	{

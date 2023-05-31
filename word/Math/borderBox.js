@@ -978,7 +978,6 @@ CBox.prototype.GetTextOfElement = function(oMathText)
 	}
 	else
 	{
-		debugger
 		oMathText.AddText("□");
 		let oBasePos = oMathText.Add(oBase, true, false, false)
 	}

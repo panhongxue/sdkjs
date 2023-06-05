@@ -256,8 +256,11 @@
         {
             this.EatToken(this.oLookahead.class);
 
-            if (this.oLookahead.class === Literals.lrBrackets.id || this.oLookahead.class === Literals.lBrackets.id)
-                strOpenLiteral = this.EatBracket().data;
+            if (this.oLookahead.class === Literals.lrBrackets.id
+				|| this.oLookahead.class === Literals.lBrackets.id
+				|| this.oLookahead.class === Literals.rBrackets.id
+			)
+                strOpenLiteral = this.EatBracket();
             else
                 strOpenLiteral = ".";
 
@@ -268,8 +271,8 @@
             if (this.oLookahead.data === "┤")
                 this.EatToken(this.oLookahead.class);
 
-            if (this.oLookahead.class === Literals.lrBrackets.id || this.oLookahead.class === Literals.rBrackets.id)
-                strCloseLiteral = this.EatBracket().data;
+            if (this.oLookahead.class === Literals.lrBrackets.id || this.oLookahead.class === Literals.rBrackets.id || this.oLookahead.class === Literals.lBrackets.id)
+                strCloseLiteral = this.EatBracket();
             else
                 strCloseLiteral = ".";
 
@@ -284,29 +287,7 @@
     };
     CUnicodeParser.prototype.EatBracket = function ()
     {
-        let oBracket;
-        switch (this.oLookahead.class)
-        {
-            case Literals.rBrackets.id:
-                oBracket = this.GetOpCloseLiteral();
-                break;
-            case Literals.lBrackets.id:
-                oBracket = this.GetOpOpenLiteral();
-                break;
-            case Literals.lrBrackets.id:
-                oBracket = this.EatToken(this.oLookahead.class);
-                break;
-            case "Char":
-                oBracket = this.GetCharLiteral();
-                break;
-            case "nASCII":
-                oBracket = this.GetASCIILiteral();
-                break;
-            case Literals.space.id:
-                oBracket = this.GetSpaceLiteral();
-                break;
-        }
-        return oBracket;
+		return this.EatToken(this.oLookahead.class).data;
     };
     CUnicodeParser.prototype.GetSoOperandLiteral = function (isSubSup)
     {
@@ -564,7 +545,10 @@
 
         if (this.IsOpOpenLiteral())
         {
-            this.GetOpOpenLiteral();
+            let open = this.GetOpOpenLiteral(),
+				close;
+
+			let isIndex = false;
 
             if (this.IsOperandLiteral())
             {
@@ -576,6 +560,7 @@
 
                 if (this.oLookahead.data === "&")
                 {
+					isIndex = true;
                     this.EatToken(this.oLookahead.class);
 
                     if (this.IsOperandLiteral())
@@ -589,7 +574,20 @@
             }
 
             if (this.oLookahead.class === Literals.rBrackets.id)
-                this.EatToken(Literals.rBrackets.id);
+                close = this.EatToken(Literals.rBrackets.id).data;
+
+			if (open !== "(" && close !== ")" && !isIndex)
+			{
+				oContent = {
+					type: Struc.bracket_block,
+					value: [oContent],
+					left: open,
+					right: close,
+					counter: 1,
+				}
+			}
+
+			console.log(open, close)
         }
         else if (this.IsOperandLiteral())
         {
@@ -686,7 +684,7 @@
     };
     CUnicodeParser.prototype.IsOpCloserLiteral = function ()
     {
-        return this.oLookahead.class === Literals.rBrackets || this.oLookahead.class === Literals.lrBrackets || this.oLookahead.data === "┤"
+        return this.oLookahead.class === Literals.rBrackets.id || this.oLookahead.class === Literals.lrBrackets.id || this.oLookahead.data === "┤"
     };
     CUnicodeParser.prototype.GetExpBracketLiteral = function ()
     {
@@ -752,11 +750,22 @@
             }
             else
             {
-                this.EatToken(this.oLookahead.class);
-                intCountOfBracketBlock++;
-            }
-        }
-        return [arrContent, intCountOfBracketBlock];
+				if (arrContent.length === 0)
+				{
+					arrContent.push({});
+				}
+
+				this.EatToken(this.oLookahead.class);
+
+				if (!this.IsExpLiteral())
+				{
+					arrContent.push({});
+				}
+
+				intCountOfBracketBlock++;
+			}
+		}
+		return [arrContent, intCountOfBracketBlock];
     }
     CUnicodeParser.prototype.GetPreScriptLiteral = function ()
     {

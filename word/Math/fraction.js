@@ -626,8 +626,8 @@ CFraction.prototype.GetTextOfElement = function(oMathText)
 
 	let oNumerator			= this.getNumerator();
 	let oDenominator		= this.getDenominator();
-	let oPosNumerator		= oMathText.Add(oNumerator, true, true);
-	let oPosDenominator		= oMathText.Add(oDenominator, true, true);
+	let oPosNumerator		= oMathText.Add(oNumerator, true, 'base');
+	let oPosDenominator		= oMathText.Add(oDenominator, true, 'base');
 
 	if (!oMathText.IsLaTeX())
 	{

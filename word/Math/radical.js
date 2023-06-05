@@ -804,7 +804,7 @@ CRadical.prototype.GetTextOfElement = function(oMathText)
 			let oBaseText	= oBase.GetTextOfElement();
 			let nMathBase	= oBaseText.GetLength();
 
-			if (nMathBase <= 1 || !oBaseText.IsHasText())
+			if (nMathBase <= 1 || !oBaseText.IsHasText() || oBaseText.IsBracket)
 			{
 				oMathText.AddAfter(oPosSqrt, oBaseText);
 			}
@@ -817,12 +817,30 @@ CRadical.prototype.GetTextOfElement = function(oMathText)
 		}
 		else
 		{
-			let oPosStartBracket	= oMathText.AddAfter(oPosSqrt, "(");
-			let oPosDegree			= oMathText.AddAfter(oPosStartBracket, oDegreeText);
-			oMathText.AddAfter(oPosDegree,"&");
+			let strDegree = oDegreeText.GetText();
+			if (strDegree === "3" || strDegree === "4")
+			{
+				let oPos;
+				if (strDegree === "3")
+				{
+					oMathText.ChangeContent("∛");
+				}
+				else if (strDegree === "4")
+				{
+					oMathText.ChangeContent("∜");
+				}
 
-			let oPosBase = oMathText.Add(oBase, true, false);
-			oMathText.AddAfter(oPosBase, ")");
+				oMathText.Add(oBase, true, 'notBracket');
+			}
+			else
+			{
+				let oPosStartBracket	= oMathText.AddAfter(oPosSqrt, "(");
+				let oPosDegree			= oMathText.AddAfter(oPosStartBracket, oDegreeText);
+				oMathText.AddAfter(oPosDegree,"&");
+
+				let oPosBase = oMathText.Add(oBase, true, false);
+				oMathText.AddAfter(oPosBase, ")");
+			}
 		}
 	}
 };

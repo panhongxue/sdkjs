@@ -860,27 +860,28 @@ CNary.prototype.GetTextOfElement = function(oMathText)
 
 		let oPosNaryChar = oMathText.AddText(strStartCode);
     }
-    else {
+    else
+	{
 		let oLastPos = oMathText.AddText(String.fromCharCode(this.Pr.chr));
 		let isScript = false;
 
 		if (oLower)
 		{
 			isScript = true;
-			oLastPos = oMathText.Add(oLower, true, true);
+			oLastPos = oMathText.Add(oLower, true, "base");
 			oMathText.AddBefore(oLastPos, "_");
 		}
 
 		if (oUpper)
 		{
 			isScript = true;
-			oLastPos = oMathText.Add(oUpper, true, true);
+			oLastPos = oMathText.Add(oUpper, true, "base");
 			oMathText.AddBefore(oLastPos, "^");
 		}
 
 		if (oBase)
 		{
-			oLastPos = oMathText.Add(oBase, true, true);
+			oLastPos = oMathText.Add(oBase, true, "linear");
 			let oBaseText = oMathText.GetExact(oLastPos);
 			if (isScript && oBaseText.GetLength() > 0 && oBaseText.IsHasText())
 				oMathText.AddBefore(oLastPos, "▒");

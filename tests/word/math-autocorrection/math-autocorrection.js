@@ -58,6 +58,654 @@ $(function () {
 			one.next();
 		}
 	}
+	function CreateAutocorrection(str)
+	{
+		for (let i = 0; i < str.length; i++)
+		{
+			let strCurrent = str[i];
+			QUnit.test("Check " + strCurrent, function (assert)
+			{
+				let r = Create();
+				assert.ok(true, "Create math equation");
+
+				AddTextToRoot(strCurrent + " ");
+				assert.ok(true, "'" + strCurrent + " " + "'");
+
+				r.ConvertView(false, 0);
+				assert.ok(true, "Convert to professional");
+
+				let oFraction = r.Root.Content[0];
+				assert.ok(oFraction instanceof ParaRun, "Created " + strCurrent);
+			});
+		}
+	}
+
+	QUnit.module("Autocorrection - Simple check");
+
+	CreateAutocorrection('abcdefghijklmnopqrstuvwxyz0123456789')
+
+	QUnit.module("Getting text and comparing framing brackets with Word");
+
+	QUnit.test("(2+x)/[x+2]", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("(2+x)/[x+2]");
+		assert.ok(true, "Add '(2+x)/[x+2]'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oFraction = r.Root.Content[1];
+		assert.ok(oFraction instanceof CFraction, "Created CFraction");
+		assert.ok(oFraction.Pr.type === 0, "Stacked Fraction type");
+
+		let strNumerator = oFraction.getNumerator().GetTextOfElement().GetText();
+		let strDenominator = oFraction.getDenominator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strNumerator, "2+x", "Check content of Numerator");
+		assert.strictEqual(strDenominator, "[x+2]", "Check content of Denominator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "(2+x)/[x+2]", "Check linear content");
+	});
+	QUnit.test("x/[x+2]", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("x/[x+2]");
+		assert.ok(true, "Add 'x/[x+2]'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oFraction = r.Root.Content[1];
+		assert.ok(oFraction instanceof CFraction, "Created CFraction");
+		assert.ok(oFraction.Pr.type === 0, "Stacked Fraction type");
+
+		let strNumerator = oFraction.getNumerator().GetTextOfElement().GetText();
+		let strDenominator = oFraction.getDenominator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strNumerator, "x", "Check content of Numerator");
+		assert.strictEqual(strDenominator, "[x+2]", "Check content of Denominator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "x/[x+2]", "Check linear content");
+	});
+	QUnit.test("(y+2)_x", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("(y+2)_x");
+		assert.ok(true, "Add '(y+2)_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.ok(oDegree.Pr.type === -1, "Upper CDegree type");
+
+		let strBase = oDegree.getBase().GetTextOfElement().GetText();
+		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "(y+2)", "Check content of degree base");
+		assert.strictEqual(strIterator, "x", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "(y+2)_x", "Check linear content");
+	});
+	QUnit.test("[y+2]_x", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("[y+2]_x");
+		assert.ok(true, "Add '[y+2]_x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.ok(oDegree.Pr.type === -1, "Upper CDegree type");
+
+		let strBase = oDegree.getBase().GetTextOfElement().GetText();
+		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "[y+2]", "Check content of degree base");
+		assert.strictEqual(strIterator, "x", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "[y+2]_x", "Check linear content");
+	});
+	QUnit.test("(y+2)_(x+1)", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("(y+2)_(x+1)");
+		assert.ok(true, "Add '(y+2)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.ok(oDegree.Pr.type === -1, "Upper CDegree type");
+
+		let strBase = oDegree.getBase().GetTextOfElement().GetText();
+		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "(y+2)", "Check content of degree base");
+		assert.strictEqual(strIterator, "x+1", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "(y+2)_(x+1)", "Check linear content");
+	});
+	QUnit.test("[y+2]_[x*4]", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("[y+2]_[x*4]");
+		assert.ok(true, "Add '[y+2]_[x*4]'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.ok(oDegree.Pr.type === -1, "Upper CDegree type");
+
+		let strBase = oDegree.getBase().GetTextOfElement().GetText();
+		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "[y+2]", "Check content of degree base");
+		assert.strictEqual(strIterator, "[x*4]", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "[y+2]_[x*4]", "Check linear content");
+	});
+	QUnit.test("(y+2)^x", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("(y+2)^x");
+		assert.ok(true, "Add '(y+2)^x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.ok(oDegree.Pr.type === 1, "Upper CDegree type");
+
+		let strBase = oDegree.getBase().GetTextOfElement().GetText();
+		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "(y+2)", "Check content of degree base");
+		assert.strictEqual(strIterator, "x", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "(y+2)^x", "Check linear content");
+	});
+	QUnit.test("[y+2]^x", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("[y+2]^x");
+		assert.ok(true, "Add '[y+2]^x'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.ok(oDegree.Pr.type === 1, "Upper CDegree type");
+
+		let strBase = oDegree.getBase().GetTextOfElement().GetText();
+		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "[y+2]", "Check content of degree base");
+		assert.strictEqual(strIterator, "x", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "[y+2]^x", "Check linear content");
+	});
+	QUnit.test("(y+2)^(x+1)", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("(y+2)^(x+1)");
+		assert.ok(true, "Add '(y+2)^(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.ok(oDegree.Pr.type === 1, "Upper CDegree type");
+
+		let strBase = oDegree.getBase().GetTextOfElement().GetText();
+		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "(y+2)", "Check content of degree base");
+		assert.strictEqual(strIterator, "x+1", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "(y+2)^(x+1)", "Check linear content");
+	});
+	QUnit.test("[y+2]^[x*4]", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("[y+2]^[x*4]");
+		assert.ok(true, "Add '[y+2]^[x*4]'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.ok(oDegree.Pr.type === 1, "Upper CDegree type");
+
+		let strBase = oDegree.getBase().GetTextOfElement().GetText();
+		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "[y+2]", "Check content of degree base");
+		assert.strictEqual(strIterator, "[x*4]", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "[y+2]^[x*4]", "Check linear content");
+	});
+	QUnit.test("(y+2)^x_u", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("(y+2)^x_u");
+		assert.ok(true, "Add '(y+2)^x_u'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegreeSubSup = r.Root.Content[1];
+		assert.ok(oDegreeSubSup instanceof CDegreeSubSup, "Created CDegreeSubSup");
+
+		let strBase				= oDegreeSubSup.getBase().GetTextOfElement().GetText();
+		let strUpperIterator	= oDegreeSubSup.getUpperIterator().GetTextOfElement().GetText();
+		let strLowerIterator	= oDegreeSubSup.getLowerIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "(y+2)", "Check content of degree base");
+		assert.strictEqual(strUpperIterator, "x", "Check content of degree iterator");
+		assert.strictEqual(strLowerIterator, "u", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "(y+2)_u^x", "Check linear content");
+	});
+	QUnit.test("[y+2]^x_u", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("[y+2]^x_u");
+		assert.ok(true, "Add '[y+2]^x_u'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegreeSubSup = r.Root.Content[1];
+		assert.ok(oDegreeSubSup instanceof CDegreeSubSup, "Created CDegreeSubSup");
+
+		let strBase				= oDegreeSubSup.getBase().GetTextOfElement().GetText();
+		let strUpperIterator	= oDegreeSubSup.getUpperIterator().GetTextOfElement().GetText();
+		let strLowerIterator	= oDegreeSubSup.getLowerIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "[y+2]", "Check content of degree base");
+		assert.strictEqual(strUpperIterator, "x", "Check content of degree iterator");
+		assert.strictEqual(strLowerIterator, "u", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "[y+2]_u^x", "Check linear content");
+	});
+	QUnit.test("(y+2)^(x+1)_(g-i)", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("(y+2)^(x+1)_(g-i)");
+		assert.ok(true, "Add '(y+2)^(x+1)_(g-i)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegreeSubSup = r.Root.Content[1];
+		assert.ok(oDegreeSubSup instanceof CDegreeSubSup, "Created CDegreeSubSup");
+
+		let strBase				= oDegreeSubSup.getBase().GetTextOfElement().GetText();
+		let strUpperIterator	= oDegreeSubSup.getUpperIterator().GetTextOfElement().GetText();
+		let strLowerIterator	= oDegreeSubSup.getLowerIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "(y+2)", "Check content of degree base");
+		assert.strictEqual(strUpperIterator, "x+1", "Check content of degree iterator");
+		assert.strictEqual(strLowerIterator, "g-i", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "(y+2)_(g-i)^(x+1)", "Check linear content");
+	});
+	QUnit.test("[y+2]^[x*4]_{f-h}", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("[y+2]^[x*4]_{f-h}");
+		assert.ok(true, "Add '[y+2]^[x*4]_{f-h}'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegreeSubSup = r.Root.Content[1];
+		assert.ok(oDegreeSubSup instanceof CDegreeSubSup, "Created CDegreeSubSup");
+
+		let strBase				= oDegreeSubSup.getBase().GetTextOfElement().GetText();
+		let strUpperIterator	= oDegreeSubSup.getUpperIterator().GetTextOfElement().GetText();
+		let strLowerIterator	= oDegreeSubSup.getLowerIterator().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "[y+2]", "Check content of degree base");
+		assert.strictEqual(strUpperIterator, "[x*4]", "Check content of degree iterator");
+		assert.strictEqual(strLowerIterator, "{f-h}", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "[y+2]_{f-h}^[x*4]", "Check linear content");
+	});
+	QUnit.test("√5", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("√5");
+		assert.ok(true, "Add '√5'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5", "Check content of degree base");
+		assert.strictEqual(strDegree, "", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "√5", "Check linear content");
+	});
+	QUnit.test("√(5+1)", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("√(5+1)");
+		assert.ok(true, "Add '√(5+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5+1", "Check content of degree base");
+		assert.strictEqual(strDegree, "", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "√(5+1)", "Check linear content");
+	});
+	QUnit.test("√[5+1]", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("√[5+1]");
+		assert.ok(true, "Add '√[5+1]'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "[5+1]", "Check content of degree base");
+		assert.strictEqual(strDegree, "", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "√[5+1]", "Check linear content");
+	});
+	QUnit.test("√[5&5+1]", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("√[5&5+1]");
+		assert.ok(true, "Add '√[5&5+1]'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5+1", "Check content of degree base");
+		assert.strictEqual(strDegree, "5", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "√(5&5+1)", "Check linear content");
+	});
+	QUnit.test("√[(5+3)&5+1]", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("√[(5+3)&5+1]");
+		assert.ok(true, "Add '√[(5+3)&5+1]'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+
+		let strBase = oRadical.getBase().GetTextOfElement().GetText();
+		let strDegree = oRadical.getDegree().GetTextOfElement().GetText();
+
+		assert.strictEqual(strBase, "5+1", "Check content of degree base");
+		assert.strictEqual(strDegree, "(5+3)", "Check content of degree iterator");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "√((5+3)&5+1)", "Check linear content");
+	});
+	QUnit.test("⋀_(2/1)^[g+2]▒1", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀_(2/1)^[g+2]▒1 ");
+		assert.ok(true, "Add '⋀_(2/1)^[g+2]▒1 '");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "1", "Check content of nary base");
+		assert.strictEqual(strLower, "2/1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "[g+2]", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀_(2/1)^[g+2]▒1", "Check linear content");
+	});
+	QUnit.test("⋀_2^g▒[1+x]", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀_2^g▒[1+x]");
+		assert.ok(true, "⋀_2^g▒[1+x]'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "[1+x]", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "g", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀_2^g▒[1+x]", "Check linear content");
+	});
+	QUnit.test("⋀_2^g▒(1+x)", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀_2^g▒(1+x)");
+		assert.ok(true, "Add '⋀_2^g▒(1+x)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "(1+x)", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "g", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀_2^g▒(1+x)", "Check linear content");
+	});
+	QUnit.test("⋀_2^g▒〖1+1/2〗", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀_2^g▒〖1+1/2〗");
+		assert.ok(true, "Add '⋀_2^g▒〖1+1/2〗'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "1+1/2", "Check content of nary base");
+		assert.strictEqual(strLower, "2", "Check content of nary lower");
+		assert.strictEqual(strUpper, "g", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀_2^g▒〖1+1/2〗", "Check linear content");
+	});
+	QUnit.test("⋀_(2/1)^[g+2]▒1/2", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("⋀_(2/1)^[g+2]▒1/2");
+		assert.ok(true, "Add '⋀_(2/1)^[g+2]▒1/2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.strictEqual(oNary.Pr.chr, 8896, "Check char of nary");
+
+		let strBase = oNary.getBase().GetTextOfElement().GetText();
+		let oLower = oNary.getLowerIterator();
+		let oUpper = oNary.getUpperIterator();
+
+		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
+		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
+
+		assert.strictEqual(strBase, "1/2", "Check content of nary base");
+		assert.strictEqual(strLower, "2/1", "Check content of nary lower");
+		assert.strictEqual(strUpper, "[g+2]", "Check content of nary upper");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), "⋀_(2/1)^[g+2]▒1/2", "Check linear content");
+	});
 
 	QUnit.module("Stacked Fraction - Convert");
 
@@ -9150,8 +9798,6 @@ $(function () {
 		assert.strictEqual(r.GetText(), "⋀(5+1)", "Check linear content");
 	});
 
-
-
 	QUnit.module("Nary - Autocorrection");
 
 	QUnit.test("Add integral empty", function (assert)
@@ -10568,7 +11214,7 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∯5");
+		AddTextToRoot("∯5 ");
 		assert.ok(true, "Add '∯5 '");
 
 		let oNary = r.Root.Content[1];
@@ -14283,5 +14929,283 @@ $(function () {
 		assert.ok(true, "Convert to professional");
 		assert.strictEqual(r.GetText(), "⋀(5+1)", "Check linear content");
 	});
+
+
+	function BracketEmptyCheck(str, num, arr, isAutoCorrect)
+	{
+		QUnit.test("Check bracket "+str, function (assert)
+		{
+			AscMath.SetIsAllowAutoCorrect(!isAutoCorrect == false);
+			let r = Create();
+			assert.ok(true, "Create math equation");
+
+			AddTextToRoot(str);
+			assert.ok(true, "Add '" + str + "'");
+			AscMath.SetIsAllowAutoCorrect(true);
+
+			r.ConvertView(false, 0);
+			assert.ok(true, "Convert to professional");
+
+			let oDelimiter = r.Root.Content[1];
+			assert.ok(oDelimiter instanceof CDelimiter, "Created CDelimiter");
+			let nCountOfColumns = oDelimiter.getColumnsCount();
+			assert.strictEqual(nCountOfColumns, num, "Check count of columns");
+
+			for (let i = 0; i < nCountOfColumns; i++)
+			{
+				let oCurrentContent = oDelimiter.getElementMathContent(i);
+				if (oCurrentContent)
+				{
+					let strCurrentContent = oCurrentContent.GetTextOfElement().GetText();
+					assert.strictEqual(strCurrentContent, arr[i], "Check " + i + " content of CDelimiter");
+				}
+			}
+
+			r.ConvertView(true, 0);
+			assert.ok(true, "Convert to professional");
+			assert.strictEqual(r.GetText(), str, "Check linear content");
+		});
+	}
+
+	QUnit.module("Brackets - Convert");
+
+	BracketEmptyCheck("()", 1, [""]);
+	BracketEmptyCheck("[]", 1, [""]);
+	BracketEmptyCheck("{}", 1, [""]);
+	BracketEmptyCheck("⟨⟩", 1, [""]);
+	BracketEmptyCheck("⌊⌋", 1, [""]);
+	BracketEmptyCheck("⌈⌉", 1, [""]);
+	BracketEmptyCheck("||", 1, [""]);
+	BracketEmptyCheck("‖‖", 1, [""]);
+	BracketEmptyCheck("[┤[", 1, [""]);
+	BracketEmptyCheck("├]]", 1, [""]);
+	BracketEmptyCheck("├]┤[", 1, [""]);
+	BracketEmptyCheck("⟦⟧", 1, [""]);
+
+	BracketEmptyCheck("(x)", 1, ["x"]);
+	BracketEmptyCheck("[x]", 1, ["x"]);
+	BracketEmptyCheck("{x}", 1, ["x"]);
+	BracketEmptyCheck("⟨x⟩", 1, ["x"]);
+	BracketEmptyCheck("⌊x⌋", 1, ["x"]);
+	BracketEmptyCheck("⌈x⌉", 1, ["x"]);
+	BracketEmptyCheck("|x|", 1, ["x"]);
+	BracketEmptyCheck("‖x‖", 1, ["x"]);
+	BracketEmptyCheck("[x┤[", 1, ["x"]);
+	BracketEmptyCheck("├]x]", 1, ["x"]);
+	BracketEmptyCheck("├]x┤[", 1, ["x"]);
+	BracketEmptyCheck("⟦x⟧", 1, ["x"]);
+
+	BracketEmptyCheck("(x+1)", 1, ["x+1"]);
+	BracketEmptyCheck("[x+1]", 1, ["x+1"]);
+	BracketEmptyCheck("{x+1}", 1, ["x+1"]);
+	BracketEmptyCheck("⟨x+1⟩", 1, ["x+1"]);
+	BracketEmptyCheck("⌊x+1⌋", 1, ["x+1"]);
+	BracketEmptyCheck("⌈x+1⌉", 1, ["x+1"]);
+	BracketEmptyCheck("|x+1|", 1, ["x+1"]);
+	BracketEmptyCheck("‖x+1‖", 1, ["x+1"]);
+	BracketEmptyCheck("[x+1┤[", 1, ["x+1"]);
+	BracketEmptyCheck("├]x+1]", 1, ["x+1"]);
+	BracketEmptyCheck("├]x+1┤[", 1, ["x+1"]);
+	BracketEmptyCheck("⟦x+1⟧", 1, ["x+1"]);
+
+	BracketEmptyCheck("((x+1))", 1, ["(x+1)"]);
+	BracketEmptyCheck("[(x+1)]", 1, ["(x+1)"]);
+	BracketEmptyCheck("{(x+1)}", 1, ["(x+1)"]);
+	BracketEmptyCheck("⟨(x+1)⟩", 1, ["(x+1)"]);
+	BracketEmptyCheck("⌊(x+1)⌋", 1, ["(x+1)"]);
+	BracketEmptyCheck("⌈(x+1)⌉", 1, ["(x+1)"]);
+	BracketEmptyCheck("|(x+1)|", 1, ["(x+1)"]);
+	BracketEmptyCheck("‖(x+1)‖", 1, ["(x+1)"]);
+	BracketEmptyCheck("[(x+1)┤[", 1, ["(x+1)"]);
+	BracketEmptyCheck("├](x+1)]", 1, ["(x+1)"]);
+	BracketEmptyCheck("├](x+1)┤[", 1, ["(x+1)"]);
+	BracketEmptyCheck("⟦(x+1)⟧", 1, ["(x+1)"]);
+
+	BracketEmptyCheck("(y∣(x+1))", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("[y∣(x+1)]", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("{y∣(x+1)}", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("⟨y∣(x+1)⟩", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("⌊y∣(x+1)⌋", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("⌈y∣(x+1)⌉", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("|y∣(x+1)|", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("‖y∣(x+1)‖", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("[y∣(x+1)┤[", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("├]y∣(x+1)]", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("├]y∣(x+1)┤[", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("⟦y∣(x+1)⟧", 2, [ "y", "(x+1)"]);
+
+
+	BracketEmptyCheck("(∣(x+1))", 2, [ "", "(x+1)"]);
+	BracketEmptyCheck("[∣(x+1)]", 2, [ "", "(x+1)"]);
+	BracketEmptyCheck("{∣(x+1)}", 2, [ "", "(x+1)"]);
+	BracketEmptyCheck("⟨∣(x+1)⟩", 2, [ "", "(x+1)"]);
+	BracketEmptyCheck("⌊∣(x+1)⌋", 2, [ "", "(x+1)"]);
+	BracketEmptyCheck("⌈∣(x+1)⌉", 2, [ "", "(x+1)"]);
+	BracketEmptyCheck("|∣(x+1)|", 2, [ "", "(x+1)"]);
+	BracketEmptyCheck("‖∣(x+1)‖", 2, [ "", "(x+1)"]);
+	BracketEmptyCheck("[∣(x+1)┤[", 2, [ "", "(x+1)"]);
+	BracketEmptyCheck("├]∣(x+1)]", 2, [ "", "(x+1)"]);
+	BracketEmptyCheck("├]∣(x+1)┤[", 2, [ "", "(x+1)"]);
+	BracketEmptyCheck("⟦∣(x+1)⟧", 2, [ "", "(x+1)"]);
+
+	BracketEmptyCheck("((x+1)∣)", 2, [ "(x+1)", ""]);
+	BracketEmptyCheck("[(x+1)∣]", 2, [ "(x+1)", ""]);
+	BracketEmptyCheck("{(x+1)∣}", 2, [ "(x+1)", ""]);
+	BracketEmptyCheck("⟨(x+1)∣⟩", 2, [ "(x+1)", ""]);
+	BracketEmptyCheck("⌊(x+1)∣⌋", 2, [ "(x+1)", ""]);
+	BracketEmptyCheck("⌈(x+1)∣⌉", 2, [ "(x+1)", ""]);
+	BracketEmptyCheck("|(x+1)∣|", 2, [ "(x+1)", ""]);
+	BracketEmptyCheck("‖(x+1)∣‖", 2, [ "(x+1)", ""]);
+	BracketEmptyCheck("[(x+1)∣┤[", 2, [ "(x+1)", ""]);
+	BracketEmptyCheck("├](x+1)∣]", 2, [ "(x+1)", ""]);
+	BracketEmptyCheck("├](x+1)∣┤[", 2, [ "(x+1)", ""]);
+	BracketEmptyCheck("⟦(x+1)∣⟧", 2, [ "(x+1)", ""]);
+
+	BracketEmptyCheck("(∣)", 2, [ "", ""]);
+	BracketEmptyCheck("[∣]", 2, [ "", ""]);
+	BracketEmptyCheck("{∣}", 2, [ "", ""]);
+	BracketEmptyCheck("⟨∣⟩", 2, [ "", ""]);
+	BracketEmptyCheck("⌊∣⌋", 2, [ "", ""]);
+	BracketEmptyCheck("⌈∣⌉", 2, [ "", ""]);
+	BracketEmptyCheck("|∣|", 2, [ "", ""]);
+	BracketEmptyCheck("‖∣‖", 2, [ "", ""]);
+	BracketEmptyCheck("[∣┤[", 2, [ "", ""]);
+	BracketEmptyCheck("├]∣]", 2, [ "", ""]);
+	BracketEmptyCheck("├]∣┤[", 2, [ "", ""]);
+	BracketEmptyCheck("⟦∣⟧", 2, [ "", ""]);
+
+	BracketEmptyCheck("(∣∣)", 3, [ "", "", ""]);
+	BracketEmptyCheck("[∣∣]", 3, [ "", "", ""]);
+	BracketEmptyCheck("{∣∣}", 3, [ "", "", ""]);
+	BracketEmptyCheck("⟨∣∣⟩", 3, [ "", "", ""]);
+	BracketEmptyCheck("⌊∣∣⌋", 3, [ "", "", ""]);
+	BracketEmptyCheck("⌈∣∣⌉", 3, [ "", "", ""]);
+	BracketEmptyCheck("|∣∣|", 3, [ "", "", ""]);
+	BracketEmptyCheck("‖∣∣‖", 3, [ "", "", ""]);
+	BracketEmptyCheck("[∣∣┤[", 3, [ "", "", ""]);
+	BracketEmptyCheck("├]∣∣]", 3, [ "", "", ""]);
+	BracketEmptyCheck("├]∣∣┤[", 3, [ "", "", ""]);
+	BracketEmptyCheck("⟦∣∣⟧", 3, [ "", "", ""]);
+
+
+	QUnit.module("Brackets - Autocorrection");
+
+	BracketEmptyCheck("()", 1, [""], true);
+	BracketEmptyCheck("[]", 1, [""], true);
+	BracketEmptyCheck("{}", 1, [""], true);
+	BracketEmptyCheck("⟨⟩", 1, [""], true);
+	BracketEmptyCheck("⌊⌋", 1, [""], true);
+	BracketEmptyCheck("⌈⌉", 1, [""], true);
+	BracketEmptyCheck("||", 1, [""], true);
+	BracketEmptyCheck("‖‖", 1, [""], true);
+	BracketEmptyCheck("[┤[", 1, [""], true);
+	BracketEmptyCheck("├]]", 1, [""], true);
+	BracketEmptyCheck("├]┤[", 1, [""], true);
+	BracketEmptyCheck("⟦⟧", 1, [""], true);
+
+	BracketEmptyCheck("(x)", 1, ["x"], true);
+	BracketEmptyCheck("[x]", 1, ["x"], true);
+	BracketEmptyCheck("{x}", 1, ["x"], true);
+	BracketEmptyCheck("⟨x⟩", 1, ["x"], true);
+	BracketEmptyCheck("⌊x⌋", 1, ["x"], true);
+	BracketEmptyCheck("⌈x⌉", 1, ["x"], true);
+	BracketEmptyCheck("|x|", 1, ["x"], true);
+	BracketEmptyCheck("‖x‖", 1, ["x"], true);
+	BracketEmptyCheck("[x┤[", 1, ["x"], true);
+	BracketEmptyCheck("├]x]", 1, ["x"], true);
+	BracketEmptyCheck("├]x┤[", 1, ["x"], true);
+	BracketEmptyCheck("⟦x⟧", 1, ["x"], true);
+
+	BracketEmptyCheck("(x+1)", 1, ["x+1"], true);
+	BracketEmptyCheck("[x+1]", 1, ["x+1"], true);
+	BracketEmptyCheck("{x+1}", 1, ["x+1"], true);
+	BracketEmptyCheck("⟨x+1⟩", 1, ["x+1"], true);
+	BracketEmptyCheck("⌊x+1⌋", 1, ["x+1"], true);
+	BracketEmptyCheck("⌈x+1⌉", 1, ["x+1"], true);
+	BracketEmptyCheck("|x+1|", 1, ["x+1"], true);
+	BracketEmptyCheck("‖x+1‖", 1, ["x+1"], true);
+	BracketEmptyCheck("[x+1┤[", 1, ["x+1"], true);
+	BracketEmptyCheck("├]x+1]", 1, ["x+1"], true);
+	BracketEmptyCheck("├]x+1┤[", 1, ["x+1"], true);
+	BracketEmptyCheck("⟦x+1⟧", 1, ["x+1"], true);
+
+	BracketEmptyCheck("((x+1))", 1, ["(x+1)"], true);
+	BracketEmptyCheck("[(x+1)]", 1, ["(x+1)"], true);
+	BracketEmptyCheck("{(x+1)}", 1, ["(x+1)"], true);
+	BracketEmptyCheck("⟨(x+1)⟩", 1, ["(x+1)"], true);
+	BracketEmptyCheck("⌊(x+1)⌋", 1, ["(x+1)"], true);
+	BracketEmptyCheck("⌈(x+1)⌉", 1, ["(x+1)"], true);
+	BracketEmptyCheck("|(x+1)|", 1, ["(x+1)"], true);
+	BracketEmptyCheck("‖(x+1)‖", 1, ["(x+1)"], true);
+	BracketEmptyCheck("[(x+1)┤[", 1, ["(x+1)"], true);
+	BracketEmptyCheck("├](x+1)]", 1, ["(x+1)"], true);
+	BracketEmptyCheck("├](x+1)┤[", 1, ["(x+1)"], true);
+	BracketEmptyCheck("⟦(x+1)⟧", 1, ["(x+1)"], true);
+
+	BracketEmptyCheck("(y∣(x+1))", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("[y∣(x+1)]", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("{y∣(x+1)}", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("⟨y∣(x+1)⟩", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("⌊y∣(x+1)⌋", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("⌈y∣(x+1)⌉", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("|y∣(x+1)|", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("‖y∣(x+1)‖", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("[y∣(x+1)┤[", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("├]y∣(x+1)]", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("├]y∣(x+1)┤[", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("⟦y∣(x+1)⟧", 2, [ "y", "(x+1)"], true);
+
+
+	BracketEmptyCheck("(∣(x+1))", 2, [ "", "(x+1)"], true);
+	BracketEmptyCheck("[∣(x+1)]", 2, [ "", "(x+1)"], true);
+	BracketEmptyCheck("{∣(x+1)}", 2, [ "", "(x+1)"], true);
+	BracketEmptyCheck("⟨∣(x+1)⟩", 2, [ "", "(x+1)"], true);
+	BracketEmptyCheck("⌊∣(x+1)⌋", 2, [ "", "(x+1)"], true);
+	BracketEmptyCheck("⌈∣(x+1)⌉", 2, [ "", "(x+1)"], true);
+	BracketEmptyCheck("|∣(x+1)|", 2, [ "", "(x+1)"], true);
+	BracketEmptyCheck("‖∣(x+1)‖", 2, [ "", "(x+1)"], true);
+	BracketEmptyCheck("[∣(x+1)┤[", 2, [ "", "(x+1)"], true);
+	BracketEmptyCheck("├]∣(x+1)]", 2, [ "", "(x+1)"], true);
+	BracketEmptyCheck("├]∣(x+1)┤[", 2, [ "", "(x+1)"], true);
+	BracketEmptyCheck("⟦∣(x+1)⟧", 2, [ "", "(x+1)"], true);
+
+	BracketEmptyCheck("((x+1)∣)", 2, [ "(x+1)", ""], true);
+	BracketEmptyCheck("[(x+1)∣]", 2, [ "(x+1)", ""], true);
+	BracketEmptyCheck("{(x+1)∣}", 2, [ "(x+1)", ""], true);
+	BracketEmptyCheck("⟨(x+1)∣⟩", 2, [ "(x+1)", ""], true);
+	BracketEmptyCheck("⌊(x+1)∣⌋", 2, [ "(x+1)", ""], true);
+	BracketEmptyCheck("⌈(x+1)∣⌉", 2, [ "(x+1)", ""], true);
+	BracketEmptyCheck("|(x+1)∣|", 2, [ "(x+1)", ""], true);
+	BracketEmptyCheck("‖(x+1)∣‖", 2, [ "(x+1)", ""], true);
+	BracketEmptyCheck("[(x+1)∣┤[", 2, [ "(x+1)", ""], true);
+	BracketEmptyCheck("├](x+1)∣]", 2, [ "(x+1)", ""], true);
+	BracketEmptyCheck("├](x+1)∣┤[", 2, [ "(x+1)", ""], true);
+	BracketEmptyCheck("⟦(x+1)∣⟧", 2, [ "(x+1)", ""], true);
+
+	BracketEmptyCheck("(∣)", 2, [ "", ""], true);
+	BracketEmptyCheck("[∣]", 2, [ "", ""], true);
+	BracketEmptyCheck("{∣}", 2, [ "", ""], true);
+	BracketEmptyCheck("⟨∣⟩", 2, [ "", ""], true);
+	BracketEmptyCheck("⌊∣⌋", 2, [ "", ""], true);
+	BracketEmptyCheck("⌈∣⌉", 2, [ "", ""], true);
+	BracketEmptyCheck("|∣|", 2, [ "", ""], true);
+	BracketEmptyCheck("‖∣‖", 2, [ "", ""], true);
+	BracketEmptyCheck("[∣┤[", 2, [ "", ""], true);
+	BracketEmptyCheck("├]∣]", 2, [ "", ""], true);
+	BracketEmptyCheck("├]∣┤[", 2, [ "", ""], true);
+	BracketEmptyCheck("⟦∣⟧", 2, [ "", ""], true);
+
+	BracketEmptyCheck("(∣∣)", 3, [ "", "", ""], true);
+	BracketEmptyCheck("[∣∣]", 3, [ "", "", ""], true);
+	BracketEmptyCheck("{∣∣}", 3, [ "", "", ""], true);
+	BracketEmptyCheck("⟨∣∣⟩", 3, [ "", "", ""], true);
+	BracketEmptyCheck("⌊∣∣⌋", 3, [ "", "", ""], true);
+	BracketEmptyCheck("⌈∣∣⌉", 3, [ "", "", ""], true);
+	BracketEmptyCheck("|∣∣|", 3, [ "", "", ""], true);
+	BracketEmptyCheck("‖∣∣‖", 3, [ "", "", ""], true);
+	BracketEmptyCheck("[∣∣┤[", 3, [ "", "", ""], true);
+	BracketEmptyCheck("├]∣∣]", 3, [ "", "", ""], true);
+	BracketEmptyCheck("├]∣∣┤[", 3, [ "", "", ""], true);
+	BracketEmptyCheck("⟦∣∣⟧", 3, [ "", "", ""], true);
 
 })

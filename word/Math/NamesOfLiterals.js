@@ -36,6 +36,12 @@
 
 	let type = false;
 	let Paragraph = null;
+	let isAllowAutoCorrect = true;
+
+	function SetIsAllowAutoCorrect (isAllow)
+	{
+		isAllowAutoCorrect = isAllow;
+	}
 
 	// List of MathFont
 	const GetMathFontChar = {
@@ -535,7 +541,6 @@
 			"\\lbrack" : "[",
 			"\\lceil" : "⌈",
 			"\\lfloor" : "⌊",
-			"\\open" : "├",
 			"\\lbbrack" : "⟦",
 			"\\lmoust" : "⎰",
 
@@ -544,6 +549,20 @@
 	}
 	TokenOpenBrackets.prototype = Object.create(LexerLiterals.prototype);
 	TokenOpenBrackets.prototype.constructor = TokenOpenBrackets;
+
+	function TokenSpecialBrackets()
+	{
+		this.id = 544;
+		this.Unicode = {};
+		this.LaTeX = {
+			"\\open" : "├",
+			"\\close" : "┤",
+		};
+
+		this.Init();
+	}
+	TokenSpecialBrackets.prototype = Object.create(LexerLiterals.prototype);
+	TokenSpecialBrackets.prototype.constructor = TokenSpecialBrackets;
 
 	function TokenCloseBrackets()
 	{
@@ -554,7 +573,6 @@
 			"⟧" : 1,
 		};
 		this.LaTeX = {
-			"\\close" : "┤",
 			"\\end" : "〗",
 			"\\ket" : "⟩",
 			"\\rangle" : "⟩",
@@ -1128,6 +1146,7 @@
 		invisible:		new TokenInvisibleOperators(),
 		divide: 		new TokenDivide(),
 		underbar:		new TokenUnderbar(),
+		specialBrac:	new TokenSpecialBrackets(),
 		lrBrackets: 	new TokenOpenCloseBrackets(),
 		rBrackets: 		new TokenCloseBrackets(),
 		lBrackets: 		new TokenOpenBrackets(),
@@ -1163,6 +1182,7 @@
 		MathLiterals.lBrackets,
 		MathLiterals.rBrackets,
 		MathLiterals.lrBrackets,
+		MathLiterals.specialBrac,
 		MathLiterals.underbar,
 		MathLiterals.divide,
 		MathLiterals.invisible,
@@ -2222,21 +2242,23 @@
 				case MathStructures.bracket_block:
 
 					let arr = [null]
-					if (oTokens.counter > 1 && oTokens.value.length < oTokens.counter)
-					{
-						for (let i = 0; i < oTokens.counter - 1; i++)
-						{
-							arr.push(null);
-						}
-					}
+					// if (oTokens.counter > 1 && oTokens.value.length < oTokens.counter)
+					// {
+					// 	for (let i = 0; i < oTokens.counter - 1; i++)
+					// 	{
+					// 		arr.push(null);
+					// 	}
+					// }
+
 					let oBracket = oContext.Add_DelimiterEx(
 						new CTextPr(),
-						oTokens.value.length ? oTokens.value.length : oTokens.counter || 1,
+						oTokens.value.length > 0 ? oTokens.value.length : 1,
 						arr,
 						GetBracketCode(oTokens.left),
 						GetBracketCode(oTokens.right),
 					);
-					if (oTokens.value.length) {
+					if (oTokens.value.length)
+					{
 						for (let intCount = 0; intCount < oTokens.value.length; intCount++) {
 							ConvertTokens(
 								oTokens.value[intCount],
@@ -3211,9 +3233,11 @@
 	}
 
 	const TokenSearch_All = [
+		MathLiterals.specialBrac,
 		MathLiterals.lrBrackets,
 		MathLiterals.lBrackets,
 		MathLiterals.rBrackets,
+
 
 		MathLiterals.operator,
 		MathLiterals.space,
@@ -3450,6 +3474,7 @@
 			|| MathLiterals.special.id 		=== nId
 			|| MathLiterals.subSup.id 		=== nId
 			|| MathLiterals.of.id			=== nId
+			|| MathLiterals.specialBrac.id	=== nId
 		};
 		/**
 		 * Check is given id is brackets id
@@ -3686,11 +3711,18 @@
 		 */
 		this.StartAutoCorrection = function ()
 		{
+			if (!isAllowAutoCorrect)
+				return false;
+
 			let oLast 					= this.GetLast();
 			let lastElementMathId 		= this.GetAbsoluteLast();
 			let preLastElementMathId	= this.GetAbsolutePreLast();
 
-			if (this.Tokens.brackets.NoPair.length > 0)
+			if (this.IsStartAndCloseBracket())
+			{
+				this.StartCloseBracket();
+			}
+			else if (this.Tokens.brackets.NoPair.length > 0)
 			{
 				return false;
 			}
@@ -3702,7 +3734,6 @@
 			else if (!oLast && MathLiterals.rBrackets.id === preLastElementMathId)
 			{
 				ConvertBracket(this.Tokens.brackets, this.oCMathContent);
-				this.oCMathContent.MoveCursorToEndPos();
 			}
 			else if (!oLast && this.IsPreScript() && MathLiterals.char.id === preLastElementMathId)
 			{
@@ -3721,6 +3752,26 @@
 				this.BIFunctionProcessing(oLast);
 			}
 		};
+
+		this.IsStartAndCloseBracket = function ()
+		{
+			return this.Tokens[MathLiterals.specialBrac.id] && this.Tokens[MathLiterals.specialBrac.id].length >= 2
+		}
+		this.StartCloseBracket = function ()
+		{
+			let arrStartAndClose = this.Tokens[MathLiterals.specialBrac.id];
+			let oClosePos = arrStartAndClose[0].data;
+			let oStartPos = arrStartAndClose[1].data;
+
+			let strClosePos = oClosePos.GetText();
+			let strOpenPos = oStartPos.GetText();
+
+			if (strClosePos === "┤" && strOpenPos === "├")
+			{
+				let str = CutContentFromEnd(this.oCMathContent, oStartPos, true);
+				GetConvertContent(0, str.trim(), this.oCMathContent);
+			}
+		}
 
 		this.IsPreScript = function ()
 		{
@@ -4213,6 +4264,7 @@
 		this.IsWrap				= false;
 		this.IsBracket			= false;
 		this.Positions			= [];
+		this.IsUnicodeBracket	= false;
 	}
 	MathTextAndStyles.prototype.SetIsWrap = function (isWrap)
 	{
@@ -4275,11 +4327,23 @@
 				}
 				else
 				{
-					if (Wrap === "notBracket" && oMath.IsBracket === true)
+					if (Wrap === "notBracket" && oMath.IsUnicodeBracket !== true) // Если не U скобка, то оборачиваем
 					{
-
+						this.WrapExactElement(oPos);
 					}
-					else
+					else if (Wrap === "base" && oMath.IsUnicodeBracket) // Если U скобка, то оборачиваем
+					{
+						this.WrapExactElement(oPos);
+					}
+					else if (Wrap === "linear" && oMath.IsBracket) // Если любая скобка, не оборачиваем
+					{
+						//this.WrapExactElement(oPos);
+					}
+					else if (Wrap === "linear" && !oMath.IsBracket && oMath.GetLength() > 3)
+					{
+						this.WrapExactElement(oPos, "〖", "〗");
+					}
+					else if ((Wrap !== 'linear' && !oMath.IsBracket) || (oContent.Content.length === 1 && oContent.Content[0] instanceof ParaRun)) // Не любая скобка, оборачиваем т.к. контента > 1
 					{
 						this.WrapExactElement(oPos);
 					}
@@ -4480,7 +4544,8 @@
 	{
 		this.Positions = [];
 		this.arr = [];
-		this.AddText(new AscMath.MathText(str));
+		this.nPos = 0;
+		return this.AddText(new AscMath.MathText(str));
 	};
 	MathTextAndStyles.prototype.GetTextAndStyles = function()
 	{
@@ -4517,4 +4582,5 @@
 	window["AscMath"].ProceedTokens = ProceedTokens;
 	window["AscMath"].SearchFunctionName = SearchFunctionName;
 	window["AscMath"].MathTextAndStyles = MathTextAndStyles;
+	window["AscMath"].SetIsAllowAutoCorrect = SetIsAllowAutoCorrect;
 })(window);

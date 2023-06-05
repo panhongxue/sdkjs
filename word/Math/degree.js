@@ -545,8 +545,8 @@ CDegree.prototype.GetTextOfElement = function(oMathText)
 {
 	let oBase           = this.getBase();
 	let oIterator       = this.getIterator();
-    let oPosBase      = oMathText.Add(oBase, true, "notBracket");
-    let oPosIterator  = oMathText.Add(oIterator, true);
+    let oPosBase      = oMathText.Add(oBase, true, false);
+    let oPosIterator  = oMathText.Add(oIterator, true, 'base');
 
     oMathText.AddAfter(oPosBase, this.Pr.type === 1 ? '^' : '_');
 };
@@ -1217,7 +1217,7 @@ CDegreeSubSup.prototype.GetTextOfElement = function(oMathText)
     {
         let oPosLowerIterator  = oMathText.Add(oLowerIterator, true);
         let oPosUpperIterator  = oMathText.Add(oUpperIterator, true);
-        let oPosBase           = oMathText.Add(oBase, true, "notBracket");
+        let oPosBase           = oMathText.Add(oBase, true, false);
 
         oMathText.AddBefore(oPosLowerIterator, "(_");
         oMathText.AddAfter(oPosLowerIterator, "^");
@@ -1225,9 +1225,9 @@ CDegreeSubSup.prototype.GetTextOfElement = function(oMathText)
     }
     else
     {
-        let oPosBase            = oMathText.Add(oBase, true, "notBracket");
-        let oPosLowerIterator  = oMathText.Add(oLowerIterator, true);
-        let oPosUpperIterator  = oMathText.Add(oUpperIterator, true);
+        let oPosBase            = oMathText.Add(oBase, true, false);
+        let oPosLowerIterator  = oMathText.Add(oLowerIterator, true, 'base');
+        let oPosUpperIterator  = oMathText.Add(oUpperIterator, true, 'base');
 
         oMathText.AddAfter(oPosBase, '_');
         oMathText.AddAfter(oPosLowerIterator, '^');

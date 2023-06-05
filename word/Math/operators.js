@@ -4047,20 +4047,20 @@ CDelimiter.prototype.private_GetRightOperator = function(bHide)
 CDelimiter.prototype.GetTextOfElement = function(oMathText)
 {
 	if (!oMathText)
-	{
 		oMathText = new AscMath.MathTextAndStyles(false);
-	}
-    //	Patterns:
-    //	if start bracket doesn't show:	├ ...) => ...)
-    //	if end bracket doesn't show:	(...┤ => (...
-    //	else:							(...) => (...)
-    //
-    // if start and close brackets non-standard add \open, \close
 
     oMathText.IsBracket = true;
 
-    let strStartSymbol		= this.Pr.begChr === -1 ? "" : String.fromCharCode((this.begOper.code || this.Pr.begChr) || 40);
-    let strEndSymbol		= this.Pr.endChr === -1 ? "" : String.fromCharCode((this.endOper.code || this.Pr.endChr) || 41);
+    let strStartSymbol		= this.Pr.begChr === -1
+		? ""
+		: String.fromCharCode((this.begOper.code || this.Pr.begChr) || 40);
+    let strEndSymbol		= this.Pr.endChr === -1
+		? ""
+		: String.fromCharCode((this.endOper.code || this.Pr.endChr) || 41);
+
+	if (strStartSymbol === "(" && strEndSymbol === ")")
+		oMathText.IsUnicodeBracket = true;
+	
     let strSeparatorSymbol	= oMathText.IsLaTeX() ? "\\mid " : "∣";
 
     if (oMathText.IsLaTeX())
@@ -4069,8 +4069,13 @@ CDelimiter.prototype.GetTextOfElement = function(oMathText)
     }
     else
     {
-        oMathText.AddText(new AscMath.MathText(strStartSymbol === "" ? "├" : strStartSymbol));
-    }
+		let strText = AscMath.MathLiterals.rBrackets.SearchU(strStartSymbol)
+			? "├" + strStartSymbol
+			: strStartSymbol;
+
+		let oOpenText = new AscMath.MathText(strText);
+		oMathText.AddText(oOpenText);
+	}
 
     for (let intCount = 0; intCount < this.getColumnsCount(); intCount++)
     {
@@ -4085,7 +4090,11 @@ CDelimiter.prototype.GetTextOfElement = function(oMathText)
     }
     else
     {
-        oMathText.AddText(new AscMath.MathText(strEndSymbol === "" ? "┤" : strEndSymbol), true);
+		let strText = AscMath.MathLiterals.lBrackets.SearchU(strEndSymbol)
+			? "┤" + strEndSymbol
+			: strEndSymbol;
+		let oText = new AscMath.MathText(strText)
+        oMathText.AddText(oText, true);
     }
 }
 

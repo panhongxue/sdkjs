@@ -7068,7 +7068,7 @@ CMathContent.prototype.GetTextContent = function(bSelectedText, isLaTeX, isOnlyT
     if (isOnlyText)
         return str;
 
-	return {str: str, content: arr};
+	return {str: oMathText.GetText(), content: oMathText};
 };
 CMathContent.prototype.AddTextWithStyles = function(arr)
 {

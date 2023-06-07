@@ -4049,53 +4049,79 @@ CDelimiter.prototype.GetTextOfElement = function(oMathText)
 	if (!oMathText)
 		oMathText = new AscMath.MathTextAndStyles(false);
 
-    oMathText.IsBracket = true;
 
-    let strStartSymbol		= this.Pr.begChr === -1
-		? ""
-		: String.fromCharCode((this.begOper.code || this.Pr.begChr) || 40);
-    let strEndSymbol		= this.Pr.endChr === -1
-		? ""
-		: String.fromCharCode((this.endOper.code || this.Pr.endChr) || 41);
+	oMathText.IsBracket = true;
+
+	let strSeparatorSymbol	= oMathText.IsLaTeX() ? "\\mid " : "∣";
+	let isClose = false;
+
+	let strStartSymbol = this.Pr.begChr === -1 ? "" : String.fromCharCode((this.begOper.code || this.Pr.begChr) || 40);
+	let strEndSymbol = this.Pr.endChr === -1 ? "" : String.fromCharCode((this.endOper.code || this.Pr.endChr) || 41);
 
 	if (strStartSymbol === "(" && strEndSymbol === ")")
 		oMathText.IsUnicodeBracket = true;
-	
-    let strSeparatorSymbol	= oMathText.IsLaTeX() ? "\\mid " : "∣";
 
-    if (oMathText.IsLaTeX())
-    {
-        oMathText.AddText(new AscMath.MathText(strStartSymbol === "" ? "." : strStartSymbol));
-    }
-    else
-    {
-		let strText = AscMath.MathLiterals.rBrackets.SearchU(strStartSymbol)
-			? "├" + strStartSymbol
-			: strStartSymbol;
+	if (oMathText.IsLaTeX())
+	{
+		let oText = new AscMath.MathText(strStartSymbol === "" ? "." : strStartSymbol);
+		oMathText.AddText(oText);
+	}
+	else
+	{
+		let strStartText;
+		let isOpenToken = AscMath.MathLiterals.lBrackets.SearchU(strStartSymbol) || AscMath.MathLiterals.lrBrackets.SearchU(strStartSymbol);
 
-		let oOpenText = new AscMath.MathText(strText);
+		if (isOpenToken)
+		{
+			strStartText = strStartSymbol;
+		}
+		else
+		{
+			strStartText = "├" + strStartSymbol;
+			isClose = true;
+		}
+
+		let oOpenText = new AscMath.MathText(strStartText);
 		oMathText.AddText(oOpenText);
 	}
 
-    for (let intCount = 0; intCount < this.getColumnsCount(); intCount++)
-    {
-        let oCurrentPos = oMathText.Add(this.Content[intCount], true, false);
-        if (strSeparatorSymbol && this.Content.length > 1 && intCount < this.Content.length - 1)
-            oMathText.AddAfter(oCurrentPos, strSeparatorSymbol);
-    }
+	for (let intCount = 0; intCount < this.getColumnsCount(); intCount++)
+	{
+		let oCurrentPos = oMathText.Add(this.Content[intCount], true, false);
+		if (strSeparatorSymbol && this.Content.length > 1 && intCount < this.Content.length - 1)
+		{
+			oMathText.AddAfter(oCurrentPos, strSeparatorSymbol);
+		}
+	}
 
-    if (oMathText.IsLaTeX())
-    {
-        oMathText.AddText(new AscMath.MathText(strEndSymbol === "\\right" ? "\\right." : strEndSymbol), true);
-    }
-    else
-    {
-		let strText = AscMath.MathLiterals.lBrackets.SearchU(strEndSymbol)
-			? "┤" + strEndSymbol
-			: strEndSymbol;
-		let oText = new AscMath.MathText(strText)
-        oMathText.AddText(oText, true);
-    }
+	if (oMathText.IsLaTeX())
+	{
+		oMathText.AddText(new AscMath.MathText(strEndSymbol === "\\right" ? "\\right." : strEndSymbol), true);
+	}
+	else
+	{
+		let strCloseSymbol;
+		let isCloseToken = AscMath.MathLiterals.lBrackets.SearchU(strEndSymbol);
+
+		if (isCloseToken || isClose)
+		{
+			strCloseSymbol = "┤" + strEndSymbol;
+		}
+		else
+		{
+			if (strEndSymbol === "")
+			{
+				strCloseSymbol = "┤";
+			}
+			else
+			{
+				strCloseSymbol = strEndSymbol;
+			}
+		}
+
+		let oText = new AscMath.MathText(strCloseSymbol);
+		oMathText.AddText(oText, true);
+	}
 }
 
 /**

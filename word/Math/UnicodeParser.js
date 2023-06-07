@@ -714,10 +714,27 @@
                 }
             }
 
-            if (this.oLookahead.class === Literals.lrBrackets.id || this.oLookahead.class === Literals.rBrackets.id)
-                strClose = this.GetOpCloseLiteral();
-            else
-                strClose = ".";
+			if (this.oLookahead.class === Literals.specialBrac.id)
+			{
+				this.EatToken(this.oLookahead.class);
+
+				if (this.oLookahead.class === Literals.lrBrackets.id || this.oLookahead.class === Literals.rBrackets.id || this.oLookahead.class === Literals.lBrackets.id)
+				{
+					strClose = this.GetOpCloseLiteral();
+				}
+				else
+				{
+					strClose = ".";
+				}
+			}
+			else if (this.oLookahead.class === Literals.lrBrackets.id || this.oLookahead.class === Literals.rBrackets.id)
+			{
+				strClose = this.GetOpCloseLiteral();
+			}
+			else
+			{
+				strClose = ".";
+			}
 
             if (strOpen === "〖" && strClose === "〗")
                 return oExp;

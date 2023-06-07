@@ -975,22 +975,28 @@
 	};
 	TokenFunctionLiteral.prototype.IsUnicodeInclude = function(arrStr)
 	{
-		let oNames = oMathAutoCorrection.arrFunctionsNames;
+		if (!arrStr)
+			return;
+
+		if (!Array.isArray(arrStr))
+			arrStr = [arrStr];
+
 		let strLast = "";
-		function IsFunc(arrStr, nLength)
+
+		function IsFunc(arrStr)
 		{
 			let str = arrStr.join("");
-			if (oNames[str] === null)
+			if (oMathAutoCorrection.arrFunctionsNames[str] === null)
 				strLast = str;
 		}
 
-		for (let i = 1; i < arrStr.length; i++)
+		for (let i = 1; i <= arrStr.length; i++)
+		{
 			IsFunc(arrStr.slice(0, i), i);
+		}
 
 		if (strLast)
 			return strLast;
-
-		return;
 	};
 	TokenFunctionLiteral.prototype.GetUnicodeToken = function (arrStr)
 	{
@@ -2257,7 +2263,7 @@
 						GetBracketCode(oTokens.left),
 						GetBracketCode(oTokens.right),
 					);
-					if (oTokens.value.length)
+					if (oTokens.value.length >= 0)
 					{
 						for (let intCount = 0; intCount < oTokens.value.length; intCount++) {
 							ConvertTokens(
@@ -2300,10 +2306,9 @@
 						oTokens.value,
 						oFunc.getFName(),
 					)
-					UnicodeArgument(
+					ConvertTokens(
 						oTokens.third,
-						MathStructures.bracket_block,
-						oFunc.getArgument()
+						oFunc.getArgument(),
 					)
 					break;
 				case oNamesOfLiterals.mathFontLiteral[num]:
@@ -3157,17 +3162,122 @@
 
 		return false;
 	}
-	function IsFunctionNameToken(arrContent)
+	function IsFunctionNameToken(arrContent, oCMathContent)
 	{
+		let oPos = [];
+		arrContent = arrContent.slice().reverse();
 		let oNames = oMathAutoCorrection.arrFunctionsNames;
+		let arrCurrent = [];
+		let str = "";
 
-		for (let i = 1; i < arrContent.length; i++)
+		for (let nPos = 0; nPos < arrContent.length; nPos++)
 		{
-			let str = arrContent.slice(0, i + 1).join("");
+			let oCurrentEl = arrContent[nPos];
+			arrCurrent.push(oCurrentEl[0]);
+
+			str = arrCurrent.slice().reverse().join("");
 			if (oNames[str] === null)
-				return true;
+			{
+				oPos[0] = new PositionIsCMathContent(
+					oCurrentEl[1],
+					oCurrentEl[2],
+					MathLiterals.func.id,
+					oCMathContent
+				);
+				oPos[1] = str;
+			}
 		}
 
+		if (oPos.length !== 0)
+		{
+			return oPos;
+		}
+
+		return false;
+	}
+
+	function IsLastFunc(oCMathContent)
+	{
+		let arr = [];
+
+		for (let nCount = oCMathContent.Content.length - 1; nCount >= 0; nCount--)
+		{
+			let oCMathElement = oCMathContent.Content[nCount];
+
+			if (oCMathElement.Type === 49 && oCMathElement.Content.length > 0)
+			{
+				for (let nParaCount = oCMathElement.Content.length - 1; nParaCount >= 0; nParaCount--)
+				{
+					let oCurrentTextElement = oCMathElement.Content[nParaCount].value;
+					let strContent = String.fromCharCode(oCurrentTextElement);
+					let intType = GetTokenType(strContent, [MathLiterals.char]);
+					arr.unshift([strContent, nCount, nParaCount]);
+
+					let oFunction = IsFunctionNameToken(arr, oCMathElement.Content);
+					let oFunc = oFunction[0];
+					let strFunc = oFunction[1];
+
+					if (oFunc)
+					{
+						if (strFunc.length === arr.length)
+							return true
+					}
+					else if (intType !== MathLiterals.char.id)
+					{
+						return false;
+					}
+				}
+			}
+		}
+	}
+	function GetInfo(oCMathContent, arrTypesForSearch)
+	{
+		let arrMathPositions = [];
+		let arrContent = [];
+		let arr =[];
+
+		for (let nCount = 0; nCount < oCMathContent.Content.length; nCount++)
+		{
+			let oCMathElement = oCMathContent.Content[nCount];
+
+			if (oCMathElement.Type === 49 && oCMathElement.Content.length > 0)
+			{
+				for (let nParaCount = 0; nParaCount < oCMathElement.Content.length; nParaCount++)
+				{
+					let oCurrentTextElement = oCMathElement.Content[nParaCount].value;
+					let strContent = String.fromCharCode(oCurrentTextElement);
+					let intType = GetTokenType(strContent, arrTypesForSearch);
+
+					if (intType !== 0)
+						arrContent.push(strContent);
+
+					arr.push([strContent, nCount, nParaCount]);
+
+					if (strContent === " ")
+						arr = [];
+
+					let oFunc = IsFunctionNameToken(arr, oCMathElement.Content)[0];
+					if (oFunc)
+					{
+						arrMathPositions.push(oFunc);
+						arr = [];
+					}
+
+					if (false !== intType)
+					{
+						let oNewCMathPos = new PositionIsCMathContent(
+							nCount,
+							nParaCount,
+							intType,
+							oCMathElement.Content
+						);
+
+						arrMathPositions.push(oNewCMathPos);
+					}
+				}
+			}
+		}
+		return arrMathPositions
 	}
 
 	/**
@@ -3229,6 +3339,7 @@
 			}
 		};
 
+		console.log(arrBracketsInfo)
 		return arrBracketsInfo;
 	}
 
@@ -3424,18 +3535,12 @@
 		 */
 		this.Init = function ()
 		{
-			const arrData = GetInfoAboutCMathContent(this.oCMathContent, TokenSearch_All);
-
-			for (let nCount = arrData.length - 1; nCount >= 0; nCount--)
+			const arrData = GetInfo(this.oCMathContent, TokenSearch_All);
+			if (arrData.length > 0)
 			{
-				const CurrentContent = arrData[nCount];
-
-				if (CurrentContent === undefined || (Array.isArray(CurrentContent) && CurrentContent.length === 0))
-					continue;
-
-				for (let nPosInBlock = CurrentContent.length - 1; nPosInBlock >= 0; nPosInBlock--)
+				for (let nPosInBlock = arrData.length - 1; nPosInBlock >= 0; nPosInBlock--)
 				{
-					let oCurrent 		= CurrentContent[nPosInBlock];
+					let oCurrent 		= arrData[nPosInBlock];
 					let nCurrentType 	= oCurrent.GetType();
 
 					if (this.IsOtherId(nCurrentType))
@@ -3444,12 +3549,11 @@
 					}
 					else if (this.IsBracketsId(nCurrentType))
 					{
-						this.Brackets.Check(CurrentContent[nPosInBlock]);
+						this.Brackets.Check(arrData[nPosInBlock]);
 						this.AddContent(nCurrentType, oCurrent);
 					}
 				}
-			};
-
+			}
 			this.Tokens.brackets = this.Brackets.GetContent();
 		};
 		/**
@@ -3718,28 +3822,12 @@
 			let lastElementMathId 		= this.GetAbsoluteLast();
 			let preLastElementMathId	= this.GetAbsolutePreLast();
 
-			if (this.IsStartAndCloseBracket())
+			//add funcapply for functions
+			if (oLast && oLast.type === 25 && IsLastFunc(this.oCMathContent))
 			{
-				this.StartCloseBracket();
+				oCMathContent.ParaMath.Add(new AscWord.CRunText(8289))
 			}
-			else if (this.Tokens.brackets.NoPair.length > 0)
-			{
-				return false;
-			}
-			else if (!oLast && MathLiterals.rBrackets.id === lastElementMathId)
-			{
-				ConvertBracketContent(this.Tokens.brackets, this.oCMathContent);
-				this.oCMathContent.MoveCursorToEndPos();
-			}
-			else if (!oLast && MathLiterals.rBrackets.id === preLastElementMathId)
-			{
-				ConvertBracket(this.Tokens.brackets, this.oCMathContent);
-			}
-			else if (!oLast && this.IsPreScript() && MathLiterals.char.id === preLastElementMathId)
-			{
-				this.ConvertPreScript(oLast);
-			}
-			else if (this.IsPCFunction(oLast) && this.IsTrigger(lastElementMathId))
+			if (this.IsPCFunction(oLast) && this.IsTrigger(lastElementMathId))
 			{
 				this.PCFunctionProcessing(oLast);
 			}
@@ -3751,8 +3839,52 @@
 			{
 				this.BIFunctionProcessing(oLast);
 			}
+			if (this.IsStartAndCloseBracket() && this.IsTrigger(lastElementMathId))
+			{
+				this.StartCloseBracket();
+			}
+			else if (this.IsStartBracketAndClose())
+			{
+				this.StartBracketAndClose();
+			}
+			else if (this.Tokens.brackets.NoPair.length > 0)
+			{
+				return false;
+			}
+			else if (!oLast && MathLiterals.rBrackets.id === lastElementMathId)
+			{
+				ConvertBracketContent(this.Tokens.brackets, this.oCMathContent);
+				this.oCMathContent.MoveCursorToEndPos();
+			}
+			else if (MathLiterals.rBrackets.id === preLastElementMathId && this.IsTrigger(lastElementMathId))
+			{
+				ConvertBracket(this.Tokens.brackets, this.oCMathContent);
+				oCMathContent.Correct_Content();
+				if (this.oCMathContent.Content.length > 0)
+					this.oCMathContent.MoveCursorToEndPos();
+			}
+			else if (!oLast && this.IsPreScript() && MathLiterals.char.id === preLastElementMathId)
+			{
+				this.ConvertPreScript(oLast);
+			}
 		};
 
+		// ( \close
+		this.IsStartBracketAndClose = function ()
+		{
+			return this.Tokens[MathLiterals.specialBrac.id]
+				&& this.Tokens[MathLiterals.specialBrac.id].length >= 1
+				&& this.Tokens.brackets.NoPair.length > 0
+				&& this.Tokens.brackets.NoPair[0].type === MathLiterals.rBrackets.id;
+		}
+		this.StartBracketAndClose = function ()
+		{
+			let oStartPos= this.Tokens.brackets.NoPair[0];
+			let str = CutContentFromEnd(this.oCMathContent, oStartPos, true);
+			GetConvertContent(0, str.trim(), this.oCMathContent);
+		}
+
+		// \open \close
 		this.IsStartAndCloseBracket = function ()
 		{
 			return this.Tokens[MathLiterals.specialBrac.id] && this.Tokens[MathLiterals.specialBrac.id].length >= 2
@@ -4311,6 +4443,7 @@
 			this.Increase();
 			let oPos = this.AddPosition(this.nPos - nPosCopy);
 
+			//todo create number for this
 			if (Wrap === false)
 			{
 				return oPos;

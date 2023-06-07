@@ -14978,7 +14978,7 @@ $(function () {
 	BracketEmptyCheck("||", 1, [""]);
 	BracketEmptyCheck("‖‖", 1, [""]);
 	BracketEmptyCheck("[┤[", 1, [""]);
-	BracketEmptyCheck("├]]", 1, [""]);
+	BracketEmptyCheck("├]┤]", 1, [""]);
 	BracketEmptyCheck("├]┤[", 1, [""]);
 	BracketEmptyCheck("⟦⟧", 1, [""]);
 
@@ -14991,7 +14991,7 @@ $(function () {
 	BracketEmptyCheck("|x|", 1, ["x"]);
 	BracketEmptyCheck("‖x‖", 1, ["x"]);
 	BracketEmptyCheck("[x┤[", 1, ["x"]);
-	BracketEmptyCheck("├]x]", 1, ["x"]);
+	BracketEmptyCheck("├]x┤]", 1, ["x"]);
 	BracketEmptyCheck("├]x┤[", 1, ["x"]);
 	BracketEmptyCheck("⟦x⟧", 1, ["x"]);
 
@@ -15004,7 +15004,7 @@ $(function () {
 	BracketEmptyCheck("|x+1|", 1, ["x+1"]);
 	BracketEmptyCheck("‖x+1‖", 1, ["x+1"]);
 	BracketEmptyCheck("[x+1┤[", 1, ["x+1"]);
-	BracketEmptyCheck("├]x+1]", 1, ["x+1"]);
+	BracketEmptyCheck("├]x+1┤]", 1, ["x+1"]);
 	BracketEmptyCheck("├]x+1┤[", 1, ["x+1"]);
 	BracketEmptyCheck("⟦x+1⟧", 1, ["x+1"]);
 
@@ -15017,7 +15017,7 @@ $(function () {
 	BracketEmptyCheck("|(x+1)|", 1, ["(x+1)"]);
 	BracketEmptyCheck("‖(x+1)‖", 1, ["(x+1)"]);
 	BracketEmptyCheck("[(x+1)┤[", 1, ["(x+1)"]);
-	BracketEmptyCheck("├](x+1)]", 1, ["(x+1)"]);
+	BracketEmptyCheck("├](x+1)┤]", 1, ["(x+1)"]);
 	BracketEmptyCheck("├](x+1)┤[", 1, ["(x+1)"]);
 	BracketEmptyCheck("⟦(x+1)⟧", 1, ["(x+1)"]);
 
@@ -15030,10 +15030,9 @@ $(function () {
 	BracketEmptyCheck("|y∣(x+1)|", 2, [ "y", "(x+1)"]);
 	BracketEmptyCheck("‖y∣(x+1)‖", 2, [ "y", "(x+1)"]);
 	BracketEmptyCheck("[y∣(x+1)┤[", 2, [ "y", "(x+1)"]);
-	BracketEmptyCheck("├]y∣(x+1)]", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("├]y∣(x+1)┤]", 2, [ "y", "(x+1)"]);
 	BracketEmptyCheck("├]y∣(x+1)┤[", 2, [ "y", "(x+1)"]);
 	BracketEmptyCheck("⟦y∣(x+1)⟧", 2, [ "y", "(x+1)"]);
-
 
 	BracketEmptyCheck("(∣(x+1))", 2, [ "", "(x+1)"]);
 	BracketEmptyCheck("[∣(x+1)]", 2, [ "", "(x+1)"]);
@@ -15044,7 +15043,7 @@ $(function () {
 	BracketEmptyCheck("|∣(x+1)|", 2, [ "", "(x+1)"]);
 	BracketEmptyCheck("‖∣(x+1)‖", 2, [ "", "(x+1)"]);
 	BracketEmptyCheck("[∣(x+1)┤[", 2, [ "", "(x+1)"]);
-	BracketEmptyCheck("├]∣(x+1)]", 2, [ "", "(x+1)"]);
+	BracketEmptyCheck("├]∣(x+1)┤]", 2, [ "", "(x+1)"]);
 	BracketEmptyCheck("├]∣(x+1)┤[", 2, [ "", "(x+1)"]);
 	BracketEmptyCheck("⟦∣(x+1)⟧", 2, [ "", "(x+1)"]);
 
@@ -15057,7 +15056,7 @@ $(function () {
 	BracketEmptyCheck("|(x+1)∣|", 2, [ "(x+1)", ""]);
 	BracketEmptyCheck("‖(x+1)∣‖", 2, [ "(x+1)", ""]);
 	BracketEmptyCheck("[(x+1)∣┤[", 2, [ "(x+1)", ""]);
-	BracketEmptyCheck("├](x+1)∣]", 2, [ "(x+1)", ""]);
+	BracketEmptyCheck("├](x+1)∣┤]", 2, [ "(x+1)", ""]);
 	BracketEmptyCheck("├](x+1)∣┤[", 2, [ "(x+1)", ""]);
 	BracketEmptyCheck("⟦(x+1)∣⟧", 2, [ "(x+1)", ""]);
 
@@ -15070,7 +15069,7 @@ $(function () {
 	BracketEmptyCheck("|∣|", 2, [ "", ""]);
 	BracketEmptyCheck("‖∣‖", 2, [ "", ""]);
 	BracketEmptyCheck("[∣┤[", 2, [ "", ""]);
-	BracketEmptyCheck("├]∣]", 2, [ "", ""]);
+	BracketEmptyCheck("├]∣┤]", 2, [ "", ""]);
 	BracketEmptyCheck("├]∣┤[", 2, [ "", ""]);
 	BracketEmptyCheck("⟦∣⟧", 2, [ "", ""]);
 
@@ -15083,10 +15082,79 @@ $(function () {
 	BracketEmptyCheck("|∣∣|", 3, [ "", "", ""]);
 	BracketEmptyCheck("‖∣∣‖", 3, [ "", "", ""]);
 	BracketEmptyCheck("[∣∣┤[", 3, [ "", "", ""]);
-	BracketEmptyCheck("├]∣∣]", 3, [ "", "", ""]);
+	BracketEmptyCheck("├]∣∣┤]", 3, [ "", "", ""]);
 	BracketEmptyCheck("├]∣∣┤[", 3, [ "", "", ""]);
 	BracketEmptyCheck("⟦∣∣⟧", 3, [ "", "", ""]);
 
+	BracketEmptyCheck("(┤", 1, [""]);
+	BracketEmptyCheck("[┤", 1, [""]);
+	BracketEmptyCheck("{┤", 1, [""]);
+	BracketEmptyCheck("⟨┤", 1, [""]);
+	BracketEmptyCheck("⌊┤", 1, [""]);
+	BracketEmptyCheck("⌈┤", 1, [""]);
+	BracketEmptyCheck("|┤", 1, [""]);
+	BracketEmptyCheck("‖┤", 1, [""]);
+	BracketEmptyCheck("⟦┤", 1, [""]);
+
+	BracketEmptyCheck("(x┤", 1, ["x"]);
+	BracketEmptyCheck("[x┤", 1, ["x"]);
+	BracketEmptyCheck("{x┤", 1, ["x"]);
+	BracketEmptyCheck("⟨x┤", 1, ["x"]);
+	BracketEmptyCheck("⌊x┤", 1, ["x"]);
+	BracketEmptyCheck("⌈x┤", 1, ["x"]);
+	BracketEmptyCheck("|x┤", 1, ["x"]);
+	BracketEmptyCheck("‖x┤", 1, ["x"]);
+	BracketEmptyCheck("⟦x┤", 1, ["x"]);
+
+	BracketEmptyCheck("(x+1┤", 1, ["x+1"]);
+	BracketEmptyCheck("[x+1┤", 1, ["x+1"]);
+	BracketEmptyCheck("{x+1┤", 1, ["x+1"]);
+	BracketEmptyCheck("⟨x+1┤", 1, ["x+1"]);
+	BracketEmptyCheck("⌊x+1┤", 1, ["x+1"]);
+	BracketEmptyCheck("⌈x+1┤", 1, ["x+1"]);
+	BracketEmptyCheck("|x+1┤", 1, ["x+1"]);
+	BracketEmptyCheck("‖x+1┤", 1, ["x+1"]);
+	BracketEmptyCheck("⟦x+1┤", 1, ["x+1"]);
+
+	BracketEmptyCheck("(y∣(x+1)┤", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("[y∣(x+1)┤", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("{y∣(x+1)┤", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("⟨y∣(x+1)┤", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("⌊y∣(x+1)┤", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("⌈y∣(x+1)┤", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("|y∣(x+1)┤", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("‖y∣(x+1)┤", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("⟦y∣(x+1)┤", 2, [ "y", "(x+1)"]);
+
+	BracketEmptyCheck("├┤)", 1, [""]);
+	BracketEmptyCheck("├┤]", 1, [""]);
+	BracketEmptyCheck("├┤}", 1, [""]);
+	BracketEmptyCheck("├┤⟩", 1, [""]);
+	BracketEmptyCheck("├┤⌋", 1, [""]);
+	BracketEmptyCheck("├┤⌉", 1, [""]);
+	BracketEmptyCheck("├┤|", 1, [""]);
+	BracketEmptyCheck("├┤‖", 1, [""]);
+	BracketEmptyCheck("├┤⟧", 1, [""]);
+
+	BracketEmptyCheck("├x┤)", 1, ["x"]);
+	BracketEmptyCheck("├x┤]", 1, ["x"]);
+	BracketEmptyCheck("├x┤}", 1, ["x"]);
+	BracketEmptyCheck("├x┤⟩", 1, ["x"]);
+	BracketEmptyCheck("├x┤⌋", 1, ["x"]);
+	BracketEmptyCheck("├x┤⌉", 1, ["x"]);
+	BracketEmptyCheck("├x┤|", 1, ["x"]);
+	BracketEmptyCheck("├x┤‖", 1, ["x"]);
+	BracketEmptyCheck("├x┤⟧", 1, ["x"]);
+
+	BracketEmptyCheck("├x+1┤)", 1, ["x+1"]);
+	BracketEmptyCheck("├x+1┤]", 1, ["x+1"]);
+	BracketEmptyCheck("├x+1┤}", 1, ["x+1"]);
+	BracketEmptyCheck("├x+1┤⟩", 1, ["x+1"]);
+	BracketEmptyCheck("├x+1┤⌋", 1, ["x+1"]);
+	BracketEmptyCheck("├x+1┤⌉", 1, ["x+1"]);
+	BracketEmptyCheck("├x+1┤|", 1, ["x+1"]);
+	BracketEmptyCheck("├x+1┤‖", 1, ["x+1"]);
+	BracketEmptyCheck("├x+1┤⟧", 1, ["x+1"]);
 
 	QUnit.module("Brackets - Autocorrection");
 
@@ -15099,7 +15167,7 @@ $(function () {
 	BracketEmptyCheck("||", 1, [""], true);
 	BracketEmptyCheck("‖‖", 1, [""], true);
 	BracketEmptyCheck("[┤[", 1, [""], true);
-	BracketEmptyCheck("├]]", 1, [""], true);
+	BracketEmptyCheck("├]┤]", 1, [""], true);
 	BracketEmptyCheck("├]┤[", 1, [""], true);
 	BracketEmptyCheck("⟦⟧", 1, [""], true);
 
@@ -15112,7 +15180,7 @@ $(function () {
 	BracketEmptyCheck("|x|", 1, ["x"], true);
 	BracketEmptyCheck("‖x‖", 1, ["x"], true);
 	BracketEmptyCheck("[x┤[", 1, ["x"], true);
-	BracketEmptyCheck("├]x]", 1, ["x"], true);
+	BracketEmptyCheck("├]x┤]", 1, ["x"], true);
 	BracketEmptyCheck("├]x┤[", 1, ["x"], true);
 	BracketEmptyCheck("⟦x⟧", 1, ["x"], true);
 
@@ -15125,7 +15193,7 @@ $(function () {
 	BracketEmptyCheck("|x+1|", 1, ["x+1"], true);
 	BracketEmptyCheck("‖x+1‖", 1, ["x+1"], true);
 	BracketEmptyCheck("[x+1┤[", 1, ["x+1"], true);
-	BracketEmptyCheck("├]x+1]", 1, ["x+1"], true);
+	BracketEmptyCheck("├]x+1┤]", 1, ["x+1"], true);
 	BracketEmptyCheck("├]x+1┤[", 1, ["x+1"], true);
 	BracketEmptyCheck("⟦x+1⟧", 1, ["x+1"], true);
 
@@ -15138,7 +15206,7 @@ $(function () {
 	BracketEmptyCheck("|(x+1)|", 1, ["(x+1)"], true);
 	BracketEmptyCheck("‖(x+1)‖", 1, ["(x+1)"], true);
 	BracketEmptyCheck("[(x+1)┤[", 1, ["(x+1)"], true);
-	BracketEmptyCheck("├](x+1)]", 1, ["(x+1)"], true);
+	BracketEmptyCheck("├](x+1)┤]", 1, ["(x+1)"], true);
 	BracketEmptyCheck("├](x+1)┤[", 1, ["(x+1)"], true);
 	BracketEmptyCheck("⟦(x+1)⟧", 1, ["(x+1)"], true);
 
@@ -15151,10 +15219,9 @@ $(function () {
 	BracketEmptyCheck("|y∣(x+1)|", 2, [ "y", "(x+1)"], true);
 	BracketEmptyCheck("‖y∣(x+1)‖", 2, [ "y", "(x+1)"], true);
 	BracketEmptyCheck("[y∣(x+1)┤[", 2, [ "y", "(x+1)"], true);
-	BracketEmptyCheck("├]y∣(x+1)]", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("├]y∣(x+1)┤]", 2, [ "y", "(x+1)"], true);
 	BracketEmptyCheck("├]y∣(x+1)┤[", 2, [ "y", "(x+1)"], true);
 	BracketEmptyCheck("⟦y∣(x+1)⟧", 2, [ "y", "(x+1)"], true);
-
 
 	BracketEmptyCheck("(∣(x+1))", 2, [ "", "(x+1)"], true);
 	BracketEmptyCheck("[∣(x+1)]", 2, [ "", "(x+1)"], true);
@@ -15165,7 +15232,7 @@ $(function () {
 	BracketEmptyCheck("|∣(x+1)|", 2, [ "", "(x+1)"], true);
 	BracketEmptyCheck("‖∣(x+1)‖", 2, [ "", "(x+1)"], true);
 	BracketEmptyCheck("[∣(x+1)┤[", 2, [ "", "(x+1)"], true);
-	BracketEmptyCheck("├]∣(x+1)]", 2, [ "", "(x+1)"], true);
+	BracketEmptyCheck("├]∣(x+1)┤]", 2, [ "", "(x+1)"], true);
 	BracketEmptyCheck("├]∣(x+1)┤[", 2, [ "", "(x+1)"], true);
 	BracketEmptyCheck("⟦∣(x+1)⟧", 2, [ "", "(x+1)"], true);
 
@@ -15178,7 +15245,7 @@ $(function () {
 	BracketEmptyCheck("|(x+1)∣|", 2, [ "(x+1)", ""], true);
 	BracketEmptyCheck("‖(x+1)∣‖", 2, [ "(x+1)", ""], true);
 	BracketEmptyCheck("[(x+1)∣┤[", 2, [ "(x+1)", ""], true);
-	BracketEmptyCheck("├](x+1)∣]", 2, [ "(x+1)", ""], true);
+	BracketEmptyCheck("├](x+1)∣┤]", 2, [ "(x+1)", ""], true);
 	BracketEmptyCheck("├](x+1)∣┤[", 2, [ "(x+1)", ""], true);
 	BracketEmptyCheck("⟦(x+1)∣⟧", 2, [ "(x+1)", ""], true);
 
@@ -15191,7 +15258,7 @@ $(function () {
 	BracketEmptyCheck("|∣|", 2, [ "", ""], true);
 	BracketEmptyCheck("‖∣‖", 2, [ "", ""], true);
 	BracketEmptyCheck("[∣┤[", 2, [ "", ""], true);
-	BracketEmptyCheck("├]∣]", 2, [ "", ""], true);
+	BracketEmptyCheck("├]∣┤]", 2, [ "", ""], true);
 	BracketEmptyCheck("├]∣┤[", 2, [ "", ""], true);
 	BracketEmptyCheck("⟦∣⟧", 2, [ "", ""], true);
 
@@ -15204,8 +15271,140 @@ $(function () {
 	BracketEmptyCheck("|∣∣|", 3, [ "", "", ""], true);
 	BracketEmptyCheck("‖∣∣‖", 3, [ "", "", ""], true);
 	BracketEmptyCheck("[∣∣┤[", 3, [ "", "", ""], true);
-	BracketEmptyCheck("├]∣∣]", 3, [ "", "", ""], true);
+	BracketEmptyCheck("├]∣∣┤]", 3, [ "", "", ""], true);
 	BracketEmptyCheck("├]∣∣┤[", 3, [ "", "", ""], true);
 	BracketEmptyCheck("⟦∣∣⟧", 3, [ "", "", ""], true);
 
+	BracketEmptyCheck("(┤", 1, [""], true);
+	BracketEmptyCheck("[┤", 1, [""], true);
+	BracketEmptyCheck("{┤", 1, [""], true);
+	BracketEmptyCheck("⟨┤", 1, [""], true);
+	BracketEmptyCheck("⌊┤", 1, [""], true);
+	BracketEmptyCheck("⌈┤", 1, [""], true);
+	BracketEmptyCheck("|┤", 1, [""], true);
+	BracketEmptyCheck("‖┤", 1, [""], true);
+	BracketEmptyCheck("⟦┤", 1, [""], true);
+
+	BracketEmptyCheck("(x┤", 1, ["x"], true);
+	BracketEmptyCheck("[x┤", 1, ["x"], true);
+	BracketEmptyCheck("{x┤", 1, ["x"], true);
+	BracketEmptyCheck("⟨x┤", 1, ["x"], true);
+	BracketEmptyCheck("⌊x┤", 1, ["x"], true);
+	BracketEmptyCheck("⌈x┤", 1, ["x"], true);
+	BracketEmptyCheck("|x┤", 1, ["x"], true);
+	BracketEmptyCheck("‖x┤", 1, ["x"], true);
+	BracketEmptyCheck("⟦x┤", 1, ["x"], true);
+
+	BracketEmptyCheck("(x+1┤", 1, ["x+1"], true);
+	BracketEmptyCheck("[x+1┤", 1, ["x+1"], true);
+	BracketEmptyCheck("{x+1┤", 1, ["x+1"], true);
+	BracketEmptyCheck("⟨x+1┤", 1, ["x+1"], true);
+	BracketEmptyCheck("⌊x+1┤", 1, ["x+1"], true);
+	BracketEmptyCheck("⌈x+1┤", 1, ["x+1"], true);
+	BracketEmptyCheck("|x+1┤", 1, ["x+1"], true);
+	BracketEmptyCheck("‖x+1┤", 1, ["x+1"], true);
+	BracketEmptyCheck("⟦x+1┤", 1, ["x+1"], true);
+
+	BracketEmptyCheck("(y∣(x+1)┤", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("[y∣(x+1)┤", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("{y∣(x+1)┤", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("⟨y∣(x+1)┤", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("⌊y∣(x+1)┤", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("⌈y∣(x+1)┤", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("|y∣(x+1)┤", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("‖y∣(x+1)┤", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("⟦y∣(x+1)┤", 2, [ "y", "(x+1)"], true);
+
+	BracketEmptyCheck("├┤)", 1, [""], true);
+	BracketEmptyCheck("├┤]", 1, [""], true);
+	BracketEmptyCheck("├┤}", 1, [""], true);
+	BracketEmptyCheck("├┤⟩", 1, [""], true);
+	BracketEmptyCheck("├┤⌋", 1, [""], true);
+	BracketEmptyCheck("├┤⌉", 1, [""], true);
+	BracketEmptyCheck("├┤|", 1, [""], true);
+	BracketEmptyCheck("├┤‖", 1, [""], true);
+	BracketEmptyCheck("├┤⟧", 1, [""], true);
+
+	BracketEmptyCheck("├x┤)", 1, ["x"], true);
+	BracketEmptyCheck("├x┤]", 1, ["x"], true);
+	BracketEmptyCheck("├x┤}", 1, ["x"], true);
+	BracketEmptyCheck("├x┤⟩", 1, ["x"], true);
+	BracketEmptyCheck("├x┤⌋", 1, ["x"], true);
+	BracketEmptyCheck("├x┤⌉", 1, ["x"], true);
+	BracketEmptyCheck("├x┤|", 1, ["x"], true);
+	BracketEmptyCheck("├x┤‖", 1, ["x"], true);
+	BracketEmptyCheck("├x┤⟧", 1, ["x"], true);
+
+	BracketEmptyCheck("├x+1┤)", 1, ["x+1"], true);
+	BracketEmptyCheck("├x+1┤]", 1, ["x+1"], true);
+	BracketEmptyCheck("├x+1┤}", 1, ["x+1"], true);
+	BracketEmptyCheck("├x+1┤⟩", 1, ["x+1"], true);
+	BracketEmptyCheck("├x+1┤⌋", 1, ["x+1"], true);
+	BracketEmptyCheck("├x+1┤⌉", 1, ["x+1"], true);
+	BracketEmptyCheck("├x+1┤|", 1, ["x+1"], true);
+	BracketEmptyCheck("├x+1┤‖", 1, ["x+1"], true);
+	BracketEmptyCheck("├x+1┤⟧", 1, ["x+1"], true);
+
+	function FunctCorrect(str, strLinear, isAutoCorrect)
+	{
+		QUnit.test("Check func " + str, function (assert)
+		{
+			AscMath.SetIsAllowAutoCorrect(!isAutoCorrect == false);
+			let r = Create();
+			assert.ok(true, "Create math equation");
+
+			AddTextToRoot(str);
+			assert.ok(true, "Add '" + str + "'");
+			AscMath.SetIsAllowAutoCorrect(true);
+
+			r.ConvertView(false, 0);
+			assert.ok(true, "Convert to professional");
+
+			let oFunc = r.Root.Content[1];
+			assert.ok(oFunc instanceof CMathFunc, "Created CMathFunc");
+
+			r.ConvertView(true, 0);
+			assert.ok(true, "Convert to professional");
+			assert.strictEqual(r.GetText(), strLinear, "Check linear content");
+		});
+	}
+
+	QUnit.module("Func - Convert");
+
+	let arr = [
+		"cos", 'arcsin', 'asin', 'sin', 'arcsinh', 'asinh', 'sinh', 'arcsec', 'sec', 'asec', 'arcsech',
+		'asech', 'sech', 'arccos', 'acos', 'cos', 'arccosh', 'acosh', 'cosh', 'arccsc', 'acsc', 'csc',
+		'arccsch', 'acsch', 'csch', 'arctan', 'atan', 'tan', 'arctanh', 'atanh', 'tanh', 'arccot', 'acot',
+		'cot', 'arccoth', 'acoth', 'coth', 'arg', 'det', 'exp', 'inf', 'lim', 'min', 'def', 'dim', 'gcd',
+		'log', 'Pr', 'deg', 'erf', 'lg', 'ln', 'max', 'sup', "ker", 'hom', 'sgn',
+	];
+
+	for (let i = 0; i < arr.length; i++)
+	{
+		let strFuncName = arr[i];
+		FunctCorrect(strFuncName, strFuncName + " ", false);
+	}
+
+	for (let i = 0; i < arr.length; i++)
+	{
+		let strFuncName = arr[i];
+		FunctCorrect(strFuncName + "1", strFuncName + " 1", false);
+	}
+
+	for (let i = 0; i < arr.length; i++)
+	{
+		let strFuncName = arr[i];
+		FunctCorrect(strFuncName + "(1+2)", strFuncName + " (1+2)", false);
+	}
+
+	for (let i = 0; i < arr.length; i++)
+	{
+		let strFuncName = arr[i];
+		FunctCorrect(strFuncName + "〖1+2〗", strFuncName + " 〖1+2〗", false);
+	}
+
+
+
+	//autocorrection triggers
+	//find tokens
 })

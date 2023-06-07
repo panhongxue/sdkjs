@@ -448,32 +448,35 @@ CMathFunc.prototype.fillContent = function()
     this.elements[0][0] = this.getFName();
     this.elements[0][1] = this.getArgument();
 };
-CMathFunc.prototype.GetTextOfElement = function(isLaTeX, isOnlyText)
+CMathFunc.prototype.GetTextOfElement = function(oMathText)
 {
-	let arrContent = [];
-	let oFuncName = this.getFName().GetMultipleContentForGetText(isLaTeX, null);
-	let oArgument = this.getArgument().GetMultipleContentForGetText(isLaTeX);
+	if (!oMathText)
+		oMathText = new AscMath.MathTextAndStyles(false);
 
-    if (!isLaTeX)
+	let oFuncName = this.getFName();
+	let oArgument = this.getArgument();
+
+	if (!oMathText.IsLaTeX())
+	{
+		oMathText.Add(oFuncName, true, false);
+		let oArgumentPos = oMathText.Add(oArgument, true, false);
+
+		let oArgumentToken = oMathText.GetExact(oArgumentPos);
+		oMathText.AddBefore(oArgumentPos, " ");
+
+		if (oArgumentToken.GetLength() > 1 && !oArgumentToken.IsBracket)
+		{
+			oMathText.WrapExactElement(oArgumentPos, "〖", "〗")
+		}
+	}
+    else
     {
-        if (oFuncName.isWrap)
-            arrContent.push(oFuncName, " ", oArgument);
-        else
-            arrContent.push(oFuncName, oArgument);
+        // oArgument.wrap("{", "}");
+        // if (AscMath.SearchFunctionName(oFuncName))
+        //     oFuncName.text = '\\' + oFuncName.text;
+		//
+        // arrContent.push(oFuncName, oArgument);
     }
-    else if (isLaTeX)
-    {
-        oArgument.wrap("{", "}");
-        if (AscMath.SearchFunctionName(oFuncName))
-            oFuncName.text = '\\' + oFuncName.text;
-
-        arrContent.push(oFuncName, oArgument);
-    }
-
-    if (isOnlyText)
-        return AscMath.ConvertMathTextToText(arrContent);
-
-	return arrContent;
 };
 
 

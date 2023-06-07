@@ -5840,8 +5840,8 @@ CMathContent.prototype.ConvertSpacesAfterConvertOldEquation = function ()
 }
 CMathContent.prototype.Process_AutoCorrect = function (oElement)
 {
-    var oLogicDocument = this.GetLogicDocument();
-    var nInputType = oLogicDocument
+    let oLogicDocument = this.GetLogicDocument();
+    let nInputType = oLogicDocument
         ? oLogicDocument. Api.getMathInputType()
         : Asc.c_oAscMathInputType.Unicode;
 

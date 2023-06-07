@@ -153,6 +153,7 @@
 		this.isPreOpenLocks = true;
 		this.isApplyChangesOnOpenEnabled = true;
 		this.isProtectionSupport = true;
+		this.isAnonymousSupport = true;
 
 		this.canSave    = true;        // Флаг нужен чтобы не происходило сохранение пока не завершится предыдущее сохранение
 		this.IsUserSave = false;    // Флаг, контролирующий сохранение было сделано пользователем или нет (по умолчанию - нет)
@@ -182,7 +183,8 @@
 
 		this.pluginsManager = null;
 
-		this.isLockTargetUpdate = false;
+		this.isLockTargetUpdate   = false;
+		this.isLockScrollToTarget = false;
 
 		this.lastWorkTime = 0;
 
@@ -225,6 +227,8 @@
 
 
 		this.formatPainter = new AscCommon.CFormatPainter(this);
+		this.eyedropper = new AscCommon.CEyedropper(this);
+		this.inkDrawer = new AscCommon.CInkDrawer(this);
 		this._correctEmbeddedWork();
 
 		return this;
@@ -584,6 +588,10 @@
 	{
 		this.isLockTargetUpdate = isLock;
 	};
+	baseEditorsApi.prototype.asc_LockScrollToTarget          = function(isLock)
+	{
+		this.isLockScrollToTarget = isLock;
+	};
 	// Просмотр PDF
 	baseEditorsApi.prototype.isPdfViewer                     = function()
 	{
@@ -892,12 +900,16 @@
 		}
 	};
 
-	baseEditorsApi.prototype.asc_SaveDrawingAsPicture = function()
+	baseEditorsApi.prototype.asc_SaveDrawingAsPicture = function(sFormat)
 	{
 		let oController = this.getGraphicController();
 		if(oController)
 		{
-			let oImageData = oController.getImageDataForSaving();
+			let sImageFormat = "image/png";
+			if(sFormat === "jpg" || sFormat === "jpeg") {
+				sImageFormat = "image/jpeg";
+			}
+			let oImageData = oController.getImageDataForSaving(true, sImageFormat);
 			if(oImageData)
 			{
 				let a = document.createElement("a");
@@ -1225,63 +1237,16 @@
 	baseEditorsApi.prototype.getDrawingObjects = function () {};
 	baseEditorsApi.prototype.getDrawingDocument = function () {};
 	baseEditorsApi.prototype.getLogicDocument = function () {};
-	baseEditorsApi.prototype.asc_createSmartArt = function (nSmartArtType) {
+	baseEditorsApi.prototype._createSmartArt = function () {};
+	baseEditorsApi.prototype.asc_createSmartArt = function (nSmartArtType, oPlaceholderObject) {
 		if (!AscCommon.g_oBinarySmartArts) {
 			return;
 		}
 		AscCommon.History.Create_NewPoint(AscDFH.historydescription_Document_AddSmartArt);
-		const bFromWord = this.isDocumentEditor;
 		const oSmartArt = new AscFormat.SmartArt();
 		oSmartArt.fillByPreset(nSmartArtType);
-		const oLogicDocument = this.getLogicDocument();
 		const oController = this.getGraphicController();
-		const oDrawingObjects = this.getDrawingObjects();
-		if (!bFromWord) {
-					if (oDrawingObjects) {
-						oSmartArt.setDrawingObjects(oDrawingObjects);
-					}
-					if (oDrawingObjects.cSld) {
-						oSmartArt.setParent(oDrawingObjects);
-						oSmartArt.setRecalculateInfo();
-					}
-
-					if (oDrawingObjects.getWorksheetModel) {
-						const oWSView = oDrawingObjects.getWorksheetModel();
-						oSmartArt.setWorksheet(oWSView);
-					}
-					oSmartArt.addToDrawingObjects(undefined, AscCommon.c_oAscCellAnchorType.cellanchorTwoCell);
-					oSmartArt.checkDrawingBaseCoords();
-					oSmartArt.fitFontSize();
-					if (oController) {
-						oController.checkChartTextSelection();
-						oController.resetSelection();
-						oSmartArt.select(oController, 0);
-						if (oDrawingObjects.getWorksheet) {
-							const oWS = oDrawingObjects.getWorksheet();
-							if (oWS) {
-								oWS.setSelectionShape(true);
-							}
-						}
-					}
-					oController.startRecalculate();
-					oDrawingObjects.sendGraphicObjectProps();
-		} else {
-			if (true === oLogicDocument.Selection.Use) {
-				oLogicDocument.Remove(1, true);
-			}
-			oSmartArt.fitToPageSize();
-			oSmartArt.fitFontSize();
-			oSmartArt.recalculateBounds();
-
-			const oParaDrawing = oSmartArt.decorateParaDrawing(oController);
-			oSmartArt.setXfrmByParent();
-			if (oController) {
-				oController.resetSelection2();
-				oLogicDocument.AddToParagraph(oParaDrawing);
-				oLogicDocument.Select_DrawingObject(oParaDrawing.Get_Id());
-				oLogicDocument.Recalculate();
-			}
-		}
+		this._createSmartArt(oSmartArt, oPlaceholderObject);
 		oController.clearTrackObjects();
 		oController.clearPreTrackObjects();
 		oController.updateOverlay();
@@ -1307,6 +1272,28 @@
 			fAfterSaveChanges();
 		}
 	};
+	/**
+	 * This callback is displayed as a global member.
+	 * @callback saveRelativeFromChangesCallback
+	 * @param {boolean} timeout
+	 * @param {Object} data description
+	 * @param {number} data.errorCode from AscCommon.c_oAscServerCommandErrors {NoError, NotModified, Token, UnknownError}
+	 * @param {boolean} data.inProgress
+	 * @param {string} data.url
+	 */
+	/**
+	 * Сохранение документа с указанием относительного пути
+	 * @param docId external document id
+	 * @param token from intergation
+	 * @param timeout in ms
+	 * @param callback {saveRelativeFromChangesCallback}
+	 */
+	baseEditorsApi.prototype.saveRelativeFromChanges = function(docId, token, timeout, callback) {
+		if (!this.CoAuthoringApi.callPRC({'type': 'saveRelativeFromChanges', 'docId': docId, 'token': token}, timeout, callback)) {
+			callback(true, undefined);
+		}
+	};
+
 	baseEditorsApi.prototype.asc_setIsForceSaveOnUserSave = function(val)
 	{
 		this.isForceSaveOnUserSave = val;
@@ -1500,6 +1487,9 @@
 				if (undefined !== this.licenseResult['protectionSupport']) {
 					this.isProtectionSupport = this.licenseResult['protectionSupport'];
 				}
+				if (undefined !== this.licenseResult['isAnonymousSupport']) {
+					this.isAnonymousSupport = this.licenseResult['isAnonymousSupport'];
+				}
 			}
 			this.sendEvent('asc_onGetEditorPermissions', oResult);
 		}
@@ -1600,12 +1590,20 @@
 		};
 		this.CoAuthoringApi.onLicenseChanged          = function(res)
 		{
-			if (res['settings'] && res['settings']['maxChangesSize']) {
-				t.maxChangesSize = res['settings']['maxChangesSize'];
-			}
-			if (res['settings'] && res['settings']['binaryChanges']) {
-				t.binaryChanges = res['settings']['binaryChanges'];
-				t.CoAuthoringApi.setBinaryChanges(t.binaryChanges);
+			if (res['settings']) {
+				if (res['settings']['maxChangesSize']) {
+					t.maxChangesSize = res['settings']['maxChangesSize'];
+				}
+				if (res['settings']['binaryChanges']) {
+					t.binaryChanges = res['settings']['binaryChanges'];
+					t.CoAuthoringApi.setBinaryChanges(t.binaryChanges);
+				}
+				if (res['settings']['limits_image_size']) {
+					AscCommon.c_oAscImageUploadProp.MaxFileSize = res['settings']['limits_image_size']
+				}
+				if (res['settings']['limits_image_types_upload']) {
+					AscCommon.c_oAscImageUploadProp.SupportedFormats = res['settings']['limits_image_types_upload'].split(";")
+				}
 			}
 			let licenseType = res['licenseType'];
 			if (t.licenseResult) {
@@ -2108,6 +2106,11 @@
 		oAdditionalData["outputformat"] = options.fileType;
 		oAdditionalData["title"] = AscCommon.changeFileExtention(this.documentTitle, AscCommon.getExtentionByFormat(options.fileType), Asc.c_nMaxDownloadTitleLen);
 		oAdditionalData["nobase64"] = isNoBase64;
+		let locale = this.asc_getLocale() || undefined;
+		if (typeof locale === "string") {
+			locale = Asc.g_oLcidNameToIdMap[locale];
+		}
+		oAdditionalData["lcid"] = locale;
 		if (DownloadType.Print === downloadType)
 		{
 			oAdditionalData["withoutPassword"] = true;
@@ -2514,6 +2517,8 @@
 		return bReturnOle ? null : false;
 	};
 
+	baseEditorsApi.prototype.turnOffSpecialModes = function()
+	{};
 
 	//Remove All comments
 	baseEditorsApi.prototype.asc_RemoveAllComments = function(isMine, isCurrent)
@@ -3302,6 +3307,10 @@
             return window["AscDesktopEditor"]["IsProtectionSupport"]();
         return !(this.DocInfo && this.DocInfo.get_OfflineApp()) && this.isProtectionSupport;
     };
+	baseEditorsApi.prototype.asc_isAnonymousSupport = function()
+	{
+		return this.isAnonymousSupport;
+	};
 
 	baseEditorsApi.prototype.asc_gotoSignature = function(guid)
 	{
@@ -3864,6 +3873,9 @@
     	if (!this.asc_canPaste())
     		return;
 
+		if (window["AscDesktopEditor"] && window["AscDesktopEditor"]["isSupportMacroses"] && !window["AscDesktopEditor"]["isSupportMacroses"]())
+			return;
+
     	this._beforeEvalCommand();
 		this.macros.runAuto();
 		this._afterEvalCommand(undefined);
@@ -3878,6 +3890,9 @@
 
     	if (!this.asc_canPaste())
     		return;
+
+		if (window["AscDesktopEditor"] && window["AscDesktopEditor"]["isSupportMacroses"] && !window["AscDesktopEditor"]["isSupportMacroses"]())
+			return;
 
     	this._beforeEvalCommand();
 		this.macros.run(sGuid);
@@ -3976,6 +3991,7 @@
 	baseEditorsApi.prototype.asc_resetToDefaultAutoCorrectMathSymbols = function()
 	{
 		window['AscCommonWord'].g_AutoCorrectMathsList.AutoCorrectMathSymbols = JSON.parse(JSON.stringify(window['AscCommonWord'].g_AutoCorrectMathsList.DefaultAutoCorrectMathSymbolsList));
+		AscMath.UpdateAutoCorrection();
 	};
 	/**
 	 * Reset to default version math autocorrect functions list
@@ -3983,6 +3999,7 @@
 	baseEditorsApi.prototype.asc_resetToDefaultAutoCorrectMathFunctions = function()
 	{
 		window['AscCommonWord'].g_AutoCorrectMathsList.AutoCorrectMathFuncs = JSON.parse(JSON.stringify(window['AscCommonWord'].g_AutoCorrectMathsList.DefaultAutoCorrectMathFuncs));
+		AscMath.UpdateFuncCorrection();
 	};
 	/**
 	 * Delete item from g_AutoCorrectMathSymbols
@@ -3996,6 +4013,7 @@
 			}
 		});
 		window['AscCommonWord'].g_AutoCorrectMathsList.AutoCorrectMathSymbols.splice(remInd, 1);
+		AscMath.UpdateAutoCorrection();
 	};
 	/**
 	 * Delete item from g_AutoCorrectMathFuncs
@@ -4009,6 +4027,7 @@
 			}
 		});
 		window['AscCommonWord'].g_AutoCorrectMathsList.AutoCorrectMathFuncs.splice(remInd, 1);
+		AscMath.UpdateFuncCorrection();
 	};
 	/**
 	 * Add or edit item from g_AutoCorrectMathSymbols
@@ -4030,6 +4049,8 @@
 		} else {
 			window['AscCommonWord'].g_AutoCorrectMathsList.AutoCorrectMathSymbols.push([element, repVal]);
 		}
+
+		AscMath.UpdateAutoCorrection();
 	};
 	/**
 	 * Add item from g_AutoCorrectMathFuncs
@@ -4038,6 +4059,7 @@
 	baseEditorsApi.prototype.asc_AddFromAutoCorrectMathFunctions = function(newEl)
 	{
 		window['AscCommonWord'].g_AutoCorrectMathsList.AutoCorrectMathFuncs.push(newEl);
+		AscMath.UpdateFuncCorrection();
 	};
 	/**
 	 * Refresh g_AutoCorrectMathSymbols on start
@@ -4253,7 +4275,7 @@
 	//---------------------------------------------------------version----------------------------------------------------
 	baseEditorsApi.prototype["GetVersion"] = baseEditorsApi.prototype.GetVersion = function()
 	{
-		this.versionSdk = "@@Version";
+		this.versionSdk = AscCommon.g_cProductVersion;
 		return (this.versionSdk === "0.0.0" || this.versionSdk.substr(2) === "Version") ? "develop" : this.versionSdk;
 	};
 	//----------------------------------------------------------addons----------------------------------------------------
@@ -4452,7 +4474,7 @@
 		return null;
 	};
 
-	baseEditorsApi.prototype.putImageToSelection = function (sImageSrc, nWidth, nHeight)
+	baseEditorsApi.prototype.putImageToSelection = function (sImageSrc, nWidth, nHeight, replaceMode)
 	{
 	};
 
@@ -4513,6 +4535,141 @@
 			this.sendEvent('asc_onStopFormatPainter');
 		}
 	};
+	baseEditorsApi.prototype.getEyedropperImgData = function()
+	{
+		return null;
+	};
+	baseEditorsApi.prototype.clearEyedropperImgData = function()
+	{
+		this.eyedropper.clearImageData();
+	};
+	baseEditorsApi.prototype.asc_startEyedropper = function(fEndCallback)
+	{
+		this.eyedropper.start(fEndCallback);
+		this.stopInkDrawer()
+	};
+	baseEditorsApi.prototype.finishEyedropper = function()
+	{
+		this.eyedropper.finish();
+	};
+	baseEditorsApi.prototype.asc_finishEyedropper = function()
+	{
+		this.finishEyedropper();
+	};
+	baseEditorsApi.prototype.cancelEyedropper = function()
+	{
+		this.eyedropper.cancel();
+	};
+	baseEditorsApi.prototype.asc_cancelEyedropper = function()
+	{
+		this.cancelEyedropper();
+	};
+	baseEditorsApi.prototype.isEyedropperStarted = function()
+	{
+		return this.eyedropper.isStarted();
+	};
+	baseEditorsApi.prototype.getEyedropperColor = function()
+	{
+		return this.eyedropper.getColor();
+	};
+	baseEditorsApi.prototype.checkEyedropperColor = function(nX, nY)
+	{
+		this.eyedropper.checkColor(nX, nY);
+	};
+	baseEditorsApi.prototype.asc_StartDrawInk = function(oAscPen) {
+		this.inkDrawer.startDraw(oAscPen);
+		if(this.formatPainter.isOn()) {
+			this.formatPainter.toggleState();
+		}
+		if(this.eyedropper.isStarted()) {
+			this.eyedropper.end();
+		}
+	};
+	baseEditorsApi.prototype.asc_StartInkEraser = function() {
+		this.inkDrawer.startErase();
+		if(this.formatPainter.isOn()) {
+			this.formatPainter.toggleState();
+		}
+		if(this.eyedropper.isStarted()) {
+			this.eyedropper.end();
+		}
+	};
+	baseEditorsApi.prototype.asc_StopInkDrawer = function() {
+		this.stopInkDrawer();
+	};
+	baseEditorsApi.prototype.stopInkDrawer = function() {
+		this.inkDrawer.turnOff();
+	};
+	baseEditorsApi.prototype.onInkDrawerChangeState = function() {
+	};
+	baseEditorsApi.prototype.isInkDrawerOn = function() {
+		return this.inkDrawer.isOn();
+	};
+	baseEditorsApi.prototype.isDrawInkMode = function() {
+		return this.inkDrawer.isDraw();
+	};
+	baseEditorsApi.prototype.isEraseInkMode = function() {
+		return this.inkDrawer.isErase();
+	};
+	baseEditorsApi.prototype.getInkPen = function() {
+		return this.inkDrawer.getPen();
+	};
+	baseEditorsApi.prototype.getInkCursorType = function() {
+		return this.inkDrawer.getCursorType();
+	};
+
+	// methods for desktop:
+	baseEditorsApi.prototype.isCloudSaveAsLocalToDrawingFormat = function(actionType, fileType) {
+		if (!window["AscDesktopEditor"])
+			return false;
+		if (this.isLocalMode())
+			return false;
+		if (c_oAscAsyncAction.DownloadAs !== actionType)
+			return false;
+
+		switch (fileType)
+		{
+			case Asc.c_oAscFileType.PDF:
+			case Asc.c_oAscFileType.PDFA:
+			case Asc.c_oAscFileType.IMG:
+			case Asc.c_oAscFileType.JPG:
+			case Asc.c_oAscFileType.TIFF:
+			case Asc.c_oAscFileType.TGA:
+			case Asc.c_oAscFileType.GIF:
+			case Asc.c_oAscFileType.PNG:
+			case Asc.c_oAscFileType.EMF:
+			case Asc.c_oAscFileType.WMF:
+			case Asc.c_oAscFileType.BMP:
+			case Asc.c_oAscFileType.CR2:
+			case Asc.c_oAscFileType.PCX:
+			case Asc.c_oAscFileType.RAS:
+			case Asc.c_oAscFileType.PSD:
+			case Asc.c_oAscFileType.ICO:
+				window["AscDesktopEditor"]["emulateCloudPrinting"](true);
+				return true;
+			default:
+				break;
+		}
+		return false;
+	};
+
+	baseEditorsApi.prototype.localSaveToDrawingFormat = function(base64Data, fileType) {
+		this.sync_StartAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Save);
+
+		let documentUrl = this.DocumentUrl;
+		if (this.editorId === c_oEditorId.Spreadsheet)
+			documentUrl = this.documentId + "/";
+		window["AscDesktopEditor"]["localSaveToDrawingFormat"](this.documentTitle, documentUrl || "", this.ThemeLoader ? this.ThemeLoader.ThemesUrl : "", base64Data, fileType);
+	};
+
+	baseEditorsApi.prototype["onLocalSaveToDrawingFormat"] = function(error) {
+		window["AscDesktopEditor"]["emulateCloudPrinting"](false);
+		this.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Save);
+		this.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.DownloadAs);
+		if (0 !== error)
+			this.sendEvent("asc_onError", c_oAscError.ID.ConvertationSaveError, c_oAscError.Level.NoCritical);
+	};
+
 	//----------------------------------------------------------export----------------------------------------------------
 	window['AscCommon']                = window['AscCommon'] || {};
 	window['AscCommon'].baseEditorsApi = baseEditorsApi;
@@ -4566,7 +4723,12 @@
 	prot['AddImageUrl'] = prot.AddImageUrl;
 	prot['asc_SetDrawImagePreviewBulletForMenu'] = prot['SetDrawImagePreviewBulletForMenu'] = prot.SetDrawImagePreviewBulletForMenu;
 	prot['asc_GetPossibleNumberingLanguage'] = prot.asc_GetPossibleNumberingLanguage;
-
 	prot['asc_isCrypto'] = prot.asc_isCrypto;
+	prot['asc_startEyedropper'] = prot.asc_startEyedropper;
+	prot['asc_finishEyedropper'] = prot.asc_finishEyedropper;
+	prot['asc_cancelEyedropper'] = prot.asc_cancelEyedropper;
+	prot['asc_StartDrawInk'] = prot.asc_StartDrawInk;
+	prot['asc_StartInkEraser'] = prot.asc_StartInkEraser;
+	prot['asc_StopInkDrawer'] = prot.asc_StopInkDrawer;
 
 })(window);

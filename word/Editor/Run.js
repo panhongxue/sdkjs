@@ -499,9 +499,17 @@ ParaRun.prototype.Get_Text = function(Text)
 				Text.Text += String.fromCharCode(Item.Value);
 				break;
 			}
-			case para_Space:
 			case para_NewLine:
+			{
+				Text.Text += undefined != Text.NewLineSeparator ? Text.NewLineSeparator : " ";
+				break;
+			}
 			case para_Tab:
+			{
+				Text.Text += undefined != Text.TabSymbol ? Text.TabSymbol : " ";
+				break;
+			}
+			case para_Space:
 			{
 				Text.Text += " ";
 				break;
@@ -3265,12 +3273,15 @@ ParaRun.prototype.GetSelectedText = function(bAll, bClearText, oPr)
             {
                 Str += AscCommon.encodeSurrogateChar(Item.value);
                 break;
-            }			case para_NewLine:
+            }
+			case para_NewLine:
 			{
-				if (oPr && true === oPr.NewLine)
-				{
-					Str += '\r';
+				if (oPr && undefined != oPr.NewLineSeparator) {
+					Str += oPr.NewLineSeparator;
 				}
+				else if (oPr && true === oPr.NewLine)
+					Str += '\r';
+				
 				break;
 			}
 			case para_End:
@@ -6406,7 +6417,7 @@ ParaRun.prototype.Draw_HighLights = function(PDSH)
 
         var DrawColl = this.CollaborativeMarks.Check( Pos );
 
-        if ( true === bDrawShd )
+        if ( true === bDrawShd && !Item.IsParaEnd() )
             aShd.Add( Y0, Y1, X, X + ItemWidthVisible, 0, ShdColor.r, ShdColor.g, ShdColor.b, undefined, oShd );
 
 		if (PDSH.ComplexFields.IsComplexField()
@@ -8611,7 +8622,7 @@ ParaRun.prototype.Selection_CheckParaContentPos = function(ContentPos, Depth, bS
 //-----------------------------------------------------------------------------------
 // Функции для работы с настройками текста свойств
 //-----------------------------------------------------------------------------------
-ParaRun.prototype.Clear_TextFormatting = function(DefHyper)
+ParaRun.prototype.Clear_TextFormatting = function(DefHyper, bHighlight)
 {
 	// Highlight и Lang не сбрасываются при очистке текстовых настроек
 
@@ -8636,6 +8647,12 @@ ParaRun.prototype.Clear_TextFormatting = function(DefHyper)
 	this.Set_Shd(undefined);
 	this.Set_TextFill(undefined);
 	this.Set_TextOutline(undefined);
+
+	if(bHighlight)
+	{
+		this.Set_HighLight(undefined);
+		this.SetHighlightColor(undefined);
+	}
 
 	// Насильно заставим пересчитать стиль, т.к. как данная функция вызывается у параграфа, у которого мог смениться стиль
 	this.Recalc_CompiledPr(true);
@@ -9714,6 +9731,10 @@ ParaRun.prototype.Set_Color = function(Value)
         this.private_UpdateTrackRevisionOnChangeTextPr(true);
     }
 };
+ParaRun.prototype.SetColor = function(color)
+{
+	return this.Set_Color(color);
+};
 
 ParaRun.prototype.Set_Unifill = function(Value, bForce)
 {
@@ -10338,9 +10359,15 @@ ParaRun.prototype.IncreaseDecreaseFontSize = function(isIncrease)
 };
 ParaRun.prototype.ApplyFontFamily = function(sFontName)
 {
-	let nFontSlot = this.GetFontSlotInRange(0, this.Content.length);
-	if (nFontSlot & AscWord.fontslot_EastAsia)
-		this.SetRFontsEastAsia({Name : sFontName, Index : -1});
+	// let nFontSlot = this.GetFontSlotInRange(0, this.Content.length);
+	// if (nFontSlot & AscWord.fontslot_EastAsia)
+	// 	this.SetRFontsEastAsia({Name : sFontName, Index : -1});
+	
+	// https://bugzilla.onlyoffice.com/show_bug.cgi?id=60106
+	// Пока мы не можем разруливать как в MSWord, потому что у нас нет возможности получать текущую раскладку
+	// и нет события о смене раскладки
+	this.SetRFontsEastAsia({Name : sFontName, Index : -1});
+	//------------------------------------------------------------------------------------------------------------------
 
 	this.SetRFontsAscii({Name : sFontName, Index : -1});
 	this.SetRFontsHAnsi({Name : sFontName, Index : -1});
@@ -11783,7 +11810,7 @@ ParaRun.prototype.CheckRevisionsChanges = function(Checker, ContentPos, Depth)
     if (true !== Checker.Is_ParaEndRun() && true !== Checker.Is_CheckOnlyTextPr())
     {
         var ReviewType = this.GetReviewType();
-        if (ReviewType !== Checker.GetAddRemoveType() || (reviewtype_Common !== ReviewType && (this.ReviewInfo.GetUserId() !== Checker.Get_AddRemoveUserId() || this.GetReviewMoveType() !== Checker.GetAddRemoveMoveType())))
+		if (Checker.IsStopAddRemoveChange(ReviewType, this.GetReviewInfo()))
         {
             Checker.FlushAddRemoveChange();
             ContentPos.Update(0, Depth);
@@ -13784,6 +13811,43 @@ CReviewInfo.prototype.IsMovedTo = function()
 CReviewInfo.prototype.IsMovedFrom = function()
 {
 	return this.MoveType === Asc.c_oAscRevisionsMove.MoveFrom;
+};
+/**
+ * Сравнение информации об изменениях
+ * @returns {boolean}
+ */
+CReviewInfo.prototype.IsEqual = function(oAnotherReviewInfo, bIsMergingDocuments)
+{
+	let oThisReviewInfo = this;
+	let oCompareReviewInfo = oAnotherReviewInfo;
+	let bEquals = true;
+	while (bEquals && oThisReviewInfo && oCompareReviewInfo)
+	{
+		bEquals = oThisReviewInfo.UserName === oCompareReviewInfo.UserName &&
+		oThisReviewInfo.DateTime === oCompareReviewInfo.DateTime &&
+		oThisReviewInfo.MoveType === oCompareReviewInfo.MoveType &&
+		oThisReviewInfo.PrevType === oCompareReviewInfo.PrevType;
+
+		if (!bIsMergingDocuments)
+		{
+			bEquals = bEquals && oThisReviewInfo.UserId === oCompareReviewInfo.UserId;
+		}
+
+		oThisReviewInfo = oThisReviewInfo.PrevInfo;
+		oCompareReviewInfo = oCompareReviewInfo.PrevInfo;
+	}
+	if (!oThisReviewInfo && oCompareReviewInfo || oThisReviewInfo && !oCompareReviewInfo)
+	{
+		return false;
+	}
+	return bEquals;
+};
+/**
+ * @returns {Asc.c_oAscRevisionsMove}
+ */
+CReviewInfo.prototype.GetMoveType = function()
+{
+	return this.MoveType;
 };
 
 /**

@@ -270,7 +270,7 @@
 					if (ws.AutoFilter && ws.AutoFilter.Ref.contains(activeCell.col, activeCell.row)) {
 						res = ws.AutoFilter.Ref;
 					} else {
-						let table = ws.autoFilter._getTableIntersectionWithActiveCell(activeCell);
+						let table = ws.autoFilters._getTableIntersectionWithActiveCell(activeCell);
 						if (table) {
 							res = table.Ref;
 						}
@@ -6316,7 +6316,7 @@
 					ascColor.asc_putA(sortColor.getA());
 				}
 
-				setViewProps && setViewProps(autoFilter.Ref.c1 + colId, autoFilter.Ref.r1);
+				setViewProps && setViewProps(autoFilter.Ref.r1, autoFilter.Ref.c1 + colId);
 
 				//set menu object
 				var autoFilterObject = new Asc.AutoFiltersOptions();

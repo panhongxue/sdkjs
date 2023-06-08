@@ -657,22 +657,16 @@
     };
     CUnicodeParser.prototype.GetNameOfFunction = function ()
     {
-        let oName = this.EatToken(this.oLookahead.class).data,
-            oThird;
+		let oName = this.EatToken(this.oLookahead.class).data;
+		this.EatOneSpace();
 
-        this.EatOneSpace();
+		if (this.IsApplicationFunction())
+			return this.GetFunctionApplication(oName)
 
-        if (!this.IsExpSubSupLiteral())
-        {
-            oThird = this.GetOperandLiteral();
-            this.EatOneSpace()
-        }
-
-        return {
-            type: Struc.func,
-            value: oName,
-            third: oThird,
-        }
+		return {
+			type: Struc.char,
+			value: oName,
+		}
     };
     CUnicodeParser.prototype.IsExpBracketLiteral = function ()
     {
@@ -1571,6 +1565,9 @@
             if (this.IsPrimeLiteral())
                 return this.GetPrimeLiteral(oEntity);
 
+			if (this.IsApplicationFunction())
+				return this.GetFunctionApplication(oEntity)
+
             if (this.IsDiacriticsLiteral())
             {
                 const oDiacritic = this.GetDiacriticsLiteral();
@@ -1580,6 +1577,7 @@
                     value: oDiacritic,
                 };
             }
+
             return oEntity;
         }
         else if (this.IsFunctionLiteral())
@@ -1661,11 +1659,11 @@
                 arrFactorList[arrFactorList.length - 1] = oContent;
             }
 
-            if (this.IsApplicationFunction() && arrFactorList[arrFactorList.length - 1])
-            {
-                let oContent = this.GetFunctionApplication(arrFactorList[arrFactorList.length - 1]);
-                arrFactorList[arrFactorList.length - 1] = oContent;
-            }
+            // if (this.IsApplicationFunction() && arrFactorList[arrFactorList.length - 1])
+            // {
+            //     let oContent = this.GetFunctionApplication(arrFactorList[arrFactorList.length - 1]);
+            //     arrFactorList[arrFactorList.length - 1] = oContent;
+            // }
         }
 
         return this.GetContentOfLiteral(arrFactorList);
@@ -1676,12 +1674,13 @@
     }
     CUnicodeParser.prototype.GetFunctionApplication = function(oBase)
     {
-        // if (undefined === oBase)
-        // {
-        //     oBase = this.GetScriptBaseLiteral();
-        // }
+		let oName = this.EatToken(this.oLookahead.class);
 
-        this.EatToken(this.oLookahead.class);
+		if (this.IsExpSubSupLiteral())
+		{
+			return this.GetExpSubSupLiteral(oBase);
+		}
+
         let oValue = this.GetOperandLiteral();
 
         return {

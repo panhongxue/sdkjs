@@ -462,7 +462,7 @@ CMathFunc.prototype.GetTextOfElement = function(oMathText)
 		let oArgumentPos = oMathText.Add(oArgument, true, false);
 
 		let oArgumentToken = oMathText.GetExact(oArgumentPos);
-		oMathText.AddBefore(oArgumentPos, " ");
+		oMathText.AddBefore(oArgumentPos, "⁡");
 
 		if (oArgumentToken.GetLength() > 1 && !oArgumentToken.IsBracket)
 		{

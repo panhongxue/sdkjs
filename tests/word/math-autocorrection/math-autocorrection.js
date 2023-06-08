@@ -15349,13 +15349,11 @@ $(function () {
 	{
 		QUnit.test("Check func " + str, function (assert)
 		{
-			AscMath.SetIsAllowAutoCorrect(!isAutoCorrect == false);
 			let r = Create();
 			assert.ok(true, "Create math equation");
 
 			AddTextToRoot(str);
 			assert.ok(true, "Add '" + str + "'");
-			AscMath.SetIsAllowAutoCorrect(true);
 
 			r.ConvertView(false, 0);
 			assert.ok(true, "Convert to professional");
@@ -15382,25 +15380,25 @@ $(function () {
 	for (let i = 0; i < arr.length; i++)
 	{
 		let strFuncName = arr[i];
-		FunctCorrect(strFuncName, strFuncName + " ", false);
+		FunctCorrect(strFuncName, strFuncName + "⁡", false);
 	}
 
 	for (let i = 0; i < arr.length; i++)
 	{
 		let strFuncName = arr[i];
-		FunctCorrect(strFuncName + "1", strFuncName + " 1", false);
+		FunctCorrect(strFuncName + "1", strFuncName + "⁡1", false);
 	}
 
 	for (let i = 0; i < arr.length; i++)
 	{
 		let strFuncName = arr[i];
-		FunctCorrect(strFuncName + "(1+2)", strFuncName + " (1+2)", false);
+		FunctCorrect(strFuncName + "(1+2)", strFuncName + "⁡(1+2)", false);
 	}
 
 	for (let i = 0; i < arr.length; i++)
 	{
 		let strFuncName = arr[i];
-		FunctCorrect(strFuncName + "〖1+2〗", strFuncName + " 〖1+2〗", false);
+		FunctCorrect(strFuncName + "〖1+2〗", strFuncName + "⁡〖1+2〗", false);
 	}
 
 

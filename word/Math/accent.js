@@ -688,17 +688,23 @@ CAccent.prototype.Get_InterfaceProps = function()
 {
     return new CMathMenuAccent(this);
 };
-CAccent.prototype.GetTextOfElement = function(isLaTeX, isOnlyText)
+/**
+ *
+ * @param {MathTextAndStyles | boolean} oMathText
+ * @constructor
+ */
+CAccent.prototype.GetTextOfElement = function(oMathText)
 {
-    let arrContent = [];
+	if (!oMathText instanceof AscMath.MathTextAndStyles)
+		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
-	let oBase = this.getBase().GetMultipleContentForGetText(isLaTeX);
+	let oBase = this.getBase();
 	let strAccent = String.fromCharCode(this.Pr.chr);
 	
-	if (isLaTeX)
-    {
+	if (oMathText.IsLaTeX())
+	{
 		switch (this.Pr.chr)
-        {
+		{
 			case 0:		strAccent = '\\hat'; 				break;
 			case 768:	strAccent = '\\grave';				break;
 			case 769:	strAccent = '\\acute';				break;
@@ -716,17 +722,14 @@ CAccent.prototype.GetTextOfElement = function(isLaTeX, isOnlyText)
 			case 8411:	strAccent = '\\dddot';				break;
 			case 8417:	strAccent = '\\overleftrightarrow';	break;
 		}
-        arrContent.push(strAccent, oBase);
+		let oNameAccent = oMathText.Add(strAccent, false, false);
+		oMathText.AddAfter(oBase, oNameAccent);
 	}
-    else
-    {
-        arrContent.push(oBase, strAccent);
+	else
+	{
+		let oBasePos = oMathText.Add(oBase, true, "isNotOne");
+		let oNameAccent = oMathText.AddAfter(oBasePos, strAccent, false);
 	}
-
-    if (isOnlyText)
-        return AscMath.ConvertMathTextToText(arrContent);
-
-	return arrContent;
 };
 
 /**

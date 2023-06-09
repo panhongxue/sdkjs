@@ -1152,6 +1152,7 @@
 		invisible:		new TokenInvisibleOperators(),
 		divide: 		new TokenDivide(),
 		underbar:		new TokenUnderbar(),
+		overbar:		new TokenOverbar(),
 		specialBrac:	new TokenSpecialBrackets(),
 		lrBrackets: 	new TokenOpenCloseBrackets(),
 		rBrackets: 		new TokenCloseBrackets(),
@@ -1165,7 +1166,6 @@
 		box: 			new TokenBox(),
 		rect:			new TokenRect(),
 		matrix: 		new TokenMatrix(),
-		overbar:		new TokenOverbar(),
 		font:			new TokenFont(),
 		of:				new TokenOf(),
 		delimiter:		new TokenDelimiter(),
@@ -1190,6 +1190,7 @@
 		MathLiterals.lrBrackets,
 		MathLiterals.specialBrac,
 		MathLiterals.underbar,
+		MathLiterals.overbar,
 		MathLiterals.divide,
 		MathLiterals.invisible,
 		MathLiterals.nary,
@@ -4529,6 +4530,13 @@
 			else if (Wrap === "always")
 			{
 				this.WrapExactElement(oPos);
+			}
+			else if (Wrap === "isNotOne")
+			{
+				if (oMath.GetLength() !== 1 || oMath.GetText() === "")
+				{
+					this.WrapExactElement(oPos);
+				}
 			}
 			else if (oMath.GetLength() > 1)
 			{

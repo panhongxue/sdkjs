@@ -15349,11 +15349,13 @@ $(function () {
 	{
 		QUnit.test("Check func " + str, function (assert)
 		{
+			AscMath.SetIsAllowAutoCorrect(isAutoCorrect);
 			let r = Create();
 			assert.ok(true, "Create math equation");
 
 			AddTextToRoot(str);
 			assert.ok(true, "Add '" + str + "'");
+			AscMath.SetIsAllowAutoCorrect(true);
 
 			r.ConvertView(false, 0);
 			assert.ok(true, "Convert to professional");
@@ -15365,10 +15367,7 @@ $(function () {
 			assert.ok(true, "Convert to professional");
 			assert.strictEqual(r.GetText(), strLinear, "Check linear content");
 		});
-	}
-
-	QUnit.module("Func - Convert");
-
+	};
 	let arr = [
 		"cos", 'arcsin', 'asin', 'sin', 'arcsinh', 'asinh', 'sinh', 'arcsec', 'sec', 'asec', 'arcsech',
 		'asech', 'sech', 'arccos', 'acos', 'cos', 'arccosh', 'acosh', 'cosh', 'arccsc', 'acsc', 'csc',
@@ -15377,30 +15376,86 @@ $(function () {
 		'log', 'Pr', 'deg', 'erf', 'lg', 'ln', 'max', 'sup', "ker", 'hom', 'sgn',
 	];
 
+	QUnit.module("Func - Autoconvert");
 	for (let i = 0; i < arr.length; i++)
 	{
 		let strFuncName = arr[i];
-		FunctCorrect(strFuncName, strFuncName + "⁡", false);
-	}
-
+		FunctCorrect(strFuncName + " ", strFuncName + "⁡", true);
+	};
 	for (let i = 0; i < arr.length; i++)
 	{
 		let strFuncName = arr[i];
-		FunctCorrect(strFuncName + "1", strFuncName + "⁡1", false);
-	}
-
+		FunctCorrect(strFuncName + "⁡" + "1", strFuncName + "⁡1", true);
+	};
 	for (let i = 0; i < arr.length; i++)
 	{
 		let strFuncName = arr[i];
-		FunctCorrect(strFuncName + "(1+2)", strFuncName + "⁡(1+2)", false);
-	}
-
+		FunctCorrect(strFuncName + "⁡" + "(1+2)", strFuncName + "⁡(1+2)", true);
+	};
 	for (let i = 0; i < arr.length; i++)
 	{
 		let strFuncName = arr[i];
-		FunctCorrect(strFuncName + "〖1+2〗", strFuncName + "⁡〖1+2〗", false);
-	}
+		FunctCorrect(strFuncName + "⁡" + "〖1+2〗", strFuncName + "⁡〖1+2〗", true);
+	};
 
+	let accentArr = ["̇", "̈", "⃛", "̂", "̌", "́", "̀", "̆", "̃", "̅", "̿", "⃖", "⃗", "⃡", "⃐", "⃑"];
+	function AccentCorrect(str, strLinear, isAutoCorrect)
+	{
+		QUnit.test("Check accent " + str, function (assert)
+		{
+			AscMath.SetIsAllowAutoCorrect(isAutoCorrect);
+			let r = Create();
+			assert.ok(true, "Create math equation");
+
+			AddTextToRoot(str);
+			assert.ok(true, "Add '" + str + "'");
+			AscMath.SetIsAllowAutoCorrect(true);
+
+			r.ConvertView(false, 0);
+			assert.ok(true, "Convert to professional");
+
+			let oFunc = r.Root.Content[1];
+			assert.ok(oFunc instanceof CAccent, "Created CAccent");
+
+			r.ConvertView(true, 0);
+			assert.ok(true, "Convert to professional");
+			assert.strictEqual(r.GetText(), strLinear, "Check linear content");
+		});
+	};
+
+	QUnit.module("Accent - Convert");
+	for (let i = 0; i < accentArr.length; i++)
+	{
+		let strCurrentAccent = accentArr[i];
+		AccentCorrect("x" + strCurrentAccent, "x" + strCurrentAccent, false);
+	};
+	for (let i = 0; i < accentArr.length; i++)
+	{
+		let strCurrentAccent = accentArr[i];
+		AccentCorrect("(1+2)" + strCurrentAccent, "(1+2)" + strCurrentAccent, false);
+	};
+	for (let i = 0; i < accentArr.length; i++)
+	{
+		let strCurrentAccent = accentArr[i];
+		AccentCorrect("[1+2]" + strCurrentAccent, "(" + "[1+2]" + ")" + strCurrentAccent, false);
+	};
+
+	QUnit.module("Accent - Autocorrect");
+	for (let i = 0; i < accentArr.length; i++)
+	{
+		let strCurrentAccent = accentArr[i];
+		AccentCorrect("x" + strCurrentAccent + " ", "x" + strCurrentAccent, true);
+	};
+	for (let i = 0; i < accentArr.length; i++)
+	{
+		let strCurrentAccent = accentArr[i];
+		AccentCorrect("(1+2)" + strCurrentAccent + " ", "(1+2)" + strCurrentAccent, false);
+	};
+	for (let i = 0; i < accentArr.length; i++)
+	{
+		let strCurrentAccent = accentArr[i];
+		AccentCorrect("[1+2]" + strCurrentAccent + " ", "(" + "[1+2]" + ")" + strCurrentAccent, false);
+	};
 
 
 	//autocorrection triggers

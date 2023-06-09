@@ -471,6 +471,13 @@
                     down: oDown,
                 };
             }
+			else
+			{
+				return {
+					type: Struc.horizontal_bracket,
+					hBrack: strHBracket,
+				}
+			}
         }
 
     };
@@ -1221,7 +1228,7 @@
     };
     CUnicodeParser.prototype.IsScriptBelowOrAboveContent = function ()
     {
-        return this.oLookahead.class === "┬" || this.oLookahead.class === "┴";
+        return this.oLookahead.data === "┬" || this.oLookahead.data === "┴";
     };
     CUnicodeParser.prototype.GetFractionLiteral = function (oNumerator)
     {
@@ -2023,6 +2030,7 @@
         if (undefined === str || null === str)
             return;
 
+		debugger
         const oParser = new CUnicodeParser();
         const oTokens = oParser.Parse(str);
 

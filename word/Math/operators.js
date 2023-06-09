@@ -4574,38 +4574,49 @@ CGroupCharacter.prototype.Can_ChangePos = function()
 {
     return this.Pr.chr == 0x23DC || this.Pr.chr == 0x23DD || this.Pr.chr == 0x23DE || this.Pr.chr == 0x23DF;
 };
-CGroupCharacter.prototype.GetTextOfElement = function(isLaTeX) {
-	var strTemp = "";
-	var intStartCode = this.Pr.chr || this.operator.Get_CodeChr();
-	var strStart = String.fromCharCode(intStartCode);
-	var Base = this.getBase().GetMultipleContentForGetText(isLaTeX);
+/**
+ *
+ * @param {MathTextAndStyles | boolean} oMathText
+ * @constructor
+ */
+CGroupCharacter.prototype.GetTextOfElement = function(oMathText)
+{
+	if (!oMathText instanceof AscMath.MathTextAndStyles)
+		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
-	if (true === isLaTeX)
-    {
-        if (intStartCode === 9182 || intStartCode === 9183)
-        {
-            if (intStartCode === 9182)
-                strStart = '\\overbrace';
-            else if (intStartCode === 9183)
-                strStart = '\\underbrace';
+	let nStartCode = this.Pr.chr || this.operator.Get_CodeChr();
+	let strStart = String.fromCharCode(nStartCode);
+	let oBase = this.getBase();
 
-            strStart = strStart + Base;
-        }
-        else
-            strStart += this.Pr.pos === 1 ? "\\above" : "\\below";
+	if (oMathText.IsLaTeX())
+	{
+		if (nStartCode === 9182 || nStartCode === 9183)
+		{
+			if (nStartCode === 9182)
+				strStart = '\\overbrace';
+			else if (nStartCode === 9183)
+				strStart = '\\underbrace';
 
-        strTemp = strStart;
-        if (Base)
-            strTemp += Base;
+			oMathText.AddText(strStart);
+			oMathText.Add(oBase, false, 'notBracket');
+		}
+		else
+		{
+			strStart += this.Pr.pos === 1 ? "\\above" : "\\below";
+			oMathText.AddText(strStart);
+			oMathText.Add(oBase, false, 'notBracket');
+		}
 	}
-    else
-    {
-        let pos = this.Pr.pos === 1 ? "┴" : "┬";
-        if (intStartCode !== 9182 && intStartCode !== 9183)
-            strStart += pos;
-        strTemp = strStart + Base;
-    }
-	return strTemp;
+	else
+	{
+		let strPos = this.Pr.pos === 1 ? "┴" : "┬";
+
+		if (nStartCode !== 9182 && nStartCode !== 9183)
+			strStart += strPos;
+
+		oMathText.AddText(strStart, true, false);
+		oMathText.Add(oBase, true, 'notBracket');
+	}
 };
 
 /**

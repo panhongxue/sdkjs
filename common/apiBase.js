@@ -225,6 +225,8 @@
 
 		this.isBlurEditor = false;
 
+		this.isChartEditorLoaded = false;
+
 
 		this.formatPainter = new AscCommon.CFormatPainter(this);
 		this.eyedropper = new AscCommon.CEyedropper(this);
@@ -798,8 +800,8 @@
 					else
 					{
 						oLogicDocument.EditChart(oBinaryData);
+						this.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Waiting);
 					}
-
 				}
 				break;
 			}

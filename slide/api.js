@@ -2331,7 +2331,7 @@ background-repeat: no-repeat;\
 		const oChart = oGraphicController && oGraphicController.getSingleSelectedChart();
 		if (oChart)
 		{
-			const oUpdater = new AscCommon.CDiagramUpdater(this, oChart);
+			const oUpdater = new AscCommon.CDiagramUpdater(oChart);
 			oUpdater.update();
 		}
 	};

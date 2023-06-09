@@ -1295,9 +1295,9 @@ BinaryChartWriter.prototype.WriteCT_extLst = function (oVal) {
 };
 BinaryChartWriter.prototype.WriteCT_ChartSpace = function (oVal) {
     var oThis = this;
-		if (null !== oVal.externalPath) {
+		if (oVal.externalReference && oVal.externalReference.Id) {
 			oThis.memory.WriteByte(c_oserct_chartspaceXLSXEXTERNAL);
-			oThis.memory.WriteString2(AscCommonExcel.encodeXmlPath(oVal.externalPath));
+			oThis.memory.WriteString2(AscCommonExcel.encodeXmlPath(oVal.externalReference.Id));
 		}
 		if (oVal.XLSX && oVal.XLSX.length) {
 			this.bs.WriteItem(c_oserct_chartspaceXLSX, function () {
@@ -6169,7 +6169,7 @@ BinaryChartReader.prototype.ReadCT_ChartSpace = function (type, length, val, cur
 			const sExternalPath = this.bcr.stream.GetString2LE(length);
 			if (sExternalPath)
 			{
-				val.externalPath = AscCommonExcel.decodeXmlPath(sExternalPath);
+				val.setExternalPath(AscCommonExcel.decodeXmlPath(sExternalPath))
 			}
 			res = c_oSerConstants.ReadOk;
     }

@@ -4307,6 +4307,13 @@ window.AscCommon.g_cIsBeta = "false";
 	];
 
 
+
+	const c_oAscExternalReferenceType = {
+		referenceData: 0,
+		link: 1,
+		path: 2
+	};
+
 	//------------------------------------------------------------export--------------------------------------------------
 	var prot;
 	window['Asc']                          = window['Asc'] || {};
@@ -5735,5 +5742,10 @@ window.AscCommon.g_cIsBeta = "false";
 	prot['OleObject'] = prot.OleObject;
 
 	window['Asc']['c_oAscDateTimeFormat'] = window['Asc'].c_oAscDateTimeFormat = c_oAscDateTimeFormat;
+
+	prot = window['Asc']['c_oAscExternalReferenceType'] = window['Asc'].c_oAscExternalReferenceType = c_oAscExternalReferenceType;
+	prot['referenceData'] = prot.referenceData;
+	prot['link'] = prot.link;
+	prot['path'] = prot.path;
 
 })(window);

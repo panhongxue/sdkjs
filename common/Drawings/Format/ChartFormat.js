@@ -18517,6 +18517,7 @@
     };
 
     AscDFH.drawingsConstructorsMap[AscDFH.historyitem_ChartSpace_ChartColors] = CChartColors;
+    AscDFH.drawingsConstructorsMap[AscDFH.historyitem_ChartSpace_SetExternalReference] = AscCommonExcel.ExternalReferenceBase;
 
     //--------------------------------------------------------export----------------------------------------------------
     window['AscFormat'] = window['AscFormat'] || {};

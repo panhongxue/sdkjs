@@ -407,7 +407,7 @@ function(window, undefined) {
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetDate1904] = CChangesDrawingsBool;
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetExternalData] = CChangesDrawingsObject;
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetLang] = CChangesDrawingsString;
-	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetExternalPath] = CChangesDrawingsString;
+	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetExternalReference] = CChangesDrawingsObjectNoId;
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetPivotSource] = CChangesDrawingsObject;
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetPrintSettings] = CChangesDrawingsObject;
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetProtection] = CChangesDrawingsObject;
@@ -573,8 +573,8 @@ function(window, undefined) {
 	drawingsChangesMap[AscDFH.historyitem_ChartSpace_SetLang] = function (oClass, value) {
 		oClass.lang = value;
 	};
-	drawingsChangesMap[AscDFH.historyitem_ChartSpace_SetExternalPath] = function (oClass, value) {
-		oClass.externalPath = value;
+	drawingsChangesMap[AscDFH.historyitem_ChartSpace_SetExternalReference] = function (oClass, value) {
+		oClass.externalReference = value;
 	};
 	drawingsChangesMap[AscDFH.historyitem_ChartSpace_SetPivotSource] = function (oClass, value) {
 		oClass.pivotSource = value;
@@ -1336,7 +1336,7 @@ function(window, undefined) {
 		this.date1904 = false;
 		this.externalData = null;
 		this.XLSX = new Uint8Array(0);
-		this.externalPath = null;
+		this.externalReference = null;
 		this.lang = null;
 		this.pivotSource = null;
 		this.printSettings = null;
@@ -1386,9 +1386,21 @@ function(window, undefined) {
 	{
 		this.isFrameChart = bPr;
 	};
+	CChartSpace.prototype.getExternalReference = function ()
+	{
+		return this.externalReference;
+	}
+	CChartSpace.prototype.getExternalPath = function ()
+	{
+		return this.externalReference && this.externalReference.Id;
+	}
+	CChartSpace.prototype.updateData = function ()
+	{
+		(new AscCommon.CDiagramUpdater(this)).update();
+	}
 	CChartSpace.prototype.isExternal = function()
 	{
-		return !!this.externalPath;
+		return !!this.externalReference;
 	}
 	CChartSpace.prototype.changeSize = CShape.prototype.changeSize;
 	CChartSpace.prototype.getDataRefs = function () {
@@ -3239,8 +3251,8 @@ function(window, undefined) {
 		if (this.XLSX) {
 			copy.setXLSX(this.XLSX.slice());
 		}
-		if (this.externalPath) {
-			copy.setExternalPath(this.externalPath);
+		if (this.externalreference) {
+			copy.setExternalReference(this.externalreference.createDuplicate());
 		}
 		copy.setLang(this.lang);
 		if (this.pivotSource) {
@@ -3702,10 +3714,16 @@ function(window, undefined) {
 		AscDFH.addBinaryDataToHistory(this, this.XLSX, arrData, CChangesStartChartSpaceBinary, CChangesPartChartSpaceBinary, CChangesEndChartSpaceBinary);
 		this.XLSX = arrData;
 	}
+	CChartSpace.prototype.setExternalReference = function (oExternalReference)
+	{
+		History.Add(new CChangesDrawingsObjectNoId(this, AscDFH.historyitem_ChartSpace_SetExternalReference, this.externalReference, oExternalReference));
+		this.externalReference = oExternalReference;
+	}
 	CChartSpace.prototype.setExternalPath = function (sPath)
 	{
-		History.Add(new CChangesDrawingsString(this, AscDFH.historyitem_ChartSpace_SetExternalPath, this.externalPath, sPath));
-		this.externalPath = sPath;
+		const oReference = new AscCommonExcel.ExternalReferenceBase();
+		oReference.Id = sPath;
+		this.setExternalReference(oReference);
 	}
 	CChartSpace.prototype.setLang = function (lang) {
 		History.Add(new CChangesDrawingsString(this, AscDFH.historyitem_ChartSpace_SetLang, this.lang, lang));

@@ -14166,21 +14166,103 @@ QueryTableField.prototype.clone = function() {
 	};
 
 	//external reference
-	function ExternalReference() {
-		this.DefinedNames = [];
+	function ExternalReferenceBase()
+	{
 		this.Id = null;
-		this.SheetDataSet = [];
-		this.SheetNames = [];
 		this.Type = 0;
-
 		//дополнительная информация, которая приходит при copy/paste
 		//необходимо её добавлять в ooxml
 		//fileId
 		//portalName
 		this.referenceData = null;
+	}
+
+	ExternalReferenceBase.prototype.createDuplicate = function ()
+	{
+		const oCopy = new ExternalReferenceBase();
+		oCopy.Id = this.Id;
+		oCopy.Type = this.Type;
+		if (null != this.referenceData)
+		{
+			oCopy.referenceData = {};
+			oCopy.referenceData["fileKey"] = this.referenceData["fileKey"];
+			oCopy.referenceData["instanceId"] = this.referenceData["instanceId"];
+		}
+		return oCopy;
+	}
+
+	ExternalReferenceBase.prototype.isExternalLink = function() {
+		var p = /^(?:http:\/\/|https:\/\/)/;
+		return this.Id.match(p);
+	};
+
+	ExternalReferenceBase.prototype.isXlsx = function() {
+		var p = /^.*\.(xlsx)$/i;
+		return this.Id.match(p);
+	};
+
+	//TODO внешние источники данных, как в файле из бага https://bugzilla.onlyoffice.com/show_bug.cgi?id=38646
+
+	ExternalReferenceBase.prototype.getAscLink = function () {
+
+		// вот так, если это из файла прилетело, в т.ч. из буфера
+		// onRequestReferenceData({data:{referenceData:config.document.referenceData}})
+		//
+		//
+		// вот так, если это будет ссылка на редактор файла в тестовом как в onedrive
+		// onRequestReferenceData({data:{link:"http://192.168.1.1/editor?fileName=new.docx"}})
+		//
+		// вот так, если б это было просто путь к файлу как в MS:
+		// 	onRequestReferenceData({data:{path: "new.docx"}})
+
+
+		var res = new asc_CExternalReference();
+
+		if (this.referenceData) {
+			res.type = Asc.c_oAscExternalReferenceType.referenceData;
+			res.data = this.referenceData;
+		} else if (this.isExternalLink()) {
+			res.type = Asc.c_oAscExternalReferenceType.link;
+			res.data = this.Id;
+		} else {
+			res.type = Asc.c_oAscExternalReferenceType.path;
+			res.data = this.Id;
+		}
+
+		res.externalReference = this;
+
+		return res;
+	};
+
+
+	ExternalReferenceBase.prototype.setReferenceData = function (fileId, portalName) {
+		if (!fileId || !portalName) {
+			return;
+		}
+		if (!this.referenceData) {
+			this.referenceData = {};
+		}
+		this.referenceData["instanceId"] = portalName;
+		this.referenceData["fileKey"] = fileId;
+	};
+
+	ExternalReferenceBase.prototype.setId = function (id) {
+		if (!id) {
+			return;
+		}
+
+		this.Id = id;
+	};
+
+	function ExternalReference() {
+		ExternalReferenceBase.call(this);
+		this.DefinedNames = [];
+		this.SheetDataSet = [];
+		this.SheetNames = [];
 
 		this.worksheets = {};
 	}
+	AscFormat.InitClassWithoutType(ExternalReference, ExternalReferenceBase);
 
 	ExternalReference.prototype.getType = function() {
 		return AscCommonExcel.UndoRedoDataTypes.externalReference;
@@ -14373,49 +14455,6 @@ QueryTableField.prototype.clone = function() {
 		}
 	};
 
-	//TODO внешние источники данных, как в файле из бага https://bugzilla.onlyoffice.com/show_bug.cgi?id=38646
-
-	ExternalReference.prototype.getAscLink = function () {
-
-		// вот так, если это из файла прилетело, в т.ч. из буфера
-		// onRequestReferenceData({data:{referenceData:config.document.referenceData}})
-		//
-		//
-		// вот так, если это будет ссылка на редактор файла в тестовом как в onedrive
-		// onRequestReferenceData({data:{link:"http://192.168.1.1/editor?fileName=new.docx"}})
-		//
-		// вот так, если б это было просто путь к файлу как в MS:
-		// 	onRequestReferenceData({data:{path: "new.docx"}})
-
-
-		var res = new asc_CExternalReference();
-
-		if (this.referenceData) {
-			res.type = Asc.c_oAscExternalReferenceType.referenceData;
-			res.data = this.referenceData;
-		} else if (this.isExternalLink()) {
-			res.type = Asc.c_oAscExternalReferenceType.link;
-			res.data = this.Id;
-		} else {
-			res.type = Asc.c_oAscExternalReferenceType.path;
-			res.data = this.Id;
-		}
-
-		res.externalReference = this;
-
-		return res;
-	};
-
-	ExternalReference.prototype.isExternalLink = function() {
-		var p = /^(?:http:\/\/|https:\/\/)/;
-		return this.Id.match(p);
-	};
-
-	ExternalReference.prototype.isXlsx = function() {
-		var p = /^.*\.(xlsx)$/i;
-		return this.Id.match(p);
-	};
-
 	ExternalReference.prototype.addSheetName = function (name, generateDefaultStructure) {
 		this.SheetNames.push(name);
 		if (generateDefaultStructure) {
@@ -14580,25 +14619,6 @@ QueryTableField.prototype.clone = function() {
 				delete this.worksheets[sheetName];
 			}
 		}
-	};
-
-	ExternalReference.prototype.setReferenceData = function (fileId, portalName) {
-		if (!fileId || !portalName) {
-			return;
-		}
-		if (!this.referenceData) {
-			this.referenceData = {};
-		}
-		this.referenceData["instanceId"] = portalName;
-		this.referenceData["fileKey"] = fileId;
-	};
-
-	ExternalReference.prototype.setId = function (id) {
-		if (!id) {
-			return;
-		}
-
-		this.Id = id;
 	};
 
 	ExternalReference.prototype.initFromObj = function (obj) {
@@ -15517,6 +15537,7 @@ QueryTableField.prototype.clone = function() {
 	window["AscCommonExcel"].CT_Connection = CT_Connection;
 	window["AscCommonExcel"].CT_Filter = CT_Filter;
 
+	window["AscCommonExcel"].ExternalReferenceBase = ExternalReferenceBase;
 	window["AscCommonExcel"].ExternalReference = ExternalReference;
 	window["AscCommonExcel"].ExternalSheetDataSet = ExternalSheetDataSet;
 	window["AscCommonExcel"].ExternalRow = ExternalRow;

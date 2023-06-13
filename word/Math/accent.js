@@ -695,7 +695,7 @@ CAccent.prototype.Get_InterfaceProps = function()
  */
 CAccent.prototype.GetTextOfElement = function(oMathText)
 {
-	if (!oMathText instanceof AscMath.MathTextAndStyles)
+	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
 		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
 	let oBase = this.getBase();
@@ -730,6 +730,8 @@ CAccent.prototype.GetTextOfElement = function(oMathText)
 		let oBasePos = oMathText.Add(oBase, true, "isNotOne");
 		let oNameAccent = oMathText.AddAfter(oBasePos, strAccent, false);
 	}
+
+	return oMathText;
 };
 
 /**

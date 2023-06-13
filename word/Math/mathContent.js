@@ -7022,12 +7022,13 @@ CMathContent.prototype.GetMultipleContentForGetText = function(isLaTeX, isBase, 
 }
 CMathContent.prototype.GetTextOfElement = function(oMathText)
 {
-    let isReturn = false;
-    if (!oMathText)
-    {
-        isReturn = true;
-        oMathText = new AscMath.MathTextAndStyles(false);
-    }
+	let isReturn = false;
+
+	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles) {
+		oMathText = new AscMath.MathTextAndStyles(oMathText);
+		isReturn = true;
+	}
+
 	for (let i = 0; i < this.Content.length; i++)
     {
         oMathText.Add(this.Content[i]);

@@ -4046,9 +4046,8 @@ CDelimiter.prototype.private_GetRightOperator = function(bHide)
 };
 CDelimiter.prototype.GetTextOfElement = function(oMathText)
 {
-	if (!oMathText)
-		oMathText = new AscMath.MathTextAndStyles(false);
-
+	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
 	oMathText.IsBracket = true;
 
@@ -4122,6 +4121,8 @@ CDelimiter.prototype.GetTextOfElement = function(oMathText)
 		let oText = new AscMath.MathText(strCloseSymbol);
 		oMathText.AddText(oText, true);
 	}
+
+	return oMathText;
 }
 
 /**
@@ -4581,7 +4582,7 @@ CGroupCharacter.prototype.Can_ChangePos = function()
  */
 CGroupCharacter.prototype.GetTextOfElement = function(oMathText)
 {
-	if (!oMathText instanceof AscMath.MathTextAndStyles)
+	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
 		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
 	let nStartCode = this.Pr.chr || this.operator.Get_CodeChr();
@@ -4617,6 +4618,8 @@ CGroupCharacter.prototype.GetTextOfElement = function(oMathText)
 		oMathText.AddText(strStart, true, false);
 		oMathText.Add(oBase, true, 'notBracket');
 	}
+
+	return oMathText;
 };
 
 /**

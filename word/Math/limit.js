@@ -315,37 +315,43 @@ CLimit.prototype.Can_ModifyArgSize = function()
 {
     return this.CurPos == 1 && false === this.Is_SelectInside();
 };
-CLimit.prototype.GetTextOfElement = function(isLaTeX, isOnlyText)
+/**
+ *
+ * @param {MathTextAndStyles | boolean} oMathText
+ * @constructor
+ */
+CLimit.prototype.GetTextOfElement = function(oMathText)
 {
-	let arrContent      = [];
+	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+		oMathText = new AscMath.MathTextAndStyles(oMathText);
+
 	let strLimitSymbol  = "";
-	let oFuncName       = this.getFName().GetMultipleContentForGetText(isLaTeX);
-	let oArgument       = this.getIterator().GetMultipleContentForGetText(isLaTeX);
+	let oFuncName       = this.getFName();
+	let oArgument       = this.getIterator();
 
-	if (isLaTeX)
-    {
-        strLimitSymbol = (this.Pr.type == 1) ? "\\above" : "\\below";
-		if (oFuncName === 'lim' ||
-			oFuncName === 'log' ||
-			oFuncName === 'max' ||
-			oFuncName === 'min' ||
-			oFuncName === 'ln')
-        {
-            strLimitSymbol = (this.Pr.type == 1) ? "^" : "_";
-            oFuncName = '\\' + oFuncName;
-		}
+	if (oMathText.IsLaTeX())
+	{
+		// strLimitSymbol = (this.Pr.type == 1) ? "\\above" : "\\below";
+		// if (oFuncName === 'lim' ||
+		// 	oFuncName === 'log' ||
+		// 	oFuncName === 'max' ||
+		// 	oFuncName === 'min' ||
+		// 	oFuncName === 'ln')
+		// {
+		// 	strLimitSymbol = (this.Pr.type == 1) ? "^" : "_";
+		// 	oFuncName = '\\' + oFuncName;
+		// }
 	}
-    else
-    {
-		strLimitSymbol = (this.Pr.type == 1) ? "┴" : "┬";
+	else
+	{
+		strLimitSymbol = (this.Pr.type === 1) ? "┴" : "┬";
 	}
 
-    arrContent.push(oFuncName, strLimitSymbol, oArgument);
+	let oNamePos = oMathText.Add(oFuncName, true, false);
+	let oLimitPos = oMathText.AddAfter(oNamePos, strLimitSymbol);
+	let oArgumentPos = oMathText.Add(oArgument, true, 'notBracket');
 
-    if (isOnlyText)
-        return AscMath.ConvertMathTextToText(arrContent);
-
-	return arrContent;
+	return oMathText;
 };
 
 /**
@@ -450,8 +456,8 @@ CMathFunc.prototype.fillContent = function()
 };
 CMathFunc.prototype.GetTextOfElement = function(oMathText)
 {
-	if (!oMathText)
-		oMathText = new AscMath.MathTextAndStyles(false);
+	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
 	let oFuncName = this.getFName();
 	let oArgument = this.getArgument();
@@ -477,6 +483,8 @@ CMathFunc.prototype.GetTextOfElement = function(oMathText)
 		//
         // arrContent.push(oFuncName, oArgument);
     }
+
+	return oMathText;
 };
 
 

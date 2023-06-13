@@ -647,34 +647,6 @@
 	TokenHorizontalStretch.prototype = Object.create(LexerLiterals.prototype);
 	TokenHorizontalStretch.prototype.constructor = TokenHorizontalStretch;
 
-	function TokenOverbar()
-	{
-		this.id = 9;
-		this.LaTeX = {
-			"\\overbar" : "¯",
-			"\\overbrace" : "⏞",
-			"\\overparen" : "⏜",
-		};
-		this.Unicode = {};
-		this.Init();
-	}
-	TokenOverbar.prototype = Object.create(LexerLiterals.prototype);
-	TokenOverbar.prototype.constructor = TokenOverbar;
-
-	function TokenUnderbar()
-	{
-		this.id = 10;
-		this.LaTeX = {
-			"\\underbar" : "▁",
-			"\\underbrace" : "⏟",
-			"\\underparen" : "⏝",
-		};
-		this.Unicode = {};
-		this.Init();
-	}
-	TokenUnderbar.prototype = Object.create(LexerLiterals.prototype);
-	TokenUnderbar.prototype.constructor = TokenUnderbar;
-
 	function TokenDivide()
 	{
 		this.id = 11;
@@ -800,6 +772,8 @@
 			"\\cbrt" : "∛",
 			"\\qdrt" : "∜",
 			"\\sqrt" : "√",
+
+			"\\root" : "⒭",
 		};
 		this.Init();
 	}
@@ -1046,6 +1020,7 @@
 			"\\underparen": "⏝",
 			"\\overbrace": "⏞",
 			"\\overline": "¯",
+			"\\underbar" : "▁",
 			"\\underbrace": "⏟",
 			"\\overshell": "⏠",
 			"\\undershell": "⏡",
@@ -1057,6 +1032,21 @@
 	}
 	TokenHorizontalBrackets.prototype = Object.create(LexerLiterals.prototype);
 	TokenHorizontalBrackets.prototype.constructor = TokenHorizontalBrackets;
+	TokenHorizontalBrackets.prototype.GetPos = function (str)
+	{
+		switch (str) {
+			case "⏜": return VJUST_TOP;
+			case "⏝": return VJUST_BOT;
+			case "⏞": return VJUST_TOP;
+			case "⏟": return VJUST_BOT;
+			case "⏠": return VJUST_TOP;
+			case "⏡": return VJUST_BOT;
+			case "⎴": return VJUST_BOT;
+			case "⎵": return VJUST_TOP;
+			case "▁": return VJUST_BOT;
+			case "¯": return VJUST_TOP;
+		}
+	}
 
 	function TokenInvisibleOperators()
 	{
@@ -1151,8 +1141,7 @@
 		nary: 			new TokenNary(),
 		invisible:		new TokenInvisibleOperators(),
 		divide: 		new TokenDivide(),
-		underbar:		new TokenUnderbar(),
-		overbar:		new TokenOverbar(),
+		hbrack:			new TokenHorizontalBrackets(),
 		specialBrac:	new TokenSpecialBrackets(),
 		lrBrackets: 	new TokenOpenCloseBrackets(),
 		rBrackets: 		new TokenCloseBrackets(),
@@ -1170,7 +1159,7 @@
 		of:				new TokenOf(),
 		delimiter:		new TokenDelimiter(),
 		char:			new TokenChars(),
-		//horizontal: 	new TokenHorizontalStretch()
+		horizontal: 	new TokenHorizontalStretch()
 	};
 
 	// The array defines the sequence in which the tokens are checked by the lexer
@@ -1184,13 +1173,13 @@
 		MathLiterals.accent,
 		MathLiterals.space,
 		MathLiterals.operator,
+		MathLiterals.rect,
 		MathLiterals.operand,
 		MathLiterals.lBrackets,
 		MathLiterals.rBrackets,
 		MathLiterals.lrBrackets,
 		MathLiterals.specialBrac,
-		MathLiterals.underbar,
-		MathLiterals.overbar,
+		MathLiterals.hbrack,
 		MathLiterals.divide,
 		MathLiterals.invisible,
 		MathLiterals.nary,
@@ -1884,7 +1873,6 @@
 	function SelectObject (oTokens, oContext)
 	{
 		let num = 1; // needs for debugging
-
 		if (oTokens)
 		{
 			switch (oTokens.type)
@@ -2199,52 +2187,68 @@
 
 					break;
 				case MathStructures.horizontal_bracket:
-					let intBracketPos = GetHBracket(oTokens.hBrack);
-					let intIndexPos = oTokens.up === undefined ? LIMIT_LOW : LIMIT_UP;
+					let intBracketPos = MathLiterals.hbrack.GetPos(oTokens.hBrack);
 
-					if (!(oTokens.up || oTokens.down))
+					if (oTokens.hBrack === "¯" || oTokens.hBrack === "▁")
 					{
-						let Pr = {
-							ctrPrp: new CTextPr(),
-							chr: oTokens.hBrack.charCodeAt(0),
-							pos: intBracketPos,
-							vertJc: 1
-						};
-
-						let oGroup = oContext.Add_GroupCharacter(Pr, null);
+						let oBar = (oTokens.hBrack === "¯")
+							? oContext.Add_Bar({ctrPrp : new CTextPr(), pos : LOCATION_TOP}, null)
+							:oContext.Add_Bar({ctrPrp : new CTextPr(), pos : LOCATION_BOT}, null);
 
 						UnicodeArgument(
 							oTokens.value,
 							MathStructures.bracket_block,
-							oGroup.getBase()
+							oBar.getBase()
 						);
 					}
 					else
 					{
-						let Limit = oContext.Add_Limit({ctrPrp: new CTextPr(), type: intIndexPos}, null, null);
-						let MathContent = Limit.getFName();
-						let oGroup = MathContent.Add_GroupCharacter({
-							ctrPrp: new CTextPr(),
-							chr: oTokens.hBrack.charCodeAt(0),
-							vertJc: 1,
-							pos: intBracketPos
-						}, null);
-
-						UnicodeArgument(
-							oTokens.value,
-							MathStructures.bracket_block,
-							oGroup.getBase()
-						)
-
-						if (oTokens.down || oTokens.up)
+						if (oTokens.up || oTokens.down)
 						{
+							let Limit = oContext.Add_Limit({ctrPrp: new CTextPr(), type: !intBracketPos}, null, null);
+							let MathContent = Limit.getFName();
+							let oGroup = MathContent.Add_GroupCharacter({
+								ctrPrp: new CTextPr(),
+								chr: oTokens.hBrack.charCodeAt(0),
+								vertJc: 1,
+								pos: intBracketPos
+							}, null);
+
 							UnicodeArgument(
-								oTokens.up === undefined ? oTokens.down : oTokens.up,
+								oTokens.value,
 								MathStructures.bracket_block,
-								Limit.getIterator()
+								oGroup.getBase()
 							)
+
+							if (oTokens.down || oTokens.up)
+							{
+								UnicodeArgument(
+									oTokens.up === undefined ? oTokens.down : oTokens.up,
+									MathStructures.bracket_block,
+									Limit.getIterator()
+								)
+							}
+						}
+						else
+						{
+							let Pr = {
+								ctrPrp: new CTextPr(),
+								chr: oTokens.hBrack.charCodeAt(0),
+								vertJc: 1,
+								pos: intBracketPos
+							};
+
+							let oGroup = oContext.Add_GroupCharacter(Pr, null);
+
+							UnicodeArgument(
+								oTokens.value,
+								MathStructures.bracket_block,
+								oGroup.getBase()
+							);
 						}
 					}
+
+
 					break;
 				case MathStructures.bracket_block:
 
@@ -2382,7 +2386,7 @@
 						BorderBox.getBase(),
 					)
 					break;
-				case oNamesOfLiterals.rectLiteral[num]:
+				case MathStructures.rect:
 					let oBorderBox = oContext.Add_BorderBox({}, null);
 					UnicodeArgument(
 						oTokens.value,
@@ -3421,10 +3425,10 @@
 		MathLiterals.lBrackets,
 		MathLiterals.rBrackets,
 
+		MathLiterals.hbrack,
 		MathLiterals.invisible,
 		MathLiterals.operator,
 		MathLiterals.space,
-		MathLiterals.underbar,
 		MathLiterals.nary,
 		MathLiterals.accent,
 		MathLiterals.accent,
@@ -3432,7 +3436,6 @@
 		MathLiterals.divide,
 		MathLiterals.func,
 		MathLiterals.matrix,
-		MathLiterals.overbar,
 		MathLiterals.radical,
 		MathLiterals.rect,
 		MathLiterals.special,
@@ -3441,8 +3444,8 @@
 	];
 	const TokenSearch_NotBrackets = [
 		MathLiterals.operator,
+		MathLiterals.hbrack,
 		MathLiterals.space,
-		MathLiterals.underbar,
 		MathLiterals.nary,
 		MathLiterals.accent,
 		MathLiterals.accent,
@@ -3450,7 +3453,6 @@
 		MathLiterals.divide,
 		MathLiterals.func,
 		MathLiterals.matrix,
-		MathLiterals.overbar,
 		MathLiterals.radical,
 		MathLiterals.rect,
 		MathLiterals.special,
@@ -3635,22 +3637,21 @@
 		 */
 		this.IsOtherId = function(nId)
 		{
-			return MathLiterals.operator.id === nId
-			|| MathLiterals.space.id 		=== nId
-			|| MathLiterals.underbar.id 	=== nId
-			|| MathLiterals.nary.id 		=== nId
-			|| MathLiterals.accent.id 		=== nId
-			|| MathLiterals.box.id 			=== nId
-			|| MathLiterals.divide.id  		=== nId
-			|| MathLiterals.func.id 		=== nId
-			|| MathLiterals.matrix.id 		=== nId
-			|| MathLiterals.overbar.id 		=== nId
-			|| MathLiterals.radical.id 		=== nId
-			|| MathLiterals.rect.id 		=== nId
-			|| MathLiterals.special.id 		=== nId
-			|| MathLiterals.subSup.id 		=== nId
+			return MathLiterals.operator.id	=== nId
+			|| MathLiterals.space.id		=== nId
+			|| MathLiterals.nary.id			=== nId
+			|| MathLiterals.accent.id		=== nId
+			|| MathLiterals.box.id			=== nId
+			|| MathLiterals.divide.id		=== nId
+			|| MathLiterals.func.id			=== nId
+			|| MathLiterals.matrix.id		=== nId
+			|| MathLiterals.radical.id		=== nId
+			|| MathLiterals.rect.id			=== nId
+			|| MathLiterals.special.id		=== nId
+			|| MathLiterals.subSup.id		=== nId
 			|| MathLiterals.of.id			=== nId
 			|| MathLiterals.specialBrac.id	=== nId
+			|| MathLiterals.hbrack.id		=== nId
 			|| MathLiterals.invisible.id	=== nId;
 		};
 		/**
@@ -4206,8 +4207,7 @@
 				|| MathLiterals.rect.id 	=== intLastTokenType
 				|| MathLiterals.func.id 	=== intLastTokenType
 				|| MathLiterals.matrix.id 	=== intLastTokenType
-				|| MathLiterals.underbar.id === intLastTokenType
-				|| MathLiterals.overbar.id 	=== intLastTokenType
+				|| MathLiterals.hbrack.id	=== intLastTokenType
 		};
 		/**
 		 * Processing PCFunction type of math content.
@@ -4469,13 +4469,21 @@
 	 */
 	function MathTextAndStyles (isLaTeX)
 	{
+		if (isLaTeX === undefined)
+			isLaTeX = false;
+
 		this.LaTeX				= isLaTeX;
 		this.arr				= [];
 		this.nPos				= 0;
 		this.IsWrap				= false;
 		this.IsBracket			= false;
+		this.IsNumbers			= false;
 		this.Positions			= [];
 		this.IsUnicodeBracket	= false;
+	}
+	MathTextAndStyles.prototype.SetIsNumbers = function (isNumbers)
+	{
+		this.IsNumbers = isNumbers;
 	}
 	MathTextAndStyles.prototype.SetIsWrap = function (isWrap)
 	{

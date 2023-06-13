@@ -621,8 +621,8 @@ CFraction.prototype.raw_SetFractionType = function(FractionType)
  */
 CFraction.prototype.GetTextOfElement = function(oMathText)
 {
-	if (!oMathText)
-		oMathText = new AscMath.MathTextAndStyles(false);
+	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
 	let oNumerator			= this.getNumerator();
 	let oDenominator		= this.getDenominator();
@@ -642,6 +642,8 @@ CFraction.prototype.GetTextOfElement = function(oMathText)
 		}
 		oMathText.AddAfter(oPosNumerator, frac);
 	}
+
+	return oMathText;
 };
 /**
  *

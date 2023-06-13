@@ -559,20 +559,30 @@ CBorderBox.prototype.Get_InterfaceProps = function()
 {
     return new CMathMenuBorderBox(this);
 };
-CBorderBox.prototype.GetTextOfElement = function(isLaTeX, isOnlyText)
+/**
+ *
+ * @param {MathTextAndStyles | boolean} oMathText
+ * @constructor
+ */
+CBorderBox.prototype.GetTextOfElement = function(oMathText)
 {
-	let arrContent = [];
-	let oContent = this.getBase().GetMultipleContentForGetText(isLaTeX);
+	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
-	if (true === isLaTeX)
-        arrContent.push("\\rect", oContent);
+	let oBase = this.getBase();
+
+	if (oMathText.IsLaTeX())
+	{
+		oMathText.AddText("\\rect");
+		oMathText.Add(oBase, true, true);
+	}
 	else
-        arrContent.push("▭", oContent);
+	{
+		oMathText.AddText("▭");
+		oMathText.Add(oBase, true, true);
+	}
 
-    if (isOnlyText)
-        return AscMath.ConvertMathTextToText(arrContent);
-
-	return arrContent;
+	return oMathText;
 };
 
 /**
@@ -967,6 +977,9 @@ CBox.prototype.Apply_ForcedBreak = function(Props)
  */
 CBox.prototype.GetTextOfElement = function(oMathText)
 {
+	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+		oMathText = new AscMath.MathTextAndStyles(oMathText);
+
 	let oBase = this.getBase();
 
 	if (oMathText.IsLaTeX())
@@ -981,6 +994,8 @@ CBox.prototype.GetTextOfElement = function(oMathText)
 		oMathText.AddText("□");
 		let oBasePos = oMathText.Add(oBase, true, false, false)
 	}
+
+	return oMathText;
 };
 
 /**
@@ -1119,20 +1134,30 @@ CBar.prototype.raw_SetLinePos = function(Value)
     this.RecalcInfo.bProps = true;
     this.ApplyProperties();
 };
-CBar.prototype.GetTextOfElement = function(isLaTeX, isOnlyText, arrStyles)
+/**
+ *
+ * @param {MathTextAndStyles | boolean} oMathText
+ * @constructor
+ */
+CBar.prototype.GetTextOfElement = function(oMathText)
 {
-    let strSymbol   = "";
-    let oBase       = this.getBase().GetMultipleContentForGetText(isLaTeX);
+	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
-    if (!isLaTeX)
-        strSymbol = (this.Pr.pos) ? "▁" : "¯";
-    else
-        strSymbol = (this.Pr.pos) ? "\\underline" : "\\overline";
+	let oBase       = this.getBase();
 
-    arrStyles.push(strSymbol, oBase);
+	if (oMathText.IsLaTeX())
+	{
+		oMathText.AddText((this.Pr.pos) ? "\\underline" : "\\overline", true);
+		oMathText.Add(oBase, true, 'notBracket');
+	}
+	else
+	{
+		oMathText.AddText((this.Pr.pos) ? "▁" : "¯", true);
+		oMathText.Add(oBase, true, 'notBracket');
+	}
 
-    if (isOnlyText)
-        return AscMath.ConvertMathTextToText(arrStyles);
+	return oMathText;
 }
 
 /**

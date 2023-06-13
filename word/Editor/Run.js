@@ -538,10 +538,17 @@ ParaRun.prototype.GetText = function(oText)
 	this.Get_Text(oText);
 	return oText.Text;
 };
-
-ParaRun.prototype.GetTextOfElement = function(oTextMath)
+/**
+ *
+ * @param {MathTextAndStyles | boolean} oMathText
+ * @constructor
+ */
+ParaRun.prototype.GetTextOfElement = function(oMathText)
 {
-	let isLatex = oTextMath.IsLaTeX();
+	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+		oMathText = new AscMath.MathTextAndStyles(oMathText);
+
+	let isLatex = oMathText.IsLaTeX();
 	let isOperator = false;
 
 	for (let i = 0; i < this.Content.length; i++)
@@ -549,11 +556,16 @@ ParaRun.prototype.GetTextOfElement = function(oTextMath)
 		let oCurrentElement = this.Content[i];
 		let strCurrentElement = oCurrentElement.GetTextOfElement(isLatex);
 
-		if (AscMath.MathLiterals.operator.SearchU(strCurrentElement))
+		if (AscMath.MathLiterals.operator.SearchU(strCurrentElement) || AscMath.MathLiterals.horizontal.SearchU(strCurrentElement))
 			isOperator = true;
 
-		oTextMath.AddText(new AscMath.MathText(strCurrentElement, this.CompiledPr.Copy()), isOperator)
+		if (AscMath.MathLiterals.number.GetByOneRule(strCurrentElement))
+			oMathText.SetIsNumbers(true);
+
+		oMathText.AddText(new AscMath.MathText(strCurrentElement, this.CompiledPr.Copy()), isOperator);
 	}
+
+	return oMathText;
 };
 
 ParaRun.prototype.MathAutocorrection_GetOperatorInfo = function ()
@@ -609,7 +621,7 @@ ParaRun.prototype.MathAutoCorrection_DeleteLastSpace = function()
 }
 ParaRun.prototype.CheckMathIsOneTypeOfContent = function()
 {
-	let str = this.GetTextOfElement();
+	let str = this.GetTextOfElement().GetText();
 	let tokenizer = new AscMath.Tokenizer();
 	tokenizer.Init(str.text);
 	return tokenizer.IsContentOfOneType();

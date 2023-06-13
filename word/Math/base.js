@@ -3016,7 +3016,7 @@ CMathBase.prototype.ConvertOperatorToStr = function(operator)
 };
 CMathBase.prototype.GetTextOfElement = function()
 {
-	return "";
+
 };
 
 CMathBase.prototype.GetStartBracetForGetTextContent = function(isLaTeX) {

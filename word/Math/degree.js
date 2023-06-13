@@ -543,12 +543,17 @@ CDegree.prototype.Can_ModifyArgSize = function()
 };
 CDegree.prototype.GetTextOfElement = function(oMathText)
 {
+	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+		oMathText = new AscMath.MathTextAndStyles(oMathText);
+
 	let oBase           = this.getBase();
 	let oIterator       = this.getIterator();
     let oPosBase      = oMathText.Add(oBase, true, false);
     let oPosIterator  = oMathText.Add(oIterator, true, 'base');
 
     oMathText.AddAfter(oPosBase, this.Pr.type === 1 ? '^' : '_');
+
+	return oMathText;
 };
 
 /**
@@ -1206,8 +1211,8 @@ CDegreeSubSup.prototype.Can_ModifyArgSize = function()
 };
 CDegreeSubSup.prototype.GetTextOfElement = function(oMathText)
 {
-	if (!oMathText)
-		oMathText = new AscMath.MathTextAndStyles(false);
+	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
     let oBase                = this.getBase();
     let oLowerIterator       = this.getLowerIterator();
@@ -1232,6 +1237,8 @@ CDegreeSubSup.prototype.GetTextOfElement = function(oMathText)
         oMathText.AddAfter(oPosBase, '_');
         oMathText.AddAfter(oPosLowerIterator, '^');
     }
+
+	return oMathText;
 };
 
 /**

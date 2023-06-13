@@ -769,8 +769,8 @@ CRadical.prototype.Is_ContentUse = function(MathContent)
  */
 CRadical.prototype.GetTextOfElement = function(oMathText)
 {
-	if (!oMathText)
-		oMathText = new AscMath.MathTextAndStyles(false);
+	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
 	let oDegree		= this.getDegree();
 	let oBase		= this.getBase();
@@ -796,7 +796,7 @@ CRadical.prototype.GetTextOfElement = function(oMathText)
 	else
 	{
 		let oDegreeText		= oDegree.GetTextOfElement();
-		let oPosSqrt		= oMathText.AddText("√");
+		let oPosSqrt		= oMathText.AddText("√", true);
 		let nLengthOfDegree	= oDegreeText.GetLength();
 
 		if (nLengthOfDegree === 0 || !oDegreeText.IsHasText())
@@ -820,7 +820,6 @@ CRadical.prototype.GetTextOfElement = function(oMathText)
 			let strDegree = oDegreeText.GetText();
 			if (strDegree === "3" || strDegree === "4")
 			{
-				let oPos;
 				if (strDegree === "3")
 				{
 					oMathText.ChangeContent("∛");
@@ -843,6 +842,8 @@ CRadical.prototype.GetTextOfElement = function(oMathText)
 			}
 		}
 	}
+
+	return oMathText;
 };
 
 /**

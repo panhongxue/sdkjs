@@ -335,6 +335,14 @@ CInlineLevelSdt.prototype.GetSelectedElementsInfo = function(Info)
 	Info.SetInlineLevelSdt(this);
 	CParagraphContentWithParagraphLikeContent.prototype.GetSelectedElementsInfo.apply(this, arguments);
 };
+CInlineLevelSdt.prototype.IsSolid = function()
+{
+	// В обычном режиме редактирования мы не даем редактировать форму (кроме составных)
+	return !!(this.Paragraph
+		&& !this.Paragraph.LogicDocument.IsFillingFormMode()
+		&& this.IsForm()
+		&& !this.IsComplexForm());
+};
 CInlineLevelSdt.prototype.Add_ToContent = function(Pos, Item, UpdatePosition)
 {
 	History.Add(new CChangesParaFieldAddItem(this, Pos, [Item]));
@@ -498,6 +506,7 @@ CInlineLevelSdt.prototype.Draw_HighLights = function(PDSH)
 				break;
 			}
 		}
+		let controlBounds = oBounds;
 
 		if (this.IsFixedForm() && this.IsMainForm())
 		{
@@ -543,18 +552,22 @@ CInlineLevelSdt.prototype.Draw_HighLights = function(PDSH)
 			var nBaseLine  = nTextAscent;
 
 			if ((this.IsTextForm() || this.IsDropDownList() || this.IsComboBox())
-				&& (!this.IsFixedForm() || !this.IsMultiLineForm()))
+				&& !this.IsMultiLineForm())
 			{
 				var oLimits = g_oTextMeasurer.GetLimitsY();
 
 				var nMidPoint = ((nBaseLine - oLimits.min) + (nBaseLine - oLimits.max)) / 2;
 
-				var nDiff = nH / 2 - nMidPoint;
+				let nControlH = controlBounds ? controlBounds.H : nH;
+				var nDiff = nControlH / 2 - nMidPoint;
 				if (Math.abs(nDiff) > 0.001)
 				{
 					Y  -= nDiff;
 					nBaseLine += nDiff;
 				}
+				
+				if (this.IsFixedForm() && oBounds.H > nControlH)
+					nBaseLine += (oBounds.H - nControlH) / 2;
 			}
 
 			oGraphics.AddFormField(X, Y, nW, nH, nBaseLine, this);

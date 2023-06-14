@@ -3935,6 +3935,9 @@ CPresentation.prototype.IsViewModeInEditor = function () {
 };
 
 CPresentation.prototype.CanEdit = function () {
+	if(this.IsSlideShow()) {
+		return false;
+	}
 	return this.Api.canEdit();
 };
 
@@ -6487,14 +6490,29 @@ CPresentation.prototype.UpdateCursorType = function (X, Y, MouseEvent) {
 
 	const oApi = this.Api;
 	const isDrawHandles = oApi ? oApi.isShowShapeAdjustments() : true;
+	const isMarkerFormat = oApi ? oApi.isMarkerFormat : false;
 
 	const oController = this.GetCurrentController();
 	if (oController) {
-		var graphicObjectInfo = oController.isPointInDrawingObjects(X, Y, MouseEvent);
+
+		let graphicObjectInfo;
+		if(isMarkerFormat) {
+			oController.noNeedUpdateCursorType = true;
+			graphicObjectInfo = oController.isPointInDrawingObjects(X, Y, MouseEvent);
+			oController.noNeedUpdateCursorType = false;
+		}
+		else {
+			graphicObjectInfo = oController.isPointInDrawingObjects(X, Y, MouseEvent);
+		}
 		if (graphicObjectInfo) {
 			if (!graphicObjectInfo.updated) {
 				if (isDrawHandles !== false) {
-					this.DrawingDocument.SetCursorType(graphicObjectInfo.cursorType);
+					if(isMarkerFormat && graphicObjectInfo.cursorType === "text") {
+						this.DrawingDocument.SetCursorType(AscCommon.Cursors.MarkerFormat);
+					}
+					else {
+						this.DrawingDocument.SetCursorType(graphicObjectInfo.cursorType);
+					}
 				} else {
 					this.DrawingDocument.SetCursorType("default");
 				}
@@ -7285,7 +7303,7 @@ CPresentation.prototype.EnterText = function (codePoints) {
 	if (!this.FocusOnNotes && oCurSlide.graphicObjects.selectedObjects.length === 0) {
 		let oTitle = oCurSlide.getMatchingShape(AscFormat.phType_title, null);
 		if (oTitle) {
-			let oDocContent = oTitle.getDocContent();
+			let oDocContent = oTitle.getDocContent && oTitle.getDocContent();
 			if (oDocContent.Is_Empty()) {
 				oDocContent.Set_CurrentElement(0, false);
 			} else {
@@ -7546,6 +7564,10 @@ CPresentation.prototype.OnMouseUp = function (e, X, Y, PageIndex) {
 	return keydownresult_PreventNothing;
 };
 
+
+CPresentation.prototype.IsSlideShow = function() {
+	return this.Api.isSlideShow();
+};
 CPresentation.prototype.OnMouseMove = function (e, X, Y, PageIndex) {
 
 	e.ctrlKey = e.CtrlKey;

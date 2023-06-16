@@ -81,6 +81,18 @@ CLogicDocumentController.prototype.EditChart = function(Chart)
 {
 	// Ничего не делаем
 };
+CLogicDocumentController.prototype.UpdateChart = function(Chart)
+{
+	// Ничего не делаем
+};
+CLogicDocumentController.prototype.ApplyChartSettings = function(oChartSettings)
+{
+	// Ничего не делаем
+};
+CLogicDocumentController.prototype.GetChartSettings = function()
+{
+	// Ничего не делаем
+};
 CLogicDocumentController.prototype.AddSignatureLine = function(oSignatureDrawing)
 {
     this.LogicDocument.controller_AddSignatureLine(oSignatureDrawing);

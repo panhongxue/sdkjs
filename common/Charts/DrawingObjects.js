@@ -3795,14 +3795,7 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
     _this.getAscChartObject = function(bNoLock) {
 
         var settings;
-        if(api.isChartEditor)
-        {
-            if (!aObjects.length) {
-                return null;
-            }
-            return _this.controller.getPropsFromChart(aObjects[0].graphicObject);
-        }
-        settings = _this.controller.getChartProps();
+        settings = _this.controller.getChartSettings();
         if ( !settings )
         {
             settings = new Asc.asc_ChartSettings();

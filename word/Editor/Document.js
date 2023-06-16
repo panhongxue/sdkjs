@@ -5995,6 +5995,18 @@ CDocument.prototype.EditChart = function(Chart)
 {
 	this.Controller.EditChart(Chart);
 };
+CDocument.prototype.UpdateChart = function(Chart)
+{
+	this.Controller.UpdateChart(Chart);
+};
+CDocument.prototype.ApplyChartSettings = function(oChartSettings)
+{
+	return this.Controller.ApplyChartSettings(oChartSettings);
+};
+CDocument.prototype.GetChartSettings = function()
+{
+	return this.Controller.GetChartSettings();
+};
 CDocument.prototype.GetChartObject = function(type)
 {
     var W = null, H = null;

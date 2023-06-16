@@ -1482,6 +1482,27 @@ CFootnotesController.prototype.EditChart = function(Chart)
 
 	this.CurFootnote.EditChart(Chart);
 };
+CFootnotesController.prototype.UpdateChart = function(Chart)
+{
+	if (false === this.private_CheckFootnotesSelectionBeforeAction())
+		return;
+
+	this.CurFootnote.UpdateChart(Chart);
+};
+CFootnotesController.prototype.ApplyChartSettings = function(oChartSettings)
+{
+	if (false === this.private_CheckFootnotesSelectionBeforeAction())
+		return;
+
+	return this.CurFootnote.ApplyChartSettings(oChartSettings);
+};
+CFootnotesController.prototype.GetChartSettings = function()
+{
+	if (false === this.private_CheckFootnotesSelectionBeforeAction())
+		return;
+
+	return this.CurFootnote.GetChartSettings();
+};
 CFootnotesController.prototype.AddInlineTable = function(nCols, nRows, nMode)
 {
 	if (false === this.private_CheckFootnotesSelectionBeforeAction())

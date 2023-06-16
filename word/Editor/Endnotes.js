@@ -1502,6 +1502,27 @@ CEndnotesController.prototype.EditChart = function(oChartPr)
 
 	this.CurEndnote.EditChart(oChartPr);
 };
+CEndnotesController.prototype.UpdateChart = function(oChart)
+{
+	if (false === this.private_CheckEndnotesSelectionBeforeAction())
+		return;
+
+	this.CurEndnote.UpdateChart(oChart);
+};
+CEndnotesController.prototype.ApplyChartSettings = function(oChartSettings)
+{
+	if (false === this.private_CheckEndnotesSelectionBeforeAction())
+		return;
+
+	return this.CurEndnote.ApplyChartSettings(oChartSettings);
+};
+CEndnotesController.prototype.GetChartSettings = function()
+{
+	if (false === this.private_CheckEndnotesSelectionBeforeAction())
+		return;
+
+	return this.CurEndnote.GetChartSettings();
+};
 CEndnotesController.prototype.AddInlineTable = function(nCols, nRows, nMode)
 {
 	if (false === this.private_CheckEndnotesSelectionBeforeAction())

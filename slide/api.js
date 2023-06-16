@@ -7812,7 +7812,7 @@ background-repeat: no-repeat;\
 	};
 
 	// Вставка диаграмм
-	asc_docs_api.prototype.asc_getChartObject = function (type, placeholder)
+	asc_docs_api.prototype.asc_getChartObject = function(type, placeholder)
 	{
 		const oLogicDocument = this.private_GetLogicDocument();
 		if (!oLogicDocument)
@@ -7824,12 +7824,17 @@ background-repeat: no-repeat;\
 			this.asc_onOpenChartFrame();
 			oLogicDocument.Document_Is_SelectionLocked(AscCommon.changestype_Drawing_Props);
 		}
-		const oChartSpace = this.WordControl.m_oLogicDocument.GetChartObject(type);
-		const oChartBinary = new Asc.asc_CChartBinary(oChartSpace);
-		this.asc_addChartDrawingObject(oChartBinary, placeholder);
-
-		oLogicDocument.Slides[oLogicDocument.CurPage].showChartSettings();
+		return oLogicDocument.GetChartObject(type);
 	};
+	asc_docs_api.prototype.asc_editChartInFrameEditor = function (bForceNestedChartRepair)
+	{
+		const oLogicDocument = this.private_GetLogicDocument();
+		if (!oLogicDocument)
+			return;
+
+		oLogicDocument.Slides[oLogicDocument.CurPage].openChartEditor(bForceNestedChartRepair);
+	}
+
 	asc_docs_api.prototype.setFrameLoader = function (oLoader)
 	{
 		this.frameLoader = oLoader;
@@ -7861,6 +7866,29 @@ background-repeat: no-repeat;\
 		if (AscCommon.isRealObject(chartBinary))
 		{
 			this.WordControl.m_oLogicDocument.EditChart(chartBinary);
+		}
+	};
+
+	asc_docs_api.prototype.asc_applyChartSettings = function (oAscChartSettings)
+	{
+		const oLogicDocument = this.private_GetLogicDocument();
+		this.asc_onCloseChartFrame();
+		if (oLogicDocument)
+		{
+			const oController = oLogicDocument.GetCurrentController();
+			return oController.editChartDrawingObjects(oAscChartSettings);
+		}
+	};
+	asc_docs_api.prototype.asc_getChartSettings = function (bNoLock)
+	{
+		const oLogicDocument = this.private_GetLogicDocument();
+		if (oLogicDocument)
+		{
+			if(bNoLock !== true) {
+				this.asc_onOpenChartFrame();
+			}
+			const oController = oLogicDocument.GetCurrentController();
+			return oController.getChartSettings();
 		}
 	};
 
@@ -9322,6 +9350,9 @@ background-repeat: no-repeat;\
 	asc_docs_api.prototype['asc_getChartObject']                  = asc_docs_api.prototype.asc_getChartObject;
 	asc_docs_api.prototype['asc_addChartDrawingObject']           = asc_docs_api.prototype.asc_addChartDrawingObject;
 	asc_docs_api.prototype['asc_editChartDrawingObject']          = asc_docs_api.prototype.asc_editChartDrawingObject;
+	asc_docs_api.prototype['asc_editChartInFrameEditor']          = asc_docs_api.prototype.asc_editChartInFrameEditor;
+	asc_docs_api.prototype['asc_applyChartSettings']              = asc_docs_api.prototype.asc_applyChartSettings;
+	asc_docs_api.prototype['asc_getChartSettings']                = asc_docs_api.prototype.asc_getChartSettings;
 	asc_docs_api.prototype['asc_getChartPreviews']                = asc_docs_api.prototype.asc_getChartPreviews;
 	asc_docs_api.prototype['asc_getTextArtPreviews']              = asc_docs_api.prototype.asc_getTextArtPreviews;
 	asc_docs_api.prototype['sync_closeChartEditor']               = asc_docs_api.prototype.sync_closeChartEditor;

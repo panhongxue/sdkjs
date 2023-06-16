@@ -3148,6 +3148,27 @@ CDocumentContent.prototype.EditChart = function(Chart)
 		return this.LogicDocument.DrawingObjects.editChart(Chart);
 	}
 };
+CDocumentContent.prototype.UpdateChart = function(Chart)
+{
+	if (docpostype_DrawingObjects === this.CurPos.Type)
+	{
+		return this.LogicDocument.DrawingObjects.updateChart(Chart);
+	}
+};
+CDocumentContent.prototype.ApplyChartSettings = function(oChartSettings)
+{
+	if (docpostype_DrawingObjects === this.CurPos.Type)
+	{
+		return this.LogicDocument.DrawingObjects.ApplyChartSettings(oChartSettings);
+	}
+};
+CDocumentContent.prototype.GetChartSettings = function()
+{
+	if (docpostype_DrawingObjects === this.CurPos.Type)
+	{
+		return this.LogicDocument.DrawingObjects.getChartSettings();
+	}
+};
 CDocumentContent.prototype.AddInlineTable = function(nCols, nRows, nMode)
 {
 	if (docpostype_DrawingObjects === this.CurPos.Type)

@@ -4418,14 +4418,21 @@ var editor;
 		oDrawingObjects.sendGraphicObjectProps();
 	};
 
-  spreadsheet_api.prototype.asc_getChartObject = function(bNoLock) {		// Return new or existing chart. For image return null
-
-    if(bNoLock !== true){
-     this.asc_onOpenChartFrame();
-   }
-    var ws = this.wb.getWorksheet();
-    return ws.objectRender.getAscChartObject(bNoLock);
-  };
+	spreadsheet_api.prototype.asc_applyChartSettings = function (oAscChartSettings)
+	{
+		var ws = this.wb.getWorksheet();
+		var ret = ws.objectRender.editChartDrawingObject(oAscChartSettings);
+		this.asc_onCloseChartFrame();
+		return ret;
+	};
+	spreadsheet_api.prototype.asc_getChartSettings = function (bNoLock)
+	{
+		if(bNoLock !== true){
+			this.asc_onOpenChartFrame();
+		}
+		var ws = this.wb.getWorksheet();
+		return ws.objectRender.getAscChartObject(bNoLock);
+	};
 
   spreadsheet_api.prototype.asc_addChartDrawingObject = function(chart) {
     var ws = this.wb.getWorksheet();
@@ -4529,13 +4536,6 @@ var editor;
 			ws._drawSelection();
 		}
 	};
-
-  spreadsheet_api.prototype.asc_editChartDrawingObject = function(chart) {
-    var ws = this.wb.getWorksheet();
-    var ret = ws.objectRender.editChartDrawingObject(chart);
-    this.asc_onCloseChartFrame();
-    return ret;
-  };
 
   spreadsheet_api.prototype.asc_addImageDrawingObject = function (urls, imgProp, token) {
 
@@ -8910,7 +8910,8 @@ var editor;
   prot["asc_drawingObjectsExist"] = prot.asc_drawingObjectsExist;
   prot["asc_getChartObject"] = prot.asc_getChartObject;
   prot["asc_addChartDrawingObject"] = prot.asc_addChartDrawingObject;
-  prot["asc_editChartDrawingObject"] = prot.asc_editChartDrawingObject;
+  prot["asc_applyChartSettings"] = prot.asc_applyChartSettings;
+  prot["asc_getChartSettings"] = prot.asc_getChartSettings;
   prot["asc_addImageDrawingObject"] = prot.asc_addImageDrawingObject;
   prot["asc_getCurrentDrawingMacrosName"] = prot.asc_getCurrentDrawingMacrosName;
   prot["asc_assignMacrosToCurrentDrawing"] = prot.asc_assignMacrosToCurrentDrawing;

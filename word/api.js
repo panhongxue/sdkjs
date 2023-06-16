@@ -9077,6 +9077,27 @@ background-repeat: no-repeat;\
 		return this.WordControl.m_oLogicDocument.GetChartObject(type);
 	};
 
+	asc_docs_api.prototype.asc_applyChartSettings = function (oAscChartSettings)
+	{
+		const oLogicDocument = this.private_GetLogicDocument();
+		this.asc_onCloseChartFrame();
+		if (oLogicDocument)
+		{
+			return oLogicDocument.ApplyChartSettings(oAscChartSettings);
+		}
+	};
+	asc_docs_api.prototype.asc_getChartSettings = function (bNoLock)
+	{
+		const oLogicDocument = this.private_GetLogicDocument();
+		if (oLogicDocument)
+		{
+			if(bNoLock !== true) {
+				this.asc_onOpenChartFrame();
+			}
+			return oLogicDocument.GetChartSettings();
+		}
+	};
+
 	asc_docs_api.prototype.asc_addChartDrawingObject = function(options)
 	{
 		if (false === this.WordControl.m_oLogicDocument.Document_Is_SelectionLocked(changestype_Paragraph_Content))
@@ -9094,18 +9115,28 @@ background-repeat: no-repeat;\
 			}, false, false, false);
 		}
 	};
-	asc_docs_api.prototype.asc_doubleClickOnChart    = function(obj)
-	{
-		this.asc_onOpenChartFrame();
-		
-		if(!window['IS_NATIVE_EDITOR'])
-		{
-			this.WordControl.onMouseUpMainSimple();
-		}
-		
-		this.sendEvent("asc_doubleClickOnChart", obj);
-	};
 
+	asc_docs_api.prototype.asc_editChartInFrameEditor = function (bForceNestedChartRepair)
+	{
+
+		const oLogicDocument = this.private_GetLogicDocument();
+		if (!oLogicDocument)
+			return;
+		const oDrawingObjects = oLogicDocument.DrawingObjects;
+		const oChart = oDrawingObjects && oDrawingObjects.getChartObject();
+		if (oChart)
+		{
+			oDrawingObjects.openChartEditor(oChart, bForceNestedChartRepair);
+		}
+	};
+	asc_docs_api.prototype.setFrameLoader = function (oLoader)
+	{
+		this.frameLoader = oLoader;
+	};
+	asc_docs_api.prototype.destroyFrameLoader = function ()
+	{
+		this.frameLoader = null;
+	};
 	asc_docs_api.prototype.asc_doubleClickOnTableOleObject    = function(obj)
 	{
 		this.isOleEditor = true;	// Для совместного редактирования
@@ -14155,7 +14186,9 @@ background-repeat: no-repeat;\
 	asc_docs_api.prototype['asc_getAnchorPosition']                     = asc_docs_api.prototype.asc_getAnchorPosition;
 	asc_docs_api.prototype['asc_getChartObject']                        = asc_docs_api.prototype.asc_getChartObject;
 	asc_docs_api.prototype['asc_addChartDrawingObject']                 = asc_docs_api.prototype.asc_addChartDrawingObject;
-	asc_docs_api.prototype['asc_doubleClickOnChart']                    = asc_docs_api.prototype.asc_doubleClickOnChart;
+	asc_docs_api.prototype['asc_applyChartSettings']                    = asc_docs_api.prototype.asc_applyChartSettings;
+	asc_docs_api.prototype['asc_getChartSettings']                      = asc_docs_api.prototype.asc_getChartSettings;
+	asc_docs_api.prototype['asc_editChartInFrameEditor']                = asc_docs_api.prototype.asc_editChartInFrameEditor;
 	asc_docs_api.prototype['asc_onCloseChartFrame']                     = asc_docs_api.prototype.asc_onCloseChartFrame;
 	asc_docs_api.prototype['asc_editChartDrawingObject']                = asc_docs_api.prototype.asc_editChartDrawingObject;
 	asc_docs_api.prototype['asc_getChartPreviews']                      = asc_docs_api.prototype.asc_getChartPreviews;

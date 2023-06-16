@@ -688,8 +688,10 @@ CGraphicObjects.prototype =
     checkSelectedObjectsForMove: DrawingObjectsController.prototype.checkSelectedObjectsForMove,
 
     getDrawingPropsFromArray: DrawingObjectsController.prototype.getDrawingPropsFromArray,
-    getPropsFromChart: DrawingObjectsController.prototype.getPropsFromChart,
     getSelectedObjectsByTypes: DrawingObjectsController.prototype.getSelectedObjectsByTypes,
+		getChartSettings: DrawingObjectsController.prototype.getChartSettings,
+		editChartDrawingObjects: DrawingObjectsController.prototype.editChartDrawingObjects,
+		editChartCallback: DrawingObjectsController.prototype.editChartCallback,
 
 
     getPageSizesByDrawingObjects: function()
@@ -833,7 +835,6 @@ CGraphicObjects.prototype =
     },
 
     resetTextSelection: DrawingObjectsController.prototype.resetTextSelection,
-    collectPropsFromDLbls: DrawingObjectsController.prototype.collectPropsFromDLbls,
 
     setProps: function(oProps)
     {

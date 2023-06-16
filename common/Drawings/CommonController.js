@@ -3473,7 +3473,7 @@
 					}
 					var objects_by_types = this.getSelectedObjectsByTypes();
 					if (objects_by_types.charts.length === 1) {
-						var oCurProps = this.getPropsFromChart(objects_by_types.charts[0]);
+						var oCurProps = objects_by_types.charts[0].getAscSettings();
 						if (oCurProps.isEqual(chart)) {
 							return;
 						}
@@ -4192,156 +4192,11 @@
 					if (!oChartSpace || !oProps) {
 						return;
 					}
-					var oApi = this.getEditorApi();
 					oChartSpace.resetSelection(true);
 					if (this.selection && this.selection.chartSelection === oChartSpace) {
 						this.selection.chartSelection = null;
 					}
-					var oCurProps = this.getPropsFromChart(oChartSpace);
-
-					//Check data labels. Todo: check it
-					if (oCurProps.isEqual(oProps)) {
-						oChartSpace.setDLblsDeleteValue(false);
-						return;
-					}
-
-					//for bug http://bugzilla.onlyoffice.com/show_bug.cgi?id=35570 TODO: check it
-					var nType = oProps.getType(), nCurType = oCurProps.getType(), bEmpty;
-					if (nType === nCurType) {
-						oProps.type = null;
-						bEmpty = oProps.isEmpty();
-						oProps.type = nType;
-						if (bEmpty) {
-							return;
-						}
-					}
-
-					//Set the properties which was already set. It needs for the fast coediting. TODO: check it
-					oChartSpace.setChart(oChartSpace.chart.createDuplicate());
-					oChartSpace.setStyle(oChartSpace.style);
-
-					//Apply chart preset TODO: remove this when chartStyle will be implemented
-					var oChart = oChartSpace.chart;
-					var oPlotArea = oChart.plotArea;
-					var nStyle = oProps.getStyle();
-					var nCurStyle = oCurProps.getStyle();
-					if (AscFormat.isRealNumber(nStyle)) {
-						oProps.putStyle(null);
-						oCurProps.putStyle(null);
-						if (oCurProps.isEqual(oProps) || (window['IS_NATIVE_EDITOR'] && nCurStyle !== nStyle)) {
-							var aTypeStyles = AscCommon.g_oChartStyles[nCurType];
-							if (aTypeStyles) {
-								var aStyle = aTypeStyles[nStyle - 1];
-								if (aStyle) {
-									oChartSpace.applyChartStyleByIds(aStyle);
-									return;
-								}
-							}
-							return;
-						}
-						oCurProps.putStyle(nCurStyle);
-						oProps.putStyle(nStyle);
-					}
-
-					//Set the data range
-					//TODO: Rework this
-					var sRange = oProps.getRange();
-					if (typeof sRange === "string") {
-						oChartSpace.setRange(sRange);
-					}
-
-					//Title
-					var nTitle = oProps.getTitle(), oTitle, bOverlay;
-					if (nTitle === c_oAscChartTitleShowSettings.none) {
-						if (oChart.title) {
-							oChart.setTitle(null);
-						}
-					} else if (nTitle === c_oAscChartTitleShowSettings.noOverlay
-						|| nTitle === c_oAscChartTitleShowSettings.overlay) {
-						oTitle = oChart.title;
-						if (!oTitle) {
-							oTitle = new AscFormat.CTitle();
-							oChart.setTitle(oTitle);
-						}
-						bOverlay = (nTitle === c_oAscChartTitleShowSettings.overlay);
-						if (oTitle.overlay !== bOverlay) {
-							oTitle.setOverlay(bOverlay);
-						}
-						oChartSpace.checkElementChartStyle(oTitle);
-					}
-
-					//Legend
-					var nLegend = oProps.getLegendPos(), oLegend;
-					bOverlay = (c_oAscChartLegendShowSettings.leftOverlay === nLegend || nLegend === c_oAscChartLegendShowSettings.rightOverlay);
-					if (bOverlay) {
-						if (c_oAscChartLegendShowSettings.leftOverlay === nLegend) {
-							nLegend = c_oAscChartLegendShowSettings.left;
-						}
-						if (c_oAscChartLegendShowSettings.rightOverlay === nLegend) {
-							nLegend = c_oAscChartLegendShowSettings.right;
-						}
-					}
-					if (nLegend !== null) {
-						if (nLegend === c_oAscChartLegendShowSettings.none) {
-							if (oChart.legend) {
-								oChart.setLegend(null);
-							}
-						} else {
-							oLegend = oChart.legend;
-							var bChange = false;
-							if (!oLegend) {
-								oLegend = new AscFormat.CLegend();
-								oChart.setLegend(oLegend);
-								bChange = true;
-							}
-							if (oLegend.legendPos !== nLegend && nLegend !== c_oAscChartLegendShowSettings.layout) {
-								oLegend.setLegendPos(nLegend);
-								bChange = true;
-							}
-							if (oLegend.overlay !== bOverlay) {
-								oLegend.setOverlay(bOverlay);
-								bChange = true;
-							}
-							if (bChange) {
-								oLegend.setLayout(new AscFormat.CLayout());
-							}
-							oChartSpace.checkElementChartStyle(oLegend);
-						}
-					}
-
-					oChartSpace.changeChartType(oProps.getType());
-					var oOrderedAxes = oChartSpace.getOrderedAxes();
-					var aAx = oOrderedAxes.getHorizontalAxes();
-					var aAxSettings = oProps.getHorAxesProps();
-					var nAx;
-					if (aAx.length === aAxSettings.length) {
-						for (nAx = 0; nAx < aAx.length; ++nAx) {
-							oChartSpace.checkElementChartStyle(aAx[nAx]);
-							aAx[nAx].setMenuProps(aAxSettings[nAx]);
-						}
-					}
-					aAx = oOrderedAxes.getVerticalAxes();
-					aAxSettings = oProps.getVertAxesProps();
-					if (aAx.length === aAxSettings.length) {
-						for (nAx = 0; nAx < aAx.length; ++nAx) {
-							oChartSpace.checkElementChartStyle(aAx[nAx]);
-							aAx[nAx].setMenuProps(aAxSettings[nAx]);
-						}
-					}
-
-					oChartSpace.setDlblsProps(oProps);
-					var oTypedChart;
-					oTypedChart = oPlotArea.charts[0];
-					if (oTypedChart.getObjectType() === AscDFH.historyitem_type_LineChart && !oChartSpace.is3dChart()) {
-						oTypedChart.setLineParams(oProps.showMarker, oProps.bLine, oProps.smooth)
-					}
-					if (oTypedChart.getObjectType() === AscDFH.historyitem_type_ScatterChart) {
-						oTypedChart.setLineParams(oProps.showMarker, oProps.bLine, oProps.smooth);
-					}
-					let oView3D = oProps.view3D;
-					if (oView3D) {
-						oChartSpace.changeView3d(oView3D);
-					}
+					oChartSpace.applyChartSettings(oProps);
 				},
 
 				checkDlblsPosition: function (chart, chart_type, position) {
@@ -4411,107 +4266,15 @@
 					return null;
 				},
 
-				getChartProps: function () {
+				getChartSettings: function () {
 					var objects_by_types = this.getSelectedObjectsByTypes();
 					var ret = null;
 					if (objects_by_types.charts.length === 1) {
-						ret = this.getPropsFromChart(objects_by_types.charts[0]);
+						ret = objects_by_types.charts[0].getAscSettings();
 					}
 					return ret;
 				},
 
-				getPropsFromChart: function (chart_space) {
-					var chart = chart_space.chart, plot_area = chart_space.chart.plotArea;
-					var ret = new Asc.asc_ChartSettings();
-					ret.chartSpace = chart_space;
-					var range_obj = chart_space.getRangeObjectStr();
-					if (range_obj) {
-						if (typeof range_obj.range === "string" && range_obj.range.length > 0) {
-							ret.putRange(range_obj.range);
-							ret.putInColumns(!range_obj.bVert);
-						}
-					}
-
-					ret.putStyle(chart_space.getChartStyleIdx());
-
-					ret.putTitle(isRealObject(chart.title) ? (chart.title.overlay ? c_oAscChartTitleShowSettings.overlay : c_oAscChartTitleShowSettings.noOverlay) : c_oAscChartTitleShowSettings.none);
-
-					var oOrderedAxes = chart_space.getOrderedAxes();
-					var aAx = oOrderedAxes.getHorizontalAxes();
-					var nAx;
-					for (nAx = 0; nAx < aAx.length; ++nAx) {
-						ret.addHorAxesProps(aAx[nAx].getMenuProps());
-					}
-					aAx = oOrderedAxes.getVerticalAxes();
-					for (nAx = 0; nAx < aAx.length; ++nAx) {
-						ret.addVertAxesProps(aAx[nAx].getMenuProps());
-					}
-
-					if (chart.legend) {
-						ret.putLegendPos(chart.legend.getPropsPos());
-					} else {
-						ret.putLegendPos(c_oAscChartLegendShowSettings.none);
-					}
-					ret.putType(chart_space.getChartType());
-
-					//TODO: change work with labels and markers
-					var aPositions = chart_space.getPossibleDLblsPosition();
-					var nDefaultDatalabelsPos;
-					nDefaultDatalabelsPos = aPositions[0];
-					var oFirstChart = plot_area.charts[0];
-					var aSeries = oFirstChart.series;
-					var nSer, oSeries;
-					var oFirstSeries = aSeries[0];
-					var data_labels = oFirstChart.dLbls;
-					if (data_labels) {
-						if (oFirstSeries && oFirstSeries.dLbls) {
-							this.collectPropsFromDLbls(nDefaultDatalabelsPos, oFirstSeries.dLbls, ret);
-						} else {
-							this.collectPropsFromDLbls(nDefaultDatalabelsPos, data_labels, ret);
-						}
-					} else {
-						if (oFirstSeries && oFirstSeries.dLbls) {
-							this.collectPropsFromDLbls(nDefaultDatalabelsPos, oFirstSeries.dLbls, ret);
-						} else {
-							ret.putShowSerName(false);
-							ret.putShowCatName(false);
-							ret.putShowVal(false);
-							ret.putSeparator("");
-							ret.putDataLabelsPos(c_oAscChartDataLabelsPos.none);
-						}
-					}
-					var bNoLine, bSmooth;
-					if (oFirstChart.getObjectType() === AscDFH.historyitem_type_LineChart) {
-						bNoLine = oFirstChart.isNoLine();
-						bSmooth = oFirstChart.isSmooth();
-						if (!bNoLine) {
-							ret.putLine(true);
-							ret.putSmooth(bSmooth);
-						} else {
-							ret.putLine(false);
-						}
-					} else if (oFirstChart.getObjectType() === AscDFH.historyitem_type_ScatterChart) {
-						ret.bLine = !oFirstChart.isNoLine();
-						ret.smooth = oFirstChart.isSmooth();
-						ret.showMarker = oFirstChart.isMarkerChart();
-					}
-					ret.putView3d(chart_space.getView3d());
-					return ret;
-				},
-
-				collectPropsFromDLbls: function (nDefaultDatalabelsPos, data_labels, ret) {
-					ret.putShowSerName(data_labels.showSerName === true);
-					ret.putShowCatName(data_labels.showCatName === true);
-					ret.putShowVal(data_labels.showVal === true);
-					ret.putSeparator(data_labels.separator);
-					if (data_labels.bDelete) {
-						ret.putDataLabelsPos(c_oAscChartDataLabelsPos.none);
-					} else if (data_labels.showSerName || data_labels.showCatName || data_labels.showVal || data_labels.showPercent) {
-						ret.putDataLabelsPos(AscFormat.isRealNumber(data_labels.dLblPos) ? data_labels.dLblPos : nDefaultDatalabelsPos);
-					} else {
-						ret.putDataLabelsPos(c_oAscChartDataLabelsPos.none);
-					}
-				},
 				_getChartSpace: function (chartSeries, options, bUseCache) {
 					switch (options.type) {
 						case c_oAscChartTypeSettings.lineNormal:
@@ -7289,7 +7052,7 @@
 									};
 								if (!chart_props) {
 									chart_props = new_chart_props;
-									chart_props.chartProps = this.getPropsFromChart(drawing);
+									chart_props.chartProps = drawing.getAscSettings();
 									chart_props.severalCharts = false;
 									chart_props.severalChartStyles = false;
 									chart_props.severalChartTypes = false;

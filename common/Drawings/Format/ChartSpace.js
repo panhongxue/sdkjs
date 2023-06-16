@@ -54,6 +54,8 @@ function(window, undefined) {
 	const History = AscCommon.History;
 	const global_MatrixTransformer = AscCommon.global_MatrixTransformer;
 
+	const c_oAscChartTitleShowSettings = Asc.c_oAscChartTitleShowSettings;
+
 	const CShape = AscFormat.CShape;
 	const Ax_Counter = AscFormat.Ax_Counter;
 	const checkTxBodyDefFonts = AscFormat.checkTxBodyDefFonts;
@@ -1412,6 +1414,233 @@ function(window, undefined) {
 	{
 		return !!this.externalReference;
 	}
+	CChartSpace.prototype.getAscSettings = function ()
+	{
+		const chart = this.chart;
+		const plot_area = chart.plotArea;
+		const ret = new Asc.asc_ChartSettings();
+		ret.chartSpace = this;
+		const range_obj = this.getRangeObjectStr();
+		if (range_obj) {
+			if (typeof range_obj.range === "string" && range_obj.range.length > 0) {
+				ret.putRange(range_obj.range);
+				ret.putInColumns(!range_obj.bVert);
+			}
+		}
+
+		ret.putStyle(this.getChartStyleIdx());
+
+		ret.putTitle(isRealObject(chart.title) ? (chart.title.overlay ? c_oAscChartTitleShowSettings.overlay : c_oAscChartTitleShowSettings.noOverlay) : c_oAscChartTitleShowSettings.none);
+
+		const oOrderedAxes = this.getOrderedAxes();
+		let aAx = oOrderedAxes.getHorizontalAxes();
+		for (let nAx = 0; nAx < aAx.length; ++nAx) {
+			ret.addHorAxesProps(aAx[nAx].getMenuProps());
+		}
+		aAx = oOrderedAxes.getVerticalAxes();
+		for (let nAx = 0; nAx < aAx.length; ++nAx) {
+			ret.addVertAxesProps(aAx[nAx].getMenuProps());
+		}
+
+		if (chart.legend) {
+			ret.putLegendPos(chart.legend.getPropsPos());
+		} else {
+			ret.putLegendPos(c_oAscChartLegendShowSettings.none);
+		}
+		ret.putType(this.getChartType());
+
+		//TODO: change work with labels and markers
+		const aPositions = this.getPossibleDLblsPosition();
+		const nDefaultDatalabelsPos = aPositions[0];
+		const oFirstChart = plot_area.charts[0];
+		const aSeries = oFirstChart.series;
+		const oFirstSeries = aSeries[0];
+		const data_labels = oFirstChart.dLbls;
+
+		if (data_labels) {
+			if (oFirstSeries && oFirstSeries.dLbls) {
+				ret._collectPropsFromDLbls(nDefaultDatalabelsPos, oFirstSeries.dLbls);
+			} else {
+				ret._collectPropsFromDLbls(nDefaultDatalabelsPos, data_labels);
+			}
+		} else {
+			if (oFirstSeries && oFirstSeries.dLbls) {
+				ret._collectPropsFromDLbls(nDefaultDatalabelsPos, oFirstSeries.dLbls);
+			} else {
+				ret.putShowSerName(false);
+				ret.putShowCatName(false);
+				ret.putShowVal(false);
+				ret.putSeparator("");
+				ret.putDataLabelsPos(Asc.c_oAscChartDataLabelsPos.none);
+			}
+		}
+		let bNoLine, bSmooth;
+		if (oFirstChart.getObjectType() === AscDFH.historyitem_type_LineChart) {
+			bNoLine = oFirstChart.isNoLine();
+			bSmooth = oFirstChart.isSmooth();
+			if (!bNoLine) {
+				ret.putLine(true);
+				ret.putSmooth(bSmooth);
+			} else {
+				ret.putLine(false);
+			}
+		} else if (oFirstChart.getObjectType() === AscDFH.historyitem_type_ScatterChart) {
+			ret.bLine = !oFirstChart.isNoLine();
+			ret.smooth = oFirstChart.isSmooth();
+			ret.showMarker = oFirstChart.isMarkerChart();
+		}
+		ret.putView3d(this.getView3d());
+		return ret;
+	};
+	CChartSpace.prototype.applyChartSettings = function (oProps)
+	{
+		const oCurProps = this.getAscSettings();
+		if (oCurProps.isEqual(oProps)) {
+			this.setDLblsDeleteValue(false);
+			return;
+		}
+
+		//for bug http://bugzilla.onlyoffice.com/show_bug.cgi?id=35570 TODO: check it
+		const nType = oProps.getType();
+		const nCurType = oCurProps.getType();
+		let bEmpty;
+		if (nType === nCurType) {
+			oProps.type = null;
+			bEmpty = oProps.isEmpty();
+			oProps.type = nType;
+			if (bEmpty) {
+				return;
+			}
+		}
+
+		//Set the properties which was already set. It needs for the fast coediting. TODO: check it
+		this.setChart(this.chart.createDuplicate());
+		this.setStyle(this.style);
+
+		//Apply chart preset TODO: remove this when chartStyle will be implemented
+		const oChart = this.chart;
+		const oPlotArea = oChart.plotArea;
+		const nStyle = oProps.getStyle();
+		const nCurStyle = oCurProps.getStyle();
+		if (AscFormat.isRealNumber(nStyle)) {
+			oProps.putStyle(null);
+			oCurProps.putStyle(null);
+			if (oCurProps.isEqual(oProps) || (window['IS_NATIVE_EDITOR'] && nCurStyle !== nStyle)) {
+				var aTypeStyles = AscCommon.g_oChartStyles[nCurType];
+				if (aTypeStyles) {
+					var aStyle = aTypeStyles[nStyle - 1];
+					if (aStyle) {
+						this.applyChartStyleByIds(aStyle);
+						return;
+					}
+				}
+				return;
+			}
+			oCurProps.putStyle(nCurStyle);
+			oProps.putStyle(nStyle);
+		}
+
+		//Set the data range
+		//TODO: Rework this
+		const sRange = oProps.getRange();
+		if (typeof sRange === "string") {
+			this.setRange(sRange);
+		}
+
+		//Title
+		const nTitle = oProps.getTitle();
+		let oTitle, bOverlay;
+		if (nTitle === c_oAscChartTitleShowSettings.none) {
+			if (oChart.title) {
+				oChart.setTitle(null);
+			}
+		} else if (nTitle === c_oAscChartTitleShowSettings.noOverlay
+			|| nTitle === c_oAscChartTitleShowSettings.overlay) {
+			oTitle = oChart.title;
+			if (!oTitle) {
+				oTitle = new AscFormat.CTitle();
+				oChart.setTitle(oTitle);
+			}
+			bOverlay = (nTitle === c_oAscChartTitleShowSettings.overlay);
+			if (oTitle.overlay !== bOverlay) {
+				oTitle.setOverlay(bOverlay);
+			}
+			this.checkElementChartStyle(oTitle);
+		}
+
+		//Legend
+		let nLegend = oProps.getLegendPos(), oLegend;
+		bOverlay = (c_oAscChartLegendShowSettings.leftOverlay === nLegend || nLegend === c_oAscChartLegendShowSettings.rightOverlay);
+		if (bOverlay) {
+			if (c_oAscChartLegendShowSettings.leftOverlay === nLegend) {
+				nLegend = c_oAscChartLegendShowSettings.left;
+			}
+			if (c_oAscChartLegendShowSettings.rightOverlay === nLegend) {
+				nLegend = c_oAscChartLegendShowSettings.right;
+			}
+		}
+		if (nLegend !== null) {
+			if (nLegend === c_oAscChartLegendShowSettings.none) {
+				if (oChart.legend) {
+					oChart.setLegend(null);
+				}
+			} else {
+				oLegend = oChart.legend;
+				let bChange = false;
+				if (!oLegend) {
+					oLegend = new AscFormat.CLegend();
+					oChart.setLegend(oLegend);
+					bChange = true;
+				}
+				if (oLegend.legendPos !== nLegend && nLegend !== c_oAscChartLegendShowSettings.layout) {
+					oLegend.setLegendPos(nLegend);
+					bChange = true;
+				}
+				if (oLegend.overlay !== bOverlay) {
+					oLegend.setOverlay(bOverlay);
+					bChange = true;
+				}
+				if (bChange) {
+					oLegend.setLayout(new AscFormat.CLayout());
+				}
+				this.checkElementChartStyle(oLegend);
+			}
+		}
+
+		this.changeChartType(oProps.getType());
+		var oOrderedAxes = this.getOrderedAxes();
+		var aAx = oOrderedAxes.getHorizontalAxes();
+		var aAxSettings = oProps.getHorAxesProps();
+		var nAx;
+		if (aAx.length === aAxSettings.length) {
+			for (nAx = 0; nAx < aAx.length; ++nAx) {
+				this.checkElementChartStyle(aAx[nAx]);
+				aAx[nAx].setMenuProps(aAxSettings[nAx]);
+			}
+		}
+		aAx = oOrderedAxes.getVerticalAxes();
+		aAxSettings = oProps.getVertAxesProps();
+		if (aAx.length === aAxSettings.length) {
+			for (nAx = 0; nAx < aAx.length; ++nAx) {
+				this.checkElementChartStyle(aAx[nAx]);
+				aAx[nAx].setMenuProps(aAxSettings[nAx]);
+			}
+		}
+
+		this.setDlblsProps(oProps);
+		var oTypedChart;
+		oTypedChart = oPlotArea.charts[0];
+		if (oTypedChart.getObjectType() === AscDFH.historyitem_type_LineChart && !this.is3dChart()) {
+			oTypedChart.setLineParams(oProps.showMarker, oProps.bLine, oProps.smooth)
+		}
+		if (oTypedChart.getObjectType() === AscDFH.historyitem_type_ScatterChart) {
+			oTypedChart.setLineParams(oProps.showMarker, oProps.bLine, oProps.smooth);
+		}
+		let oView3D = oProps.view3D;
+		if (oView3D) {
+			this.changeView3d(oView3D);
+		}
+	};
 	CChartSpace.prototype.changeSize = CShape.prototype.changeSize;
 	CChartSpace.prototype.getDataRefs = function () {
 		if (!this.dataRefs) {

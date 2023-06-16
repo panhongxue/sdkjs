@@ -1322,6 +1322,20 @@
 			this.horizontalAxes[0] = v;
 		}
 	};
+	asc_ChartSettings.prototype._collectPropsFromDLbls = function (nDefaultDataLabelsPos, data_labels)
+	{
+		this.putShowSerName(data_labels.showSerName === true);
+		this.putShowCatName(data_labels.showCatName === true);
+		this.putShowVal(data_labels.showVal === true);
+		this.putSeparator(data_labels.separator);
+		if (data_labels.bDelete) {
+			this.putDataLabelsPos(Asc.c_oAscChartDataLabelsPos.none);
+		} else if (data_labels.showSerName || data_labels.showCatName || data_labels.showVal || data_labels.showPercent) {
+			this.putDataLabelsPos(AscFormat.isRealNumber(data_labels.dLblPos) ? data_labels.dLblPos : nDefaultDataLabelsPos);
+		} else {
+			this.putDataLabelsPos(Asc.c_oAscChartDataLabelsPos.none);
+		}
+	}
 	asc_ChartSettings.prototype.getHorAxisProps = function() {
 		return this.horizontalAxes[0] || null;
 	};

@@ -8594,6 +8594,14 @@ var editor;
 		this.wb.changeExternalReference(eR, to);
 	};
 
+	/*
+	* set format option wb->externalLinksPr->autoRefresh
+	* start timer if true, clear timer if false
+	* if update from interface all links, timer restart
+	* if part of links - not restart
+	* event from model to view - "changeExternalReferenceAutoUpdate"
+	* @param {bool} val
+	* */
 	spreadsheet_api.prototype.asc_setExternalReferenceAutoUpdate = function(val) {
 		if (this.collaborativeEditing.getGlobalLock() || !this.canEdit()) {
 			return;

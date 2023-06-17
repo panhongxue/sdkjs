@@ -8576,7 +8576,7 @@ var editor;
 			alert("NEED SUPPORT LOCAL OPEN FILE");
 			return null;
 		} else {
-			return externalReference;.
+			return externalReference;
 		}
 	};
 

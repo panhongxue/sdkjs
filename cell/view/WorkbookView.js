@@ -5018,12 +5018,18 @@
 		}
 	};
 
-	WorkbookView.prototype.initExternalReferenceUpdateTimer = function () {
+	WorkbookView.prototype.initExternalReferenceUpdateTimer = function (clear) {
 		let val = this.model.externalLinksPr && this.model.externalLinksPr.autoRefresh;
+		let oThis = this;
+		if (clear) {
+			this.clearExternalReferenceUpdateTimer();
+		}
 		if (val) {
 			let timeout = 300000;
 			this.externalReferenceUpdateTimer = setTimeout(function () {
-				oThis.ContinueGetTextAround()
+				oThis.updateExternalReferences(oThis.getExternalReferences());
+				//we are waiting update, after reinit timer
+				oThis.clearExternalReferenceUpdateTimer();
 			}, timeout);
 		}
 	};
@@ -5031,8 +5037,8 @@
 	WorkbookView.prototype.clearExternalReferenceUpdateTimer = function () {
 		if (this.externalReferenceUpdateTimer) {
 			clearTimeout(this.externalReferenceUpdateTimer);
+			this.externalReferenceUpdateTimer = null;
 		}
-		this.externalReferenceUpdateTimer = null;
 	};
 
 	WorkbookView.prototype.clearSearchOnRecalculate = function (index) {
@@ -5313,6 +5319,11 @@
 					}
 				}
 
+				//if update all, reinit timer
+				if (t.model.externalReferences && t.model.externalReferences.length === updatedReferences.length) {
+					t.changeExternalReferenceAutoUpdate();
+				}
+
 				//t.model.dependencyFormulas.calcTree();
 				let ws = t.getWorksheet();
 				ws.draw();
@@ -5470,6 +5481,10 @@
 	};
 
 	WorkbookView.prototype.updateExternalReferences = function (arr) {
+		//if update all - clear timer, init new - after update
+		if (this.model.externalReferences && this.model.externalReferences.length === arr.length) {
+			this.clearExternalReferenceUpdateTimer();
+		}
 		this.doUpdateExternalReference(arr);
 	};
 

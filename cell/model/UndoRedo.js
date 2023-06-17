@@ -2440,7 +2440,7 @@ function (window, undefined) {
 				wrapper.readData(worksheetSource);
 				worksheetSource.fromWorksheetSource(worksheetSource, true);
 			}
-		}  else if(AscCH.historyitem_Workbook_Date1904 === Type) {
+		} else if(AscCH.historyitem_Workbook_Date1904 === Type) {
 			wb.setDate1904(bUndo ? Data.from : Data.to);
 			AscCommon.oNumFormatCache.cleanCache();
 		} else if (AscCH.historyitem_Workbook_ChangeExternalReference === Type) {
@@ -2469,6 +2469,9 @@ function (window, undefined) {
 				}
 			}
 			wb.handlers.trigger("asc_onUpdateExternalReferenceList");
+
+		} else if(AscCH.historyitem_Workbook_ChangeExternalReferenceAutoUpdate === Type) {
+			wb.setExternalReferenceAutoUpdate(bUndo ? Data.from : Data.to);
 		}
 	};
 	UndoRedoWorkbook.prototype.forwardTransformationIsAffect = function (Type) {

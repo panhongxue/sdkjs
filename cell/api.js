@@ -8576,7 +8576,7 @@ var editor;
 			alert("NEED SUPPORT LOCAL OPEN FILE");
 			return null;
 		} else {
-			return externalReference;
+			return externalReference;.
 		}
 	};
 
@@ -8592,6 +8592,13 @@ var editor;
 			return;
 		}
 		this.wb.changeExternalReference(eR, to);
+	};
+
+	spreadsheet_api.prototype.asc_setExternalReferenceAutoUpdate = function(val) {
+		if (this.collaborativeEditing.getGlobalLock() || !this.canEdit()) {
+			return;
+		}
+		this.wb.setExternalReferenceAutoUpdate(val, true);
 	};
 
 	spreadsheet_api.prototype.asc_fillHandleDone = function(range) {
@@ -9298,7 +9305,8 @@ var editor;
   prot["asc_updateExternalReferences"] = prot.asc_updateExternalReferences;
   prot["asc_removeExternalReferences"] = prot.asc_removeExternalReferences;
   prot["asc_openExternalReference"] = prot.asc_openExternalReference;
-  prot["asc_changeExternalReference"] = prot.asc_changeExternalReference;
+  prot["asc_setExternalReferenceAutoUpdate"] = prot.asc_setExternalReferenceAutoUpdate;
+
 
 
   prot["asc_fillHandleDone"] = prot.asc_fillHandleDone;

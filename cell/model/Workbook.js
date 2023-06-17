@@ -2318,6 +2318,7 @@
 		this.fileSharing = null;
 
 		this.customXmls = null;//[]
+		this.externalLinksPr = null;
 	}
 	Workbook.prototype.init=function(tableCustomFunc, tableIds, sheetIds, bNoBuildDep, bSnapshot){
 		if(this.nActive < 0)
@@ -4620,6 +4621,21 @@
 			}
 		}
 		return null;
+	};
+
+	Workbook.prototype.setExternalReferenceAutoUpdate = function (val, addToHistory) {
+		var from = !!(this.externalLinksPr && this.externalLinksPr.autoRefresh);
+		if (val !== from) {
+			if (!this.externalLinksPr) {
+				this.externalLinksPr = new AscCommonExcel.CExternalLinksPr();
+			}
+			this.externalLinksPr.autoRefresh = val;
+			if (addToHistory) {
+				History.Add(AscCommonExcel.g_oUndoRedoWorkbook, AscCH.historyitem_Workbook_ChangeExternalReferenceAutoUpdate,
+					null, null, new UndoRedoData_FromTo(from, val));
+			}
+			this.handlers && this.handlers.trigger("changeExternalReferenceAutoUpdate");
+		}
 	};
 
 	Workbook.prototype.unlockUserProtectedRanges = function(){

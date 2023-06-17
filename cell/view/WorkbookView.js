@@ -326,6 +326,8 @@
 	//внутри пока простой объект {groups: true}
 	this.drawRestrictions = null;
 
+	this.externalReferenceUpdateTimer = null;
+
 	return this;
   }
 
@@ -1082,6 +1084,9 @@
 	this.Api.asc_registerCallback("EndTransactionCheckSize", function() {
 		self.Api.checkChangesSize();
 	});
+	this.model.handlers.add("changeExternalReferenceAutoUpdate", function(val) {
+		self.changeExternalReferenceAutoUpdate(val);
+	});
     this.cellCommentator = new AscCommonExcel.CCellCommentator({
       model: new WorkbookCommentsModel(this.handlers, this.model.aComments),
       collaborativeEditing: this.collaborativeEditing,
@@ -1102,7 +1107,10 @@
     this.fReplaceCallback = function() {
       self._replaceCellTextCallback.apply(self, arguments);
     };
-		this.addEventListeners();
+    this.addEventListeners();
+
+    this.initExternalReferenceUpdateTimer();
+
     return this;
   };
 
@@ -4999,6 +5007,32 @@
 	//external reference
 	WorkbookView.prototype.getExternalReferences = function () {
 		return this.model.getExternalReferences();
+	};
+
+	WorkbookView.prototype.changeExternalReferenceAutoUpdate = function () {
+		let val = this.model.externalLinksPr && this.model.externalLinksPr.autoRefresh;
+		if (!val) {
+			this.clearExternalReferenceUpdateTimer();
+		} else {
+			this.initExternalReferenceUpdateTimer();
+		}
+	};
+
+	WorkbookView.prototype.initExternalReferenceUpdateTimer = function () {
+		let val = this.model.externalLinksPr && this.model.externalLinksPr.autoRefresh;
+		if (val) {
+			let timeout = 300000;
+			this.externalReferenceUpdateTimer = setTimeout(function () {
+				oThis.ContinueGetTextAround()
+			}, timeout);
+		}
+	};
+
+	WorkbookView.prototype.clearExternalReferenceUpdateTimer = function () {
+		if (this.externalReferenceUpdateTimer) {
+			clearTimeout(this.externalReferenceUpdateTimer);
+		}
+		this.externalReferenceUpdateTimer = null;
 	};
 
 	WorkbookView.prototype.clearSearchOnRecalculate = function (index) {

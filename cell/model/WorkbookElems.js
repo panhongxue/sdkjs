@@ -15497,7 +15497,9 @@ QueryTableField.prototype.clone = function() {
 		}
 	};
 
-
+	function CExternalLinksPr() {
+		this.autoRefresh = null;
+	}
 
 
 	//----------------------------------------------------------export----------------------------------------------------
@@ -15970,6 +15972,9 @@ QueryTableField.prototype.clone = function() {
 	prot["asc_getCell"] = prot.asc_getCell;
 	prot["asc_getValue"] = prot.asc_getValue;
 	prot["asc_getFormula"] = prot.asc_getFormula;
+
+	window["AscCommonExcel"].CExternalLinksPr = CExternalLinksPr;
+
 
 
 })(window);

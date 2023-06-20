@@ -3406,7 +3406,7 @@
 				this.activeRange = worksheet.model.selectionRange.getLast().clone(true);
 
 				//если находимся внутри шейпа
-				var isIntoShape = worksheet.objectRender.controller.getTargetDocContent();
+				var isIntoShape = worksheet.objectRender.controller && worksheet.objectRender.controller.getTargetDocContent();
 				if (isIntoShape) {
 					var callback = function (isSuccess) {
 						if (isSuccess === false) {

@@ -63,6 +63,10 @@ $(function () {
 	};
 	Asc.ReadDefTableStyles = function(){};
 
+	const clearData = function (c1, r1, c2, r2) {
+		ws.removeRows(r1, r2, false);
+		ws.removeCols(c1, c2);
+	};
 
 	var api = new Asc.spreadsheet_api({
 		'id-view': 'editor_sdk'
@@ -106,12 +110,12 @@ $(function () {
 	AscCommonExcel.CCellCommentator.prototype.ascCvtRatio = function () {
 	};
 
-	var wsView = api.wb.getWorksheet(0);
+	let wsView = api.wb.getWorksheet(0);
 	wsView.handlers = api.handlers;
 	wsView.objectRender = new AscFormat.DrawingObjects();
-	var ws = api.wbModel.aWorksheets[0];
+	let ws = api.wbModel.aWorksheets[0];
 
-	var getRange = function (c1, r1, c2, r2) {
+	let getRange = function (c1, r1, c2, r2) {
 		return new window["Asc"].Range(c1, r1, c2, r2);
 	};
 
@@ -253,6 +257,51 @@ $(function () {
 
 		assert.strictEqual(ws.TableParts[ws.TableParts.length - 1].Ref.r1, 10);
 		assert.strictEqual(ws.TableParts[ws.TableParts.length - 1].Ref.c1, 6)
+	});
+
+	QUnit.test("Test: \"paste text/csv\"", function (assert) {
+		clearData(0, 0, ws.getColsCount(), ws.getRowsCount());
+
+		ws.selectionRange.ranges = [getRange(0, 0, 0, 0)];
+
+		let data = [["test11", "1", "test12", "2", "test13"],
+					["test21", "1", "test22", "2", "test23"],
+					["test31", "1", "test32", "2", "test33"],
+					["test41", "1", "test42", "2", "test43"]];
+
+
+		var specialPasteHelper = window['AscCommon'].g_specialPasteHelper;
+		if (!specialPasteHelper.specialPasteProps) {
+			specialPasteHelper.specialPasteProps = new Asc.SpecialPasteProps();
+		}
+		specialPasteHelper.specialPasteProps.property = Asc.c_oSpecialPasteProps.useTextImport;
+		specialPasteHelper.specialPasteProps.asc_setAdvancedOptions(new Asc.asc_CTextOptions());
+
+		AscCommonExcel.g_clipboardExcel.pasteData(wsView, AscCommon.c_oAscClipboardDataFormat.Text, data);
+
+		assert.strictEqual(ws.getRange2("A1").getValue(), "test11");
+		assert.strictEqual(ws.getRange2("B1").getValue(), "1");
+		assert.strictEqual(ws.getRange2("C1").getValue(), "test12");
+		assert.strictEqual(ws.getRange2("D1").getValue(), "2");
+		assert.strictEqual(ws.getRange2("E1").getValue(), "test13");
+
+		assert.strictEqual(ws.getRange2("A2").getValue(), "test21");
+		assert.strictEqual(ws.getRange2("B2").getValue(), "1");
+		assert.strictEqual(ws.getRange2("C2").getValue(), "test22");
+		assert.strictEqual(ws.getRange2("D2").getValue(), "2");
+		assert.strictEqual(ws.getRange2("E2").getValue(), "test23");
+
+		assert.strictEqual(ws.getRange2("A3").getValue(), "test31");
+		assert.strictEqual(ws.getRange2("B3").getValue(), "1");
+		assert.strictEqual(ws.getRange2("C3").getValue(), "test32");
+		assert.strictEqual(ws.getRange2("D3").getValue(), "2");
+		assert.strictEqual(ws.getRange2("E3").getValue(), "test33");
+
+		assert.strictEqual(ws.getRange2("A4").getValue(), "test41");
+		assert.strictEqual(ws.getRange2("B4").getValue(), "1");
+		assert.strictEqual(ws.getRange2("C4").getValue(), "test42");
+		assert.strictEqual(ws.getRange2("D4").getValue(), "2");
+		assert.strictEqual(ws.getRange2("E4").getValue(), "test43");
 	});
 
 	QUnit.module("CopyPaste");

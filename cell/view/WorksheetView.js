@@ -13189,9 +13189,7 @@
 
 				for (var j = 0; j < checkPasteRange.length; j++) {
 					var _checkRange = checkPasteRange[j];
-					/*if () {
 
-					}*/
 					if (this.intersectionFormulaArray(_checkRange)) {
 						t.handlers.trigger("onErrorEvent", c_oAscError.ID.CannotChangeFormulaArray, c_oAscError.Level.NoCritical);
 						revertSelection();
@@ -14085,6 +14083,7 @@
 			arn.c2 = (cMax2 - 1 > 0) ? (cMax2 - 1) : 0;
 		}
 
+		let defaultFont = specialPasteProps && specialPasteProps.advancedOptions && new AscCommonExcel.Font();
 		var maxARow = 1, maxACol = 1, plRow = 0, plCol = 0;
 		var mergeArr = [];
 		var putInsertedCellIntoRange = function (row, col, currentObj) {
@@ -14093,7 +14092,10 @@
 			var range = t.model.getRange3(row, col, row, col);
 
 			//value
-			if (contentCurrentObj.length === 1) {
+			if (!contentCurrentObj && specialPasteProps.advancedOptions) {
+				pastedRangeProps.val = currentObj;
+				pastedRangeProps.font = defaultFont;
+			} else if (contentCurrentObj.length === 1) {
 				var onlyOneChild = contentCurrentObj[0];
 				pastedRangeProps.val = onlyOneChild.text;
 				pastedRangeProps.font = onlyOneChild.format;
@@ -14105,7 +14107,7 @@
 
 			pastedRangeProps.alignVertical = currentObj.alignVertical;
 
-			if (contentCurrentObj.length === 1 && contentCurrentObj[0].format) {
+			if (contentCurrentObj && contentCurrentObj.length === 1 && contentCurrentObj[0].format) {
 				var fs = contentCurrentObj[0].format.getSize();
 				if (fs !== '' && fs !== null && fs !== undefined) {
 					pastedRangeProps.fontSize = fs;

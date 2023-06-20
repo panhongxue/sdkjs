@@ -3448,7 +3448,9 @@
 						text = AscCommon.parseText(text, advancedOptions, true);
 					}
 				}
-				var aResult = this._getTableFromText(text, textImport);
+
+				let aResult = this._getTableFromText(text, textImport);
+
 				if (aResult && !(aResult.onlyImages && window["Asc"]["editor"] && window["Asc"]["editor"].isChartEditor)) {
 					if (textImport) {
 						var arn = worksheet.model.selectionRange.getLast().clone();
@@ -3624,15 +3626,13 @@
 					_parseText(text);
 				} else {
 					for(var i = 0; i < text.length; i++) {
-						colCounter = 0;
 						if (text[i]) {
 							for(var j = 0; j < text[i].length; j++) {
-								_parseText(text[i][j], true);
-								colCounter++;
+								AscFonts.FontPickerByCharacter.getFontsByString(text[i][j]);
 							}
 						}
-						rowCounter++;
 					}
+					aResult.content = text;
 				}
 
 				aResult.props.cellCount = width + 1;

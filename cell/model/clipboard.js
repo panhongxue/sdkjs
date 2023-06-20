@@ -307,6 +307,8 @@
 		function Clipboard() {
 			this.copyProcessor = new CopyProcessorExcel();
 			this.pasteProcessor = new PasteProcessorExcel();
+			
+			this.callback = null;
 
 			return this;
 		}
@@ -444,6 +446,7 @@
 							ws._loadFonts(newFonts, function () {
 								cellEditor.paste(pasteFragments);
 								window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+								AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 
 								//TODO пересмотреть! по возможности вызывать из меню!
 								//при использовании рекдактора ячейки в качестве редактора HF
@@ -511,12 +514,20 @@
 				editor.wb.skipHelpSelector = true;
 				editor.wb.cellEditor.pasteText(text);
 				AscCommon.g_specialPasteHelper.Paste_Process_End();
+				AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 				editor.wb.skipHelpSelector = false;
 
 				if (editor.wb.cellEditor.getMenuEditorMode()) {
 					editor.asc_enableKeyEvents(true);
 				}
 			});
+		};
+
+		Clipboard.prototype.sendCallback = function () {
+			if (this.callback) {
+				this.callback();
+				this.callback = null;
+			}
 		};
 
 
@@ -1697,6 +1708,7 @@
 							t._insertBinaryIntoShapeContent(worksheet, [docContent]);
 						}
 						window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+						AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 					};
 
 					worksheet.objectRender.controller.checkPasteInText(callback);
@@ -1927,6 +1939,7 @@
 							t._insertBinaryIntoShapeContent(worksheet, pasteData.content, true);
 						}
 						window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+						AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 					};
 
 					worksheet.objectRender.controller.checkPasteInText(callback);
@@ -1994,6 +2007,7 @@
 				if (null === content) {
 					window['AscCommon'].g_specialPasteHelper.CleanButtonInfo();
 					window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+					AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 					return;
 				}
 
@@ -2003,6 +2017,7 @@
 					if (isCellEditMode) {
 						var text = this._getTextFromWord(docContent);
 						window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+						AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 						return text;
 					} else if (isIntoShape) {
 						var callback = function (isSuccess) {
@@ -2010,6 +2025,7 @@
 								t._insertBinaryIntoShapeContent(worksheet, docContent);
 							}
 							window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+							AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 						};
 
 						worksheet.objectRender.controller.checkPasteInText(callback);
@@ -2356,6 +2372,7 @@
 				var _abortPaste = function (_error) {
 					window['AscCommon'].g_specialPasteHelper.CleanButtonInfo();
 					window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+					AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 					if (_error) {
 						ws.handlers.trigger("onErrorEvent", Asc.c_oAscError.ID.PasteSlicerError, Asc.c_oAscError.Level.NoCritical);
 					}
@@ -2523,6 +2540,7 @@
 						window['AscCommon'].g_specialPasteHelper.CleanButtonInfo();
 					}
 					window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+					AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 				};
 
 				//вставляем срезы следующим образом: проверяем что вставлем в оригинальный документ
@@ -2747,6 +2765,7 @@
 							t._pasteInShape(worksheet, node, isIntoShape);
 						} else {
 							window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+							AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 						}
 					};
 
@@ -3190,6 +3209,7 @@
 				if (!oPasteProcessor.aContent || !oPasteProcessor.aContent.length) {
 					History.EndTransaction();
 					window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+					AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 					return false;
 				}
 
@@ -3214,6 +3234,7 @@
 
 					t._setShapeSpecialPasteProperties(worksheet, targetContent);
 					window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+					AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 				});
 
 				return true;
@@ -3461,6 +3482,7 @@
 						var resmove = worksheet.model._prepareMoveRange(arn, arnTo);
 						if (resmove === -2) {
 							window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+							AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 							worksheet.handlers.trigger("onErrorEvent", c_oAscError.ID.CannotMoveRange, c_oAscError.Level.NoCritical);
 						} else if (resmove === -1) {
 							worksheet.model.workbook.handlers.trigger("asc_onConfirmAction", Asc.c_oAscConfirm.ConfirmReplaceRange,
@@ -3469,6 +3491,7 @@
 										worksheet.setSelectionInfo('paste', {data: aResult, bText: true});
 									} else {
 										window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+										AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 									}
 								});
 						} else {
@@ -3862,6 +3885,7 @@
 
 				if (!documentContent || (documentContent && !documentContent.length)) {
 					window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+					AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 					return;
 				}
 
@@ -3875,6 +3899,7 @@
 					if (this.aResult.props && this.aResult.props.addImagesFromWord && this.aResult.props.addImagesFromWord.length === 1 && this.aResult.content) {
 						if (1 === this.aResult.content.length && 1 === this.aResult.content[0].length && this.aResult.content[0][0].content && this.aResult.content[0][0].content.length === 0) {
 							window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+							AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 							return;
 						} else {
 							this.aResult.props.addImagesFromWord = [];

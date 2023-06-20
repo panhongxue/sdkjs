@@ -878,6 +878,7 @@ var editor;
 	};
 
 	spreadsheet_api.prototype.asc_TextToColumns = function (options, opt_text, opt_activeRange) {
+		let t = this;
 		if (this.canEdit()) {
 			var ws = this.wb.getWorksheet();
 			var text = opt_text ? opt_text : ws.getRangeText();
@@ -923,7 +924,10 @@ var editor;
 				}
 			}
 
-			this.wb.pasteData(AscCommon.c_oAscClipboardDataFormat.Text, text, null, null, true);
+			this.sync_StartAction(c_oAscAsyncActionType.BlockInteraction, c_oAscAsyncAction.SlowOperation);
+			this.wb.pasteData(AscCommon.c_oAscClipboardDataFormat.Text, text, null, null, true, function () {
+				t.sync_EndAction(c_oAscAsyncActionType.BlockInteraction, c_oAscAsyncAction.SlowOperation);
+			});
 
 			if (selectionRange) {
 				if (activeSheet !== null) {

@@ -13849,6 +13849,7 @@
 					History.EndTransaction();
 					revertSelection();
 					window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+					AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 					return;
 				}
 			}
@@ -13877,6 +13878,7 @@
 			if (!selectData) {
 				revertSelection();
 				window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+				AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 				return;
 			}
 
@@ -13921,6 +13923,7 @@
 			}
 			revertSelection();
 			window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
+			AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.sendCallback();
 
 			if (val.needDraw) {
 				t.draw();

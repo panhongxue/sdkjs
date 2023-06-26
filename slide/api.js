@@ -7826,13 +7826,13 @@ background-repeat: no-repeat;\
 		}
 		return oLogicDocument.GetChartObject(type);
 	};
-	asc_docs_api.prototype.asc_editChartInFrameEditor = function (bForceNestedChartRepair)
+	asc_docs_api.prototype.asc_editChartInFrameEditor = function ()
 	{
 		const oLogicDocument = this.private_GetLogicDocument();
 		if (!oLogicDocument)
 			return;
 
-		oLogicDocument.Slides[oLogicDocument.CurPage].openChartEditor(bForceNestedChartRepair);
+		oLogicDocument.Slides[oLogicDocument.CurPage].openChartEditor();
 	}
 
 	asc_docs_api.prototype.setFrameLoader = function (oLoader)

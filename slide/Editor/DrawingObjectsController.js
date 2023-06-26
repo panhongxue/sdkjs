@@ -40,6 +40,18 @@ var MOVE_DELTA = AscFormat.MOVE_DELTA;
 var History = AscCommon.History;
 
 
+DrawingObjectsController.prototype.handleChartDoubleClick = function()
+{
+	var drawingObjects = this.drawingObjects;
+	var oThis = this;
+	this.checkSelectedObjectsAndFireCallback(function(){
+		oThis.clearTrackObjects();
+		oThis.clearPreTrackObjects();
+		oThis.changeCurrentState(new AscFormat.NullState(this));
+		drawingObjects.openChartEditor();
+	}, []);
+};
+
 DrawingObjectsController.prototype.getTheme = function()
 {
     return this.drawingObjects.getTheme();
@@ -296,12 +308,12 @@ DrawingObjectsController.prototype.checkSelectedObjectsAndFireCallback = functio
         this.startRecalculate();
     }
 };
-
-
-DrawingObjectsController.prototype.showChartSettings  =  function()
+DrawingObjectsController.prototype.openChartEditor = function()
 {
-    editor.asc_doubleClickOnChart(this.getChartObject());
-    this.changeCurrentState(new AscFormat.NullState(this));
+	const oChartLoader = new AscCommon.CFrameDiagramBinaryLoader(this.getChartObject());
+	editor.setFrameLoader(oChartLoader);
+	oChartLoader.tryOpen();
+	this.changeCurrentState(new AscFormat.NullState(this));
 };
 DrawingObjectsController.prototype.getColorMapOverride  =  function()
 {
@@ -379,22 +391,14 @@ DrawingObjectsController.prototype.editChart = function(binary)
 DrawingObjectsController.prototype.updateChart = function (binary)
 {
 	const oFrameChartSpace = this.getChartSpace2(binary, null);
-	const arrDrawingObjects = AscFormat.getObjectsByTypesFromArr(this.selectedObjects, true);
-	const arrSelectedCharts = [];
-	for (let i = 0; i < arrDrawingObjects.charts.length; ++i)
-	{
-		if (arrDrawingObjects.charts[i].selected)
-		{
-			arrSelectedCharts.push(arrDrawingObjects.charts[i]);
-		}
-	}
-	if (arrSelectedCharts.length === 1)
+	const oSelectedChart = this.getSingleSelectedChart();
+	if (oSelectedChart)
 	{
 		const oChart = oFrameChartSpace.chart;
-		oChart.setParent(arrSelectedCharts[0]);
-		arrSelectedCharts[0].setChart(oChart);
-		arrSelectedCharts[0].handleUpdateChart();
-		arrSelectedCharts[0].recalculate();
+		oChart.setParent(oSelectedChart);
+		oSelectedChart.setChart(oChart);
+		oSelectedChart.handleUpdateChart();
+		oSelectedChart.recalculate();
 	}
 };
 

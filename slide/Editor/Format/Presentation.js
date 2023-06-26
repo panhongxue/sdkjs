@@ -5456,7 +5456,7 @@ CPresentation.prototype.Get_AbsoluteColumn = function () {
 };
 
 
-CPresentation.prototype.addChart = function (binary, isFromInterface, Placeholder) {
+CPresentation.prototype.addChart = function (oChart, isFromInterface, Placeholder) {
 	var _this = this;
 	var oSlide = _this.Slides[_this.CurPage];
 	if (!oSlide) {
@@ -5468,34 +5468,33 @@ CPresentation.prototype.addChart = function (binary, isFromInterface, Placeholde
 	this.Api.inkDrawer.endSilentMode();
 	this.SetThumbnailsFocusElement(FOCUS_OBJECT_MAIN);
 	_this.FocusOnNotes = false;
-	var Image = oSlide.graphicObjects.getChartSpace2(binary, null);
-	Image.setParent(oSlide);
+	oChart.setParent(oSlide);
 
-	var PosX = (this.GetWidthMM() - Image.spPr.xfrm.extX) / 2;
-	var PosY = (this.GetHeightMM() - Image.spPr.xfrm.extY) / 2;
+	var PosX = (this.GetWidthMM() - oChart.spPr.xfrm.extX) / 2;
+	var PosY = (this.GetHeightMM() - oChart.spPr.xfrm.extY) / 2;
 	if (Placeholder) {
 		var oPh = AscCommon.g_oTableId.Get_ById(Placeholder.id);
 		if (oPh) {
 			PosX = oPh.x;
 			PosY = oPh.y;
-			Image.spPr.xfrm.setExtX(oPh.extX);
-			Image.spPr.xfrm.setExtY(oPh.extY);
+			oChart.spPr.xfrm.setExtX(oPh.extX);
+			oChart.spPr.xfrm.setExtY(oPh.extY);
 			if (this.Document_Is_SelectionLocked(AscCommon.changestype_Drawing_Props, undefined, undefined, [oPh])) {
-				Image.addToDrawingObjects();
+				oChart.addToDrawingObjects();
 			} else {
-				oSlide.replaceSp(oPh, Image);
+				oSlide.replaceSp(oPh, oChart);
 			}
 		} else {
 			return;
 		}
 	} else {
-		Image.addToDrawingObjects();
+		oChart.addToDrawingObjects();
 	}
 
-	Image.spPr.xfrm.setOffX(PosX);
-	Image.spPr.xfrm.setOffY(PosY);
+	oChart.spPr.xfrm.setOffX(PosX);
+	oChart.spPr.xfrm.setOffY(PosY);
 	oSlide.graphicObjects.resetSelection();
-	oSlide.graphicObjects.selectObject(Image, 0);
+	oSlide.graphicObjects.selectObject(oChart, 0);
 
 	if (isFromInterface) {
 		AscFonts.FontPickerByCharacter.checkText("", this, function () {

@@ -1754,13 +1754,13 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
         return null;
     };
 
-    Slide.prototype.showChartSettings = function()
-    {
-			const oChartLoader = new AscCommon.CFrameDiagramBinaryLoader(this.graphicObjects.getChartObject());
-			editor.setFrameLoader(oChartLoader);
-	    oChartLoader.tryOpen();
-      this.graphicObjects.changeCurrentState(new AscFormat.NullState(this.graphicObjects));
-    };
+Slide.prototype.openChartEditor = function()
+{
+	const oChartLoader = new AscCommon.CFrameDiagramBinaryLoader(this.graphicObjects.getChartObject());
+	editor.setFrameLoader(oChartLoader);
+	oChartLoader.tryOpen();
+	this.graphicObjects.changeCurrentState(new AscFormat.NullState(this.graphicObjects));
+};
 
 
     Slide.prototype.Clear_ContentChanges  = function()

@@ -1224,13 +1224,17 @@ CGraphicObjects.prototype =
 		return null;
 	},
 
-    editChart: function(chart)
+    editChart: function(oBinary)
     {
-        var chart_space = this.getChartSpace2(chart, null), select_start_page;
+        var chart_space = this.getChartSpace2(oBinary, null), select_start_page;
 
 				const oSelectedChart  = this.getSingleSelectedChart();
         if(oSelectedChart)
         {
+	        if (!oSelectedChart.isExternal() && oBinary["workbookBinary"])
+	        {
+		        chart_space.setXLSX(AscCommon.Base64.decode(oBinary["workbookBinary"]));
+	        }
             if(oSelectedChart.group)
             {
                 var parent_group = oSelectedChart.group;
@@ -1265,8 +1269,6 @@ CGraphicObjects.prototype =
                 select_start_page = oSelectedChart.selectStartPage;
                 chart_space.setParent(oSelectedChart.parent);
                 oSelectedChart.parent.Set_GraphicObject(chart_space);
-                oSelectedChart.parent.docPr.setTitle(chart["cTitle"]);
-                oSelectedChart.parent.docPr.setDescr(chart["cDescription"]);
                 this.resetSelection();
                 this.selectObject(chart_space, select_start_page);
                 oSelectedChart.parent.CheckWH();
@@ -1276,7 +1278,22 @@ CGraphicObjects.prototype =
         }
     },
 
-    getCompatibilityMode: function(){
+	updateChart: function (binary)
+	{
+		const oFrameChartSpace = this.getChartSpace2(binary, null);
+		const oSelectedChart = this.getSingleSelectedChart();
+		if (oSelectedChart)
+		{
+			const oChart = oFrameChartSpace.chart;
+			oChart.setParent(oSelectedChart);
+			oSelectedChart.setChart(oChart);
+			oSelectedChart.handleUpdateChart();
+			this.document.Recalculate();
+		}
+	},
+
+
+	getCompatibilityMode: function(){
         var ret = 0xFF;
         if(this.document && this.document.GetCompatibilityMode){
             ret = this.document.GetCompatibilityMode();

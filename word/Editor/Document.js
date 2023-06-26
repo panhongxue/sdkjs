@@ -18750,10 +18750,9 @@ CDocument.prototype.controller_AddInlineImage = function(W, H, Img, Chart, bFlow
 		else
 		{
 			Drawing   = new ParaDrawing(W, H, null, this.DrawingDocument, this, null);
-			var Image = this.DrawingObjects.getChartSpace2(Chart, null);
-			Image.setParent(Drawing);
-			Drawing.Set_GraphicObject(Image);
-			Drawing.setExtent(Image.spPr.xfrm.extX, Image.spPr.xfrm.extY);
+			Chart.setParent(Drawing);
+			Drawing.Set_GraphicObject(Chart);
+			Drawing.setExtent(Chart.spPr.xfrm.extX, Chart.spPr.xfrm.extY);
 		}
 		if (true === bFlow)
 		{

@@ -683,10 +683,7 @@
 			this.rejectPromise();
 		}
 	};
-	CFrameDiagramBinaryLoader.prototype.rejectPromise = function ()
-	{
 
-	}
 	CFrameDiagramBinaryLoader.prototype.setCanLoad = function (bPr)
 	{
 		this.canLoad = bPr;
@@ -734,7 +731,10 @@
 	CFrameDiagramBinaryLoader.prototype.loadFrame = function ()
 	{
 		this.api.asc_onOpenChartFrame();
-		this.endLoadWorksheet();
+		if(!window['IS_NATIVE_EDITOR'])
+		{
+			this.api.WordControl.onMouseUpMainSimple();
+		}
 		this.api.isChartEditorLoaded = true;
 		this.api.sendEvent('asc_doubleClickOnChart', this.getBinaryChart());
 	};

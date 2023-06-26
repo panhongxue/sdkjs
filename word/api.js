@@ -9116,9 +9116,8 @@ background-repeat: no-repeat;\
 		}
 	};
 
-	asc_docs_api.prototype.asc_editChartInFrameEditor = function (bForceNestedChartRepair)
+	asc_docs_api.prototype.asc_editChartInFrameEditor = function ()
 	{
-
 		const oLogicDocument = this.private_GetLogicDocument();
 		if (!oLogicDocument)
 			return;
@@ -9126,7 +9125,7 @@ background-repeat: no-repeat;\
 		const oChart = oDrawingObjects && oDrawingObjects.getChartObject();
 		if (oChart)
 		{
-			oDrawingObjects.openChartEditor(oChart, bForceNestedChartRepair);
+			oDrawingObjects.openChartEditor(oChart);
 		}
 	};
 	asc_docs_api.prototype.setFrameLoader = function (oLoader)

@@ -1629,13 +1629,19 @@ CGraphicObjects.prototype =
     resetChartElementsSelection: DrawingObjectsController.prototype.resetChartElementsSelection,
     checkCurrentTextObjectExtends: DrawingObjectsController.prototype.checkCurrentTextObjectExtends,
 
+		openChartEditor: function (oChart)
+		{
+			if(false === this.document.Document_Is_SelectionLocked(changestype_Drawing_Props))
+			{
+				const oChartLoader = new AscCommon.CFrameDiagramBinaryLoader(oChart);
+				editor.setFrameLoader(oChartLoader);
+				oChartLoader.tryOpen();
+			}
+		},
 
     handleChartDoubleClick: function(drawing, chart, e, x, y, pageIndex)
     {
-        if(false === this.document.Document_Is_SelectionLocked(changestype_Drawing_Props))
-        {
-            editor.asc_doubleClickOnChart(this.getChartObject());
-        }
+				this.openChartEditor(chart);
         this.clearTrackObjects();
         this.clearPreTrackObjects();
         this.changeCurrentState(new AscFormat.NullState(this));

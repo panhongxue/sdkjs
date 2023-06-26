@@ -11116,6 +11116,41 @@
 		return this.mapTranslate.hasOwnProperty(key) ? this.mapTranslate[key] : key;
 	};
 
+	CTranslateManager.prototype.initScreenReaderMap = function()
+	{
+		// detect language
+		let lang = "en-US";
+		if (window.location && window.location.search)
+		{
+			var _langSearch = window.location.search;
+			var _pos1 = _langSearch.indexOf("lang=");
+			var _pos2 = (-1 != _pos1) ? _langSearch.indexOf("&", _pos1) : -1;
+			if (_pos1 >= 0)
+			{
+				_pos1 += 5;
+
+				if (_pos2 < 0)
+					_pos2 = _langSearch.length;
+
+				var _lang = _langSearch.substr(_pos1, _pos2 - _pos1);
+				if (_lang.length == 2)
+				{
+					_lang = (_lang.toLowerCase() + "-" + _lang.toUpperCase());
+				}
+
+				if (5 == _lang.length)
+					lang = _lang;
+			}
+		}
+
+		if (lang === "ru-RU")
+		{
+			this.mapTranslate["Select changed"] = "Изменено выделение";
+			this.mapTranslate["Select removed"] = "Удалено выделение";
+			this.mapTranslate["Graphic object is now selected"] = "Сейчас выделен графический объект";
+		}
+	};
+
 
 	function CPolygonPoint2(X, Y)
 	{

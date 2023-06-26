@@ -62,6 +62,7 @@
 		this.HtmlDiv  = null; // для незаметной реализации одной textarea недостаточно. parent для HtmlArea
 		this.HtmlArea = null; // HtmlArea - элемент для ввода
 		this.ElementType = InputTextElementType.TextArea;
+		this.HtmlAreaScreenReader = null;
 
 		// ---------------------------------------------------------------
 		// chrome element for left/top
@@ -844,6 +845,105 @@
 		return true;
 	};
 
+	CTextInputPrototype.isScreenReaderEnabled = function()
+	{
+		return (null !== this.HtmlAreaScreenReader) ? true : false;
+	};
+
+	CTextInputPrototype.setScreenReaderEnabled = function(isEnabled)
+	{
+		if (isEnabled === this.isScreenReaderEnabled())
+			return;
+
+		if (isEnabled)
+		{
+			this.HtmlAreaScreenReader = document.createElement("div");
+			this.HtmlAreaScreenReader.innerHTML = "";
+			//this.HtmlAreaScreenReader.style.display = "none";
+			this.HtmlAreaScreenReader.id = "area_id_screen_reader";
+			this.HtmlArea.setAttribute("aria-describedby", "area_id_screen_reader");
+			this.HtmlDiv.appendChild(this.HtmlAreaScreenReader);
+
+			AscCommon.translateManager.initScreenReaderMap();
+
+			var selectionChangedFunction = function()
+			{
+				if (!this.Api.WordControl || !this.Api.WordControl.m_oLogicDocument)
+					return;
+
+				if (AscCommon.global_mouseEvent.IsLocked)
+					return;
+
+				let oldValue = this.HtmlAreaScreenReader.innerHTML;
+				oldValue = oldValue.replace(/&nbsp;/g, " ");
+
+				let newValue = "";
+
+				let logicDoc = this.Api.WordControl.m_oLogicDocument;
+
+				let _target = logicDoc.IsSelectionUse();
+
+				if (_target === false)
+				{
+					if ("" !== oldValue)
+						newValue = AscCommon.translateManager.getValue("Select removed");
+				}
+				else
+				{
+					var _select = logicDoc.GetSelectionBounds();
+					if (_select)
+					{
+						var text_data = {
+							data: "",
+							pushData: function(format, value)
+							{
+								this.data = value;
+							}
+						};
+
+						this.Api.asc_CheckCopy(text_data, 1);
+						if (text_data.data == null)
+							text_data.data = "";
+						else
+							text_data.data = text_data.data.replace(/\u00a0/g, " ");
+
+						if (text_data.data == "")
+						{
+							if ("" !== oldValue)
+								newValue = AscCommon.translateManager.getValue("Select removed");
+						}
+						else
+						{
+							newValue = AscCommon.translateManager.getValue("Select changed") + " " + text_data.data;
+						}
+					}
+					else
+					{
+						var _object_bounds = logicDoc.DrawingObjects.getSelectedObjectsBounds();
+						if (_object_bounds)
+						{
+							newValue = AscCommon.translateManager.getValue("Graphic object is now selected");
+						}
+					}
+				}
+
+				if (newValue !== oldValue)
+					this.HtmlAreaScreenReader.innerHTML = newValue;
+			};
+
+			//this.Api.asc_registerCallback('asc_onSelectionEnd', selectionChangedFunction.bind(this));
+			setInterval(function(){
+				selectionChangedFunction.call(AscCommon.g_inputContext);
+			}, 100);
+		}
+		else
+		{
+			this.HtmlArea.removeAttribute("aria-describedby");
+			this.HtmlDiv.removeChild(this.HtmlAreaScreenReader);
+			this.HtmlAreaScreenReader = null;
+		}
+	};
+
 	// html element
 	CTextInputPrototype.init = function(target_id, parent_id)
 	{
@@ -914,6 +1014,8 @@
 		this.HtmlArea.setAttribute("autocorrect", "off");
 
 		this.HtmlDiv.appendChild(this.HtmlArea);
+
+		this.setScreenReaderEnabled(true);
 
 		this.appendInputToCanvas(parent_id);
 

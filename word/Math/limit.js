@@ -344,7 +344,14 @@ CLimit.prototype.GetTextOfElement = function(oMathText)
 	}
 	else
 	{
-		strLimitSymbol = (this.Pr.type === 1) ? "┴" : "┬";
+		if (Number.isInteger(this.Pr.type))
+		{
+			strLimitSymbol = (this.Pr.type === 1) ? "┴" : "┬";
+		}
+		else
+		{
+			strLimitSymbol = (this.Pr.type.type === 2) ? "┴" : "┬";
+		}
 	}
 
 	let oNamePos = oMathText.Add(oFuncName, true, false);

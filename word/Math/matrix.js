@@ -976,11 +976,19 @@ CMathMatrix.prototype.Is_DeletedItem = function (Action) {
 CMathMatrix.prototype.Get_DeletedItemsThroughInterface = function () {
 	return [];
 };
-CMathMatrix.prototype.GetTextOfElement = function (isLaTeX, isOnlyText)
+/**
+ *
+ * @param {MathTextAndStyles | boolean} oMathText
+ * @constructor
+ */
+CMathMatrix.prototype.GetTextOfElement = function (oMathText)
 {
+	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+		oMathText = new AscMath.MathTextAndStyles(oMathText);
+
 	let strMatrixSymbol;
 
-	if (isLaTeX)
+	if (oMathText.IsLaTeX())
 	{
 		// switch (strBrackets) {
 		// 	case undefined:
@@ -1008,27 +1016,25 @@ CMathMatrix.prototype.GetTextOfElement = function (isLaTeX, isOnlyText)
 	}
 	else
 	{
-		strMatrixSymbol = "■";
+		oMathText.AddText("■(");
 	}
 
-	let strStartBracket = this.GetStartBracetForGetTextContent(isLaTeX);
-	let strCloseBracket = this.GetEndBracetForGetTextContent(isLaTeX);
-	let arrContent 		= [strMatrixSymbol, strStartBracket];
+	let oLastPos;
 
 	for (let nRow = 0; nRow < this.nRow; nRow++)
 	{
 		for (let nCol = 0; nCol < this.nCol; nCol++)
 		{
-			arrContent.push(this.getContentElement(nRow, nCol).GetTextOfElement(isLaTeX, isOnlyText))
+			let oPos = this.getContentElement(nRow, nCol)
+			oLastPos = oMathText.Add(oPos, true, false);
+
 			if (nCol < this.nCol - 1)
-				arrContent.push("&");
+				oLastPos = oMathText.AddAfter(oLastPos, "&")
 			else if (nRow < this.nRow - 1)
-				arrContent.push(isLaTeX ? "\\\\" : '@');
+				oLastPos = oMathText.AddAfter(oLastPos, oMathText.IsLaTeX() ? "\\\\" : '@')
 		}
 	}
-
-	arrContent.push(strCloseBracket);
-	return arrContent;
+	oMathText.AddAfter(oLastPos,")");
 };
 
 /**
@@ -1574,30 +1580,34 @@ CEqArray.prototype.Get_DeletedItemsThroughInterface = function () {
 CEqArray.prototype.IsEqArray = function () {
 	return true;
 };
-CEqArray.prototype.GetTextOfElement = function (isLaTeX, isOnlyText)
+/**
+ *
+ * @param {MathTextAndStyles | boolean} oMathText
+ * @constructor
+ */
+CEqArray.prototype.GetTextOfElement = function (oMathText)
 {
-	let strStart = isLaTeX ? "\\substack" : "█";
-	let strStartBracet = this.GetStartBracetForGetTextContent(isLaTeX);
-	let strCloseBracet = this.GetEndBracetForGetTextContent(isLaTeX);
+	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
-	let arrContent = [strStart, strStartBracet];
+	let oLastPos;
+
+	if (oMathText.IsLaTeX())
+		oLastPos = oMathText.AddText("\\substack(", true);
+	else
+		oLastPos = oMathText.AddText("■(", true);
 
 	for (let i = 0; i < this.Pr.row; i++)
 	{
-		arrContent.push(this.getElement(i).GetTextOfElement(isLaTeX, isOnlyText));
+		oLastPos = oMathText.Add(this.getElement(i), true, false);
 
-		if (i !== this.Pr.row - 1 )
+		if (i !== this.Pr.row - 1)
 		{
-			arrContent.push(isLaTeX ? "\\\\" : '@');
+			oLastPos = oMathText.AddText(oMathText.IsLaTeX() ? "\\\\" : '@', true);
 		}
 	}
 
-	arrContent.push(strCloseBracet);
-
-	if (isOnlyText)
-		return AscMath.ConvertMathTextToText(arrContent);
-
-	return arrContent;
+	oMathText.AddText(")", true);
 };
 
 /**

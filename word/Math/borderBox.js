@@ -992,7 +992,7 @@ CBox.prototype.GetTextOfElement = function(oMathText)
 	else
 	{
 		oMathText.AddText("□");
-		let oBasePos = oMathText.Add(oBase, true, false, false)
+		let oBasePos = oMathText.Add(oBase, true, "isNotOneLetter")
 	}
 
 	return oMathText;

@@ -727,7 +727,7 @@ CAccent.prototype.GetTextOfElement = function(oMathText)
 	}
 	else
 	{
-		let oBasePos = oMathText.Add(oBase, true, "isNotOne");
+		let oBasePos = oMathText.Add(oBase, true, "isNotOneLetter");
 		let oNameAccent = oMathText.AddAfter(oBasePos, strAccent, false);
 	}
 

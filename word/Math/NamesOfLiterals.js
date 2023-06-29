@@ -1182,6 +1182,7 @@
 		MathLiterals.hbrack,
 		MathLiterals.divide,
 		MathLiterals.invisible,
+		MathLiterals.matrix,
 		MathLiterals.nary,
 		MathLiterals.radical,
 		MathLiterals.other,
@@ -2205,12 +2206,13 @@
 					{
 						if (oTokens.up || oTokens.down)
 						{
-							let Limit = oContext.Add_Limit({ctrPrp: new CTextPr(), type: !intBracketPos}, null, null);
+							let pos = oTokens.up;
+							let Limit = oContext.Add_Limit({ctrPrp: new CTextPr(), type: pos}, null, null);
 							let MathContent = Limit.getFName();
 							let oGroup = MathContent.Add_GroupCharacter({
 								ctrPrp: new CTextPr(),
 								chr: oTokens.hBrack.charCodeAt(0),
-								vertJc: 1,
+								vertJc: intBracketPos ? 0 : 1,
 								pos: intBracketPos
 							}, null);
 
@@ -2234,7 +2236,7 @@
 							let Pr = {
 								ctrPrp: new CTextPr(),
 								chr: oTokens.hBrack.charCodeAt(0),
-								vertJc: 1,
+								vertJc: intBracketPos ? 0 : 1,
 								pos: intBracketPos
 							};
 
@@ -2334,7 +2336,13 @@
 						}
 					}
 					let rows = oTokens.value.length;
-					let cols = oTokens.value[0].length;
+					let cols;
+
+					if (oTokens.value[0] && oTokens.value[0].length)
+					{
+						cols = oTokens.value[0].length;
+					}
+
 					if (strEndBracket && strStartBracket) {
 						let Delimiter = oContext.Add_DelimiterEx(new CTextPr(), 1, [null], strStartBracket, strEndBracket);
 						oContext = Delimiter.getElementMathContent(0);
@@ -2404,8 +2412,9 @@
 				// 	);
 				// 	break;
 				case MathStructures.below_above:
-					let LIMIT_TYPE = (oTokens.isBelow === false) ? VJUST_BOT : VJUST_TOP;
+					let LIMIT_TYPE = oTokens.isBelow ? VJUST_BOT : VJUST_TOP;
 
+					// CGroupCharacters in operators menus
 					if (oTokens.base.type === MathStructures.char && oTokens.base.value.length === 1)
 					{
 						let Pr = (LIMIT_TYPE == VJUST_TOP)
@@ -2435,7 +2444,6 @@
 							oLimit.getIterator(),
 						);
 					}
-
 					break;
 			}
 		}
@@ -2482,19 +2490,6 @@
 				return strBracket
 			}
 			return code.charCodeAt(0)
-		}
-	}
-	function GetHBracket(code)
-	{
-		switch (code) {
-			case "⏜": return VJUST_TOP;
-			case "⏝": return VJUST_BOT;
-			case "⏞": return VJUST_TOP;
-			case "⏟": return VJUST_BOT;
-			case "⏠": return VJUST_TOP;
-			case "⏡": return VJUST_BOT;
-			case "⎴": return VJUST_BOT;
-			case "⎵": return VJUST_TOP;
 		}
 	}
 	//https://www.cs.bgu.ac.il/~khitron/Equation%20Editor.pdf
@@ -3905,6 +3900,11 @@
 				let str 		= CutContentFromEnd(oCMathContent, oFuncNamePos);
 				GetConvertContent(0, str.trim(), this.oCMathContent);
 			}
+			// else if (!oRuleLast  && oFuncNamePos && oAbsoluteLastId === MathLiterals.char.id)
+			// {
+			// 	oCMathContent.Add_TextInLastParaRunPreLastPos(String.fromCharCode(8289));
+			// 	this.oCMathContent.MoveCursorToEndPos();
+			// }
 
 			if (this.IsPCFunction(oRuleLast) && this.IsTrigger(oAbsoluteLastId))
 			{
@@ -4542,6 +4542,13 @@
 			else if (Wrap === "isNotOne")
 			{
 				if (oMath.GetLength() !== 1 || oMath.GetText() === "")
+				{
+					this.WrapExactElement(oPos);
+				}
+			}
+			else if (Wrap === "isNotOneLetter")
+			{
+				if (oMath.GetLength() !== 1 || oMath.GetText().length !== 1)
 				{
 					this.WrapExactElement(oPos);
 				}

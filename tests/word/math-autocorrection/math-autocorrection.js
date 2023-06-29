@@ -15512,6 +15512,64 @@ $(function () {
 		AccentBar(str + "[x+1]", str + "(" + "[x+1]" + ")", false);
 	}
 
+
+
+	QUnit.module("Underbar/Overbar - above/below - Correct")
+
+	let arrUnderbar = ["⏞", "⏟"];
+	let content = ["┴", "┴"];
+
+	function AccentBar(str, strLinear, isAutoCorrect)
+	{
+		QUnit.test("Check Underbar/Overbar " + str, function (assert)
+		{
+			AscMath.SetIsAllowAutoCorrect(isAutoCorrect);
+			let r = Create();
+			assert.ok(true, "Create math equation");
+
+			AddTextToRoot(str);
+			assert.ok(true, "Add '" + str + "'");
+			AscMath.SetIsAllowAutoCorrect(true);
+
+			r.ConvertView(false, 0);
+			assert.ok(true, "Convert to professional");
+
+			let oLimit = r.Root.Content[1];
+			console.log(oLimit)
+			assert.ok(oLimit instanceof CGroupCharacter, "Created CGroupCharacter");
+
+			r.ConvertView(true, 0);
+			assert.ok(true, "Convert to professional");
+			assert.strictEqual(r.GetText(), strLinear, "Check linear content");
+		});
+	};
+
+	for (let i = 0; i < arrUnderbar.length; i++)
+	{
+		let str = arrUnderbar[i];
+		AccentBar(str , str, false);
+	}
+	for (let i = 0; i < arrUnderbar.length; i++)
+	{
+		let str = arrUnderbar[i];
+		AccentBar(str + "x", str + "x", false);
+	}
+	for (let i = 0; i < arrUnderbar.length; i++)
+	{
+		let str = arrUnderbar[i];
+		AccentBar(str + "(x+1)", str + "(x+1)", false);
+	}
+	for (let i = 0; i < arrUnderbar.length; i++)
+	{
+		let str = arrUnderbar[i];
+		AccentBar(str + "[x+1]", str + "(" + "[x+1]" + ")", false);
+	}
+	for (let i = 0; i < arrUnderbar.length; i++)
+	{
+		let str = arrUnderbar[i];
+		AccentBar(str + "[x+1]", str + "(" + "[x+1]" + ")", false);
+	}
+
 	//autocorrection triggers
 	//find tokens
 })

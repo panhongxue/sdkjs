@@ -3323,6 +3323,40 @@ CMathContent.prototype.Add_TextInLastParaRun = function(sText, Paragraph, MathSt
         }
     }
 };
+// CMathContent.prototype.Add_TextInLastParaRunPreLastPos = function(sText, Paragraph, MathStyle)
+// {
+// 	this.Paragraph = Paragraph;
+//
+// 	if (sText)
+// 	{
+// 		if (this.Content.length > 0 && this.Content[this.Content.length - 1].Type === 49)
+// 		{
+// 			var MathRun = this.Content[this.Content.length - 1]
+//
+// 			for (var nCharPos = 0, nTextLen = sText.length; nCharPos < nTextLen; nCharPos++)
+// 			{
+// 				var oText = null;
+// 				if (0x0026 == sText.charCodeAt(nCharPos))
+// 					oText = new CMathAmp();
+// 				else
+// 				{
+// 					oText = new CMathText(false);
+// 					oText.addTxt(sText[nCharPos]);
+// 				}
+//
+// 				MathRun.AddToContent(MathRun.Content.length - 1, oText);
+// 				MathRun.Set_RFont_ForMathRun();
+//
+// 				if (undefined !== MathStyle && null !== MathStyle)
+// 					MathRun.Math_Apply_Style(MathStyle);
+// 			}
+// 		}
+// 		else
+// 		{
+// 			this.Add_Text(sText, Paragraph, MathStyle)
+// 		}
+// 	}
+// };
 CMathContent.prototype.Add_TextOnPos = function(nPos, sText, Paragraph, MathStyle)
 {
     this.Paragraph = Paragraph;
@@ -3598,6 +3632,7 @@ CMathContent.prototype.Add_Box = function(Pr, BaseText)
 };
 CMathContent.prototype.Add_BoxWithGroupChar = function(BoxPr, GroupPos, GroupChr, BaseText)
 {
+	console.log(1234)
     var Box = this.Add_Box(BoxPr, null);
     var MathContent = Box.getBase();
 

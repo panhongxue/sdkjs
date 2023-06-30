@@ -3490,8 +3490,8 @@ function(window, undefined) {
 		if (this.XLSX) {
 			copy.setXLSX(this.XLSX.slice());
 		}
-		if (this.externalreference) {
-			copy.setExternalReference(this.externalreference.createDuplicate());
+		if (this.externalReference) {
+			copy.setExternalReference(this.externalReference.createDuplicate());
 		}
 		copy.setLang(this.lang);
 		if (this.pivotSource) {

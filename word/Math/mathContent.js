@@ -3632,7 +3632,6 @@ CMathContent.prototype.Add_Box = function(Pr, BaseText)
 };
 CMathContent.prototype.Add_BoxWithGroupChar = function(BoxPr, GroupPos, GroupChr, BaseText)
 {
-	console.log(1234)
     var Box = this.Add_Box(BoxPr, null);
     var MathContent = Box.getBase();
 

@@ -438,7 +438,7 @@
 			}
 
 			return {
-				type: Struc.horizontal_bracket,
+				type: Struc.group_character,
 				hBrack: strHBracket,
 				value: oBase,
 				up: oUp,
@@ -447,7 +447,7 @@
 		}
 
 		return {
-			type: Struc.horizontal_bracket,
+			type: Struc.group_character,
 			hBrack: strHBracket,
 			value: oBase,
 		};
@@ -1099,24 +1099,41 @@
     };
     CUnicodeParser.prototype.GetScriptBelowOrAboveContent = function (base)
     {
-        let oBelowAbove,
-            strType,
-            isBelow = true;
+		let oBelowAbove,
+			type,
+			strType = this.oLookahead.data;
 
-        strType = this.EatToken(this.oLookahead.class).data;
+		if (strType === "┬")
+			type = LIMIT_LOW;
+		else if (strType === "┴")
+			type = LIMIT_UP;
 
-        if (strType === "┴")
-            isBelow = false;
+		this.EatToken(this.oLookahead.class);
+		oBelowAbove = this.GetElementLiteral();
 
-        oBelowAbove = this.GetElementLiteral();
+		// todo maybe check if base is arrow etc.
+		if (base.type === Struc.horizontal && base.value.length === 1)
+		{
+			if (strType === "┬")
+				type = VJUST_TOP;
+			else if (strType === "┴")
+				type = VJUST_BOT;
 
-        return {
-            type: Struc.below_above,
-            base: base,
-            value: oBelowAbove,
-            isBelow: isBelow,
-        };
-    };
+			return {
+				type: Struc.group_character,
+				hBrack: base.value,
+				value: oBelowAbove,
+				isBelow: type
+			}
+		}
+
+		return {
+			type: Struc.limit,
+			base: base,
+			value: oBelowAbove,
+			isBelow: type,
+		};
+	};
     CUnicodeParser.prototype.IsScriptBelowOrAboveContent = function ()
     {
         return this.oLookahead.data === "┬" || this.oLookahead.data === "┴";
@@ -1685,13 +1702,21 @@
     {
         let arrRows = [];
 		let nRow = 0;
+		let isHasContent = false;
 
         while (this.IsRowLiteral() || this.oLookahead.data === "@")
         {
             if (this.oLookahead.data === "@")
             {
                 this.EatToken("@");
+
+				if (arrRows.length === 0 && this.oLookahead.data !== "&")
+					arrRows.push([]);
+
+				arrRows.push([]);
 				nRow++;
+
+				isHasContent = true;
             }
             else
             {
@@ -1812,8 +1837,9 @@
     }
     CUnicodeParser.prototype.IsSubOrSupWithoutContentLiteral = function ()
     {
-        return this.oLookahead.data === "_" || this.oLookahead.data === "^";
+        return this.oLookahead.data === "_" || this.oLookahead.data === "^" || this.oLookahead.data === "┬" || this.oLookahead.data === "┴";
     }
+
     CUnicodeParser.prototype.GetSubOrSupWithoutContentLiteral = function()
     {
         if (this.oLookahead.data === "_")
@@ -1838,6 +1864,26 @@
                 third: undefined,
             }
         }
+		else if (this.oLookahead.data === "┬")
+		{
+			this.EatToken(this.oLookahead.class);
+			return {
+				type: Struc.limit,
+				base: {},
+				value: {},
+				isBelow: LIMIT_LOW,
+			};
+		}
+		else if (this.oLookahead.data === "┴")
+		{
+			this.EatToken(this.oLookahead.class);
+			return {
+				type: Struc.limit,
+				base: {},
+				value: {},
+				isBelow: LIMIT_UP,
+			};
+		}
     }
     CUnicodeParser.prototype.GetExpLiteral = function ()
     {

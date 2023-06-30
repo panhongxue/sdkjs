@@ -15423,7 +15423,29 @@ $(function () {
 		});
 	};
 
+	QUnit.module("Accent words - Autocorrection");
+	//todo
+
+	QUnit.test("\\dot", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\sqrt ");
+		assert.ok(true, "Add '\\sqrt '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "√", "Check correction");
+	});
+
+
 	QUnit.module("Accent - Convert");
+	for (let i = 0; i < accentArr.length; i++)
+	{
+		let strCurrentAccent = accentArr[i];
+		AccentCorrect(strCurrentAccent, "()" + strCurrentAccent, false);
+	};
+
 	for (let i = 0; i < accentArr.length; i++)
 	{
 		let strCurrentAccent = accentArr[i];
@@ -15444,18 +15466,110 @@ $(function () {
 	for (let i = 0; i < accentArr.length; i++)
 	{
 		let strCurrentAccent = accentArr[i];
+		AccentCorrect(strCurrentAccent, "()" + strCurrentAccent, true);
+	};
+	for (let i = 0; i < accentArr.length; i++)
+	{
+		let strCurrentAccent = accentArr[i];
 		AccentCorrect("x" + strCurrentAccent + " ", "x" + strCurrentAccent, true);
 	};
 	for (let i = 0; i < accentArr.length; i++)
 	{
 		let strCurrentAccent = accentArr[i];
-		AccentCorrect("(1+2)" + strCurrentAccent + " ", "(1+2)" + strCurrentAccent, false);
+		AccentCorrect("(1+2)" + strCurrentAccent + " ", "(1+2)" + strCurrentAccent, true);
 	};
 	for (let i = 0; i < accentArr.length; i++)
 	{
 		let strCurrentAccent = accentArr[i];
-		AccentCorrect("[1+2]" + strCurrentAccent + " ", "(" + "[1+2]" + ")" + strCurrentAccent, false);
+		AccentCorrect("[1+2]" + strCurrentAccent + " ", "(" + "[1+2]" + ")" + strCurrentAccent, true);
 	};
+
+	QUnit.module("Limit words - Autocorrection");
+	QUnit.test("\\below", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\below ");
+		assert.ok(true, "Add '\\below '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "┬", "Check correction");
+	});
+	QUnit.test("\\above", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("\\above ");
+		assert.ok(true, "Add '\\above '");
+
+		let strWord = r.Root.GetTextOfElement().GetText();
+		assert.strictEqual(strWord, "┴", "Check correction");
+	});
+
+	QUnit.module("Limit - Correct")
+	//todo
+	function LimitCorrect(str, strLimit, type, isAutoCorrect)
+	{
+		QUnit.test("Check limit " + str, function (assert)
+		{
+			AscMath.SetIsAllowAutoCorrect(isAutoCorrect);
+			let r = Create();
+			assert.ok(true, "Create math equation");
+
+			AddTextToRoot(str);
+			assert.ok(true, "Add '" + str + "'");
+			AscMath.SetIsAllowAutoCorrect(true);
+
+			r.ConvertView(false, 0);
+			assert.ok(true, "Convert to professional");
+
+			let oFunc = r.Root.Content[1];
+			assert.ok(oFunc instanceof CLimit, "Created CLimit");
+			assert.strictEqual(oFunc.Pr.type, type, "Check up or down");
+
+			r.ConvertView(true, 0);
+			assert.ok(true, "Convert to professional");
+			assert.strictEqual(r.GetText(), strLimit, "Check linear content");
+		});
+	};
+	LimitCorrect("x┴", "x┴", 1, false);
+	LimitCorrect("x┬", "x┬", 0, false);
+	LimitCorrect("(x+1)┴", "(x+1)┴", 1, false);
+	LimitCorrect("(x+1)┬", "(x+1)┬", 0, false);
+
+	LimitCorrect("x┴y", "x┴y", 1, false);
+	LimitCorrect("x┴(y+1)", "x┴(y+1)", 1, false);
+	LimitCorrect("x┬y", "x┬y", 0, false);
+	LimitCorrect("x┬(y+1)", "x┬(y+1)", 0, false);
+
+	LimitCorrect("[x*u]┴y", "[x*u]┴y", 1, false);
+	LimitCorrect("[x*u]┴(y+1)", "[x*u]┴(y+1)", 1, false);
+	LimitCorrect("[x*u]┬y", "[x*u]┬y", 0, false);
+	LimitCorrect("[x*u]┬(y+1)", "[x*u]┬(y+1)", 0, false);
+
+	LimitCorrect("→┴y", "→┴y", 1, false);
+	LimitCorrect("→┴(y+1)", "→┴(y+1)", 1, false);
+	LimitCorrect("→┬y", "→┬y", 0, false);
+	LimitCorrect("→┬(y+1)", "→┬(y+1)", 0, false);
+
+	QUnit.module("Limit - Autocorrect")
+
+	LimitCorrect("x┴y ", "x┴y", 1, true);
+	LimitCorrect("x┴(y+1) ", "x┴(y+1)", 1, true);
+	LimitCorrect("x┬y ", "x┬y", 0, true);
+	LimitCorrect("x┬(y+1) ", "x┬(y+1)", 0, true);
+
+	LimitCorrect("[x*u]┴y ", "[x*u]┴y", 1, true);
+	LimitCorrect("[x*u]┴(y+1) ", "[x*u]┴(y+1)", 1, true);
+	LimitCorrect("[x*u]┬y ", "[x*u]┬y", 0, true);
+	LimitCorrect("[x*u]┬(y+1) ", "[x*u]┬(y+1)", 0, true);
+
+	LimitCorrect("→┴y ", "→┴y", 1, true);
+	LimitCorrect("→┴(y+1) ", "→┴(y+1)", 1, true);
+	LimitCorrect("→┬y ", "→┬y", 0, true);
+	LimitCorrect("→┬(y+1) ", "→┬(y+1)", 0, true);
 
 	QUnit.module("Underbar/Overbar - Correct")
 
@@ -15512,16 +15626,37 @@ $(function () {
 		AccentBar(str + "[x+1]", str + "(" + "[x+1]" + ")", false);
 	}
 
-
-
-	QUnit.module("Underbar/Overbar - above/below - Correct")
-
-	let arrUnderbar = ["⏞", "⏟"];
-	let content = ["┴", "┴"];
-
-	function AccentBar(str, strLinear, isAutoCorrect)
+	QUnit.module("Underbar/Overbar - Autocorrection")
+	for (let i = 0; i < arrUnderbar.length; i++)
 	{
-		QUnit.test("Check Underbar/Overbar " + str, function (assert)
+		let str = arrUnderbar[i];
+		AccentBar(str + " ", str, true);
+	}
+	for (let i = 0; i < arrUnderbar.length; i++)
+	{
+		let str = arrUnderbar[i];
+		AccentBar(str + "x ", str + "x", true);
+	}
+	for (let i = 0; i < arrUnderbar.length; i++)
+	{
+		let str = arrUnderbar[i];
+		AccentBar(str + "(x+1) ", str + "(x+1)", true);
+	}
+	for (let i = 0; i < arrUnderbar.length; i++)
+	{
+		let str = arrUnderbar[i];
+		AccentBar(str + "[x+1] ", str + "(" + "[x+1]" + ")", true);
+	}
+	for (let i = 0; i < arrUnderbar.length; i++)
+	{
+		let str = arrUnderbar[i];
+		AccentBar(str + "[x+1] ", str + "(" + "[x+1]" + ")", true);
+	}
+
+	QUnit.module("Matrix - Correct")
+	function MatrixConvert(str, strLinear, nRow, nCol, isAutoCorrect)
+	{
+		QUnit.test("Check matrix " + str, function (assert)
 		{
 			AscMath.SetIsAllowAutoCorrect(isAutoCorrect);
 			let r = Create();
@@ -15534,9 +15669,12 @@ $(function () {
 			r.ConvertView(false, 0);
 			assert.ok(true, "Convert to professional");
 
-			let oLimit = r.Root.Content[1];
-			console.log(oLimit)
-			assert.ok(oLimit instanceof CGroupCharacter, "Created CGroupCharacter");
+			let oMatrix = r.Root.Content[1];
+			console.log(oMatrix);
+
+			assert.ok(oMatrix instanceof CMathMatrix, "Created CGroupCharacter");
+			assert.strictEqual(oMatrix.nRow, nRow, "Rows");
+			assert.strictEqual(oMatrix.nCol, nCol, "Cols");
 
 			r.ConvertView(true, 0);
 			assert.ok(true, "Convert to professional");
@@ -15544,31 +15682,20 @@ $(function () {
 		});
 	};
 
-	for (let i = 0; i < arrUnderbar.length; i++)
-	{
-		let str = arrUnderbar[i];
-		AccentBar(str , str, false);
-	}
-	for (let i = 0; i < arrUnderbar.length; i++)
-	{
-		let str = arrUnderbar[i];
-		AccentBar(str + "x", str + "x", false);
-	}
-	for (let i = 0; i < arrUnderbar.length; i++)
-	{
-		let str = arrUnderbar[i];
-		AccentBar(str + "(x+1)", str + "(x+1)", false);
-	}
-	for (let i = 0; i < arrUnderbar.length; i++)
-	{
-		let str = arrUnderbar[i];
-		AccentBar(str + "[x+1]", str + "(" + "[x+1]" + ")", false);
-	}
-	for (let i = 0; i < arrUnderbar.length; i++)
-	{
-		let str = arrUnderbar[i];
-		AccentBar(str + "[x+1]", str + "(" + "[x+1]" + ")", false);
-	}
+	MatrixConvert("■()", "■()", 1, 1, false);
+
+	MatrixConvert("■(&)", "■(&)", 1, 2, false);
+	MatrixConvert("■(&&)", "■(&&)", 1, 3, false);
+	MatrixConvert("■(&&&)", "■(&&&)", 1, 4, false);
+	MatrixConvert("■(&&&&)", "■(&&&&)", 1, 5, false);
+
+	MatrixConvert("■(@)", "■(@)", 2, 1, false);
+	MatrixConvert("■(@@)", "■(@@)", 3, 1, false);
+	MatrixConvert("■(@@@)", "■(@@@)", 4, 1, false);
+	MatrixConvert("■(@@@@)", "■(@@@@)", 5, 1, false);
+
+	MatrixConvert("■(@&)", "■(&@&)", 2, 2, false);
+	MatrixConvert("■(@&@)", "■(&@&@&)", 3, 2, false);
 
 	//autocorrection triggers
 	//find tokens

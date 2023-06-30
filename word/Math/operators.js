@@ -4610,7 +4610,15 @@ CGroupCharacter.prototype.GetTextOfElement = function(oMathText)
 	}
 	else
 	{
-		let strPos = this.Pr.pos === 2 ? "┴" : "┬";
+		let strPos;
+		if (this.Pr.pos === 0)
+		{
+			strPos = "┬";
+		}
+		else if (this.Pr.pos === 1)
+		{
+			strPos = "┴";
+		}
 
 		if (nStartCode !== 9182 && nStartCode !== 9183)
 			strStart += strPos;

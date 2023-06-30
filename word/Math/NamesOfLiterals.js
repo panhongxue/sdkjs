@@ -1469,11 +1469,11 @@
 		pre_script: 15,
 		sub_sub: 16,
 		func_lim: 18,
-		below_above: 19,
+		limit: 19,
 		diacritic_base: 20,
 		matrix: 21,
 		accent: 22,
-		horizontal_bracket: 23,
+		group_character: 23,
 	};
 	const limitFunctions = [];
 	const UnicodeSpecialScript = {
@@ -2187,14 +2187,16 @@
 					}
 
 					break;
-				case MathStructures.horizontal_bracket:
-					let intBracketPos = MathLiterals.hbrack.GetPos(oTokens.hBrack);
+				case MathStructures.group_character:
+					let intBracketPos = !isNaN(oTokens.isBelow)
+						? oTokens.isBelow
+						: MathLiterals.hbrack.GetPos(oTokens.hBrack);
 
 					if (oTokens.hBrack === "¯" || oTokens.hBrack === "▁")
 					{
 						let oBar = (oTokens.hBrack === "¯")
 							? oContext.Add_Bar({ctrPrp : new CTextPr(), pos : LOCATION_TOP}, null)
-							:oContext.Add_Bar({ctrPrp : new CTextPr(), pos : LOCATION_BOT}, null);
+							: oContext.Add_Bar({ctrPrp : new CTextPr(), pos : LOCATION_BOT}, null);
 
 						UnicodeArgument(
 							oTokens.value,
@@ -2204,52 +2206,19 @@
 					}
 					else
 					{
-						if (oTokens.up || oTokens.down)
-						{
-							let pos = oTokens.up;
-							let Limit = oContext.Add_Limit({ctrPrp: new CTextPr(), type: pos}, null, null);
-							let MathContent = Limit.getFName();
-							let oGroup = MathContent.Add_GroupCharacter({
-								ctrPrp: new CTextPr(),
-								chr: oTokens.hBrack.charCodeAt(0),
-								vertJc: intBracketPos ? 0 : 1,
-								pos: intBracketPos
-							}, null);
+						let Pr = (intBracketPos === VJUST_TOP)
+							? {ctrPrp : new CTextPr(), pos : VJUST_TOP, vertJc : VJUST_BOT, chr: oTokens.hBrack.charCodeAt(0)}
+							: {ctrPrp : new CTextPr(), vertJc : VJUST_TOP, chr : oTokens.hBrack.charCodeAt(0)};
 
-							UnicodeArgument(
-								oTokens.value,
-								MathStructures.bracket_block,
-								oGroup.getBase()
-							)
+						let Group = new CGroupCharacter(Pr);
+						oContext.Add_Element(Group);
 
-							if (oTokens.down || oTokens.up)
-							{
-								UnicodeArgument(
-									oTokens.up === undefined ? oTokens.down : oTokens.up,
-									MathStructures.bracket_block,
-									Limit.getIterator()
-								)
-							}
-						}
-						else
-						{
-							let Pr = {
-								ctrPrp: new CTextPr(),
-								chr: oTokens.hBrack.charCodeAt(0),
-								vertJc: intBracketPos ? 0 : 1,
-								pos: intBracketPos
-							};
-
-							let oGroup = oContext.Add_GroupCharacter(Pr, null);
-
-							UnicodeArgument(
-								oTokens.value,
-								MathStructures.bracket_block,
-								oGroup.getBase()
-							);
-						}
+						UnicodeArgument(
+							oTokens.value,
+							MathStructures.bracket_block,
+							Group.getBase(),
+						);
 					}
-
 
 					break;
 				case MathStructures.bracket_block:
@@ -2411,39 +2380,19 @@
 				// 		oBar.getBase(),
 				// 	);
 				// 	break;
-				case MathStructures.below_above:
-					let LIMIT_TYPE = oTokens.isBelow ? VJUST_BOT : VJUST_TOP;
+				case MathStructures.limit:
+					let oLimit = oContext.Add_Limit({ctrPrp: new CTextPr(), type: oTokens.isBelow});
+					UnicodeArgument(
+						oTokens.base,
+						MathStructures.bracket_block,
+						oLimit.getFName(),
+					);
+					UnicodeArgument(
+						oTokens.value,
+						MathStructures.bracket_block,
+						oLimit.getIterator(),
+					);
 
-					// CGroupCharacters in operators menus
-					if (oTokens.base.type === MathStructures.char && oTokens.base.value.length === 1)
-					{
-						let Pr = (LIMIT_TYPE == VJUST_TOP)
-							? {ctrPrp : new CTextPr(), pos :LIMIT_TYPE, chr : oTokens.base.value.charCodeAt(0)}
-							: {ctrPrp : new CTextPr(), vertJc : LIMIT_TYPE, chr : oTokens.base.value.charCodeAt(0)};
-
-						let Group = new CGroupCharacter(Pr);
-						oContext.Add_Element(Group);
-
-						UnicodeArgument(
-							oTokens.value,
-							MathStructures.bracket_block,
-							Group.getBase(),
-						);
-					}
-					else
-					{
-						let oLimit = oContext.Add_Limit({ctrPrp: new CTextPr(), type: LIMIT_TYPE});
-						UnicodeArgument(
-							oTokens.base,
-							MathStructures.bracket_block,
-							oLimit.getFName(),
-						);
-						UnicodeArgument(
-							oTokens.value,
-							MathStructures.bracket_block,
-							oLimit.getIterator(),
-						);
-					}
 					break;
 			}
 		}

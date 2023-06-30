@@ -986,8 +986,6 @@ CMathMatrix.prototype.GetTextOfElement = function (oMathText)
 	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
 		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
-	let strMatrixSymbol;
-
 	if (oMathText.IsLaTeX())
 	{
 		// switch (strBrackets) {

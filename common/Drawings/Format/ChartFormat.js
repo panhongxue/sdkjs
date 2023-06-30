@@ -2130,6 +2130,8 @@
     CBaseChartObject.prototype.notAllowedWithoutId = function() {
         return true;
     };
+	CBaseChartObject.prototype.applySpecialPasteProps = function () {};
+	CBaseChartObject.prototype.getSpecialPasteProps = function () {};
     CBaseChartObject.prototype.getChartSpace = function() {
         var oCurElement = this;
         while(oCurElement) {

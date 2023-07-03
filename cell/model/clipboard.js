@@ -519,6 +519,62 @@
 			});
 		};
 
+		function CCopyPasteExcelOptions()
+		{
+			this.isExcel = true;
+			this.wb = null;
+			this.cachedWbBinaryData = null;
+			this.oldWorkbookCoreParameters = {};
+		}
+		CCopyPasteExcelOptions.prototype.setOldWorkbookCoreParameters = function (oldCreator, oldIdentifier, oldLanguage, oldTitle, oldCategory, oldContentStatus)
+		{
+			this.oldWorkbookCoreParameters.oldCreator = oldCreator;
+			this.oldWorkbookCoreParameters.oldIdentifier = oldIdentifier;
+			this.oldWorkbookCoreParameters.oldLanguage = oldLanguage;
+			this.oldWorkbookCoreParameters.oldTitle = oldTitle;
+			this.oldWorkbookCoreParameters.oldCategory = oldCategory;
+			this.oldWorkbookCoreParameters.oldContentStatus = oldContentStatus;
+		};
+		CCopyPasteExcelOptions.prototype.getCachedWorkbookBinaryData = function ()
+		{
+			if (!this.cachedWbBinaryData)
+			{
+				if (this.wb)
+				{
+					const oOldPPTXWriter = AscCommon.pptx_content_writer;
+					AscCommon.pptx_content_writer = new AscCommon.CPPTXContentWriter();
+
+					const newCreator = this.wb.Core.creator;
+					const newIdentifier = this.wb.Core.identifier;
+					const newLanguage = this.wb.Core.language;
+					const newTitle = this.wb.Core.title;
+					const newCategory = this.wb.Core.category;
+					const newContentStatus = this.wb.Core.contentStatus;
+				 this.wb.Core.creator = this.oldWorkbookCoreParameters.oldCreator;
+				 this.wb.Core.identifier = this.oldWorkbookCoreParameters.oldIdentifier;
+				 this.wb.Core.language = this.oldWorkbookCoreParameters.oldLanguage;
+				 this.wb.Core.title = this.oldWorkbookCoreParameters.oldTitle;
+				 this.wb.Core.category = this.oldWorkbookCoreParameters.oldCategory;
+				 this.wb.Core.contentStatus = this.oldWorkbookCoreParameters.oldContentStatus;
+
+
+					var oBinaryFileWriter = new AscCommonExcel.BinaryFileWriter(this.wb, false);
+					oBinaryFileWriter.Write();
+					this.cachedWbBinaryData = oBinaryFileWriter.Memory.data.slice();
+
+					this.wb.Core.creator = newCreator;
+					this.wb.Core.identifier = newIdentifier;
+					this.wb.Core.language = newLanguage;
+					this.wb.Core.title = newTitle;
+					this.wb.Core.category = newCategory;
+					this.wb.Core.contentStatus = newContentStatus;
+
+					AscCommon.pptx_content_writer = oOldPPTXWriter;
+				}
+			}
+			return this.cachedWbBinaryData;
+		};
+
 
 		function CopyProcessorExcel() {
 
@@ -644,10 +700,21 @@
 
 
 					//WRITE
+					const oCopyPaste = !ignoreCopyPaste ? selectionRange : false;
 					var oBinaryFileWriter = new AscCommonExcel.BinaryFileWriter(wb, !ignoreCopyPaste ? selectionRange : false);
+					if (oCopyPaste)
+					{
+						const oCopyPasteOptions = new CCopyPasteExcelOptions();
+						oCopyPasteOptions.wb = wb;
+						oCopyPasteOptions.setOldWorkbookCoreParameters(oldCreator, oldIdentifier, oldLanguage, oldTitle, oldCategory, oldContentStatus);
+						pptx_content_writer.Start_CopyPaste(oCopyPasteOptions);
+					}
 					sBase64 = "xslData;" + oBinaryFileWriter.Write();
 					pptx_content_writer.End_UseFullUrl();
-
+					if (oCopyPaste)
+					{
+						pptx_content_writer.End_CopyPaste();
+					}
 					if(selectAll) {
 						for(i in unselectedIndexes) {
 							wsModel.Drawings[i].graphicObject.selected = false;
@@ -2373,7 +2440,7 @@
 					for (i = 0; i < data.Drawings.length; i++) {
 						drawingObject = data.Drawings[i];
 						graphicObject = drawingObject.graphicObject;
-
+						graphicObject.applySpecialPasteProps(pastedWb);
 						xfrm = graphicObject.spPr.xfrm;
 						if (xfrm) {
 							offX = 0;

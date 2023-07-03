@@ -45,7 +45,6 @@
       var c_oSerConstants = AscCommon.c_oSerConstants;
     var History = AscCommon.History;
     var pptx_content_loader = AscCommon.pptx_content_loader;
-    var pptx_content_writer = AscCommon.pptx_content_writer;
 
       var c_oAscPageOrientation = Asc.c_oAscPageOrientation;
 
@@ -2634,6 +2633,7 @@
     /** @constructor */
 	function BinaryStylesTableWriter(memory, wb, initSaveManager)
     {
+	    const pptx_content_writer = AscCommon.pptx_content_writer;
         this.memory = memory;
         this.bs = new BinaryCommonWriter(this.memory);
         this.wb = wb;
@@ -3243,6 +3243,7 @@
         this.InitSaveManager = initSaveManager;
         //this.tableIds = tableIds;
         //this.sheetIds = sheetIds;
+	    const pptx_content_writer = AscCommon.pptx_content_writer;
         this.Write = function()
         {
             var oThis = this;
@@ -3829,6 +3830,7 @@
         this.InitSaveManager = initSaveManager;
         /*this.tableIds = tableIds;
         this.sheetIds = sheetIds;*/
+	    const pptx_content_writer = AscCommon.pptx_content_writer;
         this._getCrc32FromObjWithProperty = function(val)
         {
             return Asc.crc32(this._getStringFromObjWithProperty(val));
@@ -5791,6 +5793,7 @@
 		this.memory = memory;
 		this.wb = wb;
 		this.bs = new BinaryCommonWriter(this.memory);
+		const pptx_content_writer = AscCommon.pptx_content_writer;
 		this.Write = function()
 		{
 			var oThis = this;
@@ -5807,6 +5810,7 @@
         this.memory = memory;
         this.personList = personList;
         this.bs = new BinaryCommonWriter(this.memory);
+	    const pptx_content_writer = AscCommon.pptx_content_writer;
         this.Write = function()
         {
             var oThis = this;
@@ -5845,6 +5849,7 @@
         this.nRealTableCount = 0;
         this.InitSaveManager = new InitSaveManager(wb, isCopyPaste);
         this.bs = new BinaryCommonWriter(this.Memory);
+	    const pptx_content_writer = AscCommon.pptx_content_writer;
         this.Write = function(noBase64, onlySaveBase64)
         {
             var t = this;

@@ -2658,9 +2658,9 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
     {
         if ( chart )
         {
-            if(api.isChartEditor)
+            if(api.frameManager)
             {
-				_this.controller.selectObject(aObjects[0].graphicObject, 0);
+	            api.frameManager.selectMainDiagram();
             }
             _this.controller.editChartDrawingObjects(chart);
             //_this.showDrawingObjects();
@@ -3311,6 +3311,10 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
         _this.controller.checkSelectedObjectsAndCallback(function () {
             oChart.fillDataFromTrack(oRanges);
         }, [], false, AscDFH.historydescription_ChartDrawingObjects);
+	    if (oChart.isFrameChart && api.frameManager)
+	    {
+		    api.frameManager.sendUpdateDiagram();
+	    }
     };
 
     //-----------------------------------------------------------------------------------

@@ -270,7 +270,7 @@
 			const oNewChartSpace = asc_chart_binary.getChartSpace(oModel);
 			oNewChartSpace.setWorksheet(oModel);
 
-			oNewChartSpace.setFrameChart(true);
+			oNewChartSpace.convertToFrameChart();
 			this.mainDiagram = oNewChartSpace;
 		}, this, []);
 	}
@@ -295,6 +295,20 @@
 	{
 		this.arrAfterLoadCallbacks.push(this.repairDiagramXLSX.bind(this));
 	}
+	CDiagramCellFrameManager.prototype.selectMainDiagram = function ()
+	{
+		const oWb = this.api.wb;
+		const oController = this.api.getGraphicController();
+		const oWs = oWb.getWorksheet();
+		if (oWs)
+		{
+			oController.resetSelection();
+			oWs.objectRender.selectDrawingObjectRange(this.mainDiagram)
+			oController.selectObject(this.mainDiagram, this.api.asc_getActiveWorksheetIndex());
+			oWs.setSelectionShape(true);
+			oWs.draw();
+		}
+	};
 	CDiagramCellFrameManager.prototype.setAfterLoadCallback = function (oInfo)
 	{
 		const oApi = this.api;
@@ -306,6 +320,7 @@
 			{
 				oThis.arrAfterLoadCallbacks[i]();
 			}
+			oThis.selectMainDiagram();
 			oThis.api.wb.onFrameEditorReady();
 			oApi.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Open);
 			delete oApi.fAfterLoad;
@@ -317,6 +332,7 @@
 		const oDiagramBinary = new Asc.asc_CChartBinary(this.mainDiagram);
 		oDiagramBinary["workbookBinary"] = this.getWorkbookBinary();
 		oDiagramBinary["imagesForAddToHistory"] = this.getImagesForHistory();
+		oDiagramBinary["noHistory"] = !AscCommon.History.Can_Undo();
 		return oDiagramBinary;
 	}
 
@@ -328,7 +344,10 @@
 		{
 			aRefsToChange[i].updateCacheAndCat();
 		}
-		this.sendUpdateDiagram();
+		if (aRefsToChange.length)
+		{
+			this.sendUpdateDiagram();
+		}
 	};
 	CDiagramCellFrameManager.prototype.sendUpdateDiagram = function ()
 	{
@@ -337,13 +356,18 @@
 
 	CDiagramCellFrameManager.prototype.getChartObject = function ()
 	{
-		const oGraphicController = this.api.getGraphicController();
-		if (oGraphicController)
+		const oProps = this.mainDiagram.getAscSettings();
+		const oThis = this;
+
+		oProps.setFUpdateGeneralChart(function (bSelectFrameChartRange)
 		{
-			const oProps = oGraphicController.getPropsFromChart(this.mainDiagram);
-			oProps.setFUpdateGeneralChart(this.sendUpdateDiagram.bind(this));
-			return oProps;
-		}
+			oThis.sendUpdateDiagram();
+			if (bSelectFrameChartRange)
+			{
+				oThis.selectMainDiagram();
+			}
+		});
+		return oProps;
 	};
 
 	function CFrameUpdateDiagramData(oDiagram, bNoHistory)

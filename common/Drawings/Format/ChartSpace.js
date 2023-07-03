@@ -1833,9 +1833,9 @@ function(window, undefined) {
 		}
 		return mapProps;
 	};
-	CChartSpace.prototype.setFrameChart = function (bPr)
+	CChartSpace.prototype.convertToFrameChart = function ()
 	{
-		this.isFrameChart = bPr;
+		this.isFrameChart = true;
 	};
 	CChartSpace.prototype.getExternalReference = function ()
 	{

@@ -818,7 +818,7 @@
 				const oWorksheet = wbModel.getWorksheet(0);
 				const oChartSpace = oChartSpaceBinary.getChartSpace(oWorksheet);
 				oChartSpace.setWorksheet(oWorksheet);
-				oChartSpace.setFrameChart(true);
+				oChartSpace.convertToFrameChart();
 				oChartSpace.handleUpdateChart();
 				oChartSpace.recalculate();
 				this.wbModel = oOldWbModel;

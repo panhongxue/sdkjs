@@ -4442,6 +4442,13 @@ var editor;
 		var ws = this.wb.getWorksheet();
 		return ws.objectRender.getAscChartObject(bNoLock);
 	};
+	spreadsheet_api.prototype.asc_getFrameChartSettings = function ()
+	{
+		if (this.frameManager)
+		{
+			return this.frameManager.mainDiagram.getAscSettings();
+		}
+	};
 
   spreadsheet_api.prototype.asc_addChartDrawingObject = function(chart) {
     var ws = this.wb.getWorksheet();

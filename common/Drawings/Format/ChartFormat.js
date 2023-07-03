@@ -11288,16 +11288,21 @@
 				const oParsedRef = AscCommon.parserHelp.parse3DRef(arrF[i]);
 				if (!oParsedRef.external)
 				{
+					let nDefaultExternalLinIndex;
 					if (oMainExternalReference)
 					{
-						let nDefaultExternalLinIndex = oWb.getExternalLinkIndexByName(oMainExternalReference.Id);
+						nDefaultExternalLinIndex = oWb.getExternalLinkIndexByName(oMainExternalReference.Id);
 						if (nDefaultExternalLinIndex === null)
 						{
 							oWb.addExternalReferences([oMainExternalReference]);
 							nDefaultExternalLinIndex = oWb.externalReferences.length;
 						}
+						arrResult.push('[' + nDefaultExternalLinIndex + ']' + arrF[i]);
 					}
-					arrResult.push('[' + nDefaultExternalLinIndex + ']' + arrF[i]);
+					else
+					{
+						arrResult.push(arrF[i]);
+					}
 				}
 				else
 				{

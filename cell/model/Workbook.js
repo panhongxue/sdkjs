@@ -4427,13 +4427,8 @@
 			if (extarnalLink.SheetNames) {
 				for (var i = 0; i < extarnalLink.SheetNames.length; i++) {
 					if (extarnalLink.SheetNames[i] === sheet) {
-						var wb = this.getTemporaryExternalWb();
-						const oWS = new Worksheet(wb, wb.aWorksheets.length);
-						extarnalLink.worksheets[sheet] = oWS;
-						wb.aWorksheets.push(oWS);
-						oWS.sName = sheet;
 						extarnalLink.initWorksheetFromSheetDataSet(sheet);
-						return oWS;
+						return extarnalLink.worksheets && extarnalLink.worksheets[sheet];
 					}
 				}
 			}

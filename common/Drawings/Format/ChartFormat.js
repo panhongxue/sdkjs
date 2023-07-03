@@ -11247,6 +11247,85 @@
             }
         }
     };
+	CChartRefBase.prototype.getExternal3DRef = function (sheet, range, external)
+	{
+		let sSheet;
+		if (sheet[1])
+		{
+			sSheet = sheet.join(':');
+		}
+		else
+		{
+			sSheet = sheet[0];
+		}
+		return AscCommon.parserHelp.getRaw3DRef('[' + external + ']' + sSheet, range);
+	};
+	CChartRefBase.prototype.updateToExternal = function (oMainExternalReference, arrPastedExternalReferences)
+	{
+		const oApi = Asc.editor || editor;
+		const oWb = oApi.wbModel;
+		if (typeof this.f === 'string' && oWb)
+		{
+			let sFormula = this.f + "";
+			let bFirstBrace = false;
+			let bLastBrace = false;
+			if (sFormula[0] === '(')
+			{
+				bFirstBrace = true;
+				sFormula = sFormula.slice(1);
+			}
+			if (sFormula[sFormula.length - 1] === ')')
+			{
+				bLastBrace = true;
+				sFormula = sFormula.slice(0, -1);
+			}
+
+			const f1 = sFormula;
+			const arrF = f1.split(",");
+			const arrResult = [];
+			for (let i = 0; i < arrF.length; i += 1)
+			{
+				const oParsedRef = AscCommon.parserHelp.parse3DRef(arrF[i]);
+				if (!oParsedRef.external)
+				{
+					if (oMainExternalReference)
+					{
+						let nDefaultExternalLinIndex = oWb.getExternalLinkIndexByName(oMainExternalReference.Id);
+						if (nDefaultExternalLinIndex === null)
+						{
+							oWb.addExternalReferences([oMainExternalReference]);
+							nDefaultExternalLinIndex = oWb.externalReferences.length;
+						}
+					}
+					arrResult.push('[' + nDefaultExternalLinIndex + ']' + arrF[i]);
+				}
+				else
+				{
+					const nIndex = parseInt(oParsedRef.external, 10);
+					const oPastedReference = arrPastedExternalReferences[nIndex - 1];
+					if (oPastedReference)
+					{
+						let nExternalReference = oWb.getExternalLinkIndexByName(oPastedReference.Id);
+						if (nExternalReference === null)
+						{
+							oWb.addExternalReferences([oPastedReference]);
+							nExternalReference = oWb.externalReferences.length;
+						}
+						arrResult.push(this.getExternal3DRef([oParsedRef.sheet, oParsedRef.sheet2], oParsedRef.range, nExternalReference));
+					}
+				}
+			}
+			let sResult = arrResult.join(',');
+			if (bFirstBrace)
+				sResult = '(' + sResult;
+
+			if (bLastBrace)
+				sResult = sResult + ')';
+
+
+			this.setF(sResult);
+		}
+	};
     CChartRefBase.prototype.onUpdateCache = function() {
         var oChartSpace = this.getChartSpace();
         if(oChartSpace) {

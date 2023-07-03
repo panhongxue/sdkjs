@@ -3390,7 +3390,7 @@
 			if (this.isArea(formula, indexStartRange) || this.isRef(formula, indexStartRange))
 			{
 				if (this.operand_str.length == formula.substring(indexStartRange).length)
-					return {sheet: sheetName, sheet2: is3DRefResult[2], range: this.operand_str};
+					return {sheet: sheetName, sheet2: is3DRefResult[2], range: this.operand_str, external: is3DRefResult[3]};
 				else
 					return null;
 			}
@@ -3414,6 +3414,14 @@
 			wsTo = wsTo.replace(/'/g, "''");
 			return "'" + (wsFrom !== wsTo ? wsFrom + ":" + wsTo : wsFrom) + "'!" + range;
 		}
+	};
+	// Возвращает ссылку на диапазон с листом (название листа не экранируется)
+	parserHelper.prototype.getRaw3DRef = function (sheet, range)
+	{
+		sheet = sheet.split(":");
+		var wsFrom = sheet[0],
+			wsTo   = sheet[1] === undefined ? wsFrom : sheet[1];
+			return (wsFrom !== wsTo ? wsFrom + ":" + wsTo : wsFrom) + "!" + range;
 	};
 // Возвращает экранируемое название листа
 	parserHelper.prototype.getEscapeSheetName = function (sheet)

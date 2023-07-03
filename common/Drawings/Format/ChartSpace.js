@@ -1616,6 +1616,182 @@ function(window, undefined) {
 		}
 		return new Asc.Range(0, 0, nMaxColumn, nMaxRow);
 	};
+
+	CChartSpace.prototype.getWorksheetsFromCache = function (oParentWb)
+	{
+		const mapWorksheets = {};
+
+		function fFillCell(oCell, sNumFormat, value)
+		{
+			const oCellValue = new AscCommonExcel.CCellValue();
+			if (AscFormat.isRealNumber(value))
+			{
+				oCellValue.number = value;
+				oCellValue.type = AscCommon.CellValueType.Number;
+			}
+			else
+			{
+				oCellValue.text = value;
+				oCellValue.type = AscCommon.CellValueType.String;
+			}
+			oCell.setNumFormat(sNumFormat);
+			oCell.setValueData(new AscCommonExcel.UndoRedoData_CellValueData(null, oCellValue));
+		}
+
+		function fillTableFromRef(ref)
+		{
+			const oCache = ref.numCache ? ref.numCache : (ref.strCache ? ref.strCache : null);
+			if (oCache)
+			{
+				const sFormatCode = (typeof oCache.formatCode === "string" && oCache.formatCode.length > 0) ? oCache.formatCode : "General";
+
+				let sFormula = ref.f + "";
+				if (sFormula[0] === '(')
+					sFormula = sFormula.slice(1);
+				if (sFormula[sFormula.length - 1] === ')')
+					sFormula = sFormula.slice(0, -1);
+
+				const f1 = sFormula;
+				const arrF = f1.split(",");
+
+				let nPtIndex = 0, nPtCount;
+				for (let i = 0; i < arrF.length; ++i)
+				{
+					var oParsedRef = AscCommon.parserHelp.parse3DRef(arrF[i]);
+					if (oParsedRef)
+					{
+						const sSheetName  = oParsedRef.sheet;
+						if  (!mapWorksheets[sSheetName])
+						{
+							mapWorksheets[sSheetName] = {};
+							mapWorksheets[sSheetName].ws = new AscCommonExcel.Worksheet(oParentWb);
+							mapWorksheets[sSheetName].ws.sName = sSheetName;
+							mapWorksheets[sSheetName].maxR = 0;
+							mapWorksheets[sSheetName].maxC = 0;
+						}
+						const oWorksheet = mapWorksheets[sSheetName].ws;
+						var range = oWorksheet.getRange2(oParsedRef.range);
+						if (range)
+						{
+							range = range.bbox;
+
+							if (range.r1 > mapWorksheets[sSheetName].maxR)
+								mapWorksheets[sSheetName].maxR = range.r1;
+							if (range.r2 > mapWorksheets[sSheetName].maxR)
+								mapWorksheets[sSheetName].maxR = range.r2;
+
+							if (range.c1 > mapWorksheets[sSheetName].maxC)
+								mapWorksheets[sSheetName].maxC = range.c1;
+							if (range.c2 > mapWorksheets[sSheetName].maxC)
+								mapWorksheets[sSheetName].maxC = range.c2;
+
+							if (i === arrF.length - 1)
+							{
+								nPtCount = oCache.getPtCount();
+								if ((nPtCount - nPtIndex) <= (range.r2 - range.r1 + 1))
+								{
+									for (let k = range.c1; k <= range.c2; ++k)
+									{
+										for (let j = range.r1; j <= range.r2; ++j)
+										{
+											oWorksheet._getCell(j, k, function (cell)
+											{
+												const oPt = oCache.getPtByIndex(nPtIndex + j - range.r1);
+												if (oPt)
+												{
+													fFillCell(cell, typeof oPt.formatCode === "string" && oPt.formatCode.length > 0 ? oPt.formatCode : sFormatCode, oPt.val);
+												}
+											});
+										}
+									}
+									nPtIndex += (range.r2 - range.r1 + 1);
+								}
+								else if ((nPtCount - nPtIndex) <= (range.c2 - range.c1 + 1))
+								{
+									for (let k = range.r1; k <= range.r2; ++k)
+									{
+										for (let j = range.c1; j <= range.c2; ++j)
+										{
+											oWorksheet._getCell(k, j, function (cell)
+											{
+												const oPt = oCache.getPtByIndex(nPtIndex + j - range.c1);
+												if (oPt)
+												{
+													fFillCell(cell, typeof oPt.formatCode === "string" && oPt.formatCode.length > 0 ? oPt.formatCode : sFormatCode, oPt.val);
+												}
+											});
+										}
+									}
+									nPtIndex += (range.c2 - range.c1 + 1);
+								}
+							}
+							else
+							{
+								if (range.r1 === range.r2)
+								{
+									for (let j = range.c1; j <= range.c2; ++j)
+									{
+										oWorksheet._getCell(range.r1, j, function (cell)
+										{
+											const oPt = oCache.getPtByIndex(nPtIndex);
+											if (oPt)
+											{
+												fFillCell(cell, typeof oPt.formatCode === "string" && oPt.formatCode.length > 0 ? oPt.formatCode : sFormatCode, oPt.val);
+											}
+											++nPtIndex;
+										});
+									}
+								}
+								else
+								{
+									for (let j = range.r1; j <= range.r2; ++j)
+									{
+										oWorksheet._getCell(j, range.c1, function (cell)
+										{
+											const oPt = oCache.getPtByIndex(nPtIndex);
+											if (oPt)
+											{
+												fFillCell(cell, typeof oPt.formatCode === "string" && oPt.formatCode.length > 0 ? oPt.formatCode : sFormatCode, oPt.val);
+											}
+											++nPtIndex;
+										});
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		const arrSeries = this.getAllSeries();
+		for (let i = 0; i < arrSeries.length; i += 1)
+		{
+			const oSeria = arrSeries[i];
+			const oVal = oSeria.val || oSeria.yVal;
+			if (oVal && oVal.numRef)
+			{
+				fillTableFromRef(oVal.numRef);
+			}
+			const oCat = oSeria.cat || oSeria.xVal;
+			if (oCat)
+			{
+				if (oCat.numRef)
+				{
+					fillTableFromRef(oCat.numRef);
+				}
+				if (oCat.strRef)
+				{
+					fillTableFromRef(oCat.strRef);
+				}
+			}
+			if (oSeria.tx && oSeria.tx.strRef)
+			{
+				fillTableFromRef(oSeria.tx.strRef);
+			}
+		}
+		return mapWorksheets;
+	};
 	CChartSpace.prototype.canPasteExternal = function ()
 	{
 		const oExternalReference = this.getExternalReference();

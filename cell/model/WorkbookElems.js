@@ -14793,6 +14793,9 @@ QueryTableField.prototype.clone = function() {
 		var t = this;
 		var isChanged = false;
 		var cloneER = this.clone();
+
+		const oWb = arr[0] && arr[0].workbook;
+		oWb.aWorksheets = [];
 		for (var i = 0; i < arr.length; i++) {
 			//если есть this.worksheets, если нет - проверить и обработать
 			var sheetName = arr[i].sName;
@@ -14804,6 +14807,7 @@ QueryTableField.prototype.clone = function() {
 						var oAllRange = wsTo.getRange3(0, 0, wsTo.getRowsCount(), wsTo.getColsCount());
 						oAllRange.cleanAll();
 						wsTo.copyFrom(arr[i], wsTo.sName);
+						oWb.aWorksheets.push(wsTo);
 					});
 				});
 				//this.worksheets[sheetName] = arr[i];
@@ -14907,6 +14911,8 @@ QueryTableField.prototype.clone = function() {
 				var wb = new AscCommonExcel.Workbook(null, window["Asc"]["editor"]);
 				ws = new AscCommonExcel.Worksheet(wb);
 				ws.sName = sheetName;
+				wb.aWorksheets.push(ws);
+				ws._setIndex(wb.aWorksheets.length - 1);
 
 				this.worksheets[sheetName] = ws;
 			}
@@ -15155,6 +15161,10 @@ QueryTableField.prototype.clone = function() {
 		if (sheet) {
 			var t = this;
 
+			var api_sheet = Asc['editor'];
+			var wb = api_sheet.wbModel;
+			var wbView = api_sheet.wb;
+			const aRanges = [];
 			//TODO пока обновлю ячейки по одной, в дальнейшем нужно объединить ячейки в диапазоны
 			for (var i = 0; i < this.Row.length; i++) {
 				var row = this.Row[i];
@@ -15167,6 +15177,7 @@ QueryTableField.prototype.clone = function() {
 						continue;
 					}
 					var range = sheet.getRange2(externalCell.Ref);
+					aRanges.push(range);
 					range._foreach(function (cell) {
 
 						let changedCell = externalCell.initFromCell(cell, true);
@@ -15174,12 +15185,11 @@ QueryTableField.prototype.clone = function() {
 							isChanged = changedCell;
 						}
 
-						var api_sheet = Asc['editor'];
-						var wb = api_sheet.wbModel;
 						wb.dependencyFormulas.addToChangedCell(cell);
 					});
 				}
 			}
+			wbView.handleChartsOnWorkbookChange(aRanges);
 		}
 		return isChanged;
 	};

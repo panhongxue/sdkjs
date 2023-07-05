@@ -3470,6 +3470,7 @@
 					}
 				}
 
+				let api = window["Asc"]["editor"];
 				let aResult = this._getTableFromText(text, textImport);
 
 				if (aResult && !(aResult.onlyImages && window["Asc"]["editor"] && window["Asc"]["editor"].isChartEditor)) {
@@ -3478,6 +3479,10 @@
 						var width = aResult.content && aResult.content[0] ? aResult.content[0].length - 1 : 0;
 						var height = aResult.content ? aResult.content.length - 1 : 0;
 						var arnTo = new Asc.Range(arn.c1, arn.r1, arn.c1 + width, arn.r1 + height);
+
+						g_clipboardExcel.callback = function () {
+							api.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.SlowOperation);
+						};
 
 						var resmove = worksheet.model._prepareMoveRange(arn, arnTo);
 						if (resmove === -2) {
@@ -3488,6 +3493,7 @@
 							worksheet.model.workbook.handlers.trigger("asc_onConfirmAction", Asc.c_oAscConfirm.ConfirmReplaceRange,
 								function (can) {
 									if (can) {
+										api.sync_StartAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.SlowOperation);
 										worksheet.setSelectionInfo('paste', {data: aResult, bText: true});
 									} else {
 										window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
@@ -3495,6 +3501,7 @@
 									}
 								});
 						} else {
+							api.sync_StartAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.SlowOperation);
 							worksheet.setSelectionInfo('paste', {data: aResult, bText: true});
 						}
 					} else {

@@ -924,10 +924,7 @@ var editor;
 				}
 			}
 
-			this.sync_StartAction(c_oAscAsyncActionType.BlockInteraction, c_oAscAsyncAction.SlowOperation);
-			this.wb.pasteData(AscCommon.c_oAscClipboardDataFormat.Text, text, null, null, true, function () {
-				t.sync_EndAction(c_oAscAsyncActionType.BlockInteraction, c_oAscAsyncAction.SlowOperation);
-			});
+			this.wb.pasteData(AscCommon.c_oAscClipboardDataFormat.Text, text, null, null, true);
 
 			if (selectionRange) {
 				if (activeSheet !== null) {

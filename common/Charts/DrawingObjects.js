@@ -430,7 +430,7 @@ function asc_CChartBinary(chart) {
         var writer = new AscCommon.BinaryChartWriter(new AscCommon.CMemory(false)), pptx_writer;
         writer.WriteCT_ChartSpace(chart);
         this["binary"] = writer.memory.pos + ";" + writer.memory.GetBase64Memory();
-        this["documentImageUrls"] = JSON.stringify(AscCommon.g_oDocumentUrls.getUrls());
+        this["documentImageUrls"] = AscCommon.g_oDocumentUrls.urls;
     }
 }
 

@@ -1306,6 +1306,40 @@
 	window['AscDFH'].addBinaryDataToHistory = addBinaryDataToHistory;
 
 
+	function CChangesDrawingsImageId(Class, NewPr) {
+		CChangesDrawingsString.call(this, Class, AscDFH.historyitem_ImageShapeLoadImagesfromContent, '', NewPr);
+		this.FromLoad = false;
+	}
+	CChangesDrawingsImageId.prototype = Object.create(CChangesDrawingsString.prototype);
+	CChangesDrawingsImageId.prototype.constructor = CChangesDrawingsImageId;
+	CChangesDrawingsImageId.prototype.ReadFromBinary = function (reader) {
+		this.FromLoad = true;
+		CChangesDrawingsString.prototype.ReadFromBinary.call(this, reader);
+	};
+	AscDFH.changesFactory[AscDFH.historyitem_ImageShapeLoadImagesfromContent] = CChangesDrawingsImageId;
+	AscDFH.drawingsChangesMap[AscDFH.historyitem_ImageShapeLoadImagesfromContent] = function (oClass, sValue, bFromLoad)
+	{
+		if (bFromLoad)
+		{
+			if (AscCommon.CollaborativeEditing)
+			{
+				if (sValue && sValue.length > 0)
+				{
+					AscCommon.CollaborativeEditing.Add_NewImage(sValue);
+				}
+			}
+		}
+	};
+
+	function addImagesFromFrame(Class, arrImagesId)
+	{
+		for (let i = 0; i < arrImagesId.length; i += 1) {
+			AscCommon.History.Add(new CChangesDrawingsImageId(Class, arrImagesId[i]));
+		}
+	}
+	window['AscDFH'].addImagesFromFrame = addImagesFromFrame;
+
+
 AscDFH.changesFactory[AscDFH.historyitem_Sparkline_Type               ] = AscDFH.CChangesDrawingsLong;
 AscDFH.changesFactory[AscDFH.historyitem_Sparkline_LineWeight         ] = AscDFH.CChangesDrawingsDouble;
 AscDFH.changesFactory[AscDFH.historyitem_Sparkline_DisplayEmptyCellsAs] = AscDFH.CChangesDrawingsLong;

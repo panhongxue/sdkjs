@@ -3221,9 +3221,6 @@
 					this.removeCallback(-1, undefined, undefined, undefined, undefined, undefined);
 				},
 				deleteSelectedObjects: function () {
-					if (Asc["editor"] && Asc["editor"].isChartEditor && (!this.selection.chartSelection)) {
-						return true;
-					}
 					if (this.checkSelectedObjectsProtection()) {
 						return;
 					}
@@ -4550,9 +4547,6 @@
 				},
 
 				remove: function (dir, bOnlyText, bRemoveOnlySelection, bOnTextAdd, isWord) {
-					if (Asc["editor"] && Asc["editor"].isChartEditor && (!this.selection.chartSelection)) {
-						return;
-					}
 					var oTargetContent = this.getTargetDocContent();
 					if (oTargetContent) {
 						if (this.checkSelectedObjectsProtectionText()) {
@@ -7819,7 +7813,7 @@
 					var oleObject = new AscFormat.COleObject();
 					AscFormat.fillImage(oleObject, rasterImageId, x, y, extX, extY);
 					if (arrImagesForAddToHistory) {
-						oleObject.loadImagesFromContent(arrImagesForAddToHistory);
+						AscDFH.addImagesFromFrame(oleObject, arrImagesForAddToHistory);
 					}
 					if (data instanceof Uint8Array) {
 						oleObject.setBinaryData(data);

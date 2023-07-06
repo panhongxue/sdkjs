@@ -349,6 +349,10 @@ DrawingObjectsController.prototype.editChart = function(binary)
         {
             chart_space.setXLSX(AscCommon.Base64.decode(binary["workbookBinary"]));
         }
+				if (binary['imagesForAddToHistory'])
+				{
+					AscDFH.addImagesFromFrame(chart_space, binary['imagesForAddToHistory']);
+				}
         if(oSelectedChart.group)
         {
             var parent_group = oSelectedChart.group;

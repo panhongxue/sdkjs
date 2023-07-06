@@ -13983,7 +13983,7 @@
 				});
 			} else {
 				let imagesFromWord = pasteContent.props.addImagesFromWord;
-				if (imagesFromWord && imagesFromWord.length !== 0 && !(window["Asc"]["editor"] && window["Asc"]["editor"].isChartEditor) && specialPasteProps.images) {
+				if (imagesFromWord && imagesFromWord.length !== 0 && specialPasteProps.images) {
 					let oObjectsForDownload = AscCommon.GetObjectsForImageDownload(pasteContent.props._aPastedImages);
 					let oImageMap;
 

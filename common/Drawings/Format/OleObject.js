@@ -41,17 +41,6 @@ function (window, undefined) {
 
     const SPREADSHEET_APPLICATION_ID = 'Excel.Sheet.12';
 
-    function CChangesDrawingsImageId(Class, Type, OldPr, NewPr) {
-        AscDFH.CChangesDrawingsString.call(this, Class, Type, OldPr, NewPr);
-        this.FromLoad = false;
-    }
-    CChangesDrawingsImageId.prototype = Object.create(AscDFH.CChangesDrawingsString.prototype);
-    CChangesDrawingsImageId.prototype.constructor = CChangesDrawingsImageId;
-    CChangesDrawingsImageId.prototype.ReadFromBinary = function (reader) {
-        this.FromLoad = true;
-        AscDFH.CChangesDrawingsString.prototype.ReadFromBinary.call(this, reader);
-    };
-
         function COleSize(w, h){
             this.w = w;
             this.h = h;
@@ -103,7 +92,6 @@ function (window, undefined) {
         AscDFH.changesFactory[AscDFH.historyitem_ImageShapeSetStartBinaryData] = CChangesStartOleObjectBinary;
         AscDFH.changesFactory[AscDFH.historyitem_ImageShapeSetPartBinaryData] = CChangesPartOleObjectBinary;
         AscDFH.changesFactory[AscDFH.historyitem_ImageShapeSetEndBinaryData] = CChangesEndOleObjectBinary;
-        AscDFH.changesFactory[AscDFH.historyitem_ImageShapeLoadImagesfromContent] = CChangesDrawingsImageId;
 
         AscDFH.drawingsChangesMap[AscDFH.historyitem_ImageShapeSetData] = function(oClass, value){oClass.m_sData = value;};
         AscDFH.drawingsChangesMap[AscDFH.historyitem_ImageShapeSetApplicationId] = function(oClass, value){oClass.m_sApplicationId = value;};
@@ -119,15 +107,6 @@ function (window, undefined) {
 		AscDFH.drawingsChangesMap[AscDFH.historyitem_ImageShapeSetOleType] = function(oClass, value){oClass.m_nOleType = value;};
 		AscDFH.drawingsChangesMap[AscDFH.historyitem_ImageShapeSetMathObject] = function(oClass, value){oClass.m_oMathObject = value;};
 		AscDFH.drawingsChangesMap[AscDFH.historyitem_ImageShapeSetDrawAspect] = function(oClass, value){oClass.m_nDrawAspect = value;};
-		AscDFH.drawingsChangesMap[AscDFH.historyitem_ImageShapeLoadImagesfromContent] = function(oClass, sValue, bFromLoad) {
-            if (bFromLoad) {
-                if(AscCommon.CollaborativeEditing) {
-                    if(sValue && sValue.length > 0) {
-                        AscCommon.CollaborativeEditing.Add_NewImage(sValue);
-                    }
-                }
-            }
-        };
 
 
         let EOLEDrawAspect =
@@ -167,11 +146,6 @@ function (window, undefined) {
     COleObject.prototype.setDrawAspect = function (oPr) {
         AscCommon.History.Add(new AscDFH.CChangesDrawingsLong(this, AscDFH.historyitem_ImageShapeSetDrawAspect, this.m_nDrawAspect, oPr));
         this.m_nDrawAspect = oPr;
-    };
-    COleObject.prototype.loadImagesFromContent = function (arrImagesId) {
-        for (let i = 0; i < arrImagesId.length; i += 1) {
-            AscCommon.History.Add(new CChangesDrawingsImageId(this, AscDFH.historyitem_ImageShapeLoadImagesfromContent, '', arrImagesId[i]));
-        }
     };
     COleObject.prototype.setApplicationId = function(sApplicationId)
     {
@@ -398,7 +372,7 @@ function (window, undefined) {
 
     COleObject.prototype.editExternal = function(Data, sImageUrl, fWidth, fHeight, nPixWidth, nPixHeight, arrImagesForAddToHistory) {
         if (arrImagesForAddToHistory) {
-            this.loadImagesFromContent(arrImagesForAddToHistory);
+	        AscDFH.addImagesFromFrame(this, arrImagesForAddToHistory);
         }
 
         if(typeof Data === "string" && this.m_sData !== Data) {

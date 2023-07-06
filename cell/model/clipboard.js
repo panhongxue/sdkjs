@@ -958,9 +958,6 @@
 			},
 
 			_generateHtmlImg: function (isSelectedImages, worksheet) {
-				if (window["Asc"]["editor"] && window["Asc"]["editor"].isChartEditor) {
-					return false;
-				}
 				let objectRender = worksheet.objectRender;
 
 				objectRender.preCopy();
@@ -1809,7 +1806,7 @@
 									doPasteData();
 								}
 							});
-						} else if (!(window["Asc"]["editor"] && window["Asc"]["editor"].isChartEditor)) {
+						} else {
 
 							newFonts = getFontsFromDrawings(pasteData.Drawings);
 
@@ -2121,7 +2118,7 @@
 					}
 
 					var arr_shapes = content.Drawings;
-					if (arr_shapes && arr_shapes.length && !(window["Asc"]["editor"] && window["Asc"]["editor"].isChartEditor)) {
+					if (arr_shapes && arr_shapes.length) {
 						if (!bSlideObjects && content.Drawings.length === selectedContent2[1].content.Drawings.length) {
 							var oEndContent = {
 								Drawings: []
@@ -2875,7 +2872,7 @@
 				var aImagesToDownload = this._getImageFromHtml(node, true);
 				var specialPasteProps = window['AscCommon'].g_specialPasteHelper.specialPasteProps;
 				var api = Asc["editor"];
-				if (!api.isChartEditor && aImagesToDownload !== null &&
+				if (aImagesToDownload !== null &&
 					(!specialPasteProps || (specialPasteProps && specialPasteProps.images)))//load to server
 				{
 					AscCommon.sendImgUrls(api, aImagesToDownload, function (data) {
@@ -3514,7 +3511,7 @@
 					}
 				}
 				var aResult = this._getTableFromText(text, textImport);
-				if (aResult && !(aResult.onlyImages && window["Asc"]["editor"] && window["Asc"]["editor"].isChartEditor)) {
+				if (aResult) {
 					if (textImport) {
 						var arn = worksheet.model.selectionRange.getLast().clone();
 						var width = aResult.content && aResult.content[0] ? aResult.content[0].length - 1 : 0;
@@ -3933,20 +3930,6 @@
 				var documentContentBounds = new DocumentContentBounds();
 				var coverDocument = documentContentBounds.getBounds(0, 0, documentContent);
 				AscFormat.ExecuteNoHistory(this._parseChildren, this, [coverDocument]);
-
-				//не вставляем графику в редактор диаграмм
-				//если кроме графики есть ещё данные, то убираем только графику
-				if (window["Asc"]["editor"] && window["Asc"]["editor"].isChartEditor) {
-					if (this.aResult.props && this.aResult.props.addImagesFromWord && this.aResult.props.addImagesFromWord.length === 1 && this.aResult.content) {
-						if (1 === this.aResult.content.length && 1 === this.aResult.content[0].length && this.aResult.content[0][0].content && this.aResult.content[0][0].content.length === 0) {
-							window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
-							return;
-						} else {
-							this.aResult.props.addImagesFromWord = [];
-							this.clipboard.alreadyLoadImagesOnServer = true;
-						}
-					}
-				}
 
 				var newFonts = this.fontsNew;
 				if (pasteData.fonts && pasteData.fonts.length) {

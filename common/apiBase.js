@@ -792,10 +792,8 @@
 				{
 					if (oInformation["noHistory"])
 					{
-						AscFormat.ExecuteNoHistory(function ()
-						{
+						AscCommon.History.CreateChartPreviewPoint();
 							oLogicDocument.UpdateChart(oBinaryData);
-						});
 					}
 					else
 					{

@@ -1648,6 +1648,32 @@ CHistory.prototype.private_PostProcessingRecalcData = function()
 	{
 		return (point.Additional && form === point.Additional.FormFilling);
 	};
+	CHistory.prototype.private_IsChartPreviewPoint = function()
+	{
+		const oPoint = this.Points[this.Index];
+		if (oPoint)
+		{
+			return oPoint.Description === AscDFH.historydescription_Presentation_ShowChartPreview;
+		}
+		return false;
+	};
+	CHistory.prototype.UndoChartPreviewPoint = function()
+	{
+		if (this.private_IsChartPreviewPoint())
+		{
+			const arrChanges = this.Undo();
+			this.Clear_Redo();
+			return arrChanges;
+		}
+	};
+	CHistory.prototype.CreateChartPreviewPoint = function()
+	{
+		if (!this.private_IsChartPreviewPoint())
+		{
+			this.Create_NewPoint(AscDFH.historydescription_Presentation_ShowChartPreview);
+		}
+	};
+
 
 	//----------------------------------------------------------export--------------------------------------------------
 	window['AscCommon']          = window['AscCommon'] || {};

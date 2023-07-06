@@ -9160,7 +9160,12 @@ background-repeat: no-repeat;\
 	asc_docs_api.prototype.asc_editChartDrawingObject = function(chartBinary)
 	{
 		/**/
-
+		const arrChanges = AscCommon.History.UndoChartPreviewPoint();
+		if (chartBinary['noHistory'])
+		{
+			this.WordControl.m_oLogicDocument.RecalculateByChanges(arrChanges);
+			return;
+		}
 		// Находим выделенную диаграмму и накатываем бинарник
 		if (AscFormat.isObject(chartBinary))
 		{

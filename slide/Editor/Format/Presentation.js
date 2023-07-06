@@ -5550,19 +5550,16 @@ CPresentation.prototype.EditChart = function (binary) {
 	const oSlide = this.GetCurrentSlide();
 	if (oSlide)
 	{
-		if (binary['noHistory'])
-		{
-			if (this.Document_Is_SelectionLocked(AscCommon.changestype_Drawing_Props) === false)
+			AscCommon.History.UndoChartPreviewPoint();
+			if (binary['noHistory'])
 			{
-				AscFormat.ExecuteNoHistory(function ()
+				const oChart = oSlide.graphicObjects.getSingleSelectedChart();
+				if (oChart)
 				{
-					oSlide.graphicObjects.editChart(binary);
-					_this.Document_UpdateInterfaceState();
-					_this.Recalculate();
-				});
+					oChart.recalcChart();
+				}
 			}
-		}
-		else
+			else
 		{
 			oSlide.graphicObjects.checkSelectedObjectsAndCallback(function () {
 				oSlide.graphicObjects.editChart(binary);

@@ -329,11 +329,20 @@
 
 	CDiagramCellFrameManager.prototype.getBinary = function ()
 	{
-		const oDiagramBinary = new Asc.asc_CChartBinary(this.mainDiagram);
-		oDiagramBinary["workbookBinary"] = this.getWorkbookBinary();
-		oDiagramBinary["imagesForAddToHistory"] = this.getImagesForHistory();
-		oDiagramBinary["noHistory"] = !AscCommon.History.Can_Undo();
-		return oDiagramBinary;
+		const noHistory = !AscCommon.History.Can_Undo();
+		if (noHistory)
+		{
+			const oRet = {};
+			oRet['noHistory'] = true;
+			return oRet;
+		}
+		else
+		{
+			const oDiagramBinary = new Asc.asc_CChartBinary(this.mainDiagram);
+			oDiagramBinary["workbookBinary"] = this.getWorkbookBinary();
+			oDiagramBinary["imagesForAddToHistory"] = this.getImagesForHistory();
+			return oDiagramBinary;
+		}
 	}
 
 	CDiagramCellFrameManager.prototype.updateGeneralDiagramCache = function (aRanges)
@@ -622,7 +631,7 @@
 
 	CDiagramUpdater.prototype.getChartBinary = function (stream)
 	{
-		const oChartBinary = Asc.asc_CChartBinary(this.chart);
+		const oChartBinary = new Asc.asc_CChartBinary(this.chart);
 		oChartBinary.setOpenWorkbookOnClient(this.frameLoader.isOpenOnClient);
 		oChartBinary.setWorkbookBinary(stream);
 		return oChartBinary;

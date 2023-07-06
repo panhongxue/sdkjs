@@ -353,7 +353,7 @@ DrawingObjectsController.prototype.editChart = function(binary)
         {
             var parent_group = oSelectedChart.group;
             var major_group = oSelectedChart.getMainGroup();
-            for(i = parent_group.spTree.length -1; i > -1; --i)
+            for(let i = parent_group.spTree.length -1; i > -1; --i)
             {
                 if(parent_group.spTree[i] === oSelectedChart)
                 {
@@ -376,8 +376,8 @@ DrawingObjectsController.prototype.editChart = function(binary)
         }
         else
         {
-            chart_space.spPr.xfrm.setOffX(oSelectedChart.x);
-            chart_space.spPr.xfrm.setOffY(oSelectedChart.y);
+            chart_space.spPr.xfrm.setOffX(oSelectedChart.spPr.xfrm.offX);
+            chart_space.spPr.xfrm.setOffY(oSelectedChart.spPr.xfrm.offY);
             var pos = oSelectedChart.deleteDrawingBase();
             chart_space.addToDrawingObjects(pos);
             this.resetSelection();

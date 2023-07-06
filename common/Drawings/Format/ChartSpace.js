@@ -9102,6 +9102,10 @@ function(window, undefined) {
 		var oDataRange = this.getDataRefs();
 		oDataRange.collectRefsInsideRange(oRange, aRefs);
 	};
+	CChartSpace.prototype.collectRefsInsideRangeForInsertColRow = function (oRange, aRefs, isInsertCol) {
+		var oDataRange = this.getDataRefs();
+		oDataRange.collectRefsInsideRangeForInsertColRow(oRange, aRefs, isInsertCol);
+	};
 	CChartSpace.prototype.collectIntersectionRefs = function (aRanges, aRefs) {
 		if (!Array.isArray(aRanges) || aRanges.length === 0) {
 			return;

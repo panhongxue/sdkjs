@@ -815,7 +815,7 @@ var AscTestShortcut = AscTestShortcut || {};
 
 		selectToCell(0, 0);
 
-		const oProps = editor.asc_getChartObject(true);
+		const oProps = editor.asc_getChartSettings(true);
 		oProps.changeType(0);
 		editor.asc_addChartDrawingObject(oProps);
 		return selectedObjects()[0];

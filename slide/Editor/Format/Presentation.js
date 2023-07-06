@@ -5516,6 +5516,7 @@ CPresentation.prototype.addChart = function (nTypeChart, isFromInterface, Placeh
 
 		this.DrawingDocument.m_oWordControl.OnUpdateOverlay();
 	}
+	return oChart;
 };
 
 CPresentation.prototype.RemoveSelection = function (bNoResetChartSelection) {

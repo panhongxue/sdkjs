@@ -234,10 +234,7 @@
 
 	function createChart()
 	{
-		const oChart = editor.asc_getChartObject(Asc.c_oAscChartTypeSettings.lineNormal);
-		oChart.setParent(oGlobalLogicDocument.Slides[0]);
-
-		oChart.addToDrawingObjects();
+		const oChart = oGlobalLogicDocument.addChart(Asc.c_oAscChartTypeSettings.lineNormal);
 		oChart.spPr.setXfrm(new AscFormat.CXfrm());
 		oChart.spPr.xfrm.setOffX(0);
 		oChart.spPr.xfrm.setOffY(0);

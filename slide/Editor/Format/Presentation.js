@@ -5456,7 +5456,7 @@ CPresentation.prototype.Get_AbsoluteColumn = function () {
 };
 
 
-CPresentation.prototype.addChart = function (oChart, isFromInterface, Placeholder) {
+CPresentation.prototype.addChart = function (nTypeChart, isFromInterface, Placeholder) {
 	var _this = this;
 	var oSlide = _this.Slides[_this.CurPage];
 	if (!oSlide) {
@@ -5468,6 +5468,10 @@ CPresentation.prototype.addChart = function (oChart, isFromInterface, Placeholde
 	this.Api.inkDrawer.endSilentMode();
 	this.SetThumbnailsFocusElement(FOCUS_OBJECT_MAIN);
 	_this.FocusOnNotes = false;
+
+	AscFonts.IsCheckSymbols = true;
+	const oChart = this.GetChartObject(nTypeChart, true);
+	AscFonts.IsCheckSymbols = false;
 	oChart.setParent(oSlide);
 
 	var PosX = (this.GetWidthMM() - oChart.spPr.xfrm.extX) / 2;
@@ -5497,6 +5501,7 @@ CPresentation.prototype.addChart = function (oChart, isFromInterface, Placeholde
 	oSlide.graphicObjects.selectObject(oChart, 0);
 
 	if (isFromInterface) {
+		oChart.recalculate();
 		AscFonts.FontPickerByCharacter.checkText("", this, function () {
 			_this.Recalculate();
 			_this.Document_UpdateInterfaceState();
@@ -5568,7 +5573,7 @@ CPresentation.prototype.EditChart = function (binary) {
 };
 
 CPresentation.prototype.GetChartObject = function (type) {
-	return this.Slides[this.CurPage].graphicObjects.getChartObject(type);
+	return this.Slides[this.CurPage].graphicObjects.getChartObject(type, undefined, undefined, true);
 };
 
 CPresentation.prototype.Check_GraphicFrameRowHeight = function (grFrame, bIgnoreHeight) {

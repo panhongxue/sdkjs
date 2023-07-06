@@ -6007,7 +6007,7 @@ CDocument.prototype.GetChartSettings = function()
 {
 	return this.Controller.GetChartSettings();
 };
-CDocument.prototype.GetChartObject = function(type)
+CDocument.prototype.GetChartObject = function(type, bAddToHistory)
 {
     var W = null, H = null;
     if(type != null)
@@ -6028,7 +6028,7 @@ CDocument.prototype.GetChartObject = function(type)
             }
         }
     }
-    return this.DrawingObjects.getChartObject(type, W, H);
+    return this.DrawingObjects.getChartObject(type, W, H, bAddToHistory);
 
 };
 CDocument.prototype.GetImageDataFromSelection = function()

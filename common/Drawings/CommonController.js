@@ -5805,9 +5805,10 @@
 				Document_UpdateInterfaceState: function () {
 				},
 
-				getChartObject: function (type, w, h) {
+				getChartObject: function (type, w, h, bAddToHistory) {
 					if (null != type) {
-						return AscFormat.ExecuteNoHistory(function () {
+						function callback()
+						{
 							var options = new Asc.asc_ChartSettings();
 							options.putType(type);
 							options.style = 1;
@@ -5848,7 +5849,16 @@
 							ret.colorMapOverride = this.getColorMapOverride();
 							options.putView3d(ret.getView3d());
 							return ret;
-						}, this, []);
+						}
+
+						if (bAddToHistory)
+						{
+							return callback.call(this);
+						}
+						else
+						{
+							return AscFormat.ExecuteNoHistory(callback, this, []);
+						}
 					} else {
 						var by_types = getObjectsByTypesFromArr(this.selection.groupSelection ? this.selection.groupSelection.selectedObjects : this.selectedObjects, true);
 						if (by_types.charts.length === 1) {

@@ -9090,20 +9090,23 @@ background-repeat: no-repeat;\
 		}
 	};
 
-	asc_docs_api.prototype.asc_addChartDrawingObject = function(options)
+	asc_docs_api.prototype.asc_addChartDrawingObject = function(nType)
 	{
-		if (false === this.WordControl.m_oLogicDocument.Document_Is_SelectionLocked(changestype_Paragraph_Content))
+		const oLogicDocument = this.private_GetLogicDocument();
+		if (!oLogicDocument)
+			return;
+		if (false === oLogicDocument.Document_Is_SelectionLocked(changestype_Paragraph_Content))
 		{
-			this.WordControl.m_oLogicDocument.StartAction(AscDFH.historydescription_Document_AddChart);
+			oLogicDocument.StartAction(AscDFH.historydescription_Document_AddChart);
 			AscFonts.IsCheckSymbols = true;
+			const oChart = oLogicDocument.GetChartObject(nType, true);
 			this.asc_SetSilentMode(true);
-			this.WordControl.m_oLogicDocument.AddInlineImage(null, null, null, options);
+			oLogicDocument.AddInlineImage(null, null, null, oChart);
 			AscFonts.IsCheckSymbols = false;
 
-			var oThis = this;
 			AscFonts.FontPickerByCharacter.checkText("", this, function() {
 				this.asc_SetSilentMode(false, true);
-				oThis.WordControl.m_oLogicDocument.FinalizeAction();
+				oLogicDocument.FinalizeAction();
 			}, false, false, false);
 		}
 	};

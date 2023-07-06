@@ -7845,20 +7845,13 @@ background-repeat: no-repeat;\
 		this.frameLoader = null;
 	};
 
-	asc_docs_api.prototype.asc_addChartDrawingObject = function(chartBinary, Placeholder)
+	asc_docs_api.prototype.asc_addChartDrawingObject = function(nType, Placeholder)
 	{
-		/**/
+		const oLogicDocument = this.private_GetLogicDocument();
+		if (!oLogicDocument)
+		return;
 
-		// Приводим бинарик к объекту типа CChartAsGroup и добавляем объект
-		if (AscFormat.isObject(chartBinary))
-		{
-			//if ( false === this.WordControl.m_oLogicDocument.Document_Is_SelectionLocked(changestype_Drawing_Props) )
-			{
-				AscFonts.IsCheckSymbols = true;
-				this.WordControl.m_oLogicDocument.addChart(chartBinary, true, Placeholder);
-				AscFonts.IsCheckSymbols = false;
-			}
-		}
+		this.WordControl.m_oLogicDocument.addChart(nType, true, Placeholder);
 	};
 
 	asc_docs_api.prototype.asc_editChartDrawingObject = function(chartBinary)

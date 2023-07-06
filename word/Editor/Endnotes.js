@@ -1509,6 +1509,20 @@ CEndnotesController.prototype.UpdateChart = function(oChart)
 
 	this.CurEndnote.UpdateChart(oChart);
 };
+CEndnotesController.prototype.OpenChartEditor = function()
+{
+	if (false === this.private_CheckEndnotesSelectionBeforeAction())
+		return;
+
+	this.CurEndnote.OpenChartEditor();
+};
+CEndnotesController.prototype.TryUpdateChart = function()
+{
+	if (false === this.private_CheckEndnotesSelectionBeforeAction())
+		return;
+
+	this.CurEndnote.TryUpdateChart();
+};
 CEndnotesController.prototype.ApplyChartSettings = function(oChartSettings)
 {
 	if (false === this.private_CheckEndnotesSelectionBeforeAction())

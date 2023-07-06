@@ -1646,15 +1646,32 @@ CGraphicObjects.prototype =
     resetChartElementsSelection: DrawingObjectsController.prototype.resetChartElementsSelection,
     checkCurrentTextObjectExtends: DrawingObjectsController.prototype.checkCurrentTextObjectExtends,
 
-		openChartEditor: function (oChart)
+		openChartEditor: function ()
 		{
 			if(false === this.document.Document_Is_SelectionLocked(changestype_Drawing_Props))
 			{
-				const oChartLoader = new AscCommon.CFrameDiagramBinaryLoader(oChart);
-				editor.setFrameLoader(oChartLoader);
-				oChartLoader.tryOpen();
+				const oChart = this.getChartObject();
+				if (oChart)
+				{
+					const oChartLoader = new AscCommon.CFrameDiagramBinaryLoader(oChart);
+					editor.setFrameLoader(oChartLoader);
+					oChartLoader.tryOpen();
+				}
 			}
 		},
+
+	tryUpdateChart: function ()
+	{
+		if(false === this.document.Document_Is_SelectionLocked(changestype_Drawing_Props))
+		{
+			const oChart = this.getChartObject();
+			if (oChart)
+			{
+				var oUpdater = new AscCommon.CDiagramUpdater(oChart);
+				oUpdater.update();
+			}
+		}
+	},
 
     handleChartDoubleClick: function(drawing, chart, e, x, y, pageIndex)
     {

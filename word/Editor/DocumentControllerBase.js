@@ -338,6 +338,16 @@ CDocumentControllerBase.prototype.EditChart = function(Chart){};
  */
 CDocumentControllerBase.prototype.UpdateChart = function(Chart){};
 /**
+ * Пробуем открыть редактор диаграмм.
+ * @param Chart
+ */
+CDocumentControllerBase.prototype.OpenChartEditor = function(){};
+/**
+ * Пробуем обновить диаграмму без открытия фрейма.
+ * @param Chart
+ */
+CDocumentControllerBase.prototype.TryUpdateChart = function(){};
+/**
  * Применяем настройки диаграммы.
  * @param ChartSettings
  */

@@ -5999,6 +5999,14 @@ CDocument.prototype.UpdateChart = function(Chart)
 {
 	this.Controller.UpdateChart(Chart);
 };
+CDocument.prototype.OpenChartEditor = function()
+{
+	this.Controller.OpenChartEditor();
+};
+CDocument.prototype.TryUpdateChart = function()
+{
+	this.Controller.TryUpdateChart();
+};
 CDocument.prototype.ApplyChartSettings = function(oChartSettings)
 {
 	return this.Controller.ApplyChartSettings(oChartSettings);

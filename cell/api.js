@@ -4173,13 +4173,6 @@ var editor;
     ws = this.wb.getWorksheet();
     ws.setSelection(1 === d.length ? d[0].getBBox0() : d);
   };
-	spreadsheet_api.prototype.asc_getFrameChartObject = function ()
-	{
-		if (this.frameManager)
-		{
-			return this.frameManager.getChartObject();
-		}
-	}
 	spreadsheet_api.prototype.asc_closeCellEditor = function (cancel) {
 		var result = true;
 		if (this.wb) {
@@ -4446,7 +4439,7 @@ var editor;
 	{
 		if (this.frameManager)
 		{
-			return this.frameManager.mainDiagram.getAscSettings();
+			return this.frameManager.getAscSettings();
 		}
 	};
 
@@ -8927,6 +8920,7 @@ var editor;
   prot["asc_showDrawingObjects"] = prot.asc_showDrawingObjects;
   prot["asc_drawingObjectsExist"] = prot.asc_drawingObjectsExist;
   prot["asc_getChartObject"] = prot.asc_getChartObject;
+  prot["asc_getFrameChartSettings"] = prot.asc_getFrameChartSettings;
   prot["asc_addChartDrawingObject"] = prot.asc_addChartDrawingObject;
   prot["asc_applyChartSettings"] = prot.asc_applyChartSettings;
   prot["asc_getChartSettings"] = prot.asc_getChartSettings;

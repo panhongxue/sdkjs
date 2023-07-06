@@ -3134,6 +3134,20 @@ CDocumentContent.prototype.UpdateChart = function(Chart)
 		return this.LogicDocument.DrawingObjects.updateChart(Chart);
 	}
 };
+CDocumentContent.prototype.OpenChartEditor = function()
+{
+	if (docpostype_DrawingObjects === this.CurPos.Type)
+	{
+		return this.LogicDocument.DrawingObjects.openChartEditor();
+	}
+};
+CDocumentContent.prototype.TryUpdateChart = function()
+{
+	if (docpostype_DrawingObjects === this.CurPos.Type)
+	{
+		return this.LogicDocument.DrawingObjects.tryUpdateChart();
+	}
+};
 CDocumentContent.prototype.ApplyChartSettings = function(oChartSettings)
 {
 	if (docpostype_DrawingObjects === this.CurPos.Type)

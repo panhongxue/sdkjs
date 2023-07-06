@@ -1917,20 +1917,20 @@
 		AscCommon.History.ClearPointIndex();
 		this.updateChart();
 	};
-	asc_ChartSettings.prototype.updateChart = function() {
+	asc_ChartSettings.prototype.updateChart = function(bSelect) {
 		if(this.chartSpace) {
 			this.chartSpace.onDataUpdate();
-			this.updateGeneralChart();
+			this.updateGeneralChart(bSelect);
 		}
 	};
 	asc_ChartSettings.prototype.setFUpdateGeneralChart = function(fUpdate) {
 		this.fUpdateGeneralChart = fUpdate;
 	};
-	asc_ChartSettings.prototype.updateGeneralChart = function ()
+	asc_ChartSettings.prototype.updateGeneralChart = function (bSelect)
 	{
 		if (this.fUpdateGeneralChart)
 		{
-			this.fUpdateGeneralChart();
+			this.fUpdateGeneralChart(bSelect);
 		}
 	}
 	asc_ChartSettings.prototype.read = function(_params, _cursor) {

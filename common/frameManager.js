@@ -101,7 +101,7 @@
 	{
 		return this.generalDocumentUrls[sImageId];
 	};
-	CCellFrameManager.prototype.openWorkbookData = function (sStream, bIsOpenOnClient)
+	CCellFrameManager.prototype.openWorkbookData = function (sStream)
 	{
 		const oFile = new AscCommon.OpenFileResult();
 		oFile.bSerFormat = AscCommon.checkStreamSignature(sStream, AscCommon.c_oSerFormat.Signature);
@@ -240,6 +240,17 @@
 	{
 		return true;
 	};
+	CDiagramCellFrameManager.prototype.updateProtectChart = function (bProtect)
+	{
+		if (bProtect && this.api.canEdit())
+		{
+			this.api.asc_addRestriction(Asc.c_oAscRestrictionType.View);
+		} else if (!bProtect && !this.api.canEdit())
+		{
+			this.api.asc_removeRestriction(Asc.c_oAscRestrictionType.View);
+		}
+		this.api.sendEvent('asc_onShowProtectedChartPopup', bProtect);
+	};
 	CDiagramCellFrameManager.prototype.repairDiagramXLSX = function ()
 	{
 		const oThis = this;
@@ -322,6 +333,14 @@
 			}
 			oThis.selectMainDiagram();
 			oThis.api.wb.onFrameEditorReady();
+			if (oThis.mainDiagram.isExternal())
+			{
+				oThis.updateProtectChart(true);
+			}
+			else
+			{
+				oThis.updateProtectChart(false);
+			}
 			oApi.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Open);
 			delete oApi.fAfterLoad;
 		}
@@ -363,7 +382,7 @@
 		this.sendFromFrameToGeneralEditor(new CFrameUpdateDiagramData(this.mainDiagram, true));
 	};
 
-	CDiagramCellFrameManager.prototype.getChartObject = function ()
+	CDiagramCellFrameManager.prototype.getAscSettings = function ()
 	{
 		const oProps = this.mainDiagram.getAscSettings();
 		const oThis = this;

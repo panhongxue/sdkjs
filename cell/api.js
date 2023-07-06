@@ -1609,7 +1609,7 @@ var editor;
   };
 
   spreadsheet_api.prototype.asc_isDocumentModified = function() {
-    if (!this.canSave || this.asc_getCellEditMode()) {
+    if (!this.canSave || this.asc_getCellEditMode() || this.isOpenedChartFrame) {
       // Пока идет сохранение или редактирование ячейки, мы не закрываем документ
       return true;
     } else if (History && History.Have_Changes) {

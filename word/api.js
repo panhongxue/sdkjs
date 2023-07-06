@@ -1111,7 +1111,7 @@
 
 	asc_docs_api.prototype.isDocumentModified = function()
 	{
-		if (!this.canSave)
+		if (!this.canSave || this.isOpenedChartFrame)
 		{
 			// Пока идет сохранение, мы не закрываем документ
 			return true;

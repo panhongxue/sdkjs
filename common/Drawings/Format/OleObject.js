@@ -527,7 +527,7 @@ function (window, undefined) {
         if (oOleObject instanceof AscFormat.COleObject) {
             const oApi = Asc.editor || editor;
             if (!oApi.isOpenedChartFrame) {
-                oApi.isOleEditor = true;
+                oApi.frameManager.startLoadOleEditor();
                 oApi.asc_onOpenChartFrame();
                 const oController = oApi.getGraphicController();
                 if (oController) {

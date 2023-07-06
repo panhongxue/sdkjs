@@ -1768,7 +1768,7 @@ var editor;
 		//по идее нужно делать его полное зануление, а при открытии создавать заново. но есть функции, которые
 		//добавляются в интерфейсе и в случае с историей версий заново не добавляются
 		this.wb.removeHandlersList();
-		if (this.frameManager) {
+		if (this.frameManager.isFrameEditor()) {
 			this.wb.removeEventListeners();
 			var cellEditor = this.wb.cellEditor;
 			if (this.wb.cellEditor) {
@@ -3180,7 +3180,7 @@ var editor;
 
 		//история версий - возможно стоит грамотно чистить wbview, но не пересоздавать
 		var previousVersionZoom;
-		if ((this.VersionHistory || this.frameManager) && this.controller) {
+		if ((this.VersionHistory || this.frameManager.isFrameEditor()) && this.controller) {
 			var elem = document.getElementById("ws-v-scrollbar");
 			if (elem) {
 				elem.parentNode.removeChild(elem);
@@ -3247,7 +3247,7 @@ var editor;
 			this.sendEvent('asc_onError', c_oAscError.ID.OpenWarning, c_oAscError.Level.NoCritical);
 		}
 
-		if (this.VersionHistory || this.frameManager) {
+		if (this.VersionHistory || this.frameManager.isFrameEditor()) {
 			if (this.VersionHistory && this.VersionHistory.changes) {
 				this.VersionHistory.applyChanges(this);
 			}
@@ -4437,10 +4437,7 @@ var editor;
 	};
 	spreadsheet_api.prototype.asc_getFrameChartSettings = function ()
 	{
-		if (this.frameManager)
-		{
-			return this.frameManager.getAscSettings();
-		}
+		return this.frameManager.getAscSettings();
 	};
 
   spreadsheet_api.prototype.asc_addChartDrawingObject = function(chart) {
@@ -4489,10 +4486,8 @@ var editor;
    * @param {{}} [oOleObjectInfo] info from oleObject
    */
   spreadsheet_api.prototype.asc_addTableOleObjectInOleEditor = function(oOleObjectInfo) {
-	  this.isEditOleMode = true;
-	  this.isChartEditor = false;
-		this.frameManager = new AscCommon.COleCellFrameManager(this);
-	  this.frameManager.obtain(oOleObjectInfo || {"binary": AscCommon.getEmpty()});
+		this.frameManager = new AscCommon.COleCellFrameManager();
+	  this.frameManager.obtain(oOleObjectInfo);
  	};
   /**
    * get binary info about changed ole object
@@ -4912,7 +4907,7 @@ var editor;
   };
 
   spreadsheet_api.prototype.asc_doubleClickOnTableOleObject = function (obj) {
-    this.isOleEditor = true;	// Для совместного редактирования
+    this.frameManager.startLoadOleEditor();	// Для совместного редактирования
     this.asc_onOpenChartFrame();
     // console.log(editor.WordControl)
     // if(!window['IS_NATIVE_EDITOR']) {

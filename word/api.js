@@ -9136,7 +9136,7 @@ background-repeat: no-repeat;\
 	};
 	asc_docs_api.prototype.asc_doubleClickOnTableOleObject    = function(obj)
 	{
-		this.isOleEditor = true;	// Для совместного редактирования
+		this.frameManager.startLoadOleEditor();	// Для совместного редактирования
 		this.asc_onOpenChartFrame();
 
 		if(!window['IS_NATIVE_EDITOR'])

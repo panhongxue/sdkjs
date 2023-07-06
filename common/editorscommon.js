@@ -10682,7 +10682,7 @@
         this.isChangesHandled = false;
 
         this.cryptoMode = 0; // start crypto mode
-		this.isChartEditor = false;
+		this.isFrameEditor = false;
 
         this.isExistDecryptedChanges = false; // был ли хоть один запрос на расшифровку данных (были ли чужие изменения)
 
@@ -10716,7 +10716,7 @@
             if (!window["AscDesktopEditor"])
                 return false;
 
-            if (this.isChartEditor)
+            if (this.isFrameEditor)
             	return false;
 
             if (2 == this.cryptoMode)

@@ -345,7 +345,7 @@
 
     // create canvas
     if (null != this.element) {
-		if (!this.Api.VersionHistory && !this.Api.frameManager) {
+		if (!this.Api.VersionHistory && this.Api.frameManager.isInitFrameManager) {
 			this.element.innerHTML = '<div id="ws-canvas-outer">\
 											<canvas id="ws-canvas"></canvas>\
 											<canvas id="ws-canvas-overlay"></canvas>\
@@ -3648,7 +3648,7 @@
     var previewOleObjectContext = AscCommonExcel.getContext(sizes.width, sizes.height, this);
     previewOleObjectContext.DocumentRenderer = AscCommonExcel.getGraphics(previewOleObjectContext);
     previewOleObjectContext.isPreviewOleObjectContext = true;
-		previewOleObjectContext.isNotDrawBackground = !(this.Api.frameManager && this.Api.frameManager.isFromSheetEditor);
+		previewOleObjectContext.isNotDrawBackground = !(this.Api.frameManager.isFromSheetEditor);
     ws.drawForPrint(previewOleObjectContext, page, 0, 1);
     return previewOleObjectContext;
   };
@@ -3807,9 +3807,7 @@
             }
             this.onShowDrawingObjects();
         }
-				if (this.Api.frameManager) {
-					this.Api.frameManager.updateGeneralDiagramCache(aRanges);
-				}
+				this.Api.frameManager.updateGeneralDiagramCache(aRanges);
     };
     WorkbookView.prototype.handleChartsOnChangeSheetName = function (oWorksheet, sOldName, sNewName) {
         //change sheet name in chart references

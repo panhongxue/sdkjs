@@ -124,10 +124,7 @@
 		this.textArtPreviewManager = null;
 		this.shapeElementId        = null;
 		// Режим вставки диаграмм в редакторе документов
-		this.isChartEditor         = false;
 		this.isOpenedChartFrame    = false;
-
-		this.isOleEditor = false;
 
 		this.MathMenuLoad          = false;
 
@@ -231,6 +228,8 @@
 		this.formatPainter = new AscCommon.CFormatPainter(this);
 		this.eyedropper = new AscCommon.CEyedropper(this);
 		this.inkDrawer = new AscCommon.CInkDrawer(this);
+
+		this.frameManager = new AscCommon.CMainEditorFrameManager();
 		this._correctEmbeddedWork();
 
 		return this;
@@ -435,7 +434,7 @@
 		return null;
 	};
 	baseEditorsApi.prototype.isFrameEditor = function () {
-		return !!(this.frameManager); // TODO: solve the confusion
+		return this.frameManager.isFrameEditor();
 	};
 	baseEditorsApi.prototype.asc_setCoreProps                = function(oProps)
 	{
@@ -493,10 +492,18 @@
 
 		if (AscCommon.chartMode === this.documentUrl)
 		{
-			this.isChartEditor = true;
-            AscCommon.EncryptionWorker.isChartEditor = true;
+			this.frameManager = new AscCommon.CDiagramCellFrameManager();
+        AscCommon.EncryptionWorker.isFrameEditor = true;
 			this.DocInfo.put_OfflineApp(true);
 		}
+
+		if (AscCommon.oleMode === this.documentUrl)
+		{
+			this.frameManager = new AscCommon.COleCellFrameManager();
+			AscCommon.EncryptionWorker.isFrameEditor = true;
+			this.DocInfo.put_OfflineApp(true);
+		}
+
 		else if (AscCommon.offlineMode === this.documentUrl)
 		{
 			this.DocInfo.put_OfflineApp(true);
@@ -517,7 +524,7 @@
 			window["AscDesktopEditor"]["SetDocumentName"](this.documentTitle);
 		}
 
-		if (!this.isChartEditor && undefined !== window["AscDesktopEditor"] && undefined !== window["AscDesktopEditor"]["CryptoMode"])
+		if (!this.frameManager.isFrameEditor() && undefined !== window["AscDesktopEditor"] && undefined !== window["AscDesktopEditor"]["CryptoMode"])
 		{
 			this.DocInfo.put_Encrypted(0 < window["AscDesktopEditor"]["CryptoMode"]);
 		}
@@ -2297,7 +2304,7 @@
 	};
 	baseEditorsApi.prototype.asc_addImage                        = function(obj)
 	{
-		if (this.frameManager)
+		if (this.frameManager.isFrameEditor())
 		{
 			this.oSaveObjectForAddImage = obj;
 			this.sendFromFrameToGeneralEditor({

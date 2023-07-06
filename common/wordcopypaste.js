@@ -2359,7 +2359,7 @@ function sendImgUrls(api, images, callback, bNotShowError, token) {
     }
     callback(data);
   };
-  if (api.frameManager) {
+  if (api.frameManager.isFrameEditor()) {
 	  api.frameManager.sendLoadImages(images, token, bNotShowError);
     return;
     }

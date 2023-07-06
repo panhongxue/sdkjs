@@ -1939,7 +1939,7 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
             const localUrl = aImagesSync[i];
             if(api.DocInfo && api.DocInfo.get_OfflineApp()) {
                 const urlWithMedia = AscCommon.g_oDocumentUrls.mediaPrefix + localUrl;
-                if (api.frameManager && api.frameManager.getGeneralImageUrl(urlWithMedia)) {
+                if (api.frameManager.getGeneralImageUrl(urlWithMedia)) {
                     AscCommon.g_oDocumentUrls.addImageUrl(localUrl, api.frameManager.getGeneralImageUrl(urlWithMedia));
                 } else {
                     AscCommon.g_oDocumentUrls.addImageUrl(localUrl, api.documentUrl + urlWithMedia);
@@ -1974,7 +1974,7 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
         for (let localUrl in oBulletImages) {
             if(api.DocInfo && api.DocInfo.get_OfflineApp()) {
                 const urlWithMedia = AscCommon.g_oDocumentUrls.mediaPrefix + localUrl;
-                if (api.frameManager && api.frameManager.getGeneralImageUrl(urlWithMedia)) {
+                if (api.frameManager.getGeneralImageUrl(urlWithMedia)) {
                     AscCommon.g_oDocumentUrls.addImageUrl(localUrl, api.frameManager.getGeneralImageUrl(urlWithMedia));
                 } else {
                     AscCommon.g_oDocumentUrls.addImageUrl(localUrl, api.documentUrl + urlWithMedia);
@@ -2639,7 +2639,7 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
 
 		if (chart instanceof Asc.asc_ChartSettings)
 		{
-			if (api.isChartEditor)
+			if (api.frameManager.isDiagramEditor())
 			{
 				_this.controller.selectObject(aObjects[0].graphicObject, 0);
 				_this.controller.editChartDrawingObjects(chart);
@@ -2649,7 +2649,6 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
 		} else if (isObject(chart) && chart["binary"])
 		{
 			const oApi = Asc.editor;
-			oApi.frameManager = new AscCommon.CDiagramCellFrameManager(oApi);
 			oApi.frameManager.preObtain(chart);
 		}
 	};
@@ -2658,10 +2657,6 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
     {
         if ( chart )
         {
-            if(api.frameManager)
-            {
-	            api.frameManager.selectMainDiagram();
-            }
             _this.controller.editChartDrawingObjects(chart);
             //_this.showDrawingObjects();
         }
@@ -3311,7 +3306,7 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
         _this.controller.checkSelectedObjectsAndCallback(function () {
             oChart.fillDataFromTrack(oRanges);
         }, [], false, AscDFH.historydescription_ChartDrawingObjects);
-	    if (oChart.isFrameChart && api.frameManager)
+	    if (oChart.isFrameChart)
 	    {
 		    api.frameManager.sendUpdateDiagram();
 	    }

@@ -35,18 +35,95 @@
 (function (window)
 {
 
+	function CFrameManagerBase()
+	{
+		this.isInitFrameManager = false;
+	}
+	CFrameManagerBase.prototype.clear = function () {};
+	CFrameManagerBase.prototype.getWorkbookBinary = function () {};
+	CFrameManagerBase.prototype.getAllImageIds = function () {};
+	CFrameManagerBase.prototype.getImagesForHistory = function () {};
+	CFrameManagerBase.prototype.obtain = function (oInfo) {};
+	CFrameManagerBase.prototype.setGeneralDocumentUrls = function (oPr) {};
+	CFrameManagerBase.prototype.getGeneralImageUrl = function (sImageId) {};
+	CFrameManagerBase.prototype.openWorkbookData = function (sStream) {};
+	CFrameManagerBase.prototype.updateGeneralDiagramCache = function (aRanges) {};
+	CFrameManagerBase.prototype.sendLoadImages = function (arrImages, token, bNotShowError) {};
+	CFrameManagerBase.prototype.sendFromFrameToGeneralEditor = function (oSendObject) {};
+	CFrameManagerBase.prototype.sendFromGeneralToFrameEditor = function (oSendObject) {};
+	CFrameManagerBase.prototype.getAscSettings               = function (oSendObject) {};
+	CFrameManagerBase.prototype.startLoadOleEditor = function () {};
+	CFrameManagerBase.prototype.endLoadOleEditor = function () {};
+	CFrameManagerBase.prototype.startLoadChartEditor = function () {};
+	CFrameManagerBase.prototype.sendUpdateDiagram = function () {};
+	CFrameManagerBase.prototype.endLoadChartEditor = function () {};
+
+	CFrameManagerBase.prototype.preObtain = function (oInfo) {
+		this.obtain(oInfo);
+	};
+	CFrameManagerBase.prototype.isDiagramEditor = function ()
+	{
+		return false;
+	};
+	CFrameManagerBase.prototype.isOleEditor = function ()
+	{
+		return false;
+	};
+	CFrameManagerBase.prototype.isGeneralEditor = function ()
+	{
+		return false;
+	};
+	CFrameManagerBase.prototype.isFrameEditor = function () {
+		return false;
+	};
+
+
+	function CMainEditorFrameManager()
+	{
+		CFrameManagerBase.call(this);
+		this.isInitFrameManager = true;
+		this.isLoadingOleEditor = false;
+		this.isLoadingChartEditor = false;
+	}
+	AscFormat.InitClassWithoutType(CMainEditorFrameManager, CFrameManagerBase);
+	CMainEditorFrameManager.prototype.isGeneralEditor = function ()
+	{
+		return true;
+	};
+	CMainEditorFrameManager.prototype.startLoadOleEditor = function ()
+	{
+		this.isLoadingOleEditor = true;
+	};
+	CMainEditorFrameManager.prototype.endLoadOleEditor = function ()
+	{
+		this.isLoadingOleEditor = false;
+	};
+
+	CMainEditorFrameManager.prototype.startLoadChartEditor = function ()
+	{
+		this.isLoadingChartEditor = true;
+	};
+	CMainEditorFrameManager.prototype.endLoadChartEditor = function ()
+	{
+		this.isLoadingChartEditor = false;
+	};
+
+
 	function CCellFrameManager()
 	{
+		CFrameManagerBase.call(this);
 		this.api = Asc.editor || editor;
 		this.generalDocumentUrls = {};
+		this.isInitFrameManager = true;
 	}
+	AscFormat.InitClassWithoutType(CCellFrameManager, CFrameManagerBase);
 
 	CCellFrameManager.prototype.getWorkbookBinary = function ()
 	{
 		const oBinaryFileWriter = new AscCommonExcel.BinaryFileWriter(this.api.wbModel);
 		const arrBinaryData = oBinaryFileWriter.Write().split(';');
 		return arrBinaryData[arrBinaryData.length - 1];
-	}
+	};
 	CCellFrameManager.prototype.getAllImageIds = function ()
 	{
 		const arrRasterImageIds = [];
@@ -65,12 +142,8 @@
 			}
 		}
 		return arrRasterImageIds;
-	}
-
-	CCellFrameManager.prototype.getChartObject = function ()
-	{
-
 	};
+
 	CCellFrameManager.prototype.getImagesForHistory = function ()
 	{
 		const arrRasterImageIds = this.getAllImageIds();
@@ -85,13 +158,14 @@
 		}
 
 		return urlsForAddToHistory;
-	}
+	};
 
 	CCellFrameManager.prototype.obtain = function (oInfo)
 	{
+		this.isInitFrameManager = false;
 		const sStream = oInfo["binary"];
-		this.setGeneralDocumentUrls(oInfo["documentImageUrls"]);
-		this.openWorkbookData(sStream, oInfo["openOnClient"]);
+		this.setGeneralDocumentUrls(oInfo["documentImageUrls"] || {});
+		this.openWorkbookData(sStream);
 	};
 	CCellFrameManager.prototype.setGeneralDocumentUrls = function (oPr)
 	{
@@ -111,18 +185,14 @@
 		this.api.imagesFromGeneralEditor = this.generalDocumentUrls;
 		this.api.openDocument(oFile);
 	}
-	CCellFrameManager.prototype.isDiagramEditor = function ()
+	CCellFrameManager.prototype.isGeneralEditor = function ()
 	{
 		return false;
 	};
-	CCellFrameManager.prototype.isOleEditor = function ()
+	CCellFrameManager.prototype.isFrameEditor = function ()
 	{
-		return false;
+		return true;
 	};
-	CCellFrameManager.prototype.updateGeneralDiagramCache = function (aRanges)
-	{
-
-	}
 
 	CCellFrameManager.prototype.sendLoadImages = function (arrImages, token, bNotShowError)
 	{
@@ -139,16 +209,23 @@
 		this.api.sendFromGeneralToFrameEditor(oSendObject);
 	};
 
-	function COleCellFrameManager(oApi)
+	function COleCellFrameManager()
 	{
-		CCellFrameManager.call(this, oApi);
+		CCellFrameManager.call(this);
 		this.imageWidthCoefficient = null;
 		this.imageHeightCoefficient = null;
 		this.isFromSheetEditor = false;
+		this.isCreatingOleObject = false;
 	}
 
 	AscFormat.InitClassWithoutType(COleCellFrameManager, CCellFrameManager);
-
+	COleCellFrameManager.prototype.clear = function ()
+	{
+		this.imageWidthCoefficient = null;
+		this.imageHeightCoefficient = null;
+		this.isFromSheetEditor = false;
+		this.isCreatingOleObject = false;
+	}
 	COleCellFrameManager.prototype.getBase64Image = function ()
 	{
 		return this.api.wb.getImageFromTableOleObject();
@@ -182,6 +259,11 @@
 	}
 	COleCellFrameManager.prototype.obtain = function (oInfo)
 	{
+		if (!oInfo)
+		{
+			oInfo = {"binary": AscCommon.getEmpty()};
+			this.isCreatingOleObject = true;
+		}
 		this.isFromSheetEditor = oInfo["isFromSheetEditor"];
 		this.calculateImageSaveCoefficients(oInfo["imageHeight"], oInfo["imageWidth"]);
 		CCellFrameManager.prototype.obtain.call(this, oInfo);
@@ -203,9 +285,22 @@
 		this.sendFromFrameToGeneralEditor({
 			"type": AscCommon.c_oAscFrameDataType.OpenFrame
 		});
-
 		oApi.fAfterLoad = function ()
 		{
+			if (oThis.isCreatingOleObject)
+			{
+				AscFormat.ExecuteNoHistory(function ()
+				{
+					const oFirstWorksheet = oThis.api.wbModel.getWorksheet(0);
+					if (oFirstWorksheet)
+					{
+						oFirstWorksheet.sName = '';
+						const sName = oThis.api.wbModel.getUniqueSheetNameFrom(AscCommon.translateManager.getValue(AscCommonExcel.g_sNewSheetNamePattern), false);
+						oFirstWorksheet.setName(sName);
+						oThis.api.sheetsChanged();
+					}
+				}, oThis, []);
+			}
 			oThis.api.wb.scrollToOleSize();
 			// добавляем первый поинт после загрузки, чтобы в локальную историю добавился либо стандартный oleSize, либо заданный пользователем
 			const oleSize = oApi.wb.getOleSize();
@@ -236,6 +331,11 @@
 	}
 	AscFormat.InitClassWithoutType(CDiagramCellFrameManager, CCellFrameManager);
 
+	CDiagramCellFrameManager.prototype.clear = function ()
+	{
+		this.arrAfterLoadCallbacks = [];
+		this.mainDiagram = null;
+	};
 	CDiagramCellFrameManager.prototype.isDiagramEditor = function ()
 	{
 		return true;
@@ -602,6 +702,7 @@
 			this.api.WordControl.onMouseUpMainSimple();
 		}
 		this.api.isChartEditorLoaded = true;
+		this.api.frameManager.startLoadChartEditor();
 		this.api.sendEvent('asc_doubleClickOnChart', this.getBinaryChart());
 	};
 	CFrameDiagramBinaryLoader.prototype.getAscLink = function ()
@@ -678,6 +779,7 @@
 
 
 	AscCommon.CDiagramCellFrameManager = CDiagramCellFrameManager;
+	AscCommon.CMainEditorFrameManager  = CMainEditorFrameManager;
 	AscCommon.COleCellFrameManager = COleCellFrameManager;
 	AscCommon.CFrameDiagramBinaryLoader = CFrameDiagramBinaryLoader;
 	AscCommon.CDiagramUpdater = CDiagramUpdater;

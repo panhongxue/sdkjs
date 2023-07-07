@@ -16833,13 +16833,13 @@
         for(var nRef = 0; nRef < this.aRefs.length; ++nRef) {
             oRef = this.aRefs[nRef];
             oBBox = oRef.bbox;
-            var sWSName = oRef.worksheet.getName();
-            var oCurBounds = oBounds[sWSName];
+            var sId = oRef.worksheet.Id;
+            var oCurBounds = oBounds[sId];
             if(oCurBounds) {
                 oCurBounds.bbox.union2(oBBox);
             }
             else {
-                oBounds[sWSName] = new AscCommonExcel.Range(oRef.worksheet, oBBox.r1, oBBox.c1, oBBox.r2, oBBox.c2);
+                oBounds[sId] = new AscCommonExcel.Range(oRef.worksheet, oBBox.r1, oBBox.c1, oBBox.r2, oBBox.c2);
             }
         }
     };
@@ -17863,8 +17863,8 @@
         return false;
     };
     CChartDataRefs.prototype.hasIntersection = function(oRange) {
-        var sWSName = oRange.worksheet.getName();
-        var oSheetBounds = this.boundsByWS[sWSName];
+        const sId = oRange.worksheet.Id;
+        const oSheetBounds = this.boundsByWS[sId];
         if(!oSheetBounds) {
             return false;
         }

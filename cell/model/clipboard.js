@@ -2435,7 +2435,6 @@
 					for (i = 0; i < data.Drawings.length; i++) {
 						drawingObject = data.Drawings[i];
 						graphicObject = drawingObject.graphicObject;
-						graphicObject.applySpecialPasteProps(pastedWb);
 						xfrm = graphicObject.spPr.xfrm;
 						if (xfrm) {
 							offX = 0;
@@ -2500,6 +2499,7 @@
 						}
 
 						var _copy = data.Drawings[i].graphicObject.copy(oCopyPr);
+						_copy.applySpecialPasteProps(pastedWb);
 						if(_copy.convertFromSmartArt) {
 							_copy.convertFromSmartArt(true);
 						}

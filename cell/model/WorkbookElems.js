@@ -14550,7 +14550,7 @@ QueryTableField.prototype.clone = function() {
 
 	ExternalReferenceBase.prototype.createDuplicate = function ()
 	{
-		const oCopy = new ExternalReferenceBase();
+		const oCopy = new this.constructor();
 		oCopy.Id = this.Id;
 		oCopy.Type = this.Type;
 		if (null != this.referenceData)
@@ -14638,6 +14638,39 @@ QueryTableField.prototype.clone = function() {
 
 		this.Id = id;
 	};
+
+	function CChartExternalReference()
+	{
+		ExternalReferenceBase.call(this);
+	}
+	AscFormat.InitClassWithoutType(CChartExternalReference, ExternalReferenceBase);
+
+	CChartExternalReference.prototype.Write_ToBinary = function(writer) {
+		this.WriteToBinary(writer);
+	};
+	CChartExternalReference.prototype.Read_FromBinary = function(writer) {
+		this.ReadFromBinary(writer);
+	};
+	CChartExternalReference.prototype.WriteToBinary = function(writer) {
+		AscFormat.writeString(writer, this.Id);
+		AscFormat.writeLong(writer, this.Type);
+		writer.WriteBool(isRealObject(this.referenceData));
+		if (this.referenceData)
+		{
+			AscFormat.writeString(writer, this.referenceData["instanceId"]);
+			AscFormat.writeString(writer, this.referenceData["fileKey"]);
+		}
+	};
+	CChartExternalReference.prototype.ReadFromBinary = function(reader) {
+		this.Id = AscFormat.readString(reader);
+		this.Type = AscFormat.readLong(reader);
+		if (reader.GetBool())
+		{
+			this.referenceData["instanceId"] = AscFormat.readString(reader);
+			this.referenceData["fileKey"] = AscFormat.readString(reader);
+		}
+	};
+	AscDFH.drawingsConstructorsMap[AscDFH.historyitem_ChartSpace_SetExternalReference] = CChartExternalReference;
 
 	function ExternalReference() {
 		ExternalReferenceBase.call(this);
@@ -15942,7 +15975,7 @@ QueryTableField.prototype.clone = function() {
 	window["AscCommonExcel"].CT_Connection = CT_Connection;
 	window["AscCommonExcel"].CT_Filter = CT_Filter;
 
-	window["AscCommonExcel"].ExternalReferenceBase = ExternalReferenceBase;
+	window["AscCommonExcel"].CChartExternalReference = CChartExternalReference;
 	window["AscCommonExcel"].ExternalReference = ExternalReference;
 	window["AscCommonExcel"].ExternalSheetDataSet = ExternalSheetDataSet;
 	window["AscCommonExcel"].ExternalRow = ExternalRow;

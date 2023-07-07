@@ -4399,7 +4399,7 @@ function(window, undefined) {
 	}
 	CChartSpace.prototype.setExternalPath = function (sPath)
 	{
-		const oReference = new AscCommonExcel.ExternalReferenceBase();
+		const oReference = new AscCommonExcel.CChartExternalReference();
 		oReference.Id = sPath;
 		this.setExternalReference(oReference);
 	}

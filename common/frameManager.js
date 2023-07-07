@@ -34,6 +34,11 @@
 
 (function (window)
 {
+	function InitClassWithoutType(CMain, CBase)
+	{
+		CMain.prototype = Object.create(CBase.prototype);
+		CMain.prototype.constructor = CMain;
+	}
 
 	function CFrameManagerBase()
 	{
@@ -85,7 +90,7 @@
 		this.isLoadingOleEditor = false;
 		this.isLoadingChartEditor = false;
 	}
-	AscFormat.InitClassWithoutType(CMainEditorFrameManager, CFrameManagerBase);
+	InitClassWithoutType(CMainEditorFrameManager, CFrameManagerBase);
 	CMainEditorFrameManager.prototype.isGeneralEditor = function ()
 	{
 		return true;
@@ -116,7 +121,7 @@
 		this.generalDocumentUrls = {};
 		this.isInitFrameManager = true;
 	}
-	AscFormat.InitClassWithoutType(CCellFrameManager, CFrameManagerBase);
+	InitClassWithoutType(CCellFrameManager, CFrameManagerBase);
 
 	CCellFrameManager.prototype.getWorkbookBinary = function ()
 	{
@@ -218,7 +223,7 @@
 		this.isCreatingOleObject = false;
 	}
 
-	AscFormat.InitClassWithoutType(COleCellFrameManager, CCellFrameManager);
+	InitClassWithoutType(COleCellFrameManager, CCellFrameManager);
 	COleCellFrameManager.prototype.clear = function ()
 	{
 		this.imageWidthCoefficient = null;
@@ -329,7 +334,7 @@
 		this.arrAfterLoadCallbacks = [];
 		this.mainDiagram = null;
 	}
-	AscFormat.InitClassWithoutType(CDiagramCellFrameManager, CCellFrameManager);
+	InitClassWithoutType(CDiagramCellFrameManager, CCellFrameManager);
 
 	CDiagramCellFrameManager.prototype.clear = function ()
 	{
@@ -565,7 +570,7 @@
 		const isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
 		this.isOpenOnClient = this.api["asc_isSupportFeature"]("ooxml") && !isLocalDesktop;
 	}
-	AscFormat.InitClassWithoutType(CFrameDiagramBinaryLoader, CFrameBinaryLoader);
+	InitClassWithoutType(CFrameDiagramBinaryLoader, CFrameBinaryLoader);
 
 	CFrameDiagramBinaryLoader.getBase64 = function (arrStream)
 	{
@@ -777,11 +782,10 @@
 		this.api.sendFromGeneralToFrameEditor(new CGeneralUpdateDiagramData(oBinary));
 	}
 
-
-	AscCommon.CDiagramCellFrameManager = CDiagramCellFrameManager;
-	AscCommon.CMainEditorFrameManager  = CMainEditorFrameManager;
-	AscCommon.COleCellFrameManager = COleCellFrameManager;
-	AscCommon.CFrameDiagramBinaryLoader = CFrameDiagramBinaryLoader;
-	AscCommon.CDiagramUpdater = CDiagramUpdater;
-	AscCommon.CFrameUpdateDiagramData = CFrameUpdateDiagramData;
+	window["AscCommon"].CDiagramCellFrameManager = CDiagramCellFrameManager;
+	window["AscCommon"].CMainEditorFrameManager  = CMainEditorFrameManager;
+	window["AscCommon"].COleCellFrameManager = COleCellFrameManager;
+	window["AscCommon"].CFrameDiagramBinaryLoader = CFrameDiagramBinaryLoader;
+	window["AscCommon"].CDiagramUpdater = CDiagramUpdater;
+	window["AscCommon"].CFrameUpdateDiagramData = CFrameUpdateDiagramData;
 })(window);

@@ -2632,19 +2632,12 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
 
 	_this.addChartDrawingObject = function(chart)
 	{
-		if (!_this.canEdit())
-			return;
-
-		worksheet.setSelectionShape(true);
-
 		if (chart instanceof Asc.asc_ChartSettings)
 		{
-			if (api.frameManager.isDiagramEditor())
-			{
-				_this.controller.selectObject(aObjects[0].graphicObject, 0);
-				_this.controller.editChartDrawingObjects(chart);
+			if (!_this.canEdit())
 				return;
-			}
+
+			worksheet.setSelectionShape(true);
 			_this.controller.addChartDrawingObject(chart);
 		} else if (isObject(chart) && chart["binary"])
 		{

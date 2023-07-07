@@ -1891,7 +1891,7 @@
 		}
 		this.bStartEdit = false;
 		AscCommon.History.EndTransaction();
-		this.updateChart();
+		this.updateChart(true);
 		this.updateInterface();
 	};
 	asc_ChartSettings.prototype.cancelEdit = function() {

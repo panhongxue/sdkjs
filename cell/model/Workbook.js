@@ -4631,6 +4631,7 @@
 			}
 			this.externalLinksPr.autoRefresh = val;
 			if (addToHistory) {
+				History.Create_NewPoint();
 				History.Add(AscCommonExcel.g_oUndoRedoWorkbook, AscCH.historyitem_Workbook_ChangeExternalReferenceAutoUpdate,
 					null, null, new UndoRedoData_FromTo(from, val));
 			}

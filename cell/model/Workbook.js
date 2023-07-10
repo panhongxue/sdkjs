@@ -4638,6 +4638,10 @@
 		}
 	};
 
+	Workbook.prototype.getExternalReferenceAutoUpdate = function () {
+		return !!(this.externalLinksPr && this.externalLinksPr.autoRefresh);
+	};
+
 	Workbook.prototype.unlockUserProtectedRanges = function(){
 		this.forEach(function (ws) {
 			ws.unlockUserProtectedRanges();

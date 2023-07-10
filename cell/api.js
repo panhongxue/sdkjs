@@ -8609,6 +8609,10 @@ var editor;
 		this.wb.setExternalReferenceAutoUpdate(val, true);
 	};
 
+	spreadsheet_api.prototype.asc_getExternalReferenceAutoUpdate = function() {
+		return this.wb.getExternalReferenceAutoUpdate();
+	};
+
 	spreadsheet_api.prototype.asc_fillHandleDone = function(range) {
 		if (this.canEdit()) {
 			let wb = this.wb;
@@ -9314,6 +9318,7 @@ var editor;
   prot["asc_removeExternalReferences"] = prot.asc_removeExternalReferences;
   prot["asc_openExternalReference"] = prot.asc_openExternalReference;
   prot["asc_setExternalReferenceAutoUpdate"] = prot.asc_setExternalReferenceAutoUpdate;
+  prot["asc_getExternalReferenceAutoUpdate"] = prot.asc_getExternalReferenceAutoUpdate;
 
 
 

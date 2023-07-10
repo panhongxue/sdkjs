@@ -8606,11 +8606,19 @@ var editor;
 		if (this.collaborativeEditing.getGlobalLock() || !this.canEdit()) {
 			return;
 		}
-		this.wb.setExternalReferenceAutoUpdate(val, true);
+		let wbModel = this.wbModel;
+		if (!wbModel) {
+			return;
+		}
+		wbModel.setExternalReferenceAutoUpdate(val, true);
 	};
 
 	spreadsheet_api.prototype.asc_getExternalReferenceAutoUpdate = function() {
-		return this.wb.getExternalReferenceAutoUpdate();
+		let wbModel = this.wbModel;
+		if (!wbModel) {
+			return;
+		}
+		return wbModel.getExternalReferenceAutoUpdate();
 	};
 
 	spreadsheet_api.prototype.asc_fillHandleDone = function(range) {

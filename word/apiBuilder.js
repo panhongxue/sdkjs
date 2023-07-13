@@ -4262,6 +4262,16 @@
 	};
 
 	/**
+	 * @name CreateChart
+	 * Creates a chart with the parameters specified.
+	 * @memberof Api
+	 * @typeofeditors ["CDE"]
+	 * @param {ChartData} oChartData - The chart data used to create chart
+	 * @param {EMU} nWidth - The chart width in English measure units.
+	 * @param {EMU} nHeight - The chart height in English measure units.
+	 * @returns {ApiChart}
+	 *
+	 * @name CreateChart²
 	 * Creates a chart with the parameters specified.
 	 * @memberof Api
 	 * @typeofeditors ["CDE"]
@@ -4274,10 +4284,40 @@
 	 * @param {number} nStyleIndex - The chart color style index (can be 1 - 48, as described in OOXML specification).
 	 * @param {NumFormat[] | String[]} aNumFormats - Numeric formats which will be applied to the series (can be custom formats).
      * The default numeric format is "General".
-	 * @returns {ApiChart}
+	 * @returns {?ApiChart}
 	 * */
-	Api.prototype.CreateChart = function(sType, aSeries, aSeriesNames, aCatNames, nWidth, nHeight, nStyleIndex, aNumFormats)
+
+	Api.prototype.CreateChart = function()
 	{
+		let sType, aCatNames, aSeriesNames, aSeries, nStyleIndex, aNumFormats;
+		let nWidth, nHeight;
+		if(arguments.length === 3)
+		{
+			const oChartData = arguments[0];
+			sType = oChartData["Type"];
+			aSeries = oChartData["Series"];
+			aSeriesNames = oChartData["SeriesNames"];
+			aCatNames = oChartData["CatNames"];
+			nStyleIndex = oChartData["StyleIndex"];
+			aNumFormats = oChartData["NumFormats"];
+			nWidth = arguments[1];
+			nHeight = arguments[2];
+		}
+		else if(arguments.length === 8)
+		{
+			sType = arguments[0];
+			aSeries = arguments[1];
+			aSeriesNames = arguments[2];
+			aCatNames = arguments[3];
+			nWidth = arguments[4];
+			nHeight = arguments[5];
+			nStyleIndex = arguments[6];
+			aNumFormats = arguments[7];
+		}
+		else
+		{
+			return null;
+		}
 		var oDrawingDocument = private_GetDrawingDocument();
 		var nW = private_EMU2MM(nWidth);
 		var nH = private_EMU2MM(nHeight);
@@ -5731,6 +5771,46 @@
 	 * 	                  {Type: 'TextPr', Date: 1679941757832}]
 	 * 	}
 	 */
+
+
+
+	/**
+	 * Data for creating chart
+	 * @typedef ChartData
+	 * @property {ChartType} Type - The chart type used for the chart display.
+	 * @property {Array} SeriesData - The array of the data used to build the chart from.
+	 * @property {Array} SeriesNames - The array of the names (the source table column names) used for the data which the chart will be build from.
+	 * @property {Array} CatNames - The array of the names (the source table row names) used for the data which the chart will be build from.
+	 * @property {number} StyleIndex - The chart color style index (can be 1 - 48, as described in OOXML specification).
+	 * @property {Array.<NumFormat> | Array.<String>} NumFormats - Numeric formats which will be applied to the series (can be custom formats). The default numeric format is "General".
+	 */
+
+	/**
+	 * Data for adding caption
+	 * @typedef CaptionData
+	 * @property {string} Additional - The additional text.
+	 * @property {CaptionLabel | String} [Label="Table"] - The caption label.
+	 * @property {boolean} [ExcludeLabel=false] - Specifies whether to exclude the label from the caption.
+	 * @property {CaptionNumberingFormat} [NumberingFormat="Arabic"] - The possible caption numbering format.
+	 * @property {boolean} [Before=false] - Specifies whether to insert the caption before the current paragraph (true) or after (false) (after/before the shape if it is placed in the shape).
+	 * @property {Number} [HeadingLvl=undefined] - The heading level (used if you want to specify the chapter number).<note>If you want to specify "Heading 1", then nHeadingLvl === 0 and etc.</note>
+	 * @property {CaptionSep} [CaptionSep="hyphen"] - The caption separator (used if you want to specify the chapter number).
+	 */
+
+	/**
+	 * TextArt Properties
+	 * @typedef TextArtProperties
+	 * @property {ApiTextPr} [TextPr=Api.CreateTextPr()] - The text properties.
+	 * @property {string} [Text="Your text here"] - The text for the Text Art object.
+	 * @property {TextTransform} sTransform="textNoShape"] - Text transform type.
+	 * @property {ApiFill}   [Fill=Api.CreateNoFill()] - The color or pattern used to fill the Text Art object.
+	 * @property {ApiStroke} [Stroke=Api.CreateStroke(0, Api.CreateNoFill())] - The stroke used to create the Text Art object shadow.
+	 * @property {number} [RotAngle=0] - Rotation angle.
+	 */
+
+
+
+
 	
 	/**
 	 * Returns a report about every change which was made to the document in the review mode.
@@ -8762,14 +8842,21 @@
 	};
 
 	/**
-     * Adds a caption paragraph after (or before) the current paragraph.
+	 * Adds a caption paragraph after (or before) the current paragraph.
 	 * <note>Please note that the current paragraph must be in the document (not in the footer/header).
 	 * And if the current paragraph is placed in a shape, then a caption is added after (or before) the parent shape.</note>
+	 * @name AddCaption
+	 * @memberof ApiParagraph
+	 * @typeofeditors ["CDE"]
+	 * @param {CaptionData} oCaptionData - The data used to create a caption
+	 * @returns {boolean}
+	 *
+	 * @name AddCaption²
      * @memberof ApiParagraph
      * @typeofeditors ["CDE"]
      * @param {string} sAdditional - The additional text.
 	 * @param {CaptionLabel | String} [sLabel="Table"] - The caption label.
-	 * @param {boolean} [bExludeLabel=false] - Specifies whether to exclude the label from the caption.
+	 * @param {boolean} [bExcludeLabel=false] - Specifies whether to exclude the label from the caption.
 	 * @param {CaptionNumberingFormat} [sNumberingFormat="Arabic"] - The possible caption numbering format.
 	 * @param {boolean} [bBefore=false] - Specifies whether to insert the caption before the current paragraph (true) or after (false) (after/before the shape if it is placed in the shape).
 	 * @param {Number} [nHeadingLvl=undefined] - The heading level (used if you want to specify the chapter number).
@@ -8777,80 +8864,17 @@
 	 * @param {CaptionSep} [sCaptionSep="hyphen"] - The caption separator (used if you want to specify the chapter number).
      * @returns {boolean}
      */
-	ApiParagraph.prototype.AddCaption = function(sAdditional, sLabel, bExludeLabel, sNumberingFormat, bBefore, nHeadingLvl, sCaptionSep)
+	ApiParagraph.prototype.AddCaption = function()
 	{
 		var oParaParent = this.Paragraph.GetParent();
 		if (this.Paragraph.IsUseInDocument() === false || !oParaParent || oParaParent.Is_TopDocument(true) !== private_GetLogicDocument())
 			return false;
-		if (typeof(sAdditional) !== "string" || sAdditional.trim() === "")
-			sAdditional = "";
-		if (typeof(bExludeLabel) !== "boolean")
-			bExludeLabel = false;
-		if (typeof(bBefore) !== "boolean")
-			bBefore = false;
-		if (typeof(sLabel) !== "string" || sLabel.trim() === "")
-			sLabel = "Table";
 		
-		let oCapPr = new Asc.CAscCaptionProperties();
+		let oCapPr = private_GetCaptionSettings.apply(null, arguments);
+		if(!oCapPr)
+			return false;
 		let oDoc = private_GetLogicDocument();
-
-		let nNumFormat;
-		switch (sNumberingFormat)
-		{
-			case "ALPHABETIC":
-				nNumFormat = Asc.c_oAscNumberingFormat.UpperLetter;
-				break;
-			case "alphabetic":
-				nNumFormat = Asc.c_oAscNumberingFormat.LowerLetter;
-				break;
-			case "Roman":
-				nNumFormat = Asc.c_oAscNumberingFormat.UpperRoman;
-				break;
-			case "roman":
-				nNumFormat = Asc.c_oAscNumberingFormat.LowerRoman;
-				break;
-			default:
-				nNumFormat = Asc.c_oAscNumberingFormat.Decimal;
-				break;
-		}
-		switch (sCaptionSep)
-		{
-			case "hyphen":
-				sCaptionSep = "-";
-				break;
-			case "period":
-				sCaptionSep = ".";
-				break;
-			case "colon":
-				sCaptionSep = ":";
-				break;
-			case "longDash":
-				sCaptionSep = "—";
-				break;
-			case "dash":
-				sCaptionSep = "-";
-				break;
-			default:
-				sCaptionSep = "-";
-				break;
-		}
-
-		oCapPr.Label = sLabel;
-		oCapPr.Before = bBefore;
-		oCapPr.ExcludeLabel = bExludeLabel;
-		oCapPr.NumFormat = nNumFormat;
-		oCapPr.Separator = sCaptionSep;
-		oCapPr.Additional = sAdditional;
-
-		if (nHeadingLvl >= 0 && nHeadingLvl <= 8)
-		{
-			oCapPr.HeadingLvl = nHeadingLvl;
-			oCapPr.IncludeChapterNumber = true;
-		}
-		else oCapPr.HeadingLvl = 0;
-
 		this.Paragraph.SetThisElementCurrent();
-
 		oDoc.AddCaption(oCapPr);
 		return true;
 	};
@@ -10899,92 +10923,35 @@
      * Adds a caption paragraph after (or before) the current table.
 	 * <note>Please note that the current table must be in the document (not in the footer/header).
 	 * And if the current table is placed in a shape, then a caption is added after (or before) the parent shape.</note>
-     * @memberof ApiTable
-     * @typeofeditors ["CDE"]
-     * @param {string} sAdditional - The additional text.
+	 * @name AddCaption
+	 * @memberof ApiTable
+	 * @typeofeditors ["CDE"]
+	 * @param {CaptionData} oCaptionData - The data used to create a caption
+	 * @returns {boolean}
+	 *
+	 * @name AddCaption²
+	 * @memberof ApiTable
+	 * @typeofeditors ["CDE"]
+	 * @param {string} sAdditional - The additional text.
 	 * @param {CaptionLabel | String} [sLabel="Table"] - The caption label.
-	 * @param {boolean} [bExludeLabel=false] - Specifies whether to exclude the label from the caption.
+	 * @param {boolean} [bExcludeLabel=false] - Specifies whether to exclude the label from the caption.
 	 * @param {CaptionNumberingFormat} [sNumberingFormat="Arabic"] - The possible caption numbering format.
-	 * @param {boolean} [bBefore=false] - Specifies whether to insert the caption before the current table (true) or after (false) (after/before the shape if it is placed in the shape).
+	 * @param {boolean} [bBefore=false] - Specifies whether to insert the caption before the current paragraph (true) or after (false) (after/before the shape if it is placed in the shape).
 	 * @param {Number} [nHeadingLvl=undefined] - The heading level (used if you want to specify the chapter number).
 	 * <note>If you want to specify "Heading 1", then nHeadingLvl === 0 and etc.</note>
 	 * @param {CaptionSep} [sCaptionSep="hyphen"] - The caption separator (used if you want to specify the chapter number).
-     * @returns {boolean}
+	 * @returns {boolean}
      */
-	ApiTable.prototype.AddCaption = function(sAdditional, sLabel, bExludeLabel, sNumberingFormat, bBefore, nHeadingLvl, sCaptionSep)
+	ApiTable.prototype.AddCaption = function()
 	{
-		var oTableParent = this.Table.GetParent();
+		const oTableParent = this.Table.GetParent();
 		if (this.Table.IsUseInDocument() === false || !oTableParent || oTableParent.Is_TopDocument(true) !== private_GetLogicDocument())
 			return false;
-		if (typeof(sAdditional) !== "string" || sAdditional.trim() === "")
-			sAdditional = "";
-		if (typeof(bExludeLabel) !== "boolean")
-			bExludeLabel = false;
-		if (typeof(bBefore) !== "boolean")
-			bBefore = false;
-		if (typeof(sLabel) !== "string" || sLabel.trim() === "")
-			sLabel = "Table";
-		
-		let oCapPr = new Asc.CAscCaptionProperties();
-		let oDoc = private_GetLogicDocument();
-
-		let nNumFormat;
-		switch (sNumberingFormat)
-		{
-			case "ALPHABETIC":
-				nNumFormat = Asc.c_oAscNumberingFormat.UpperLetter;
-				break;
-			case "alphabetic":
-				nNumFormat = Asc.c_oAscNumberingFormat.LowerLetter;
-				break;
-			case "Roman":
-				nNumFormat = Asc.c_oAscNumberingFormat.UpperRoman;
-				break;
-			case "roman":
-				nNumFormat = Asc.c_oAscNumberingFormat.LowerRoman;
-				break;
-			default:
-				nNumFormat = Asc.c_oAscNumberingFormat.Decimal;
-				break;
-		}
-		switch (sCaptionSep)
-		{
-			case "hyphen":
-				sCaptionSep = "-";
-				break;
-			case "period":
-				sCaptionSep = ".";
-				break;
-			case "colon":
-				sCaptionSep = ":";
-				break;
-			case "longDash":
-				sCaptionSep = "—";
-				break;
-			case "dash":
-				sCaptionSep = "-";
-				break;
-			default:
-				sCaptionSep = "-";
-				break;
-		}
-
-		oCapPr.Label = sLabel;
-		oCapPr.Before = bBefore;
-		oCapPr.ExcludeLabel = bExludeLabel;
-		oCapPr.NumFormat = nNumFormat;
-		oCapPr.Separator = sCaptionSep;
-		oCapPr.Additional = sAdditional;
-
-		if (nHeadingLvl >= 0 && nHeadingLvl <= 8)
-		{
-			oCapPr.HeadingLvl = nHeadingLvl;
-			oCapPr.IncludeChapterNumber = true;
-		}
-		else oCapPr.HeadingLvl = 0;
-
+		const oCapPr = private_GetCaptionSettings.apply(this, arguments);
+		if(!oCapPr)
+			return false;
+		const oDoc = private_GetLogicDocument();
 		this.Table.Document_SetThisElementCurrent();
-
 		oDoc.AddCaption(oCapPr);
 		return true;
 	};
@@ -16850,38 +16817,48 @@
 		return true;
 	};
 
-	/**
-     * Adds a caption paragraph after (or before) the current content control.
-	 * <note>Please note that the current content control must be in the document (not in the footer/header).
-	 * And if the current content control is placed in a shape, then a caption is added after (or before) the parent shape.</note>
-     * @memberof ApiBlockLvlSdt
-     * @typeofeditors ["CDE"]
-     * @param {string} sAdditional - The additional text.
-	 * @param {CaptionLabel | String} [sLabel="Table"] - The caption label.
-	 * @param {boolean} [bExludeLabel=false] - Specifies whether to exclude the label from the caption.
-	 * @param {CaptionNumberingFormat} [sNumberingFormat="Arabic"] - The possible caption numbering format.
-	 * @param {boolean} [bBefore=false] - Specifies whether to insert the caption before the current content control (true) or after (false) (after/before the shape if it is placed in the shape).
-	 * @param {Number} [nHeadingLvl=undefined] - The heading level (used if you want to specify the chapter number).
-	 * <note>If you want to specify "Heading 1", then nHeadingLvl === 0 and etc.</note>
-	 * @param {CaptionSep} [sCaptionSep="hyphen"] - The caption separator (used if you want to specify the chapter number).
-     * @returns {boolean}
-     */
-	ApiBlockLvlSdt.prototype.AddCaption = function(sAdditional, sLabel, bExludeLabel, sNumberingFormat, bBefore, nHeadingLvl, sCaptionSep)
+	function private_GetCaptionSettings()
 	{
-		var oSdtParent = this.Sdt.GetParent();
-		if (this.Sdt.IsUseInDocument() === false || !oSdtParent || oSdtParent.Is_TopDocument(true) !== private_GetLogicDocument())
-			return false;
+		let sAdditional, sLabel, bExcludeLabel, sNumberingFormat, bBefore, nHeadingLvl, sCaptionSep;
+		if(arguments.length === 1)
+		{
+			let oCaptionData = arguments[0];
+			if(AscCommon.isRealObject(oCaptionData))
+			{
+				sAdditional = oCaptionData["Additional"];
+				sLabel = oCaptionData["Label"];
+				bExcludeLabel = oCaptionData["ExcludeLabel"];
+				sNumberingFormat = oCaptionData["NumberingFormat"];
+				bBefore = oCaptionData["Before"];
+				nHeadingLvl = oCaptionData["HeadingLvl"];
+				sCaptionSep = oCaptionData["CaptionSep"];
+			}
+			else
+			{
+				return null;
+			}
+		}
+		else
+		{
+			sAdditional = arguments[0];
+			sLabel = arguments[1];
+			bExcludeLabel = arguments[2];
+			sNumberingFormat = arguments[3];
+			bBefore = arguments[4];
+			nHeadingLvl = arguments[5];
+			sCaptionSep = arguments[6];
+		}
+
 		if (typeof(sAdditional) !== "string" || sAdditional.trim() === "")
 			sAdditional = "";
-		if (typeof(bExludeLabel) !== "boolean")
-			bExludeLabel = false;
+		if (typeof(bExcludeLabel) !== "boolean")
+			bExcludeLabel = false;
 		if (typeof(bBefore) !== "boolean")
 			bBefore = false;
 		if (typeof(sLabel) !== "string" || sLabel.trim() === "")
 			sLabel = "Table";
-		
+
 		let oCapPr = new Asc.CAscCaptionProperties();
-		let oDoc = private_GetLogicDocument();
 
 		let nNumFormat;
 		switch (sNumberingFormat)
@@ -16926,7 +16903,7 @@
 
 		oCapPr.Label = sLabel;
 		oCapPr.Before = bBefore;
-		oCapPr.ExcludeLabel = bExludeLabel;
+		oCapPr.ExcludeLabel = bExcludeLabel;
 		oCapPr.NumFormat = nNumFormat;
 		oCapPr.Separator = sCaptionSep;
 		oCapPr.Additional = sAdditional;
@@ -16936,8 +16913,41 @@
 			oCapPr.HeadingLvl = nHeadingLvl;
 			oCapPr.IncludeChapterNumber = true;
 		}
-		else oCapPr.HeadingLvl = 0;
-
+		return oCapPr;
+	};
+	/**
+     * Adds a caption paragraph after (or before) the current content control.
+	 * <note>Please note that the current content control must be in the document (not in the footer/header).
+	 * And if the current content control is placed in a shape, then a caption is added after (or before) the parent shape.</note>
+	 * @name AddCaption
+	 * @memberof ApiBlockLvlSdt
+	 * @typeofeditors ["CDE"]
+	 * @param {CaptionData} oCaptionData - The data used to create a caption
+	 * @returns {boolean}
+	 *
+	 * @name AddCaption²
+	 * @memberof ApiBlockLvlSdt
+	 * @typeofeditors ["CDE"]
+	 * @param {string} sAdditional - The additional text.
+	 * @param {CaptionLabel | String} [sLabel="Table"] - The caption label.
+	 * @param {boolean} [bExcludeLabel=false] - Specifies whether to exclude the label from the caption.
+	 * @param {CaptionNumberingFormat} [sNumberingFormat="Arabic"] - The possible caption numbering format.
+	 * @param {boolean} [bBefore=false] - Specifies whether to insert the caption before the current paragraph (true) or after (false) (after/before the shape if it is placed in the shape).
+	 * @param {Number} [nHeadingLvl=undefined] - The heading level (used if you want to specify the chapter number).
+	 * <note>If you want to specify "Heading 1", then nHeadingLvl === 0 and etc.</note>
+	 * @param {CaptionSep} [sCaptionSep="hyphen"] - The caption separator (used if you want to specify the chapter number).
+	 * @returns {boolean}
+	 *
+     */
+	ApiBlockLvlSdt.prototype.AddCaption = function()
+	{
+		const oSdtParent = this.Sdt.GetParent();
+		if (this.Sdt.IsUseInDocument() === false || !oSdtParent || oSdtParent.Is_TopDocument(true) !== private_GetLogicDocument())
+			return false;
+		const oCapPr = private_GetCaptionSettings.apply(this, arguments);
+		if(!oCapPr)
+			return false;
+		const oDoc = private_GetLogicDocument();
 		this.Sdt.SetThisElementCurrent();
 
 		oDoc.AddCaption(oCapPr);
@@ -18397,6 +18407,15 @@
 
 	/**
 	 * Creates a Text Art object with the parameters specified.
+	 * @name CreateWordArt²
+	 * @memberof Api
+	 * @typeofeditors ["CDE"]
+	 * @param {TextArtPropertiest} oTextartProperties - The text properties.
+	 * @param {EMU} [nWidth=1828800] - The Text Art width measured in English measure units.
+	 * @param {EMU} [nHeight=1828800] - The Text Art heigth measured in English measure units.
+	 * @returns {ApiDrawing}
+	 *
+	 * @name CreateWordArt²
 	 * @memberof Api
 	 * @typeofeditors ["CDE"]
 	 * @param {ApiTextPr} [oTextPr=Api.CreateTextPr()] - The text properties.
@@ -18409,7 +18428,35 @@
 	 * @param {EMU} [nHeight=1828800] - The Text Art heigth measured in English measure units.
 	 * @returns {ApiDrawing}
 	 */
-	Api.prototype.CreateWordArt = function(oTextPr, sText, sTransform, oFill, oStroke, nRotAngle, nWidth, nHeight) {
+	Api.prototype.CreateWordArt = function() {
+
+		let oTextPr, sText, sTransform, oFill, oStroke, nRotAngle, nWidth, nHeight;
+		if(arguments.length === 3)
+		{
+			if(AscCommon.isRealObject(arguments[0]))
+			{
+				const oTextArtProperties = arguments[0];
+				oTextPr    = oTextArtProperties["TextPr"];
+				sText      = oTextArtProperties["Text"];
+				sTransform = oTextArtProperties["Transform"];
+				oFill      = oTextArtProperties["Fill"];
+				oStroke    = oTextArtProperties["Stroke"];
+				nRotAngle  = oTextArtProperties["RotAngle"];
+			}
+			nWidth     = arguments[1];
+			nHeight    = arguments[2];
+		}
+		else
+		{
+			oTextPr    = arguments[0];
+			sText      = arguments[1];
+			sTransform = arguments[2];
+			oFill      = arguments[3];
+			oStroke    = arguments[4];
+			nRotAngle  = arguments[5];
+			nWidth     = arguments[6];
+			nHeight    = arguments[7];
+		}
 		oTextPr   = oTextPr && oTextPr.TextPr ? oTextPr.TextPr : null;
 		nRotAngle = typeof(nRotAngle) === "number" && nRotAngle > 0 ? nRotAngle : 0;
 		nWidth    = typeof(nWidth) === "number" && nWidth > 0 ? nWidth : 1828800;

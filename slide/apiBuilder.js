@@ -356,6 +356,15 @@
      * @typedef {number} PositivePercentage
      * */
 
+
+    /**
+     * This type represents collection of fonts used in document
+     * @typedef FontCollection
+     * @property {string} Latin - The font for latin text.
+     * @property {string} EA - The font for east asian text.
+     * @property {string} CS - The font for complex script text.
+     * */
+
     /**
      * Returns the main presentation.
      * @typeofeditors ["CPE"]
@@ -543,6 +552,15 @@
     
     /**
      * Creates a new theme font scheme.
+     * @name CreateThemeFontScheme
+     * @typeofeditors ["CPE"]
+     * @memberof Api
+     * @param {FontCollection} oMajorFont
+     * @param {FontCollection} oMinorFont
+     * @param {string} sName
+     * @returns {ApiThemeFontScheme}
+     *
+     * @name CreateThemeFontScheme²
      * @typeofeditors ["CPE"]
      * @memberof Api
      * @param {string} mjLatin - The major theme font applied to the latin text.

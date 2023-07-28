@@ -584,9 +584,9 @@ window.AscCommon.g_cIsBeta = "false";
 		OnlyForms      : 0x01,
 		OnlyComments   : 0x02,
 		OnlySignatures : 0x04,
-		View           : 0x80 // Отличие данного ограничения от обычного ViewMode в том, что редактор открывается
-		                      // как полноценный редактор, просто мы запрещаем ЛЮБОЕ редактирование. А во ViewMode
-		                      // открывается именно просмотрщик.
+		View           : 0x80 // the difference between this restriction and the simple ViewMode -
+		                      // the editor opens as a full editor, but we forbid ANY editing
+		                      // in the ViewMode - opens viewer
 	};
 
 	var c_oAscLocalRestrictionType = {
@@ -1825,7 +1825,8 @@ window.AscCommon.g_cIsBeta = "false";
 		Footnote     : 3,
 		Form         : 4,
 		Review       : 5,
-		Eyedropper   : 6
+		Eyedropper   : 6,
+		Placeholder  : 7
 	};
 
 	// selection type
@@ -4821,6 +4822,7 @@ window.AscCommon.g_cIsBeta = "false";
 	prot['Form']         = prot.Form;
 	prot['Review']       = prot.Review;
 	prot['Eyedropper']   = prot.Eyedropper;
+	prot['Placeholder']   = prot.Placeholder;
 
 	window['Asc']['c_oAscMaxTooltipLength'] = window['Asc'].c_oAscMaxTooltipLength = c_oAscMaxTooltipLength;
 	window['Asc']['c_oAscMaxCellOrCommentLength'] = window['Asc'].c_oAscMaxCellOrCommentLength = c_oAscMaxCellOrCommentLength;

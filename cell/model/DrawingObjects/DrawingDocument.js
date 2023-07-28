@@ -131,10 +131,11 @@ function CDrawingDocument()
 {
     this.IsLockObjectsEnable = false;
 
-    AscCommon.g_oHtmlCursor.register("de-markerformat", "marker_format", "14 8", "pointer");
-    AscCommon.g_oHtmlCursor.register("select-table-row", "select_row", "10 5", "default");
-    AscCommon.g_oHtmlCursor.register("select-table-column", "select_column", "5 10", "default");
-    AscCommon.g_oHtmlCursor.register("select-table-content", "select_table", "10 10", "default");
+    AscCommon.g_oHtmlCursor.register(AscCommon.Cursors.MarkerFormat, "14 8", "pointer");
+    AscCommon.g_oHtmlCursor.register(AscCommon.Cursors.SelectTableRow, "10 5", "default");
+    AscCommon.g_oHtmlCursor.register(AscCommon.Cursors.SelectTableColumn, "5 10", "default");
+    AscCommon.g_oHtmlCursor.register(AscCommon.Cursors.SelectTableContent, "10 10", "default");
+    AscCommon.g_oHtmlCursor.register(AscCommon.Cursors.TableEraser, "8 19", "pointer");
 
     this.m_oWordControl     = null;
     this.m_oLogicDocument   = null;
@@ -245,16 +246,30 @@ function CDrawingDocument()
     {
     };
 
-    this.LockCursorType = function(sType)
+    this.LockCursorType    = function(sType)
     {
-    };
+        this.m_sLockedCursorType                                    = sType;
 
+        if ( Asc.editor &&  Asc.editor.wb) {
+            Asc.editor.wb._onUpdateCursor(this.m_sLockedCursorType);
+        }
+    };
     this.LockCursorTypeCur = function()
     {
     };
-
-    this.UnlockCursorType = function()
+    this.UnlockCursorType  = function()
     {
+        this.m_sLockedCursorType = "";
+        const oWBView = Asc.editor &&  Asc.editor.wb;
+        if (oWBView) {
+            const ws = oWBView.getWorksheet();
+            if (ws) {
+                const ct = ws.getCursorTypeFromXY(ws.objectRender.lastX, ws.objectRender.lastY);
+                if (ct) {
+                    oWBView._onUpdateCursor(ct.cursor);
+                }
+            }
+        }
     };
 
     this.OnStartRecalculate = function(pageCount)

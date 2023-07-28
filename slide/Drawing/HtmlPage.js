@@ -298,16 +298,24 @@ function CEditorPage(api)
 	// controls
 	this.checkBodyOffset = function()
 	{
-		var off = jQuery("#" + this.Name).offset();
-
-		// почему-то иногда неправильно определяется "top" (возвращается ноль)
-		if (!this.m_oApi.isEmbedVersion && !this.m_oApi.isMobileVersion && off && (0 == off.top))
+		let element = this.m_oBody.HtmlElement;
+		if (!element)
+			element = document.getElementById(this.Name);
+		if (!element)
 			return;
 
-		if (off)
+		var pos = element.getBoundingClientRect();
+		if (pos)
 		{
-			this.X = off.left;
-			this.Y = off.top;
+			if (undefined !== pos.x)
+				this.X = pos.x;
+			else if (undefined !== pos.left)
+				this.X = pos.x;
+
+			if (undefined !== pos.y)
+				this.Y = pos.y;
+			else if (undefined !== pos.top)
+				this.Y = pos.top;
 		}
 	};
 
@@ -575,6 +583,11 @@ function CEditorPage(api)
 		this.m_oMainView.Bounds.SetParams(5, 7, useScrollW, useScrollW, true, true, true, true, -1, -1);
 		this.m_oMainView.Anchor = (g_anchor_left | g_anchor_right | g_anchor_top | g_anchor_bottom);
 		this.m_oMainContent.AddControl(this.m_oMainView);
+
+		// проблема с фокусом fixed-позиционированного элемента внутри (bug 63194)
+		this.m_oMainView.HtmlElement.onscroll = function() {
+			this.scrollTop = 0;
+		};
 
 		this.m_oEditor = CreateControl("id_viewer");
 		this.m_oEditor.Bounds.SetParams(0, 0, 1000, 1000, false, false, false, false, -1, -1);
@@ -1335,7 +1348,7 @@ function CEditorPage(api)
 		AscCommon.check_MouseUpEvent(e, true);
 
 		var oWordControl = oThis;
-		oWordControl.m_oDrawingDocument.UnlockCursorType();
+		oWordControl.UnlockCursorTypeOnMouseUp();
 
 		if (oWordControl.m_oMainParent && oWordControl.m_oMainParent.HtmlElement)
 			oWordControl.m_oMainParent.HtmlElement.style.pointerEvents = "";
@@ -2384,10 +2397,7 @@ function CEditorPage(api)
 			this.m_oDrawingDocument.UpdateTargetNoAttack();
 			this.m_bIsUpdateTargetNoAttack = false;
 		}
-		if(this.m_oApi.isEyedropperStarted())
-		{
-			this.m_oApi.clearEyedropperImgData();
-		}
+		this.m_oApi.clearEyedropperImgData();
 	};
 
 	this.OnScroll = function()
@@ -2627,6 +2637,7 @@ function CEditorPage(api)
 
 		// remove media
 		this.m_oApi.hideVideoControl();
+		AscCommon.g_specialPasteHelper.SpecialPasteButton_Update_Position();
 	};
 
 	// scrolls
@@ -3289,6 +3300,9 @@ function CEditorPage(api)
 		if (oWordControl.m_oDrawingDocument.TransitionSlide.IsPlaying())
 			oWordControl.m_oDrawingDocument.TransitionSlide.End(true);
 
+		// после fullscreen возможно изменение X, Y после вызова Resize.
+		oWordControl.checkBodyOffset();
+
 		if (!oThis.m_bIsIE)
 		{
 			if (e.preventDefault)
@@ -3424,9 +3438,17 @@ function CEditorPage(api)
 			let Coords = oWordControl.m_oDrawingDocument.ConvertCoordsToCursorWR(pos.X, pos.Y, pos.Page, null, true);
 			MMData.X_abs = Coords.X;
 			MMData.Y_abs = Coords.Y;
-			MMData.EyedropperColor = oThis.m_oApi.getEyedropperColor();
-			MMData.Type = Asc.c_oAscMouseMoveDataTypes.Eyedropper;
-			oWordControl.m_oDrawingDocument.SetCursorType("eyedropper", MMData);
+			const oEyedropperColor = oThis.m_oApi.getEyedropperColor();
+			if(oEyedropperColor)
+			{
+				MMData.EyedropperColor = oEyedropperColor;
+				MMData.Type = Asc.c_oAscMouseMoveDataTypes.Eyedropper;
+				oWordControl.m_oDrawingDocument.SetCursorType(AscCommon.Cursors.Eyedropper, MMData);
+			}
+			else
+			{
+				oWordControl.m_oDrawingDocument.SetCursorType("default");
+			}
 			oThis.m_oApi.sync_MouseMoveEndCallback();
 			return;
 		}
@@ -3491,7 +3513,7 @@ function CEditorPage(api)
 		if (pos.Page == -1)
 			return;
 
-		oWordControl.m_oDrawingDocument.UnlockCursorType();
+		oWordControl.UnlockCursorTypeOnMouseUp();
 		oWordControl.m_bIsMouseLock = false;
 		if (oWordControl.m_oDrawingDocument.TableOutlineDr.bIsTracked)
 		{
@@ -3598,7 +3620,7 @@ function CEditorPage(api)
 		if (pos.Page == -1)
 			return;
 
-		oWordControl.m_oDrawingDocument.UnlockCursorType();
+		oWordControl.UnlockCursorTypeOnMouseUp();
 
 		oWordControl.m_bIsMouseLock = false;
 
@@ -4162,13 +4184,21 @@ function CEditorPage(api)
 		return false;
 	};
 
+	this.UnlockCursorTypeOnMouseUp = function()
+	{
+		if (this.m_oApi.isInkDrawerOn())
+			return;
+		this.m_oDrawingDocument.UnlockCursorType();
+	};
+
+
 	// resize
 	this.OnResize = function(isAttack)
 	{
 		AscCommon.AscBrowser.checkZoom();
 
 		var isNewSize = this.checkBodySize();
-		if (!isNewSize && false === isAttack)
+		if (!isNewSize && this.retinaScaling === AscCommon.AscBrowser.retinaPixelRatio && false === isAttack)
 		{
 			this.DemonstrationManager.Resize();
 			return;
@@ -4501,6 +4531,9 @@ function CEditorPage(api)
 
 		if (this.m_oDrawingDocument.TransitionSlide.IsPlaying())
 			this.m_oDrawingDocument.TransitionSlide.End(true);
+
+		if (this.m_oLogicDocument.IsStartedPreview())
+			this.m_oApi.asc_StopAnimationPreview();
 
 		if (lPageNum != -1 && (lPageNum < 0 || lPageNum >= drDoc.SlidesCount))
 			return;

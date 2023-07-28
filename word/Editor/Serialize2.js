@@ -1533,7 +1533,7 @@ function ReadTrackRevision(type, length, stream, reviewInfo, options) {
         } else if(c_oSerProp_RevisionType.rPrChange == type) {
             res = options.brPrr.Read(length, options.rPr, null);
         } else if(c_oSerProp_RevisionType.pPrChange == type) {
-            res = options.bpPrr.Read(length, options.pPr, null);
+            res = options.bpPrr.Read(length, options.pPr, options.paragraph);
 		} else if(c_oSerProp_RevisionType.tblGridChange == type) {
 			res = options.btblPrr.bcr.Read2(length, function(t, l){
 				return options.btblPrr.Read_tblGrid(t,l, options.grid);
@@ -8451,7 +8451,13 @@ function BinaryFileReader(doc, openParams)
 				}
 				var _elem = oReadResult.styles[_style.style];
 				if (_elem && _elem.style && _elem.style.BasedOn) {
-					var basedOnObj = {pPr: null, style: _elem.style.BasedOn};
+					
+					// TODO: Скорее всего pPr: null уже не нужно, и следует снаследовать данный объект от BinaryStyleUpdaterBase
+					var basedOnObj = {
+						pPr: null,
+						style: _elem.style.BasedOn,
+						setStyle: function(styleId) {}
+					};
 					container.push(basedOnObj);
 					putBasedOn(basedOnObj, container);
 				}
@@ -9070,9 +9076,10 @@ InheritBinaryStyleUpdater(BinaryRunStyleUpdater,
 		this.element.SetRStyle(styleId);
 	}
 );
-function BinaryParagraphStyleUpdater()
+function BinaryParagraphStyleUpdater(element, style, isPrChange)
 {
-	BinaryStyleUpdaterBase.apply(this, arguments);
+	this.isPrChange = !!isPrChange;
+	BinaryStyleUpdaterBase.call(this, element, style);
 }
 InheritBinaryStyleUpdater(BinaryParagraphStyleUpdater,
 	function(styleId)
@@ -9080,7 +9087,10 @@ InheritBinaryStyleUpdater(BinaryParagraphStyleUpdater,
 		if (!this.element)
 			return;
 
-		this.element.SetPStyle(styleId);
+		if (!this.isPrChange)
+			this.element.SetPStyle(styleId);
+		else if (this.element.HavePrChange())
+			this.element.SetPStyleToPrChange(styleId);
 	}
 );
 BinaryParagraphStyleUpdater.prototype.isParagraphStyle = function() {
@@ -9151,6 +9161,7 @@ function Binary_pPrReader(doc, oReadResult, stream)
     this.pPr;
     this.paragraph;
 	this.style;
+	this.isPrChange = false;
     this.bcr = new Binary_CommonReader(this.stream);
     this.brPrr = new Binary_rPrReader(this.Document, this.oReadResult, this.stream);
     this.Read = function(stLen, pPr, par, style)
@@ -9213,7 +9224,7 @@ function Binary_pPrReader(doc, oReadResult, stream)
             case c_oSerProp_pPrType.ParaStyle:
                 var ParaStyle = this.stream.GetString2LE(length);
 				if (this.paragraph)
-					this.oReadResult.styleLinks.push(new BinaryParagraphStyleUpdater(this.paragraph, ParaStyle));
+					this.oReadResult.styleLinks.push(new BinaryParagraphStyleUpdater(this.paragraph, ParaStyle, this.isPrChange));
                 break;
             case c_oSerProp_pPrType.numPr:
                 var numPr = new CNumPr();
@@ -9222,7 +9233,7 @@ function Binary_pPrReader(doc, oReadResult, stream)
                     return oThis.ReadNumPr(t, l, numPr);
                 });
                 if ((null != numPr.NumId || null != numPr.Lvl) && (this.paragraph || this.style)) {
-					this.oReadResult.paraNumPrs.push({elem : this.paragraph || this.style, numPr : numPr});
+					this.oReadResult.paraNumPrs.push({elem : this.paragraph || this.style, numPr : numPr, isPrChange: this.paragraph && this.isPrChange});
 				}
                 break;
             case c_oSerProp_pPrType.pBdr:
@@ -9233,10 +9244,10 @@ function Binary_pPrReader(doc, oReadResult, stream)
             case c_oSerProp_pPrType.pPr_rPr:
                 if(null != this.paragraph)
 				{
-                    var EndRun = this.paragraph.GetParaEndRun();
+                    var endRun = this.paragraph.GetParaEndRun();
                     var rPr = new CTextPr();
-                    res = this.brPrr.Read(length, rPr, EndRun);
-					
+                    res = this.brPrr.Read(length, rPr, endRun, this.paragraph.TextPr);
+					endRun.SetPr(rPr);
 					this.paragraph.TextPr.SetPr(rPr);
 				}
 				else
@@ -9265,14 +9276,15 @@ function Binary_pPrReader(doc, oReadResult, stream)
                 res = c_oSerConstants.ReadUnknown;//todo
                 break;
             case c_oSerProp_pPrType.pPrChange:
-                if(null != this.paragraph && this.oReadResult.checkReadRevisions() && (!this.oReadResult.bCopyPaste || this.oReadResult.isDocumentPasting())) {
+                if(null != this.paragraph && !this.isPrChange && this.oReadResult.checkReadRevisions() && (!this.oReadResult.bCopyPaste || this.oReadResult.isDocumentPasting())) {
                     var pPrChange = new CParaPr();
                     var reviewInfo = new CReviewInfo();
                     var bpPrr = new Binary_pPrReader(this.Document, this.oReadResult, this.stream);
+					bpPrr.isPrChange = true;
                     res = this.bcr.Read1(length, function(t, l){
-                        return ReadTrackRevision(t, l, oThis.stream, reviewInfo, {bpPrr: bpPrr, pPr: pPrChange});
+                        return ReadTrackRevision(t, l, oThis.stream, reviewInfo, {bpPrr: bpPrr, pPr: pPrChange, paragraph: oThis.paragraph});
                     });
-                    this.paragraph.SetPrChange(pPrChange, reviewInfo);
+					this.pPr.SetPrChange(pPrChange, reviewInfo);
                 } else {
                     res = c_oSerConstants.ReadUnknown;
                 }
@@ -9994,17 +10006,17 @@ function Binary_rPrReader(doc, oReadResult, stream)
     this.stream = stream;
     this.rPr;
     this.bcr = new Binary_CommonReader(this.stream);
-    this.Read = function(stLen, rPr, run)
+    this.Read = function(stLen, rPr, run, paraRPr)
     {
         this.rPr = rPr;
         var oThis = this;
         var res = c_oSerConstants.ReadOk;
         res = this.bcr.Read2(stLen, function(type, length){
-                return oThis.ReadContent(type, length, run);
+                return oThis.ReadContent(type, length, run, paraRPr);
             });
         return res;
     };
-    this.ReadContent = function(type, length, run)
+    this.ReadContent = function(type, length, run, paraRPr)
     {
         var res = c_oSerConstants.ReadOk;
 		var oThis = this;
@@ -10075,6 +10087,9 @@ function Binary_rPrReader(doc, oReadResult, stream)
 			case c_oSerProp_rPrType.RStyle:
 				var RunStyle = this.stream.GetString2LE(length);
 				this.oReadResult.styleLinks.push(new BinaryRunStyleUpdater(run, RunStyle));
+				if (paraRPr)
+					this.oReadResult.styleLinks.push(new BinaryRunStyleUpdater(paraRPr, RunStyle));
+				
                 break;
 			case c_oSerProp_rPrType.Spacing:
 				rPr.Spacing = this.bcr.ReadDouble();
@@ -17432,11 +17447,20 @@ DocReadResult.prototype = {
 		for(let i = 0, count = this.paraNumPrs.length; i < count; ++i) {
 			let numPr = this.paraNumPrs[i].numPr;
 			let elem  = this.paraNumPrs[i].elem;
-			if (!elem || !numPr || null === numPr.NumId || undefined === numPr.NumId)
+			if (!elem || !numPr || null === numPr.NumId)
 				continue;
 			
-			let num = this.numToNumClass[numPr.NumId];
-			elem.SetNumPr(num && 0 !== numPr.NumId ? num.GetId() : "0", numPr.Lvl);
+			let numId = undefined;
+			let iLvl  = numPr.Lvl;
+			if (undefined !== numPr.NumId) {
+				let num = this.numToNumClass[numPr.NumId];
+				numId   = num && 0 !== numPr.NumId ? num.GetId() : "0";
+			}
+			
+			if (this.paraNumPrs[i].isPrChange)
+				elem.SetNumPrToPrChange(numId, iLvl);
+			else
+				elem.SetNumPr(numId, iLvl);
 		}
 	}
 };
@@ -17450,3 +17474,9 @@ window["AscCommonWord"].DocReadResult = DocReadResult;
 window["AscCommonWord"].DocSaveParams = DocSaveParams;
 window["AscCommonWord"].CreateThemeUnifill = CreateThemeUnifill;
 window["AscCommonWord"].CreateFromThemeUnifill = CreateFromThemeUnifill;
+window["AscCommonWord"].BinaryRunStyleUpdater = BinaryRunStyleUpdater;
+window["AscCommonWord"].BinaryParagraphStyleUpdater = BinaryParagraphStyleUpdater;
+window["AscCommonWord"].BinaryTableStyleUpdater = BinaryTableStyleUpdater;
+window["AscCommonWord"].BinaryAbstractNumStyleLinkUpdater = BinaryAbstractNumStyleLinkUpdater;
+window["AscCommonWord"].BinaryAbstractNumNumStyleLinkUpdater = BinaryAbstractNumNumStyleLinkUpdater;
+window["AscCommonWord"].BinaryNumLvlStyleUpdater = BinaryNumLvlStyleUpdater;

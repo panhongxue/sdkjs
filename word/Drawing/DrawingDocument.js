@@ -1849,12 +1849,12 @@ function CDrawingDocument()
 	this.IsLockObjectsEnable = false;
 
 	// cursors
-	AscCommon.g_oHtmlCursor.register("de-markerformat", "marker_format", "14 8", "pointer");
-	AscCommon.g_oHtmlCursor.register("select-table-row", "select_row", "10 5", "default");
-	AscCommon.g_oHtmlCursor.register("select-table-column", "select_column", "5 10", "default");
-	AscCommon.g_oHtmlCursor.register("select-table-cell", "select_cell", "9 0", "default");
-    AscCommon.g_oHtmlCursor.register("de-tablepen", "pen", "1 16", "pointer");
-    AscCommon.g_oHtmlCursor.register("de-tableeraser", "eraser", "8 19", "pointer");
+	AscCommon.g_oHtmlCursor.register(AscCommon.Cursors.MarkerFormat, "14 8", "pointer");
+	AscCommon.g_oHtmlCursor.register(AscCommon.Cursors.SelectTableRow, "10 5", "default");
+	AscCommon.g_oHtmlCursor.register(AscCommon.Cursors.SelectTableColumn, "5 10", "default");
+	AscCommon.g_oHtmlCursor.register(AscCommon.Cursors.SelectTableCell, "9 0", "default");
+    AscCommon.g_oHtmlCursor.register(AscCommon.Cursors.TablePen, "1 16", "pointer");
+    AscCommon.g_oHtmlCursor.register(AscCommon.Cursors.TableEraser, "8 19", "pointer");
 
 	this.m_oWordControl = null;
 	this.m_oLogicDocument = null;
@@ -2033,19 +2033,19 @@ function CDrawingDocument()
 					let oData = oAPI.getFormatPainterData();
 					if(!oData.isDrawingData())
 					{
-						oHTMLElement.style.cursor = AscCommon.g_oHtmlCursor.value(AscCommon.kCurFormatPainterWord);
+						oHTMLElement.style.cursor = AscCommon.g_oHtmlCursor.value(AscCommon.Cursors.TextCopy);
 					}
 					else
 					{
-						oHTMLElement.style.cursor = AscCommon.g_oHtmlCursor.value(AscCommon.kCurFormatPainterDrawing);
+						oHTMLElement.style.cursor = AscCommon.g_oHtmlCursor.value(AscCommon.Cursors.ShapeCopy);
 					}
 				}
 				else if (oAPI.isMarkerFormat)
-					oHTMLElement.style.cursor = AscCommon.g_oHtmlCursor.value("de-markerformat");
+					oHTMLElement.style.cursor = AscCommon.g_oHtmlCursor.value(AscCommon.Cursors.MarkerFormat);
 				else if (oAPI.isDrawTablePen)
-					oHTMLElement.style.cursor = AscCommon.g_oHtmlCursor.value("de-tablepen");
+					oHTMLElement.style.cursor = AscCommon.g_oHtmlCursor.value(AscCommon.Cursors.TablePen);
 				else if (oAPI.isDrawTableErase)
-					oHTMLElement.style.cursor = AscCommon.g_oHtmlCursor.value("de-tableeraser");
+					oHTMLElement.style.cursor = AscCommon.g_oHtmlCursor.value(AscCommon.Cursors.TableEraser);
 				else
 					oHTMLElement.style.cursor = AscCommon.g_oHtmlCursor.value(sType);
 			}
@@ -2056,7 +2056,7 @@ function CDrawingDocument()
 					let oData = oAPI.getFormatPainterData();
 					if(oData.isDrawingData())
 					{
-						oHTMLElement.style.cursor = AscCommon.g_oHtmlCursor.value(AscCommon.kCurFormatPainterDrawing);
+						oHTMLElement.style.cursor = AscCommon.g_oHtmlCursor.value(AscCommon.Cursors.ShapeCopy);
 					}
 					else
 					{
@@ -4430,9 +4430,10 @@ function CDrawingDocument()
 		if (page < 0 || page >= this.m_lPagesCount)
 			return {X: 0, Y: 0, Page: -1, DrawPage: -1};
 
+		var dKoef = (100 * g_dKoef_pix_to_mm / this.m_oWordControl.m_nZoomValue);
 		var rect = this.m_arrPages[page].drawingPage;
-		var x_mm = (_x - this.m_oWordControl.X - rect.left) * dKoef;
-		var y_mm = (_y - this.m_oWordControl.Y - rect.top) * dKoef;
+		var x_mm = (x - this.m_oWordControl.X - rect.left) * dKoef;
+		var y_mm = (y - this.m_oWordControl.Y - rect.top) * dKoef;
 
 		return {X: x_mm, Y: y_mm, Page: rect.pageIndex, DrawPage: page};
 	};
@@ -6829,6 +6830,12 @@ function CDrawingDocument()
 		return false;
 	};
 
+	this.isButtonsDisabled = function()
+	{
+		return Asc.editor.isEyedropperStarted() || Asc.editor.isDrawInkMode();
+	};
+
+
 	// mouse events
 	this.checkMouseDown_Drawing = function (pos)
 	{
@@ -6924,11 +6931,11 @@ function CDrawingDocument()
 			}
 		}
 
-		if (this.contentControls.onPointerDown(pos))
+		if (!this.isButtonsDisabled() && this.contentControls.onPointerDown(pos))
 			return true;
 
         var _page = this.m_arrPages[pos.Page];
-		if (this.placeholders.onPointerDown(pos, _page.drawingPage, _page.width_mm, _page.height_mm))
+		if (!this.isButtonsDisabled() && this.placeholders.onPointerDown(pos, _page.drawingPage, _page.width_mm, _page.height_mm))
 		{
 			this.m_oWordControl.onMouseUpMainSimple();
 			return true;
@@ -7049,11 +7056,11 @@ function CDrawingDocument()
 			}
 		}
 
-		if (this.contentControls.onPointerMove(pos, isWithoutCoords))
+		if (!this.isButtonsDisabled() && this.contentControls.onPointerMove(pos, isWithoutCoords))
 			return true;
 
         var _page = this.m_arrPages[pos.Page];
-        if (this.placeholders.onPointerMove(pos, _page.drawingPage, _page.width_mm, _page.height_mm))
+        if (!this.isButtonsDisabled() && this.placeholders.onPointerMove(pos, _page.drawingPage, _page.width_mm, _page.height_mm))
 			return true;
 
 		return false;
@@ -7111,11 +7118,11 @@ function CDrawingDocument()
 			return true;
 		}
 
-		if (this.contentControls.onPointerUp(pos))
+		if (!this.isButtonsDisabled() && this.contentControls.onPointerUp(pos))
 			return true;
 
         var _page = this.m_arrPages[pos.Page];
-        if (this.placeholders.onPointerUp(pos, _page.drawingPage, _page.width_mm, _page.height_mm))
+        if (!this.isButtonsDisabled() && this.placeholders.onPointerUp(pos, _page.drawingPage, _page.width_mm, _page.height_mm))
             return true;
 
 		return false;

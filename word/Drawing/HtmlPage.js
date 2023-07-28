@@ -362,6 +362,11 @@ function CEditorPage(api)
 		this.m_oMainView.Anchor = (g_anchor_left | g_anchor_right | g_anchor_top | g_anchor_bottom);
 		this.m_oMainContent.AddControl(this.m_oMainView);
 
+		// проблема с фокусом fixed-позиционированного элемента внутри (bug 63194)
+		this.m_oMainView.HtmlElement.onscroll = function() {
+			this.scrollTop = 0;
+		};
+
 		this.m_oEditor = AscCommon.CreateControl("id_viewer");
 		this.m_oEditor.Bounds.SetParams(0, 0, 1000, 1000, false, false, false, false, -1, -1);
 		this.m_oEditor.Anchor = (g_anchor_left | g_anchor_top | g_anchor_right | g_anchor_bottom);
@@ -1792,7 +1797,7 @@ function CEditorPage(api)
 				oWordControl.MouseHandObject.Active = true;
 				oWordControl.MouseHandObject.ScrollX = oWordControl.m_dScrollX;
 				oWordControl.MouseHandObject.ScrollY = oWordControl.m_dScrollY;
-				oWordControl.m_oDrawingDocument.SetCursorType("grabbing");
+				oWordControl.m_oDrawingDocument.SetCursorType(AscCommon.Cursors.Grabbing);
 
 				oWordControl.m_oLogicDocument && oWordControl.m_oLogicDocument.EndFormEditing();
 				return;
@@ -1896,7 +1901,7 @@ function CEditorPage(api)
 		{
 			if (oWordControl.MouseHandObject.Active)
 			{
-				oWordControl.m_oDrawingDocument.SetCursorType("grabbing");
+				oWordControl.m_oDrawingDocument.SetCursorType(AscCommon.Cursors.Grabbing);
 
 				var scrollX = global_mouseEvent.X - oWordControl.MouseHandObject.X;
 				var scrollY = global_mouseEvent.Y - oWordControl.MouseHandObject.Y;
@@ -1917,7 +1922,7 @@ function CEditorPage(api)
 					oThis.m_oApi.sync_MouseMoveCallback(new AscCommon.CMouseMoveData());
 					oThis.m_oApi.sync_MouseMoveEndCallback();
 
-					oWordControl.m_oDrawingDocument.SetCursorType("grab");
+					oWordControl.m_oDrawingDocument.SetCursorType(AscCommon.Cursors.Grab);
 
 					oWordControl.m_oLogicDocument && oWordControl.m_oLogicDocument.UpdateCursorType();
 					oWordControl.StartUpdateOverlay();
@@ -1960,9 +1965,17 @@ function CEditorPage(api)
 			let Coords = oWordControl.m_oDrawingDocument.ConvertCoordsToCursorWR(pos.X, pos.Y, pos.Page, null);
 			MMData.X_abs = Coords.X;
 			MMData.Y_abs = Coords.Y;
-			MMData.EyedropperColor = oThis.m_oApi.getEyedropperColor();
-			MMData.Type = Asc.c_oAscMouseMoveDataTypes.Eyedropper;
-			oWordControl.m_oDrawingDocument.SetCursorType("eyedropper", MMData);
+			const oEyedropperColor = oThis.m_oApi.getEyedropperColor();
+			if(oEyedropperColor)
+			{
+				MMData.EyedropperColor = oEyedropperColor;
+				MMData.Type = Asc.c_oAscMouseMoveDataTypes.Eyedropper;
+				oWordControl.m_oDrawingDocument.SetCursorType(AscCommon.Cursors.Eyedropper, MMData);
+			}
+			else
+			{
+				oWordControl.m_oDrawingDocument.SetCursorType("default");
+			}
 			oThis.m_oApi.sync_MouseMoveEndCallback();
 			return;
 		}
@@ -2039,7 +2052,7 @@ function CEditorPage(api)
 		{
 			AscCommon.check_MouseUpEvent(e);
 			oWordControl.MouseHandObject.Active = false;
-			oWordControl.m_oDrawingDocument.SetCursorType("grab");
+			oWordControl.m_oDrawingDocument.SetCursorType(AscCommon.Cursors.Grab);
 			oWordControl.m_bIsMouseLock = false;
 			return;
 		}
@@ -2162,7 +2175,7 @@ function CEditorPage(api)
 		if (oWordControl.MouseHandObject && oWordControl.MouseHandObject.Active)
 		{
 			oWordControl.MouseHandObject.Active = false;
-			oWordControl.m_oDrawingDocument.SetCursorType("grab");
+			oWordControl.m_oDrawingDocument.SetCursorType(AscCommon.Cursors.Grab);
 			return;
 		}
 
@@ -2217,7 +2230,7 @@ function CEditorPage(api)
 		if (oWordControl.MouseHandObject && oWordControl.MouseHandObject.Active)
 		{
 			oWordControl.MouseHandObject.Active = false;
-			oWordControl.m_oDrawingDocument.SetCursorType("grab");
+			oWordControl.m_oDrawingDocument.SetCursorType(AscCommon.Cursors.Grab);
 			return;
 		}
 
@@ -2974,10 +2987,7 @@ function CEditorPage(api)
 			this.m_oDrawingDocument.UpdateTargetNoAttack();
 			this.m_bIsUpdateTargetNoAttack = false;
 		}
-		if(this.m_oApi.isEyedropperStarted())
-		{
-			this.m_oApi.clearEyedropperImgData();
-		}
+		this.m_oApi.clearEyedropperImgData();
 	};
 
 	this.CheckRetinaElement = function(htmlElem)
@@ -3185,7 +3195,7 @@ function CEditorPage(api)
 		AscBrowser.checkZoom();
 
 		var isNewSize = this.checkBodySize();
-		if (!isNewSize && false === isAttack)
+		if (!isNewSize && this.retinaScaling === AscCommon.AscBrowser.retinaPixelRatio && false === isAttack)
 			return;
 
 		this.m_nZoomValueMin = -1;
@@ -3636,7 +3646,7 @@ function CEditorPage(api)
 
 	this.UnlockCursorTypeOnMouseUp = function()
 	{
-		if (this.m_oApi.isDrawTablePen || this.m_oApi.isDrawTableErase)
+		if (this.m_oApi.isDrawTablePen || this.m_oApi.isDrawTableErase || this.m_oApi.isInkDrawerOn())
 			return;
 		this.m_oDrawingDocument.UnlockCursorType();
 	};

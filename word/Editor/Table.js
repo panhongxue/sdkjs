@@ -2258,6 +2258,14 @@ CTable.prototype.GetContentBounds = function(CurPage)
 {
 	return this.Get_PageBounds(CurPage);
 };
+/**
+ * @param pageIndex
+ * @returns {?CTablePage}
+ */
+CTable.prototype.GetPage = function(pageIndex)
+{
+	return this.Pages[pageIndex];
+};
 CTable.prototype.Get_PagesCount = function()
 {
 	return this.Pages.length;
@@ -3555,15 +3563,15 @@ CTable.prototype.UpdateCursorType = function(X, Y, CurPage)
 		var oHitInfo = this.private_CheckHitInBorder(X, Y, CurPage);
 		if (true === oHitInfo.RowSelection)
 		{
-			return this.DrawingDocument.SetCursorType("select-table-row", new CMouseMoveData());
+			return this.DrawingDocument.SetCursorType(AscCommon.Cursors.SelectTableRow, new CMouseMoveData());
 		}
 		else if (true === oHitInfo.ColumnSelection)
 		{
-			return this.DrawingDocument.SetCursorType("select-table-column", new CMouseMoveData());
+			return this.DrawingDocument.SetCursorType(AscCommon.Cursors.SelectTableColumn, new CMouseMoveData());
 		}
 		else if (true === oHitInfo.CellSelection)
 		{
-			return this.DrawingDocument.SetCursorType("select-table-cell", new CMouseMoveData());
+			return this.DrawingDocument.SetCursorType(AscCommon.Cursors.SelectTableCell, new CMouseMoveData());
 		}
 		else if (-1 !== oHitInfo.Border)
 		{
@@ -16522,17 +16530,17 @@ CTable.prototype.AcceptRevisionChanges = function(nType, bAll)
 
 	if (this.GetRowsCount() <= 0)
 		return;
-
+	
+	this.RemoveSelection();
 	if (arrSelectionArray.length <= 0)
 	{
-		this.RemoveSelection();
 		var nCurRow = nFirstRow < this.GetRowsCount() ? nFirstRow : this.GetRowsCount() - 1;
 		this.CurCell = this.GetRow(nCurRow).GetCell(0);
 		this.Document_SetThisElementCurrent(false);
 	}
 	else
 	{
-		if (isCellSelection)
+		if (isCellSelection && !bAll)
 			this.SelectRows(arrSelectionArray[0].Row, arrSelectionArray[arrSelectionArray.length - 1].Row);
 		else
 			this.CurCell = this.GetRow(arrSelectionArray[0].Row).GetCell(arrSelectionArray[0].Cell);
@@ -16635,17 +16643,17 @@ CTable.prototype.RejectRevisionChanges = function(nType, bAll)
 
 	if (this.GetRowsCount() <= 0)
 		return;
-
+	
+	this.RemoveSelection();
 	if (arrSelectionArray.length <= 0)
 	{
-		this.RemoveSelection();
 		var nCurRow = nFirstRow < this.GetRowsCount() ? nFirstRow : this.GetRowsCount() - 1;
 		this.CurCell = this.GetRow(nCurRow).GetCell(0);
 		this.Document_SetThisElementCurrent(false);
 	}
 	else
 	{
-		if (isCellSelection)
+		if (isCellSelection && !bAll)
 			this.SelectRows(arrSelectionArray[0].Row, arrSelectionArray[arrSelectionArray.length - 1].Row);
 		else
 			this.CurCell = this.GetRow(arrSelectionArray[0].Row).GetCell(arrSelectionArray[0].Cell);

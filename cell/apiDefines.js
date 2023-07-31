@@ -442,7 +442,9 @@ var c_oAscPopUpSelectorType = {
       filePath: 4,
       date: 5,
       time: 6,
-      lineBreak: 7
+      lineBreak: 7,
+	  picture: 8,
+	  text: 9
   };
 
   var c_oAscPageHFType = {
@@ -565,6 +567,14 @@ var c_oAscPopUpSelectorType = {
   };
 
   var c_nAscMaxAddCellWatchesCount = 10000;
+
+
+  var c_oAscPageBreaksDisableType = {
+    none: 0,
+    all: 1,
+    insertRemove: 2,
+    reset: 3
+  };
 
 
   //----------------------------------------------------------export----------------------------------------------------
@@ -844,8 +854,10 @@ var c_oAscPopUpSelectorType = {
   prot['date'] = prot.date;
   prot['time'] = prot.time;
   prot['lineBreak'] = prot.lineBreak;
+  prot['picture'] = prot.picture;
+  prot['text'] = prot.text;
   window['Asc']['c_oAscPageHFType'] = window['Asc'].c_oAscPageHFType = c_oAscPageHFType;
-  prot = c_oAscHeaderFooterField;
+  prot = c_oAscPageHFType;
   prot['firstHeader'] = prot.firstHeader;
   prot['oddHeader'] = prot.oddHeader;
   prot['evenHeader'] = prot.evenHeader;
@@ -955,6 +967,13 @@ var c_oAscPopUpSelectorType = {
   prot['Range'] = prot.Range;
 
   window['Asc']['c_nAscMaxAddCellWatchesCount'] = window['Asc'].c_nAscMaxAddCellWatchesCount = c_nAscMaxAddCellWatchesCount;
+
+  window['Asc']['c_oAscPageBreaksDisableType'] = window['Asc'].c_oAscPageBreaksDisableType = c_oAscPageBreaksDisableType;
+  prot = c_oAscPageBreaksDisableType;
+  prot['none'] = prot.none;
+  prot['all'] = prot.all;
+  prot['insertRemove'] = prot.insertRemove;
+  prot['reset'] = prot.reset;
 
 
 })(window);

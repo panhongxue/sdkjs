@@ -462,6 +462,7 @@
     };
     CUnicodeParser.prototype.GetRootLiteral = function ()
     {
+        let oPr = this.oLookahead.style;
         this.EatToken(this.oLookahead.class);
         this.EatOneSpace();
 
@@ -479,6 +480,7 @@
             type: Struc.radical,
             index: oIndex,
             value: oBase,
+            style: oPr,
         }
     };
     CUnicodeParser.prototype.GetCubertLiteral = function ()
@@ -509,14 +511,15 @@
     };
     CUnicodeParser.prototype.GetNthrtLiteral = function ()
     {
+        let oPr = this.oLookahead.style;
         this.EatToken(this.oLookahead.class);
-        return this.GetContentOfAnyTypeRadical();
+        return this.GetContentOfAnyTypeRadical(undefined, oPr);
     };
     CUnicodeParser.prototype.IsNthrtLiteral = function ()
     {
         return this.oLookahead.data === "√" && this.oLookahead.class !== Literals.operator.id || this.oLookahead.data === "√(";
     };
-    CUnicodeParser.prototype.GetContentOfAnyTypeRadical = function (index)
+    CUnicodeParser.prototype.GetContentOfAnyTypeRadical = function (index, oPr)
     {
         let oIndex, oContent;
 
@@ -563,8 +566,6 @@
 					counter: 1,
 				}
 			}
-
-			console.log(open, close)
         }
         else if (this.IsOperandLiteral())
         {
@@ -577,6 +578,7 @@
             type: Struc.radical,
             index: index ? index : oIndex,
             value: oContent,
+            style: oPr
         };
     };
     CUnicodeParser.prototype.IsFunctionLiteral = function ()
@@ -1151,6 +1153,7 @@
 
         if (this.oLookahead.class === Literals.divide.id)
         {
+            let oPr = this.oLookahead.style;
             strOpOver = this.EatToken(this.oLookahead.class).data;
 
 
@@ -1164,6 +1167,7 @@
                 up: oNumerator || {},
                 down: oOperand || {},
                 fracType: this.GetFractionType(strOpOver),
+                style: oPr,
             };
         }
         else

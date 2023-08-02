@@ -769,7 +769,7 @@ CRadical.prototype.Is_ContentUse = function(MathContent)
  */
 CRadical.prototype.GetTextOfElement = function(oMathText)
 {
-	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+	if (!(oMathText instanceof AscMath.MathTextAndStyles))
 		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
 	let oDegree		= this.getDegree();
@@ -796,7 +796,7 @@ CRadical.prototype.GetTextOfElement = function(oMathText)
 	else
 	{
 		let oDegreeText		= oDegree.GetTextOfElement();
-		let oPosSqrt		= oMathText.AddText("√", true);
+		let oPosSqrt		= oMathText.AddText(new AscMath.MathText("√", this.CtrPrp), true);
 		let nLengthOfDegree	= oDegreeText.GetLength();
 
 		if (nLengthOfDegree === 0 || !oDegreeText.IsHasText())
@@ -810,9 +810,9 @@ CRadical.prototype.GetTextOfElement = function(oMathText)
 			}
 			else
 			{
-				let oStartPos	= oMathText.AddAfter(oPosSqrt,"(");
+				let oStartPos	= oMathText.AddAfter(oPosSqrt, new AscMath.MathText("(", this.CtrPrp));
 				let oPosBase	= oMathText.AddAfter(oStartPos, oBaseText);
-				oMathText.AddAfter(oPosBase,")");
+				oMathText.AddAfter(oPosBase, new AscMath.MathText(")", this.CtrPrp));
 			}
 		}
 		else
@@ -822,23 +822,21 @@ CRadical.prototype.GetTextOfElement = function(oMathText)
 			{
 				if (strDegree === "3")
 				{
-					oMathText.ChangeContent("∛");
+					oMathText.ChangeContent(new AscMath.MathText("∛", this.CtrPrp));
 				}
 				else if (strDegree === "4")
 				{
-					oMathText.ChangeContent("∜");
+					oMathText.ChangeContent(new AscMath.MathText("∜", this.CtrPrp));
 				}
-
 				oMathText.Add(oBase, true, 'notBracket');
 			}
 			else
 			{
-				let oPosStartBracket	= oMathText.AddAfter(oPosSqrt, "(");
-				let oPosDegree			= oMathText.AddAfter(oPosStartBracket, oDegreeText);
-				oMathText.AddAfter(oPosDegree,"&");
-
-				let oPosBase = oMathText.Add(oBase, true, false);
-				oMathText.AddAfter(oPosBase, ")");
+				oMathText.AddText(new AscMath.MathText("(", this.CtrPrp));
+				oMathText.AddText(oDegreeText);
+				oMathText.AddText(new AscMath.MathText("&", this.CtrPrp));
+				oMathText.Add(oBase, true, false);
+				oMathText.AddText(new AscMath.MathText(")", this.CtrPrp));
 			}
 		}
 	}

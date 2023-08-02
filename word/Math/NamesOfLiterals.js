@@ -1610,19 +1610,40 @@
 		{
 			let arrContent = [];
 			let oStyles = {};
-			let nLength = 0;
+				let nLength = 0;
 
-			for (let nCounter = 0; nCounter < string.arr.length; nCounter++)
+			function Proceed (oMathTextAndStyles, context)
 			{
-				let oCurrentElement 	= string.arr[nCounter];
-				let oCurrentStyle		= oCurrentElement.GetStyle();
-				let strCurrent 			= oCurrentElement.GetText();
-				nLength 				+= this.GetStringLength(strCurrent);
-				let arrCurrent 			= this.GetSymbols(strCurrent);
-				arrContent 				= arrContent.concat(arrCurrent);
+				let arr = oMathTextAndStyles.arr;
 
-				oStyles[nLength] = oCurrentStyle;
+				for (let i = 0; i < arr.length; i++)
+				{
+					let oCurrentElement 	= arr[i];
+					if (oCurrentElement instanceof MathTextAndStyles)
+					{
+						Proceed(oCurrentElement, context);
+					}
+					else if (oCurrentElement instanceof MathText)
+					{
+						let oCurrentStyle		= oCurrentElement.GetStyle();
+						let strCurrent 			= oCurrentElement.GetText();
+						let tempLength 				= context.GetStringLength(strCurrent);
+						let arrCurrent 			= context.GetSymbols(strCurrent);
+						arrContent 				= arrContent.concat(arrCurrent);
+						oStyles[nLength] = oCurrentStyle;
+						nLength += tempLength;
+					}
+					else
+					{
+						let arrCurrent 			= context.GetSymbols(oCurrentElement);
+						nLength 				+= arrCurrent.length;
+						arrContent 				= arrContent.concat(arrCurrent);
+						oStyles[nLength] = undefined;
+					}
+				}
 			}
+
+			Proceed(string, this)
 
 			this._string = arrContent;
 			this._styles = oStyles;
@@ -1720,26 +1741,7 @@
 	};
 	Tokenizer.prototype.GetStyle = function (nCursorPos)
 	{
-		let arrStyles = Object.keys(this._styles);
-		let prevStyle = null;
-
-		return this._styles[arrStyles[nCursorPos - 1]];
-		for (let nCounter = arrStyles.length - 1; nCounter >= 0; nCounter--)
-		{
-			let nCurrentPos = Number(arrStyles[nCounter]);
-			if (nCursorPos > nCurrentPos)
-			{
-				return prevStyle;
-			}
-			else if (nCurrentPos === nCursorPos)
-			{
-				return this._styles[nCurrentPos]
-			}
-			else
-			{
-				prevStyle = this._styles[nCurrentPos];
-			}
-		}
+		return this._styles[nCursorPos - 1];
 	};
 	Tokenizer.prototype.ProcessString = function (str, char)
 	{
@@ -1918,7 +1920,16 @@
 					}
 					else
 					{
-						oContext.Add_TextInLastParaRun(oTokens.value, undefined,  Array.isArray(oTokens.style) ? oTokens.style[0] : oTokens.style);
+						if (Array.isArray(oTokens.style))
+						{
+							for (let nTokenStyle = 0; nTokenStyle < oTokens.style.length; nTokenStyle++) {
+								oContext.Add_TextInLastParaRun(oTokens.value[nTokenStyle], undefined,  oTokens.style[nTokenStyle]);
+							}
+						}
+						else
+						{
+							oContext.Add_TextInLastParaRun(oTokens.value, undefined,  Array.isArray(oTokens.style) ? oTokens.style[0] : oTokens.style);
+						}
 					}
 					break;
 				case oNamesOfLiterals.textPlainLiteral[num]:
@@ -1983,8 +1994,7 @@
 						oContext.Add_Element(oBox);
 						let BoxMathContent = oBox.getBase();
 						BoxMathContent.SetArgSize(-1);
-						let oFraction = BoxMathContent.Add_Fraction({ctrPrp: new CTextPr(), type: BAR_FRACTION}, null, null);
-
+						let oFraction = BoxMathContent.Add_Fraction({ctrPrp: oTokens.style, type: BAR_FRACTION}, null, null);
 						UnicodeArgument(
 							oTokens.up,
 							MathStructures.bracket_block,
@@ -1999,7 +2009,7 @@
 					else
 					{
 						let oFraction = oContext.Add_Fraction(
-							{ctrPrp: new CTextPr(), type: oTokens.fracType},
+							{ctrPrp: oTokens.style, type: oTokens.fracType},
 							null,
 							null
 						);
@@ -2258,6 +2268,7 @@
 					break;
 				case MathStructures.radical:
 					let Pr = GetPrForFunction(oTokens.index);
+					Pr.ctrPrp = oTokens.style;
 					let oRadical = oContext.Add_Radical(
 						Pr,
 						null,
@@ -3075,8 +3086,9 @@
 		let intRunContent = oDelMark.GetPosition();
 
 		let str = "";
+		let oMathTextAndStyles = new MathTextAndStyles(false); // todo for LaTeX
 
-		for (let nPosCMathContent = oContent.Content.length - 1; nPosCMathContent >= intMathContent; nPosCMathContent--)
+		for (let nPosCMathContent = intMathContent; nPosCMathContent < oContent.Content.length; nPosCMathContent++)
 		{
 			let oCurrentElement = oContent.Content[nPosCMathContent];
 
@@ -3084,33 +3096,31 @@
 			{
 				if (nPosCMathContent === intMathContent)
 				{
-					for (let nRunPos = oCurrentElement.Content.length - 1; nRunPos >= intRunContent; nRunPos--)
+					for (let nRunPos = intRunContent; nRunPos < oCurrentElement.Content.length; nRunPos++)
 					{
-						str = String.fromCharCode(oCurrentElement.Content[nRunPos].value) + str;
+						let oEl = oCurrentElement.Content[nRunPos];
+						oEl.GetTextOfElement(oMathTextAndStyles);
 						oCurrentElement.Remove_FromContent(nRunPos, 1, true);
+						nRunPos--;
 					}
 				}
 				else
 				{
-					let oMathTextAndStyles = new MathTextAndStyles(false);
 					oCurrentElement.GetTextOfElement(oMathTextAndStyles);
-					str = oMathTextAndStyles.GetText() + str;
 					oContent.Remove_FromContent(nPosCMathContent, 1);
+					nPosCMathContent--;
 				}
 			}
 			else
 			{
-				let oMathTextAndStyles = new MathTextAndStyles(false);
-				oCurrentElement.GetTextOfElement(oMathTextAndStyles);
+				let one = oCurrentElement.GetTextOfElement(oMathTextAndStyles);
 				if (isWrapFirstContent)
-					str = "〖" + oMathTextAndStyles.GetText() + "〗" + str;
-				else
-					str = oMathTextAndStyles.GetText() + str;
-
+					oMathTextAndStyles.WrapExactElement(one, "〖", "〗")
 				oContent.Remove_FromContent(nPosCMathContent, 1);
+				nPosCMathContent--;
 			}
 		}
-		return str;
+		return oMathTextAndStyles;
 	}
 	/**
 	 * Paste text at the given position
@@ -3847,7 +3857,7 @@
 
 				oCMathContent.Add_TextInLastParaRun(String.fromCharCode(8289));
 				let str 		= CutContentFromEnd(oCMathContent, oFuncNamePos);
-				GetConvertContent(0, str.trim(), this.oCMathContent);
+				GetConvertContent(0, str, this.oCMathContent);
 			}
 			// else if (!oRuleLast  && oFuncNamePos && oAbsoluteLastId === MathLiterals.char.id)
 			// {
@@ -3909,7 +3919,7 @@
 		{
 			let oStartPos= this.Tokens.brackets.NoPair[0];
 			let str = CutContentFromEnd(this.oCMathContent, oStartPos, true);
-			GetConvertContent(0, str.trim(), this.oCMathContent);
+			GetConvertContent(0, str, this.oCMathContent);
 		}
 
 		// \open \close
@@ -3929,7 +3939,7 @@
 			if (strClosePos === "┤" && strOpenPos === "├")
 			{
 				let str = CutContentFromEnd(this.oCMathContent, oStartPos, true);
-				GetConvertContent(0, str.trim(), this.oCMathContent);
+				GetConvertContent(0, str, this.oCMathContent);
 			}
 		}
 
@@ -3938,7 +3948,7 @@
 			if ( this.Tokens.brackets.Pairs.length > 0)
 			{
 				let str = CutContentFromEnd(this.oCMathContent, this.Tokens.brackets.Pairs[0][1], true, true);
-				if (str.split("_").length === 2 && str.split("^").length === 2)
+				if (str.GetText().split("_").length === 2 && str.GetText().split("^").length === 2)
 				{
 					return this.Tokens.brackets.Pairs.length > 0;
 				}
@@ -3947,7 +3957,7 @@
 		this.ConvertPreScript = function ()
 		{
 			let str 		= CutContentFromEnd(this.oCMathContent, this.Tokens.brackets.Pairs[0][1], true);
-			GetConvertContent(0, str.trim(), this.oCMathContent);
+			GetConvertContent(0, str, this.oCMathContent);
 		}
 
 		/**
@@ -4178,7 +4188,7 @@
 			else
 			{
 				let str = CutContentFromEnd(this.oCMathContent, oLast, false);
-				GetConvertContent(0, str.trim(), this.oCMathContent);
+				GetConvertContent(0, str, this.oCMathContent);
 				this.oCMathContent.Correct_Content(true);
 				this.oCMathContent.MoveCursorToEndPos();
 			}
@@ -4258,12 +4268,12 @@
 				let oStartPos 	= arrPreContent.start;
 				let oEndPos 	= arrPreContent.end;
 				let str 		= CutContentFromEnd(this.oCMathContent, oStartPos, true);
-				GetConvertContent(0, str.trim(), this.oCMathContent);
+				GetConvertContent(0, str, this.oCMathContent);
 			}
 			else
 			{
 				let str 		= CutContentFromEnd(this.oCMathContent, oLast, true);
-				GetConvertContent(0, str.trim(), this.oCMathContent);
+				GetConvertContent(0, str, this.oCMathContent);
 			}
 
 			// 		content + func + content
@@ -4308,9 +4318,6 @@
 			pos.IncreasePosition();
 
 		let strConvertContent	= CutContentFromEnd(oCMathContent, pos, false);
-
-		if (strConvertContent === "")
-			return false;
 
 		GetConvertContent(0, strConvertContent, oCMathContent);
 		return true;
@@ -4547,6 +4554,11 @@
 	MathTextAndStyles.prototype.AddText = function(oContent, isNew)
 	{
 		let nPosCopy = this.nPos;
+
+		if (this.arr[this.arr.length - 1] && this.arr[this.arr.length - 1].style !== oContent.style)
+		{
+			isNew = true;
+		}
 		if (this.arr[this.arr.length - 1] && !isNew)
 		{
 			this.arr[this.arr.length - 1].text += oContent.text;
@@ -4642,7 +4654,7 @@
 		let arrPositions = this.GetArrPos(oPos);
 		let oCurrentContainer = this.GetExact(oPos);
 		let oCurrent = !isNotCopyStyle && oCurrentContainer instanceof MathText ? oCurrentContainer.GetStyle() : undefined;
-		let oNew = oContent instanceof MathTextAndStyles ? oContent :new MathText(oContent, oCurrent);
+		let oNew = oContent instanceof MathTextAndStyles || oContent instanceof MathText ? oContent :new MathText(oContent, oCurrent);
 
 		this.arr.splice(oPos.pos, 0, oNew);
 
@@ -4655,7 +4667,7 @@
 		let arrPositions = this.GetArrPos(oPos, true);
 		let oCurrentContainer = this.GetExact(oPos);
 		let oCurrent = !isNotCopyStyle && oCurrentContainer instanceof MathText ?  oCurrentContainer.GetStyle() : undefined;
-		let oNew = oContent instanceof MathTextAndStyles ? oContent :new MathText(oContent, oCurrent);
+		let oNew = oContent instanceof MathTextAndStyles || oContent instanceof MathText ? oContent :new MathText(oContent, oCurrent);
 		let nPos = oPos.pos - oPos.length;
 
 		this.arr.splice(nPos, 0, oNew);
@@ -4734,6 +4746,40 @@
 	{
 
 	};
+	MathTextAndStyles.prototype.Flat = function (oCMathContent)
+	{
+		let newArr = [];
+		let Flat = function (arr)
+		{
+			for (let i = 0; i < arr.length; i++)
+			{
+				let oCurrentElement 	= arr[i];
+				if (oCurrentElement instanceof MathTextAndStyles)
+				{
+					Flat(oCurrentElement.arr);
+				}
+				else if (oCurrentElement instanceof MathText)
+				{
+					newArr.push(oCurrentElement);
+				}
+				else
+				{
+					newArr.push(new MathText(oCurrentElement));
+				}
+			}
+		}
+		Flat(this.arr);
+
+		oCMathContent.Remove_Content(0,oCMathContent.Content.length);
+		this.AddTextToMathContent(newArr, oCMathContent);
+	}
+	MathTextAndStyles.prototype.AddTextToMathContent = function (newArr, oCMathContent)
+	{
+		for (let i = 0; i < newArr.length; i++)
+		{
+			oCMathContent.Add_TextInLastParaRun(newArr[i].text, undefined, newArr[i].style)
+		}
+	}
 
 	//--------------------------------------------------------export----------------------------------------------------
 	window["AscMath"] = window["AscMath"] || {};

@@ -1024,38 +1024,19 @@ CMathText.prototype.ToSearchElement = function(oProps)
 
 	return new AscCommonWord.CSearchTextItemChar(nCodePoint);
 };
-CMathText.prototype.GetTextOfElement = function(isLaTeX) {
-	var strPre = "";
-
-	if (this.Parent)
-    {
-		var oParentMathPrp = this.Parent.MathPrp.scr;
-
-		if (1 === oParentMathPrp) {
-			strPre = '\\script';
-		} else if (2 === oParentMathPrp) {
-			strPre = '\\fraktur';
-		} else if (3 === oParentMathPrp) {
-			strPre = '\\double';
-		}
-	}
-
-    if (isLaTeX)
-    {
-        let str = AscMath.SymbolsToLaTeX[String.fromCharCode(this.value)];
-        if (str)
-        {
-            return str + " ";
-        }
-
+CMathText.prototype.GetTextOfElement = function(oMathText)
+{
+    if (!(oMathText instanceof AscMath.MathTextAndStyles)) {
+        oMathText = new AscMath.MathTextAndStyles(oMathText);
     }
 
     if (this.value && this.value !== 11034)
     {
-        return AscCommon.encodeSurrogateChar(this.value);
+        let oText = new AscMath.MathText(AscCommon.encodeSurrogateChar(this.value), this.Parent ? this.Parent.Pr.Copy() : undefined)
+        oMathText.AddText(oText);
     }
 
-	return "";
+    return oMathText;
 };
 CMathText.prototype.GetCodePoint = function()
 {
@@ -1187,9 +1168,14 @@ CMathAmp.prototype.Write_ToBinary = function(Writer)
 CMathAmp.prototype.Read_FromBinary = function(Reader)
 {
 };
-CMathAmp.prototype.GetTextOfElement = function(isLaTeX)
+CMathAmp.prototype.GetTextOfElement = function(oMathText)
 {
-	return '&'
+    if (!(oMathText instanceof AscMath.MathTextAndStyles))
+        oMathText = new AscMath.MathTextAndStyles(oMathText);
+
+    oMathText.AddText("&");
+
+	return oMathText;
 };
 
 

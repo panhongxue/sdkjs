@@ -554,7 +554,7 @@ ParaRun.prototype.GetTextOfElement = function(oMathText)
 	for (let i = 0; i < this.Content.length; i++)
 	{
 		let oCurrentElement = this.Content[i];
-		let strCurrentElement = oCurrentElement.GetTextOfElement(isLatex);
+		let strCurrentElement = oCurrentElement.GetTextOfElement(isLatex).GetText();
 
 		if (AscMath.MathLiterals.operator.SearchU(strCurrentElement) || AscMath.MathLiterals.horizontal.SearchU(strCurrentElement))
 			isOperator = true;
@@ -562,7 +562,7 @@ ParaRun.prototype.GetTextOfElement = function(oMathText)
 		if (AscMath.MathLiterals.number.GetByOneRule(strCurrentElement))
 			oMathText.SetIsNumbers(true);
 
-		oMathText.AddText(new AscMath.MathText(strCurrentElement, this.CompiledPr.Copy()), isOperator);
+		oMathText.AddText(new AscMath.MathText(strCurrentElement, this.Pr.Copy()), isOperator);
 	}
 
 	return oMathText;

@@ -1795,10 +1795,14 @@ ParaMath.prototype.GetSelectedText = function(bAll, bClearText, oPr)
 
 ParaMath.prototype.GetText = function(isLaTeX)
 {
-    let oMathTextAndStyles = new AscMath.MathTextAndStyles(isLaTeX);
-    this.Root.GetTextOfElement(oMathTextAndStyles);
-    return oMathTextAndStyles.GetText();
+    let oMathText = this.GetTextOfElement(isLaTeX)
+    return oMathText.GetText();
 };
+
+ParaMath.prototype.GetTextOfElement = function (isLaTeX)
+{
+    return this.Root.GetTextOfElement(isLaTeX);
+}
 
 ParaMath.prototype.GetSelectDirection = function()
 {
@@ -3755,11 +3759,10 @@ ParaMath.prototype.ConvertFromUnicodeMath = function()
 };
 ParaMath.prototype.ConvertToUnicodeMath = function()
 {
-	var strUnicode = this.GetText(false, true);
+	var strUnicode = this.GetTextOfElement(false);
 
-	this.Root.Remove_Content(0,this.Root.Content.length);
-
-    this.Root.AddTextWithStyles(strUnicode);
+    console.log(strUnicode.Flat(this.Root))
+    //this.Root.AddTextWithStyles(strUnicode);
 	//this.Root.Add_Text(strUnicode, this.Paragraph);
 };
 ParaMath.prototype.ConvertView = function(isToLinear, nInputType)

@@ -3296,7 +3296,7 @@ CMathContent.prototype.Add_TextInLastParaRun = function(sText, Paragraph, MathSt
 
     if (sText)
     {
-        if (this.Content.length > 0 && this.Content[this.Content.length - 1].Type === 49)
+        if (this.Content.length > 0 && this.Content[this.Content.length - 1].Type === 49 && MathStyle === this.Content[this.Content.length - 1].Pr)
         {
             var MathRun = this.Content[this.Content.length - 1]
 
@@ -7058,7 +7058,7 @@ CMathContent.prototype.GetTextOfElement = function(oMathText)
 {
 	let isReturn = false;
 
-	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles) {
+	if (!(oMathText instanceof AscMath.MathTextAndStyles)) {
 		oMathText = new AscMath.MathTextAndStyles(oMathText);
 		isReturn = true;
 	}

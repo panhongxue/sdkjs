@@ -2223,7 +2223,7 @@
   };
 
   WorkbookView.prototype.onFrameEditorReady = function () {
-	  this.handlers.trigger("asc_onOleEditorReady");
+	  this.handlers.trigger("asc_onFrameEditorReady");
   };
 
   WorkbookView.prototype._onDocumentPlaceChanged = function() {

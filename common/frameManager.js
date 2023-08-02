@@ -706,7 +706,6 @@
 		{
 			this.api.WordControl.onMouseUpMainSimple();
 		}
-		this.api.isChartEditorLoaded = true;
 		this.api.frameManager.startLoadChartEditor();
 		this.api.sendEvent('asc_doubleClickOnChart', this.getBinaryChart());
 	};
@@ -731,27 +730,10 @@
 		this.frameLoader = new CFrameDiagramBinaryLoader(this.chart, this.resolvePromise.bind(this));
 	}
 
-	CDiagramUpdater.prototype.openHiddenCellEditor = function (fCallback)
-	{
-		const oThis = this;
-		const fWrapCallback = function ()
-		{
-			oThis.api.isChartEditorLoaded = true;
-			fCallback();
-		}
-		this.api.sendEvent("asc_onLoadHiddenCellEditor", fWrapCallback);
-	};
 	CDiagramUpdater.prototype.update = function ()
 	{
 		this.frameLoader.startLoadWorksheet();
-		if (this.api.isChartEditorLoaded)
-		{
-			this.frameLoader.resolve();
-		}
-		else
-		{
-			this.openHiddenCellEditor(this.frameLoader.resolve.bind(this.frameLoader));
-		}
+		this.frameLoader.resolve();
 	};
 
 	CDiagramUpdater.prototype.getChartBinary = function (stream)

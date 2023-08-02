@@ -222,8 +222,6 @@
 
 		this.isBlurEditor = false;
 
-		this.isChartEditorLoaded = false;
-
 
 		this.formatPainter = new AscCommon.CFormatPainter(this);
 		this.eyedropper = new AscCommon.CEyedropper(this);

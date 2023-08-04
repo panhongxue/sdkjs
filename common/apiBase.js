@@ -836,6 +836,10 @@
 	};
 
 	baseEditorsApi.prototype.asc_getLocaleExample = function(format, value, culture) {
+		if (!AscFormat.isRealNumber(value))
+		{
+			return '';
+		}
 		const cultureInfo = AscCommon.g_aCultureInfos[culture] || AscCommon.g_oDefaultCultureInfo;
 		const numFormat = AscCommon.oNumFormatCache.get(format || "General");
 		return numFormat.formatToChart(value, undefined, cultureInfo);

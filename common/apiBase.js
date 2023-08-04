@@ -835,6 +835,35 @@
 		}
 	};
 
+	baseEditorsApi.prototype.asc_getLocaleExample = function(format, value, culture) {
+		const cultureInfo = AscCommon.g_aCultureInfos[culture] || AscCommon.g_oDefaultCultureInfo;
+		const numFormat = AscCommon.oNumFormatCache.get(format || "General");
+		return numFormat.formatToChart(value, undefined, cultureInfo);
+	};
+	baseEditorsApi.prototype.asc_convertNumFormatLocal2NumFormat = function(format) {
+		var oFormat = new AscCommon.CellFormat(format,undefined,true);
+		return oFormat.toString(0, false);
+	};
+	baseEditorsApi.prototype.asc_convertNumFormat2NumFormatLocal = function(format) {
+		var oFormat = new AscCommon.CellFormat(format,undefined,false);
+		return oFormat.toString(0, true);
+	};
+	baseEditorsApi.prototype.asc_getAdditionalCurrencySymbols = function () {
+		return AscCommon.g_aAdditionalCurrencySymbols;
+	};
+
+	baseEditorsApi.prototype.asc_getCurrencySymbols = function () {
+		var result = {};
+		for (var key in AscCommon.g_aCultureInfos) {
+			result[key] = AscCommon.g_aCultureInfos[key].CurrencySymbol;
+		}
+		return result;
+	};
+
+	baseEditorsApi.prototype.asc_getFormatCells = function(info) {
+		return AscCommon.getFormatCells(info);
+	};
+
 	baseEditorsApi.prototype.sendStartUploadImageActionToFrameEditor = function () {
 		this.sendFromGeneralToFrameEditor({
 			"type": c_oAscFrameDataType.StartUploadImageAction,
@@ -4779,5 +4808,11 @@
 	prot['asc_StartDrawInk'] = prot.asc_StartDrawInk;
 	prot['asc_StartInkEraser'] = prot.asc_StartInkEraser;
 	prot['asc_StopInkDrawer'] = prot.asc_StopInkDrawer;
+	prot['asc_getFormatCells'] = prot.asc_getFormatCells;
+	prot['asc_getLocaleExample'] = prot.asc_getLocaleExample;
+	prot['asc_getAdditionalCurrencySymbols'] = prot.asc_getAdditionalCurrencySymbols;
+	prot['asc_convertNumFormat2NumFormatLocal'] = prot.asc_convertNumFormat2NumFormatLocal;
+	prot['asc_convertNumFormatLocal2NumFormat'] = prot.asc_convertNumFormatLocal2NumFormat;
+	prot['asc_getCurrencySymbols'] = prot.asc_getCurrencySymbols;
 
 })(window);

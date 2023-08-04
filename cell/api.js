@@ -235,16 +235,6 @@ var editor;
   spreadsheet_api.prototype.asc_getFunctionArgumentSeparator = function () {
     return AscCommon.FormulaSeparators.functionArgumentSeparator;
   };
-  spreadsheet_api.prototype.asc_getCurrencySymbols = function () {
-		var result = {};
-		for (var key in AscCommon.g_aCultureInfos) {
-			result[key] = AscCommon.g_aCultureInfos[key].CurrencySymbol;
-		}
-		return result;
-	};
-	spreadsheet_api.prototype.asc_getAdditionalCurrencySymbols = function () {
-		return AscCommon.g_aAdditionalCurrencySymbols;
-	};
 	spreadsheet_api.prototype.asc_getLocaleExample = function(format, value, culture) {
 		var cultureInfo = AscCommon.g_aCultureInfos[culture] || AscCommon.g_oDefaultCultureInfo;
 		var numFormat = AscCommon.oNumFormatCache.get(format || "General");
@@ -263,14 +253,6 @@ var editor;
 			res = numFormat.formatToChart(value, undefined, cultureInfo);
 		}
 		return res;
-	};
-	spreadsheet_api.prototype.asc_convertNumFormatLocal2NumFormat = function(format) {
-		var oFormat = new AscCommon.CellFormat(format,undefined,true);
-		return oFormat.toString(0, false);
-	};
-	spreadsheet_api.prototype.asc_convertNumFormat2NumFormatLocal = function(format) {
-		var oFormat = new AscCommon.CellFormat(format,undefined,false);
-		return oFormat.toString(0, true);
 	};
 	spreadsheet_api.prototype.asc_getFormatCells = function(info) {
 		var res = AscCommon.getFormatCells(info);
@@ -8792,11 +8774,7 @@ var editor;
   prot["asc_setDocInfo"] = prot.asc_setDocInfo;
   prot["asc_changeDocInfo"] = prot.asc_changeDocInfo;
   prot['asc_getFunctionArgumentSeparator'] = prot.asc_getFunctionArgumentSeparator;
-  prot['asc_getCurrencySymbols'] = prot.asc_getCurrencySymbols;
-  prot['asc_getAdditionalCurrencySymbols'] = prot.asc_getAdditionalCurrencySymbols;
   prot['asc_getLocaleExample'] = prot.asc_getLocaleExample;
-  prot['asc_convertNumFormatLocal2NumFormat'] = prot.asc_convertNumFormatLocal2NumFormat;
-  prot['asc_convertNumFormat2NumFormatLocal'] = prot.asc_convertNumFormat2NumFormatLocal;
   prot['asc_getFormatCells'] = prot.asc_getFormatCells;
   prot["asc_getLocaleCurrency"] = prot.asc_getLocaleCurrency;
   prot["asc_setLocale"] = prot.asc_setLocale;

@@ -345,6 +345,7 @@ DrawingObjectsController.prototype.editChart = function(binary)
 
     if(oSelectedChart)
     {
+	    oSelectedChart.recalculateChart();
         if (!oSelectedChart.isExternal() && binary["workbookBinary"])
         {
             chart_space.setXLSX(AscCommon.Base64.decode(binary["workbookBinary"]));

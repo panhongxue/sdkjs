@@ -2279,8 +2279,14 @@
 		/**
 	 * @constructor
 	 */
-	function Workbook(eventsHandlers, oApi){
+	function Workbook(eventsHandlers, oApi, isMainLogicDocument){
 		this.oApi = oApi;
+		this.History = History;
+		if (false !== isMainLogicDocument)
+		{
+			if (this.History)
+				this.History.Set_LogicDocument(this);
+		}
 		this.handlers = eventsHandlers;
 		this.dependencyFormulas = new DependencyGraph(this);
 		this.nActive = 0;
@@ -3090,7 +3096,7 @@
 		return [aRes, aRes2];
 	};
 	Workbook.prototype._getSnapshot = function() {
-		var wb = new Workbook(new AscCommonExcel.asc_CHandlersList(), this.oApi);
+		var wb = new Workbook(new AscCommonExcel.asc_CHandlersList(), this.oApi, false);
 		wb.dependencyFormulas = this.dependencyFormulas.getSnapshot(wb);
 		this.forEach(function (ws) {
 			ws = ws.getSnapshot(wb);
@@ -3346,7 +3352,7 @@
 			History.Clear();
 			History.TurnOff();
 			var history = new AscCommon.CHistory();
-			history.init(this);
+			history.Set_LogicDocument(this);
 			history.Create_NewPoint();
 
 			history.SetSelection(null);
@@ -4619,7 +4625,7 @@
 				}
 			}
 		}
-		return new Workbook();
+		return new Workbook(undefined, undefined, false);
 	};
 
 	Workbook.prototype.removeExternalReferences = function (arr) {

@@ -621,8 +621,7 @@ $(function () {
 
 		window["Asc"]["editor"] = api;
 
-		wb = new AscCommonExcel.Workbook(new AscCommonExcel.asc_CHandlersList(), api);
-		AscCommon.History.init(wb);
+		wb = new AscCommonExcel.Workbook(new AscCommonExcel.asc_CHandlersList(), api, true);
 		wb.maxDigitWidth = 7;
 		wb.paddingPlusBorder = 5;
 

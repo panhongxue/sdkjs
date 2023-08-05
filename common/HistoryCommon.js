@@ -4518,7 +4518,7 @@
 	 */
 	function CChangesBase(Class)
 	{
-		console.trace('CChangesBase');
+		console.trace && console.trace('CChangesBase');
 		this.Class = Class;
 
 		this.Reverted = false;

@@ -836,7 +836,7 @@
 			  }, "cleanSelectRange": function () {
 			      self._onCleanSelectRange();
               }, "updateUndoRedoChanged": function (bCanUndo, bCanRedo) {
-				  console.trace('onCanUndo:'+bCanUndo);
+				  console.trace && console.trace('onCanUndo:'+bCanUndo);
 				  self.handlers.trigger("asc_onCanUndoChanged", bCanUndo);
 				  self.handlers.trigger("asc_onCanRedoChanged", bCanRedo);
 			  }, "applyCloseEvent": function () {
@@ -865,7 +865,7 @@
 				  self.handlers.trigger("asc_onSelectionEnd");
 			  }, "doEditorFocus" : function () {
 				  self._setEditorFocus();
-        }
+			  }
 		  }, this.defaults.worksheetView.cells.padding);
 
 	  this.wsViewHandlers = new AscCommonExcel.asc_CHandlersList(/*handlers*/{
@@ -985,7 +985,7 @@
     this.model.handlers.add("setCanUndo", function(bCanUndo) {
       if (!self.Api.canUndoRedoByRestrictions())
         bCanUndo = false;
-		console.trace('asc_onCanUndo:'+bCanUndo);
+		console.trace && console.trace('asc_onCanUndo:'+bCanUndo);
       self.handlers.trigger("asc_onCanUndoChanged", bCanUndo);
     });
     this.model.handlers.add("setCanRedo", function(bCanRedo) {
@@ -1777,7 +1777,7 @@
 			d = ws.changeSelectionMoveResizeVisibleAreaHandle(x, y, target);
 		} else if (target.pageBreakSelectionType) {
 			d = ws.changePageBreakPreviewAreaHandle(x, y, target);
-		} else {
+	    } else {
 			d = ws.changeSelectionMoveResizeRangeHandle(x, y, target, this.cellEditor);
 		}
 
@@ -1893,7 +1893,7 @@
         const oTargetInfo = this.controller.targetInfo;
         if (oTargetInfo) {
            this._onUpdateWorksheet(oTargetInfo.coordX, oTargetInfo.coordY, false);
-    }
+        }
     }
   };
 
@@ -2959,8 +2959,8 @@
                     });
                 });
             } else {
-            this._onEditCell(enterOptions, callback);
-        }
+                this._onEditCell(enterOptions, callback);
+            }
         }
     };
 
@@ -2978,7 +2978,7 @@
 			let _res = new AscCommonExcel.CFunctionInfo(AscCommonExcel.cFormulaFunctionToLocale ? AscCommonExcel.cFormulaFunctionToLocale[_name] : _name);
 			let _parseResult = t.cellEditor._parseResult;
 
-					//получаем массив аргументов
+			//получаем массив аргументов
 			_res.argumentsValue = _parseResult.getArgumentsValue(t.cellEditor._formula.Formula);
 			let argCalc;
 			if (_res.argumentsValue) {
@@ -2986,33 +2986,33 @@
 				_res.argumentsResult = [];
 				for (let i = 0; i < _res.argumentsValue.length; i++) {
 					let argType = null;
-							if (argumentsType) {
-								if (typeof argumentsType[i] == 'object') {
-									argType = argumentsType[i][0];
-								} else if (i > argumentsType.length - 1) {
+					if (argumentsType) {
+						if (typeof argumentsType[i] == 'object') {
+							argType = argumentsType[i][0];
+						} else if (i > argumentsType.length - 1) {
 							let lastArgType = argumentsType[argumentsType.length - 1];
-									if (typeof lastArgType == 'object') {
-										argType = lastArgType[(i - (argumentsType.length - 1)) % lastArgType.length]
-									}
-								} else {
-									argType = argumentsType[i];
-								}
+							if (typeof lastArgType == 'object') {
+								argType = lastArgType[(i - (argumentsType.length - 1)) % lastArgType.length]
 							}
-							//вычисляем результат каждого аргумента
+						} else {
+							argType = argumentsType[i];
+						}
+					}
+					//вычисляем результат каждого аргумента
 					argCalc = ws.calculateWizardFormula(_res.argumentsValue[i], argType);
 					_res.argumentsResult[i] = argCalc.str;
-						}
-					}
+				}
+			}
 
-					//get result
+			//get result
 			let sArguments = _res.argumentsValue.join(AscCommon.FormulaSeparators.functionArgumentSeparator);
-					if (argCalc.obj && argCalc.obj.type !== AscCommonExcel.cElementType.error) {
+			if (argCalc.obj && argCalc.obj.type !== AscCommonExcel.cElementType.error) {
 				let funcCalc = ws.calculateWizardFormula(_name + '(' + sArguments + ')');
 				_res.functionResult = funcCalc.str;
-						if (funcCalc.obj && funcCalc.obj.type !== AscCommonExcel.cElementType.error) {
+				if (funcCalc.obj && funcCalc.obj.type !== AscCommonExcel.cElementType.error) {
 					_res.formulaResult = ws.calculateWizardFormula(t.cellEditor._formula).str;
-						}
-					}
+				}
+			}
 
 			return _res;
 		};
@@ -3061,7 +3061,7 @@
 				let trueName = oFormulaList[name] && oFormulaList[name].prototype && oFormulaList[name].prototype.name;
 				if (allowCompleteFunctions[trueName]) {
 					cellRange = wsView.autoCompleteFormula(trueName);
-			}
+				}
 
 				t.cellEditor.insertFormula(name, null, cellRange && !cellRange.notEditCell && cellRange.text);
 				if (cellRange) {
@@ -3200,8 +3200,8 @@
 	};
 
   WorkbookView.prototype.undo = function(Options) {
-    if (true === AscCommon.CollaborativeEditing.Get_GlobalLock())
-      return;
+	  if (true === AscCommon.CollaborativeEditing.Get_GlobalLock())
+		  return;
 
     this.Api.sendEvent("asc_onBeforeUndoRedo");	  var oFormulaLocaleInfo = AscCommonExcel.oFormulaLocaleInfo;
 	  oFormulaLocaleInfo.Parse = false;
@@ -4613,8 +4613,8 @@
 		if (typeof (sheet_data) === "string") {
 			base64 = sheet_data;
 			tempWorkbook = new AscCommonExcel.Workbook();
-        tempWorkbook.DrawingDocument = Asc.editor.wbModel.DrawingDocument;
-		tempWorkbook.setCommonIndexObjectsFrom(this.model);
+			tempWorkbook.DrawingDocument = Asc.editor.wbModel.DrawingDocument;
+			tempWorkbook.setCommonIndexObjectsFrom(this.model);
 			aPastedImages = pasteProcessor._readExcelBinary(base64.split('xslData;')[1], tempWorkbook, true);
 			pastedWs = tempWorkbook.aWorksheets[0];
 		} else {
@@ -5391,13 +5391,13 @@
 							if (!isLocalDesktop) {
 								//xlst
 								binaryData = null;
-							let jsZlib = new AscCommon.ZLib();
-							if (!jsZlib.open(stream)) {
-								t.model.handlers.trigger("asc_onErrorUpdateExternalReference", eR.Id);
+								let jsZlib = new AscCommon.ZLib();
+								if (!jsZlib.open(stream)) {
+									t.model.handlers.trigger("asc_onErrorUpdateExternalReference", eR.Id);
 									continue;
-							}
+								}
 
-							if (jsZlib.files && jsZlib.files.length) {
+								if (jsZlib.files && jsZlib.files.length) {
 									binaryData = jsZlib.getFile(jsZlib.files[0]);
 								}
 							}

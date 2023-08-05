@@ -4733,11 +4733,11 @@
 		var res = null;
 		for (var i = 0; i < this.externalReferences.length; i++) {
 			if (this.externalReferences[i].getAscLink) {
-			if (!res) {
-				res = [];
-			}
+				if (!res) {
+					res = [];
+				}
 				res.push(this.externalReferences[i].getAscLink());
-		}
+			}
 		}
 		return res;
 	};
@@ -6137,7 +6137,7 @@
 				wb.setActive(nNewIndex);
 				if (!wb.bUndoChanges && !wb.bRedoChanges) {
 					wb.handlers && wb.handlers.trigger("undoRedoHideSheet", nNewIndex);
-			}
+				}
 			}
 			History.Create_NewPoint();
 			History.Add(AscCommonExcel.g_oUndoRedoWorksheet, AscCH.historyitem_Worksheet_Hide, this.getId(), null, new UndoRedoData_FromTo(bOldHidden, hidden));
@@ -8359,7 +8359,7 @@
 		this.workbook.updateSparklineCache(this.sName, ranges);
 		// ToDo do not update conditional formatting on hidden sheet
 		if (ranges && ranges.length) {
-		this.setDirtyConditionalFormatting(new AscCommonExcel.MultiplyRange(ranges));
+			this.setDirtyConditionalFormatting(new AscCommonExcel.MultiplyRange(ranges));
 		}
 		//this.workbook.handlers.trigger("toggleAutoCorrectOptions", null,true);
 	};
@@ -8905,7 +8905,7 @@
 				let caption;
 				if (1 === colFields.length && AscCommonExcel.st_VALUES === colFields[0].asc_getIndex()) {
 					caption = pivotTable.dataCaption || AscCommon.translateManager.getValue(AscCommonExcel.DATA_CAPTION)
-			} else {
+				} else {
 					caption = pivotTable.colHeaderCaption || AscCommon.translateManager.getValue(AscCommonExcel.COL_HEADER_CAPTION);
 				}
 				this._updatePivotTableSetCellValue(cells, caption);
@@ -10429,7 +10429,7 @@
 					if (cell.getNumFormat().isDateTimeFormat()) {
 						tempDate++;
 					} else {
-					tempDigit++;
+						tempDigit++;
 					}
 				} else {
 					tempText++;
@@ -10471,7 +10471,7 @@
 			res.date = true;
 			res.text = false;
 		} else {
-		res.text = tempDigit <= tempText;
+			res.text = tempDigit <= tempText;
 		}
 
 		return res;
@@ -15813,7 +15813,7 @@
 			if (pushOnlyFirstMergedCell) {
 				let merged = t.worksheet.getMergedByCell(cell.nRow, cell.nCol);
 				if (!merged || (merged && merged.r1 === cell.nRow && merged.c1 === cell.nCol)) {
-			cell.setValue2(array);
+					cell.setValue2(array);
 				}
 			} else {
 				cell.setValue2(array);
@@ -18999,8 +18999,8 @@
 										aInputTimePeriod = _getAInputTimePeriod(aInputTimePeriodList, nInputTimePeriod, nPrevInputTimePeriod, sValue, sNextValue);
 										if (aInputTimePeriod) {
 											calcTimePeriodValues();
+										}
 									}
-								}
 								}
 								if(null != oCell.xfs && null != oCell.xfs.num && null != oCell.xfs.num.getFormat()){
 									var numFormat = oNumFormatCache.get(oCell.xfs.num.getFormat());
@@ -19119,7 +19119,7 @@
 										let nIndexDay = nCurValue % aTimePeriods.length;
 										if (nIndexDay < 0) {
 											oCellValue.text = aReverseTimePeriods[~nIndexDay];
-									} else {
+										} else {
 											oCellValue.text = aTimePeriods[nIndexDay];
 										}
 										oCellValue.type = CellValueType.String;

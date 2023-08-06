@@ -7867,7 +7867,7 @@ background-repeat: no-repeat;\
 		}
 	};
 
-	asc_docs_api.prototype.asc_applyChartSettings = function (oAscChartSettings, oAscImgSettings)
+	asc_docs_api.prototype.asc_applyChartSettings = function (oAscChartSettings)
 	{
 		const oLogicDocument = this.private_GetLogicDocument();
 		this.asc_onCloseChartFrame();

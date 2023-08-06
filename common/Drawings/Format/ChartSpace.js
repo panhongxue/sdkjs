@@ -4391,18 +4391,24 @@ function(window, undefined) {
 	{
 		AscDFH.addBinaryDataToHistory(this, this.XLSX, arrData, CChangesStartChartSpaceBinary, CChangesPartChartSpaceBinary, CChangesEndChartSpaceBinary);
 		this.XLSX = arrData;
-	}
+	};
 	CChartSpace.prototype.setExternalReference = function (oExternalReference)
 	{
 		History.Add(new CChangesDrawingsObjectNoId(this, AscDFH.historyitem_ChartSpace_SetExternalReference, this.externalReference, oExternalReference));
 		this.externalReference = oExternalReference;
-	}
+	};
 	CChartSpace.prototype.setExternalPath = function (sPath)
 	{
 		const oReference = new AscCommonExcel.CChartExternalReference();
 		oReference.Id = sPath;
 		this.setExternalReference(oReference);
-	}
+	};
+	CChartSpace.prototype.setPortalData = function (fileKey, instanceId)
+	{
+		const oReference = new AscCommonExcel.CChartExternalReference();
+		oReference.setReferenceData(fileKey, instanceId);
+		this.setExternalReference(oReference);
+	};
 	CChartSpace.prototype.setLang = function (lang) {
 		History.Add(new CChangesDrawingsString(this, AscDFH.historyitem_ChartSpace_SetLang, this.lang, lang));
 		this.lang = lang;

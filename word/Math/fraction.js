@@ -38,27 +38,43 @@ var g_oTextMeasurer = AscCommon.g_oTextMeasurer;
 function CMathFractionPr()
 {
 	this.type = BAR_FRACTION;
+	this.ctrPr   = new CMathCtrlPr();
+}
+CMathFractionPr.prototype.GetRPr = function ()
+{
+	return this.ctrPr.GetRPr();
 }
 CMathFractionPr.prototype.Set_FromObject = function(Obj)
 {
 	if (undefined !== Obj.type && null !== Obj.type)
 		this.type = Obj.type;
+
+	this.ctrPr.SetRPr(Obj.ctrPrp);
 };
-CMathFractionPr.prototype.Copy = function(Obj)
+CMathFractionPr.prototype.Copy = function()
 {
 	var NewPr = new CMathFractionPr();
 	NewPr.type = this.type;
+	NewPr.ctrPr   = this.ctrPr;
 	return NewPr;
 };
 CMathFractionPr.prototype.Write_ToBinary = function(Writer)
 {
 	// Long : type
 	Writer.WriteLong(this.type);
+	Writer.WriteBool(true);
+	this.ctrPr.Write_ToBinary(Writer);
+
 };
 CMathFractionPr.prototype.Read_FromBinary = function(Reader)
 {
 	// Long : type
 	this.type = Reader.GetLong();
+
+	if (Reader.GetBool())
+	{
+		this.ctrPr.Read_FromBinary(Reader);
+	}
 };
 
 /**
@@ -80,6 +96,10 @@ function CFraction(props)
 
 	if(props !== null && typeof(props) !== "undefined")
 		this.init(props);
+
+	// согласно формату CtrPrp должен находится в FractionPr, пока оставляем this.CtrPrp, но приравняем к значению из Pr
+	if (this.Pr.ctrPr.rPr)
+		this.CtrPrp = this.Pr.ctrPr.rPr;
 
 	AscCommon.g_oTableId.Add( this, this.Id );
 }
@@ -616,7 +636,7 @@ CFraction.prototype.raw_SetFractionType = function(FractionType)
 };
 /**
  *
- * @param {MathTextAndStyles} oMathText
+ * @param {MathTextAndStyles|boolean} oMathText
  * @constructor
  */
 CFraction.prototype.GetTextOfElement = function(oMathText)
@@ -634,11 +654,11 @@ CFraction.prototype.GetTextOfElement = function(oMathText)
 		let frac;
 		switch (this.Pr.type)
 		{
-			case 0:		frac = new AscMath.MathText('/', this.CtrPrp);	break;
-			case 1:		frac = new AscMath.MathText('⁄', this.CtrPrp);	break;
-			case 2:		frac = new AscMath.MathText('∕', this.CtrPrp);	break;
-			case 3:		frac = new AscMath.MathText('¦', this.CtrPrp);	break;
-			default:	frac = new AscMath.MathText('/', this.CtrPrp);	break;
+			case 0:		frac = new AscMath.MathText('/', this.Pr.GetRPr());	break;
+			case 1:		frac = new AscMath.MathText('⁄', this.Pr.GetRPr());	break;
+			case 2:		frac = new AscMath.MathText('∕', this.Pr.GetRPr());	break;
+			case 3:		frac = new AscMath.MathText('¦', this.Pr.GetRPr());	break;
+			default:	frac = new AscMath.MathText('/', this.Pr.GetRPr());	break;
 		}
 		oMathText.AddAfter(oPosNumerator, frac);
 	}

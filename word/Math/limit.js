@@ -354,11 +354,11 @@ CLimit.prototype.GetTextOfElement = function(oMathText)
 		}
 	}
 
-	let oNamePos = oMathText.Add(oFuncName, true, "linear");
-	let oLimitPos = oMathText.AddAfter(oNamePos, strLimitSymbol);
-	let oArgumentPos = oMathText.Add(oArgument, true, 'notBracket');
-
-	return oMathText;
+	oMathText.SetStyle(this.CtrPrp);
+	let oNamePos = oMathText.Add(oFuncName, true, "linear")
+	oMathText.ResetStyle();
+	oMathText.AddAfter(oNamePos, new AscMath.MathText(strLimitSymbol, this.CtrPrp));
+	oMathText.Add(oArgument, true, 'notBracket');
 };
 
 /**
@@ -392,6 +392,37 @@ window["CMathMenuLimit"] = CMathMenuLimit;
 CMathMenuLimit.prototype["get_Pos"] = CMathMenuLimit.prototype.get_Pos;
 CMathMenuLimit.prototype["put_Pos"] = CMathMenuLimit.prototype.put_Pos;
 
+function CMathFuncPr()
+{
+	this.ctrPr   = new CMathCtrlPr();
+}
+CMathFuncPr.prototype.GetRPr = function ()
+{
+	return this.ctrPr.GetRPr();
+};
+CMathFuncPr.prototype.Set_FromObject = function(Obj)
+{
+	this.ctrPr.SetRPr(Obj.ctrPrp);
+};
+CMathFuncPr.prototype.Copy = function()
+{
+	let NewPr = new CMathFuncPr();
+	NewPr.ctrPr = this.ctrPr;
+	return NewPr;
+};
+CMathFuncPr.prototype.Write_ToBinary = function(Writer)
+{
+	Writer.WriteBool(true);
+	this.ctrPr.Write_ToBinary(Writer);
+};
+CMathFuncPr.prototype.Read_FromBinary = function(Reader)
+{
+	if (Reader.GetBool())
+	{
+		this.ctrPr.Read_FromBinary(Reader);
+	}
+};
+
 /**
  *
  * @param props
@@ -404,10 +435,14 @@ function CMathFunc(props)
 
 	this.Id = AscCommon.g_oIdCounter.Get_NewId();
 
-    this.Pr = new CMathBasePr();
+    this.Pr = new CMathFuncPr();
 
     if(props !== null && typeof(props) !== "undefined")
         this.init(props);
+
+	// согласно формату CtrPrp должен находится в BoxPr, пока оставляем this.CtrPrp, но приравняем к значению из Pr
+	if (this.Pr.ctrPr.rPr)
+		this.CtrPrp = this.Pr.ctrPr.rPr;
 
     AscCommon.g_oTableId.Add( this, this.Id );
 }
@@ -475,11 +510,12 @@ CMathFunc.prototype.GetTextOfElement = function(oMathText)
 		let oArgumentPos = oMathText.Add(oArgument, true, false);
 
 		let oArgumentToken = oMathText.GetExact(oArgumentPos);
-		oMathText.AddBefore(oArgumentPos, "⁡");
+		oMathText.AddBefore(oArgumentPos,  new AscMath.MathText("⁡", this.Pr.GetRPr()));
 
 		if (oArgumentToken.GetLength() > 1 && !oArgumentToken.IsBracket)
 		{
-			oMathText.WrapExactElement(oArgumentPos, "〖", "〗")
+			oMathText.SetStyle(this.Pr.GetRPr());
+			oMathText.WrapExactElement(oArgumentPos, "〖", "〗");
 		}
 	}
     else

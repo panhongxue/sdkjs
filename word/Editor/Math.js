@@ -3729,39 +3729,33 @@ ParaMath.prototype.CalculateTextToTable = function(oEngine)
 };
 ParaMath.prototype.ConvertFromLaTeX = function()
 {
-	var strLaTeX = this.GetText(true);
+	var oLaTeX = this.GetTextOfElement(true);
     this.Root.Remove_Content(0, this.Root.Content.length);
     this.Root.CurPos = 0;
-    AscMath.ConvertLaTeXToTokensList(strLaTeX, this.Root);
-    this.Root.CorrectAllMathWords(true);
-    this.Root.ConvertAllSpecialWords(true);
+    AscMath.ConvertLaTeXToTokensList(oLaTeX, this.Root);
+    // this.Root.CorrectAllMathWords(true);
+    // this.Root.ConvertAllSpecialWords(true);
 	this.Root.Correct_Content(true);
     this.Root.CurPos++;
 };
 ParaMath.prototype.ConvertToLaTeX = function()
 {
-	var strLatex = this.GetText(true);
-	this.Root.Remove_Content(0,this.Root.Content.length);
-	this.Root.Add_Text(strLatex, this.Paragraph);
-    this.Root.CurPos = this.Root.Content.length - 1;
+	let oLaTeXContent = this.GetTextOfElement(true);
+    oLaTeXContent.Flat(this.Root);
 };
 ParaMath.prototype.ConvertFromUnicodeMath = function()
 {
-    //this.Root.CorrectAllMathWords(false);
-    //this.Root.ConvertAllSpecialWords(false);
-
-	let strUnicode = this.GetText(false, true);
+	let oUnicode = this.GetTextOfElement(false);
 	this.Root.Remove_Content(0,this.Root.Content.length);
     this.Root.CurPos = 0;
-	AscMath.CUnicodeConverter(strUnicode, this.Root);
+	AscMath.CUnicodeConverter(oUnicode, this.Root);
 	this.Root.Correct_Content(true);
     this.Root.CurPos++;
 };
 ParaMath.prototype.ConvertToUnicodeMath = function()
 {
-	var strUnicode = this.GetTextOfElement(false);
-
-    console.log(strUnicode.Flat(this.Root))
+	let oUnicodeContent = this.GetTextOfElement(false);
+    oUnicodeContent.Flat(this.Root);
     //this.Root.AddTextWithStyles(strUnicode);
 	//this.Root.Add_Text(strUnicode, this.Paragraph);
 };

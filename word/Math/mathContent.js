@@ -3296,7 +3296,9 @@ CMathContent.prototype.Add_TextInLastParaRun = function(sText, Paragraph, MathSt
 
     if (sText)
     {
-        if (this.Content.length > 0 && this.Content[this.Content.length - 1].Type === 49 && MathStyle === this.Content[this.Content.length - 1].Pr)
+	    if (this.Content.length > 0
+            && this.Content[this.Content.length - 1].Type === 49
+            && (MathStyle === this.Content[this.Content.length - 1].Pr))
         {
             var MathRun = this.Content[this.Content.length - 1]
 

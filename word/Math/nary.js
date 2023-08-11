@@ -44,6 +44,7 @@ function CMathNaryPr()
     this.limLoc  = undefined;
     this.subHide = false;
     this.supHide = false;
+    this.ctrPrp  = undefined;
 }
 
 CMathNaryPr.prototype.Set_FromObject = function(Obj)
@@ -62,6 +63,8 @@ CMathNaryPr.prototype.Set_FromObject = function(Obj)
 
     if(true === Obj.supHide === true || 1 === Obj.supHide)
         this.supHide = true;
+
+    this.CtrPrp  = Obj.ctrPrp;
 };
 
 CMathNaryPr.prototype.Copy = function()
@@ -74,6 +77,7 @@ CMathNaryPr.prototype.Copy = function()
     NewPr.limLoc  = this.limLoc ;
     NewPr.subHide = this.subHide;
     NewPr.supHide = this.supHide;
+    NewPr.CtrPrp  = this.ctrlPr;
 
     return NewPr;
 };
@@ -120,6 +124,16 @@ CMathNaryPr.prototype.Write_ToBinary = function(Writer)
     Writer.WriteBool(this.grow);
     Writer.WriteBool(this.subHide);
     Writer.WriteBool(this.supHide);
+
+    if (this.CtrPrp)
+    {
+        Writer.WriteBool(true);
+        this.CtrPrp.WriteToBinary(Writer);
+    }
+    else
+    {
+        Writer.WriteBool(false);
+    }
 };
 
 CMathNaryPr.prototype.Read_FromBinary = function(Reader)
@@ -154,6 +168,13 @@ CMathNaryPr.prototype.Read_FromBinary = function(Reader)
     this.grow    = Reader.GetBool();
     this.subHide = Reader.GetBool();
     this.supHide = Reader.GetBool();
+
+    this.CtrPrp = undefined;
+    if (Reader.GetBool())
+    {
+        this.CtrPrp = new CTextPr();
+        this.CtrPrp.ReadFromBinary(Reader);
+    }
 };
 
 /**
@@ -180,6 +201,10 @@ function CNary(props)
 
     if(props !== null && props !== undefined)
         this.init(props);
+
+	// согласно формату CtrPrp должен находится в MatrixPr, пока оставляем this.CtrPrp, но приравняем к значению из Pr
+	if (this.Pr.CtrPrp)
+		this.CtrPrp = this.Pr.CtrPrp;
 
     AscCommon.g_oTableId.Add( this, this.Id );
 }
@@ -862,21 +887,21 @@ CNary.prototype.GetTextOfElement = function(oMathText)
     }
     else
 	{
-		let oLastPos = oMathText.AddText(String.fromCharCode(this.Pr.chr));
+		let oLastPos = oMathText.AddText(new AscMath.MathText(String.fromCharCode(this.Pr.chr), this.Pr.CtrPrp));
 		let isScript = false;
 
 		if (oLower)
 		{
 			isScript = true;
 			oLastPos = oMathText.Add(oLower, true, "base");
-			oMathText.AddBefore(oLastPos, "_");
+			oMathText.AddBefore(oLastPos, new AscMath.MathText("_"));
 		}
 
 		if (oUpper)
 		{
 			isScript = true;
 			oLastPos = oMathText.Add(oUpper, true, "base");
-			oMathText.AddBefore(oLastPos, "^");
+            oMathText.AddBefore(oLastPos, new AscMath.MathText("^"));
 		}
 
 		if (oBase)
@@ -884,7 +909,7 @@ CNary.prototype.GetTextOfElement = function(oMathText)
 			oLastPos = oMathText.Add(oBase, true, "linear");
 			let oBaseText = oMathText.GetExact(oLastPos);
 			if (isScript && oBaseText.GetLength() > 0 && oBaseText.IsHasText())
-				oMathText.AddBefore(oLastPos, "▒");
+                oMathText.AddBefore(oLastPos, new AscMath.MathText("▒"));
 		}
 	}
 };

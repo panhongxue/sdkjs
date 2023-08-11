@@ -3112,6 +3112,11 @@ function CMathDelimiterPr()
     this.grow       = true;
 
     this.column     = 0;
+	this.ctrPr   = new CMathCtrlPr();
+}
+CMathDelimiterPr.prototype.GetRPr = function ()
+{
+	return this.ctrPr.GetRPr();
 }
 CMathDelimiterPr.prototype.initByContent = function(content) {
     if (!content) {
@@ -3143,6 +3148,8 @@ CMathDelimiterPr.prototype.Set_FromObject = function(Obj)
         this.column = Obj.column;
     else
         this.column = 1;
+
+	this.ctrPr.SetRPr(Obj.ctrPrp);
 };
 
 CMathDelimiterPr.prototype.Copy = function()
@@ -3158,6 +3165,7 @@ CMathDelimiterPr.prototype.Copy = function()
     NewPr.shp        = this.shp       ;
     NewPr.grow       = this.grow      ;
     NewPr.column     = this.column    ;
+	NewPr.ctrPr      = this.ctrPr     ;
 
     return NewPr;
 };
@@ -3225,6 +3233,9 @@ CMathDelimiterPr.prototype.Write_ToBinary = function(Writer)
     Writer.WriteLong(this.shp);
     Writer.WriteBool(this.grow);
     Writer.WriteLong(this.column);
+
+	Writer.WriteBool(true);
+	this.ctrPr.Write_ToBinary(Writer);
 };
 
 CMathDelimiterPr.prototype.Read_FromBinary = function(Reader)
@@ -3277,6 +3288,11 @@ CMathDelimiterPr.prototype.Read_FromBinary = function(Reader)
     this.shp        = Reader.GetLong();
     this.grow       = Reader.GetBool();
     this.column     = Reader.GetLong();
+
+	if (Reader.GetBool())
+	{
+		this.ctrPr.Read_FromBinary(Reader);
+	}
 };
 
 /**
@@ -3302,6 +3318,10 @@ function CDelimiter(props)
 
     if(props !== null && props !== undefined)
         this.init(props);
+
+	// согласно формату CtrPrp должен находится в DelimiterPr, пока оставляем this.CtrPrp, но приравняем к значению из Pr
+	if (this.Pr.ctrPr.rPr)
+		this.CtrPrp = this.Pr.ctrPr.rPr;
 
     AscCommon.g_oTableId.Add( this, this.Id );
 }
@@ -4080,7 +4100,7 @@ CDelimiter.prototype.GetTextOfElement = function(oMathText)
 			isClose = true;
 		}
 
-		let oOpenText = new AscMath.MathText(strStartText);
+		let oOpenText = new AscMath.MathText(strStartText, this.Pr.GetRPr());
 		oMathText.AddText(oOpenText);
 	}
 
@@ -4089,7 +4109,8 @@ CDelimiter.prototype.GetTextOfElement = function(oMathText)
 		let oCurrentPos = oMathText.Add(this.Content[intCount], true, false);
 		if (strSeparatorSymbol && this.Content.length > 1 && intCount < this.Content.length - 1)
 		{
-			oMathText.AddAfter(oCurrentPos, strSeparatorSymbol);
+			let oSepText = new AscMath.MathText(strSeparatorSymbol, this.Pr.GetRPr());
+			oMathText.AddAfter(oCurrentPos, oSepText);
 		}
 	}
 
@@ -4118,7 +4139,7 @@ CDelimiter.prototype.GetTextOfElement = function(oMathText)
 			}
 		}
 
-		let oText = new AscMath.MathText(strCloseSymbol);
+		let oText = new AscMath.MathText(strCloseSymbol, this.Pr.GetRPr());
 		oMathText.AddText(oText, true);
 	}
 
@@ -4295,7 +4316,11 @@ function CMathGroupChrPr()
     this.chrType = undefined;
     this.pos     = LOCATION_BOT;
     this.vertJc  = VJUST_TOP;
-
+	this.ctrPr   = new CMathCtrlPr();
+}
+CMathGroupChrPr.prototype.GetRPr = function ()
+{
+	return this.ctrPr.GetRPr();
 }
 CMathGroupChrPr.prototype.Set = function(Pr)
 {
@@ -4303,6 +4328,7 @@ CMathGroupChrPr.prototype.Set = function(Pr)
     this.chrType = Pr.chrType;
     this.pos     = Pr.pos;
     this.vertJc  = Pr.vertJc;
+	this.ctrPr   = Pr.ctrPr;
 };
 CMathGroupChrPr.prototype.Set_FromObject = function(Obj)
 {
@@ -4314,6 +4340,8 @@ CMathGroupChrPr.prototype.Set_FromObject = function(Obj)
 
     if(LOCATION_TOP === Obj.pos || LOCATION_BOT === Obj.pos)
         this.pos = Obj.pos;
+
+	this.ctrPr.SetRPr(Obj.ctrPrp);
 };
 CMathGroupChrPr.prototype.Copy = function()
 {
@@ -4323,6 +4351,7 @@ CMathGroupChrPr.prototype.Copy = function()
     NewPr.chrType = this.chrType;
     NewPr.vertJc  = this.vertJc ;
     NewPr.pos     = this.pos    ;
+	NewPr.ctrPr   = this.ctrPr  ;
 
     return NewPr;
 };
@@ -4359,6 +4388,9 @@ CMathGroupChrPr.prototype.Write_ToBinary = function(Writer)
 
     Writer.WriteLong(this.vertJc);
     Writer.WriteLong(this.pos);
+
+	Writer.WriteBool(true);
+	this.ctrPr.Write_ToBinary(Writer);
 };
 CMathGroupChrPr.prototype.Read_FromBinary = function(Reader)
 {
@@ -4384,6 +4416,11 @@ CMathGroupChrPr.prototype.Read_FromBinary = function(Reader)
 
     this.vertJc  = Reader.GetLong();
     this.pos     = Reader.GetLong();
+
+	if (Reader.GetBool())
+	{
+		this.ctrPr.Read_FromBinary(Reader);
+	}
 };
 
 /**
@@ -4402,6 +4439,10 @@ function CGroupCharacter(props)
 
     if(props !== null && props !== undefined)
         this.init(props);
+
+	// согласно формату CtrPrp должен находится в GroupChrPr, пока оставляем this.CtrPrp, но приравняем к значению из Pr
+	if (this.Pr.ctrPr.rPr)
+		this.CtrPrp = this.Pr.ctrPr.rPr;
 
     /// вызов этой функции обязательно в конце
     AscCommon.g_oTableId.Add( this, this.Id );
@@ -4620,10 +4661,9 @@ CGroupCharacter.prototype.GetTextOfElement = function(oMathText)
 			strPos = "┴";
 		}
 
+		oMathText.AddText( new AscMath.MathText(strStart, this.Pr.GetRPr()), true, false);
 		if (nStartCode !== 9182 && nStartCode !== 9183)
-			strStart += strPos;
-
-		oMathText.AddText(strStart, true, false);
+			oMathText.AddText(new AscMath.MathText(strPos, new CTextPr()), true, false);
 		oMathText.Add(oBase, true, 'notBracket');
 	}
 

@@ -129,6 +129,11 @@ function CMathBorderBoxPr()
     this.strikeH    = false;
     this.strikeTLBR = false;
     this.strikeV    = false;
+	this.ctrPr      = new CMathCtrlPr();
+}
+CMathBorderBoxPr.prototype.GetRPr = function ()
+{
+	return this.ctrPr.GetRPr();
 }
 CMathBorderBoxPr.prototype.Set_FromObject = function(Obj)
 {
@@ -155,6 +160,9 @@ CMathBorderBoxPr.prototype.Set_FromObject = function(Obj)
 
     if (undefined !== Obj.strikeV && null !== Obj.strikeV)
         this.strikeV = Obj.strikeV;
+
+	if (undefined !== Obj.ctrPrp && null !== Obj.ctrPrp)
+		this.ctrPr.SetRPr(Obj.ctrPrp);
 };
 CMathBorderBoxPr.prototype.Copy = function()
 {
@@ -167,6 +175,7 @@ CMathBorderBoxPr.prototype.Copy = function()
     NewPr.strikeH    = this.strikeH;
     NewPr.strikeTLBR = this.strikeTLBR;
     NewPr.strikeV    = this.strikeV;
+	NewPr.ctrPr      = this.ctrPr;
 
     return NewPr;
 };
@@ -189,6 +198,8 @@ CMathBorderBoxPr.prototype.Write_ToBinary = function(Writer)
     Writer.WriteBool(this.strikeH);
     Writer.WriteBool(this.strikeTLBR);
     Writer.WriteBool(this.strikeV);
+	Writer.WriteBool(true);
+	this.ctrPr.Write_ToBinary(Writer);
 };
 CMathBorderBoxPr.prototype.Read_FromBinary = function(Reader)
 {
@@ -209,6 +220,10 @@ CMathBorderBoxPr.prototype.Read_FromBinary = function(Reader)
     this.strikeH    = Reader.GetBool();
     this.strikeTLBR = Reader.GetBool();
     this.strikeV    = Reader.GetBool();
+	if (Reader.GetBool())
+	{
+		this.ctrPr.Read_FromBinary(Reader);
+	}
 };
 
 /**
@@ -230,7 +245,11 @@ function CBorderBox(props)
     if(props !== null && typeof(props) !== "undefined")
         this.init(props);
 
-    AscCommon.g_oTableId.Add(this, this.Id);
+	// согласно формату CtrPrp должен находится в BorderBoxPr, пока оставляем this.CtrPrp, но приравняем к значению из Pr
+	if (this.Pr.ctrPr.rPr)
+		this.CtrPrp = this.Pr.ctrPr.rPr;
+
+	AscCommon.g_oTableId.Add(this, this.Id);
 }
 CBorderBox.prototype = Object.create(CMathBase.prototype);
 CBorderBox.prototype.constructor = CBorderBox;
@@ -566,7 +585,7 @@ CBorderBox.prototype.Get_InterfaceProps = function()
  */
 CBorderBox.prototype.GetTextOfElement = function(oMathText)
 {
-	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+	if (!(oMathText instanceof AscMath.MathTextAndStyles))
 		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
 	let oBase = this.getBase();
@@ -578,8 +597,10 @@ CBorderBox.prototype.GetTextOfElement = function(oMathText)
 	}
 	else
 	{
-		oMathText.AddText("▭");
-		oMathText.Add(oBase, true, true);
+		let oBoxStr = new AscMath.MathText("▭", this.Pr.GetRPr())
+		oMathText.AddText(oBoxStr);
+		oMathText.SetStyle(this.Pr.GetRPr());
+		oMathText.Add(oBase, true, "isNotOneLetter")
 	}
 
 	return oMathText;
@@ -666,6 +687,11 @@ function CMathBoxPr()
     this.diff    = false;
     this.noBreak = false;
     this.opEmu   = false;
+	this.ctrPr   = new CMathCtrlPr();
+}
+CMathBoxPr.prototype.GetRPr = function ()
+{
+	return this.ctrPr.GetRPr();
 }
 CMathBoxPr.prototype.Set_FromObject = function(Obj)
 {
@@ -694,6 +720,8 @@ CMathBoxPr.prototype.Set_FromObject = function(Obj)
         this.opEmu = true;
     else
         this.opEmu = false;
+
+	this.ctrPr.SetRPr(Obj.ctrPrp);
 };
 CMathBoxPr.prototype.Get_AlnAt = function()
 {
@@ -743,6 +771,7 @@ CMathBoxPr.prototype.Copy = function()
     NewPr.diff    = this.diff   ;
     NewPr.noBreak = this.noBreak;
     NewPr.opEmu   = this.opEmu  ;
+	NewPr.ctrPr   = this.ctrPr  ;
 
     if(this.brk !== undefined)
         NewPr.brk = this.brk.Copy();
@@ -771,6 +800,9 @@ CMathBoxPr.prototype.Write_ToBinary = function(Writer)
     {
         Writer.WriteBool(true);
     }
+
+	Writer.WriteBool(true);
+	this.ctrPr.Write_ToBinary(Writer);
 };
 CMathBoxPr.prototype.Read_FromBinary = function(Reader)
 {
@@ -794,6 +826,11 @@ CMathBoxPr.prototype.Read_FromBinary = function(Reader)
     {
         this.brk = undefined;
     }
+
+	if (Reader.GetBool())
+	{
+		this.ctrPr.Read_FromBinary(Reader);
+	}
 };
 
 /**
@@ -815,7 +852,11 @@ function CBox(props)
     if(props !== null && typeof(props) !== "undefined")
         this.init(props);
 
-    AscCommon.g_oTableId.Add( this, this.Id );
+	// согласно формату CtrPrp должен находится в BoxPr, пока оставляем this.CtrPrp, но приравняем к значению из Pr
+	if (this.Pr.ctrPr.rPr)
+		this.CtrPrp = this.Pr.ctrPr.rPr;
+
+	AscCommon.g_oTableId.Add( this, this.Id );
 }
 CBox.prototype = Object.create(CMathBase.prototype);
 CBox.prototype.constructor = CBox;
@@ -991,10 +1032,14 @@ CBox.prototype.GetTextOfElement = function(oMathText)
 	}
 	else
 	{
-		oMathText.AddText("□");
-		let oBasePos = oMathText.Add(oBase, true, "isNotOneLetter")
+		oMathText.AddText(new AscMath.MathText("□", this.Pr.GetRPr()));
+		oMathText.SetStyle(this.Pr.GetRPr());
+		oMathText.Add(
+			oBase,
+			true,
+			"isNotOneLetter",
+		);
 	}
-
 	return oMathText;
 };
 
@@ -1008,7 +1053,7 @@ function CMathMenuBox(Box)
 {
 	CMathMenuBase.call(this, Box);
 
-    this.Type = Asc.c_oAscMathInterfaceType.Box;
+	this.Type = Asc.c_oAscMathInterfaceType.Box;
 }
 CMathMenuBox.prototype = Object.create(CMathMenuBase.prototype);
 CMathMenuBox.prototype.constructor = CMathMenuBox;
@@ -1016,28 +1061,44 @@ window["CMathMenuBox"] = CMathMenuBox;
 
 function CMathBarPr()
 {
-    this.pos = LOCATION_BOT;
+	this.pos = LOCATION_BOT;
+	this.ctrPr   = new CMathCtrlPr();
+}
+CMathAccentPr.prototype.GetRPr = function ()
+{
+	return this.ctrPr.GetRPr();
 }
 CMathBarPr.prototype.Set_FromObject = function(Obj)
 {
     if(LOCATION_TOP === Obj.pos || LOCATION_BOT === Obj.pos)
         this.pos = Obj.pos;
+
+	this.ctrPr.SetRPr(Obj.ctrPrp);
 };
 CMathBarPr.prototype.Copy = function()
 {
     var NewPr = new CMathBarPr();
     NewPr.pos = this.pos;
+	NewPr.ctrPr   = this.ctrPr;
     return NewPr;
 };
 CMathBarPr.prototype.Write_ToBinary = function(Writer)
 {
     // Long : pos
     Writer.WriteLong(this.pos);
+
+	Writer.WriteBool(true);
+	this.ctrPr.Write_ToBinary(Writer);
 };
 CMathBarPr.prototype.Read_FromBinary = function(Reader)
 {
     // Long : pos
     this.pos = Reader.GetLong();
+
+	if (Reader.GetBool())
+	{
+		this.ctrPr.Read_FromBinary(Reader);
+	}
 };
 
 /**
@@ -1059,7 +1120,11 @@ function CBar(props)
     if(props !== null && typeof(props) !== "undefined")
         this.init(props);
 
-    AscCommon.g_oTableId.Add( this, this.Id );
+	// согласно формату CtrPrp должен находится в BarPr, пока оставляем this.CtrPrp, но приравняем к значению из Pr
+	if (this.Pr.ctrPr.rPr)
+		this.CtrPrp = this.Pr.ctrPr.rPr;
+
+	AscCommon.g_oTableId.Add( this, this.Id );
 }
 CBar.prototype = Object.create(CCharacter.prototype);
 CBar.prototype.constructor = CBar;
@@ -1153,7 +1218,8 @@ CBar.prototype.GetTextOfElement = function(oMathText)
 	}
 	else
 	{
-		oMathText.AddText((this.Pr.pos) ? "▁" : "¯", true);
+		let oText =  new AscMath.MathText((this.Pr.pos) ? "▁" : "¯", this.Pr.GetRPr())
+		oMathText.AddText(oText, true);
 		oMathText.Add(oBase, true, 'notBracket');
 	}
 

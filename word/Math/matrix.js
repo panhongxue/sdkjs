@@ -95,6 +95,8 @@ function CMathMatrixPr() {
 	this.mcs = [];
 	this.baseJc = BASEJC_CENTER;
 	this.plcHide = false;
+
+	this.CtrPrp = undefined;
 }
 
 CMathMatrixPr.prototype.Set_FromObject = function (Obj) {
@@ -139,6 +141,8 @@ CMathMatrixPr.prototype.Set_FromObject = function (Obj) {
 			nColumnsCount = Obj.column;
 	}
 
+	this.CtrPrp = Obj.ctrPrp;
+
 	return nColumnsCount;
 };
 CMathMatrixPr.prototype.initByContent = function (mrs) {
@@ -171,6 +175,7 @@ CMathMatrixPr.prototype.Copy = function () {
 	NewPr.rSpRule = this.rSpRule;
 	NewPr.baseJc = this.baseJc;
 	NewPr.plcHide = this.plcHide;
+	NewPr.CtrPrp  = this.CtrPrp;
 
 	var nCount = this.mcs.length;
 	for (var nMcsIndex = 0; nMcsIndex < nCount; nMcsIndex++) {
@@ -275,6 +280,16 @@ CMathMatrixPr.prototype.Write_ToBinary = function (Writer) {
 	for (var nIndex = 0; nIndex < nMcsCount; nIndex++) {
 		this.mcs[nIndex].Write_ToBinary(Writer);
 	}
+
+	if (this.CtrPrp)
+	{
+		Writer.WriteBool(true);
+		this.CtrPrp.WriteToBinary(Writer);
+	}
+	else
+	{
+		Writer.WriteBool(false);
+	}
 };
 CMathMatrixPr.prototype.Read_FromBinary = function (Reader) {
 	// Long  : row
@@ -300,6 +315,13 @@ CMathMatrixPr.prototype.Read_FromBinary = function (Reader) {
 	for (var nIndex = 0; nIndex < nMcsCount; nIndex++) {
 		this.mcs[nIndex] = new CMathMatrixColumnPr();
 		this.mcs[nIndex].Read_FromBinary(Reader);
+	}
+
+	this.CtrPrp = undefined;
+	if (Reader.GetBool())
+	{
+		this.CtrPrp = new CTextPr();
+		this.CtrPrp.ReadFromBinary(Reader);
 	}
 };
 
@@ -602,6 +624,10 @@ function CMathMatrix(props) {
 
 	if (props !== null && props !== undefined)
 		this.init(props);
+
+	// согласно формату CtrPrp должен находится в MatrixPr, пока оставляем this.CtrPrp, но приравняем к значению из Pr
+	if (this.Pr.CtrPrp)
+		this.CtrPrp = this.Pr.CtrPrp;
 
 	AscCommon.g_oTableId.Add(this, this.Id);
 }
@@ -1014,7 +1040,7 @@ CMathMatrix.prototype.GetTextOfElement = function (oMathText)
 	}
 	else
 	{
-		oMathText.AddText("■(");
+		oMathText.AddText(new AscMath.MathText("■(", this.Pr.CtrPrp));
 	}
 
 	let oLastPos;
@@ -1207,8 +1233,13 @@ function CMathEqArrPr() {
 	this.baseJc = BASEJC_CENTER;
 
 	this.row = 1;
-}
 
+	this.ctrPr   = new CMathCtrlPr();
+}
+CMathEqArrPr.prototype.GetRPr = function ()
+{
+	return this.ctrPr.GetRPr();
+}
 CMathEqArrPr.prototype.initByContent = function (content) {
 	if (!content) {
 		return;
@@ -1232,6 +1263,7 @@ CMathEqArrPr.prototype.Set_FromObject = function (Obj) {
 		this.baseJc = Obj.baseJc;
 
 	this.row = Obj.row;
+	this.ctrPr.SetRPr(Obj.ctrPrp);
 };
 CMathEqArrPr.prototype.Copy = function () {
 	var NewPr = new CMathEqArrPr();
@@ -1242,6 +1274,7 @@ CMathEqArrPr.prototype.Copy = function () {
 	NewPr.rSpRule = this.rSpRule;
 	NewPr.baseJc = this.baseJc;
 	NewPr.row = this.row;
+	NewPr.ctrPr = this.ctrPr;
 
 	return NewPr;
 };
@@ -1265,6 +1298,9 @@ CMathEqArrPr.prototype.Write_ToBinary = function (Writer) {
 	Writer.WriteLong(this.rSpRule);
 	Writer.WriteLong(this.baseJc);
 	Writer.WriteLong(this.row);
+
+	Writer.WriteBool(true);
+	this.ctrPr.Write_ToBinary(Writer);
 };
 CMathEqArrPr.prototype.Read_FromBinary = function (Reader) {
 	// Long : maxDist
@@ -1280,8 +1316,12 @@ CMathEqArrPr.prototype.Read_FromBinary = function (Reader) {
 	this.rSpRule = Reader.GetLong();
 	this.baseJc = Reader.GetLong();
 	this.row = Reader.GetLong();
-};
 
+	if (Reader.GetBool())
+	{
+		this.ctrPr.Read_FromBinary(Reader);
+	}
+};
 
 /**
  *
@@ -1303,6 +1343,10 @@ function CEqArray(props) {
 
 	if (props !== null && props !== undefined)
 		this.init(props);
+
+	// согласно формату CtrPrp должен находится в EqArrPr, пока оставляем this.CtrPrp, но приравняем к значению из Pr
+	if (this.Pr.ctrPr.rPr)
+		this.CtrPrp = this.Pr.ctrPr.rPr;
 
 	AscCommon.g_oTableId.Add(this, this.Id);
 }
@@ -1588,24 +1632,28 @@ CEqArray.prototype.GetTextOfElement = function (oMathText)
 	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
 		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
-	let oLastPos;
-
 	if (oMathText.IsLaTeX())
-		oLastPos = oMathText.AddText("\\substack(", true);
+	{
+		oMathText.AddText("\\substack(", true);
+	}
 	else
-		oLastPos = oMathText.AddText("■(", true);
+	{
+		let oMatrix = new AscMath.MathText("■(", this.Pr.GetRPr());
+		oMathText.AddText(oMatrix, true);
+	}
 
 	for (let i = 0; i < this.Pr.row; i++)
 	{
-		oLastPos = oMathText.Add(this.getElement(i), true, false);
+		oMathText.Add(this.getElement(i), true, false);
 
 		if (i !== this.Pr.row - 1)
 		{
-			oLastPos = oMathText.AddText(oMathText.IsLaTeX() ? "\\\\" : '@', true);
+			let oSep = new AscMath.MathText(oMathText.IsLaTeX() ? "\\\\" : "@", this.Pr.GetRPr());
+			oMathText.AddText(oSep, true);
 		}
 	}
 
-	oMathText.AddText(")", true);
+	oMathText.AddText(new AscMath.MathText(")", this.Pr.GetRPr()), true);
 };
 
 /**

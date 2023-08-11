@@ -432,6 +432,11 @@ function CMathAccentPr()
 {
     this.chr     = null;
     this.chrType = null;
+	this.ctrPr   = new CMathCtrlPr();
+}
+CMathAccentPr.prototype.GetRPr = function ()
+{
+	return this.ctrPr.GetRPr();
 }
 CMathAccentPr.prototype.Set_FromObject = function(Obj)
 {
@@ -444,6 +449,8 @@ CMathAccentPr.prototype.Set_FromObject = function(Obj)
         this.chrType = Obj.chrType;
     else
         this.chrType = null;
+
+    this.ctrPr.SetRPr(Obj.ctrPrp);
 };
 CMathAccentPr.prototype.Copy = function()
 {
@@ -451,6 +458,7 @@ CMathAccentPr.prototype.Copy = function()
 
     NewPr.chr     = this.chr;
     NewPr.chrType = this.chrType;
+    NewPr.ctrPr   = this.ctrPr;
 
     return NewPr;
 };
@@ -461,6 +469,9 @@ CMathAccentPr.prototype.Write_ToBinary = function(Writer)
 
     Writer.WriteLong(null === this.chr ? -1 : this.chr);
     Writer.WriteLong(null === this.chrType ? -1 : this.chrType);
+
+	Writer.WriteBool(true);
+	this.ctrPr.Write_ToBinary(Writer);
 };
 CMathAccentPr.prototype.Read_FromBinary = function(Reader)
 {
@@ -472,6 +483,11 @@ CMathAccentPr.prototype.Read_FromBinary = function(Reader)
 
     this.chr     = -1 === chr ? null : chr;
     this.chrType = -1 === chrType ? null : chrType;
+
+    if (Reader.GetBool())
+    {
+        this.ctrPr.Read_FromBinary(Reader);
+    }
 };
 
 /**
@@ -497,6 +513,10 @@ function CAccent(props)
 
     if(props !== null && typeof(props) !== "undefined")
         this.init(props);
+
+    // согласно формату CtrPrp должен находится в AccentPr, пока оставляем this.CtrPrp, но приравняем к значению из Pr
+    if (this.Pr.ctrPr.rPr)
+        this.CtrPrp = this.Pr.ctrPr.rPr;
 
     AscCommon.g_oTableId.Add( this, this.Id );	
 }
@@ -722,15 +742,26 @@ CAccent.prototype.GetTextOfElement = function(oMathText)
 			case 8411:	strAccent = '\\dddot';				break;
 			case 8417:	strAccent = '\\overleftrightarrow';	break;
 		}
-		let oNameAccent = oMathText.Add(strAccent, false, false);
+		let oNameAccent = oMathText.Add(
+			strAccent,
+			false,
+			false,
+		);
 		oMathText.AddAfter(oBase, oNameAccent);
 	}
 	else
 	{
-		let oBasePos = oMathText.Add(oBase, true, "isNotOneLetter");
-		let oNameAccent = oMathText.AddAfter(oBasePos, strAccent, false);
+		let oBasePos = oMathText.Add(
+			oBase,
+			true,
+			"isNotOneLetter",
+		);
+		oMathText.AddAfter(
+			oBasePos,
+			new AscMath.MathText(strAccent, this.Pr.GetRPr()),
+			false
+		);
 	}
-
 	return oMathText;
 };
 

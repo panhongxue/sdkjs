@@ -12345,4 +12345,6 @@ BinaryChartReader.prototype.ReadAlternateContentFallback = function (type, lengt
 	window['AscFormat'].ERR_VAL_TYPE_STD_DEV    = ERR_VAL_TYPE_STD_DEV;
 	window['AscFormat'].ERR_VAL_TYPE_STD_ERR    = ERR_VAL_TYPE_STD_ERR;
 
+	window['AscFormat'].c_oserct_chartspaceCHART    = c_oserct_chartspaceCHART;
+
 })(window);

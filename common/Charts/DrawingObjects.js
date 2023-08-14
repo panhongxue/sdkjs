@@ -425,13 +425,23 @@ CCellObjectInfo.prototype.initAfterSerialize = function() {
 function asc_CChartBinary(chart) {
 
     this["binary"] = null;
-    if (chart && chart.getObjectType() === AscDFH.historyitem_type_ChartSpace)
-    {
-        var writer = new AscCommon.BinaryChartWriter(new AscCommon.CMemory(false)), pptx_writer;
-        writer.WriteCT_ChartSpace(chart);
-        this["binary"] = writer.memory.pos + ";" + writer.memory.GetBase64Memory();
-        this["documentImageUrls"] = AscCommon.g_oDocumentUrls.urls;
-    }
+		if (chart)
+		{
+			if (chart.getObjectType() === AscDFH.historyitem_type_ChartSpace)
+			{
+				const writer = new AscCommon.BinaryChartWriter(new AscCommon.CMemory(false));
+				writer.WriteCT_ChartSpace(chart);
+				this["binary"] = writer.memory.pos + ";" + writer.memory.GetBase64Memory();
+				this["documentImageUrls"] = AscCommon.g_oDocumentUrls.urls;
+			}
+			else if (chart.getObjectType() === AscDFH.historyitem_type_Chart)
+			{
+				const writer = new AscCommon.BinaryChartWriter(new AscCommon.CMemory(false));
+				writer.WriteCT_Chart(chart);
+				this["binary"] = writer.memory.GetBase64Memory();
+				this["documentImageUrls"] = AscCommon.g_oDocumentUrls.urls;
+			}
+		}
 }
 
 asc_CChartBinary.prototype = {
@@ -440,15 +450,29 @@ asc_CChartBinary.prototype = {
     asc_setBinary: function(val) { this["binary"] = val; },
     getChartSpace: function(workSheet)
     {
-        var binary = this["binary"];
-        var stream = AscFormat.CreateBinaryReader(this["binary"], 0, this["binary"].length);
+        const binary = this["binary"];
+        const stream = AscFormat.CreateBinaryReader(binary, 0, binary.length);
         //надо сбросить то, что остался после открытия документа
         AscCommon.pptx_content_loader.Clear();
-        var oNewChartSpace = new AscFormat.CChartSpace();
-        var oBinaryChartReader = new AscCommon.BinaryChartReader(stream);
+        const oNewChartSpace = new AscFormat.CChartSpace();
+        const oBinaryChartReader = new AscCommon.BinaryChartReader(stream);
         oBinaryChartReader.ExternalReadCT_ChartSpace(stream.size , oNewChartSpace, workSheet);
         return oNewChartSpace;
     },
+	getChart: function()
+	{
+		const binary = this["binary"];
+		const stream = AscFormat.CreateBinaryReader(binary, 0, binary.length);
+		//надо сбросить то, что остался после открытия документа
+		AscCommon.pptx_content_loader.Clear();
+		const oNewChart = new AscFormat.CChart();
+		const oBinaryChartReader = new AscCommon.BinaryChartReader(stream);
+		oBinaryChartReader.curChart = {};
+		oBinaryChartReader.bcr.Read1(stream.size, function (t, l) {
+			return oBinaryChartReader.ReadCT_Chart(t, l, oNewChart);
+		});
+		return oNewChart;
+	},
 		getWorkbookBinary: function() { return this["workbookBinary"]; },
 		setWorkbookBinary: function(val) { this["workbookBinary"] = val; },
 	getOpenWorkbookOnClient: function() { return this["isOpenWorkbookOnClient"]; },

@@ -484,7 +484,7 @@
 	};
 	CDiagramCellFrameManager.prototype.sendUpdateDiagram = function ()
 	{
-		this.sendFromFrameToGeneralEditor(new CFrameUpdateDiagramData(this.mainDiagram, true));
+		this.sendFromFrameToGeneralEditor(new CFrameUpdateDiagramData(this.mainDiagram.chart, true));
 	};
 
 	CDiagramCellFrameManager.prototype.getAscSettings = function ()

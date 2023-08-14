@@ -310,6 +310,7 @@ CGraphicObjects.prototype =
     getOleObject: DrawingObjectsController.prototype.getOleObject,
     getChartObject: DrawingObjectsController.prototype.getChartObject,
     getChartSpace2: DrawingObjectsController.prototype.getChartSpace2,
+    getChart: DrawingObjectsController.prototype.getChart,
     CreateDocContent: DrawingObjectsController.prototype.CreateDocContent,
     isSlideShow: function()
     {
@@ -1255,11 +1256,10 @@ CGraphicObjects.prototype =
 
 	updateChart: function (binary)
 	{
-		const oFrameChartSpace = this.getChartSpace2(binary, null);
 		const oSelectedChart = this.getSingleSelectedChart();
 		if (oSelectedChart)
 		{
-			const oChart = oFrameChartSpace.chart;
+			const oChart = this.getChart(binary, null);
 			oChart.setParent(oSelectedChart);
 			oSelectedChart.setChart(oChart);
 			oSelectedChart.handleUpdateChart();

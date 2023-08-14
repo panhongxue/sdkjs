@@ -4413,6 +4413,16 @@
 					return ret;
 				},
 
+				getChart: function (chart) {
+					var ret = null;
+					if (isRealObject(chart) && typeof chart["binary"] === "string" && chart["binary"].length > 0) {
+						var asc_chart_binary = new Asc.asc_CChartBinary();
+						asc_chart_binary.asc_setBinary(chart["binary"]);
+						ret = asc_chart_binary.getChart();
+					}
+					return ret;
+				},
+
 				getSeriesDefault: function (type) {
 					// Обновлены тестовые данные для новой диаграммы
 					var series = [], seria, Cat;

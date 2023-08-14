@@ -395,11 +395,10 @@ DrawingObjectsController.prototype.editChart = function(binary)
 
 DrawingObjectsController.prototype.updateChart = function (binary)
 {
-	const oFrameChartSpace = this.getChartSpace2(binary, null);
 	const oSelectedChart = this.getSingleSelectedChart();
 	if (oSelectedChart)
 	{
-		const oChart = oFrameChartSpace.chart;
+		const oChart = this.getChart(binary);
 		oChart.setParent(oSelectedChart);
 		oSelectedChart.setChart(oChart);
 		oSelectedChart.handleUpdateChart();

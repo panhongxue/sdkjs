@@ -9164,7 +9164,10 @@ background-repeat: no-repeat;\
 		const arrChanges = AscCommon.History.UndoChartPreviewPoint();
 		if (chartBinary['noHistory'])
 		{
-			this.WordControl.m_oLogicDocument.RecalculateByChanges(arrChanges);
+			if (arrChanges)
+			{
+				this.WordControl.m_oLogicDocument.RecalculateByChanges(arrChanges);
+			}
 			return;
 		}
 		// Находим выделенную диаграмму и накатываем бинарник

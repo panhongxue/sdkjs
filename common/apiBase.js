@@ -160,6 +160,7 @@
         this.forceSaveTimeoutTimeout = null;
 		this.forceSaveForm = null;
 		this.disconnectOnSave = null;
+		this.disconnectRestrictions = null;//to restore restrictions after disconnect
 		this.forceSaveUndoRequest = false; // Флаг нужен, чтобы мы знали, что данное сохранение пришло по запросу Undo в совместке
 
 		// Version History
@@ -1604,9 +1605,10 @@
 			t.sendEvent('asc_onCoAuthoringChatReceiveMessage', e, clear);
 		};
 		this.CoAuthoringApi.onServerVersion = function (buildVersion, buildNumber) {
-			if (t.isRestrictionView()) {
+			if (null !== t.disconnectRestrictions) {
 				t.sync_EndAction(Asc.c_oAscAsyncActionType.Information, Asc.c_oAscAsyncAction.Disconnect);
-				t.asc_removeRestriction(Asc.c_oAscRestrictionType.View);
+				t.asc_setRestriction(t.disconnectRestrictions);
+				t.disconnectRestrictions = null;
 			}
 
 			t.sendEvent('asc_onServerVersion', buildVersion, buildNumber);
@@ -1820,9 +1822,10 @@
 				t.asyncServerIdEndLoaded();
 			}
 			if (null != opt_closeCode) {
-				if (t.isRestrictionView()) {
+				if (null !== t.disconnectRestrictions) {
 					t.sync_EndAction(Asc.c_oAscAsyncActionType.Information, Asc.c_oAscAsyncAction.Disconnect);
-					t.asc_removeRestriction(Asc.c_oAscRestrictionType.View);
+					t.asc_setRestriction(t.disconnectRestrictions);
+					t.disconnectRestrictions = null;
 				}
 				var error = AscCommon.getDisconnectErrorCode(t.isDocumentLoadComplete, opt_closeCode);
 				var level = t.isDocumentLoadComplete ? Asc.c_oAscError.Level.NoCritical : Asc.c_oAscError.Level.Critical;
@@ -1832,9 +1835,10 @@
 				} else {
 					t.sendEvent('asc_onError', error, level);
 				}
-			} else if (!t.isRestrictionView()) {
+			} else if (null === t.disconnectRestrictions){
+				t.disconnectRestrictions = t.restrictions;
 				t.sync_StartAction(Asc.c_oAscAsyncActionType.Information, Asc.c_oAscAsyncAction.Disconnect);
-				t.asc_addRestriction(Asc.c_oAscRestrictionType.View);
+				t.asc_setRestriction(Asc.c_oAscRestrictionType.View);
 			}
 		};
 		this.CoAuthoringApi.onDocumentOpen = function (inputWrap) {

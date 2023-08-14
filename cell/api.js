@@ -8762,6 +8762,44 @@ var editor;
 	};
 
 
+	spreadsheet_api.prototype.asc_TracePrecedents = function() {
+		if (this.collaborativeEditing.getGlobalLock() || !this.canEdit()) {
+			return;
+		}
+		let wb = this.wb;
+		if (!wb) {
+			return;
+		}
+		let ws = wb.getWorksheet();
+		return ws.tracePrecedents();
+	};
+
+	spreadsheet_api.prototype.asc_TraceDependents = function() {
+		if (this.collaborativeEditing.getGlobalLock() || !this.canEdit()) {
+			return;
+		}
+		let wb = this.wb;
+		if (!wb) {
+			return;
+		}
+		let ws = wb.getWorksheet();
+		return ws.traceDependents();
+	};
+
+	spreadsheet_api.prototype.asc_RemoveTraceArrows = function(type) {
+		if (this.collaborativeEditing.getGlobalLock() || !this.canEdit()) {
+			return;
+		}
+		let wb = this.wb;
+		if (!wb) {
+			return;
+		}
+		let ws = wb.getWorksheet();
+		return ws.removeTraceArrows(type);
+	};
+
+
+
   /*
    * Export
    * -----------------------------------------------------------------------------
@@ -8922,6 +8960,7 @@ var editor;
   prot["asc_setDisplayHeadings"] = prot.asc_setDisplayHeadings;
   prot["asc_setShowZeros"] = prot.asc_setShowZeros;
   prot["asc_setShowFormulas"] = prot.asc_setShowFormulas;
+  prot["asc_getShowFormulas"] = prot.asc_getShowFormulas;
 
 
   // Defined Names
@@ -9324,6 +9363,9 @@ var editor;
   prot["asc_GetSheetViewType"]   = prot.asc_GetSheetViewType;
 
   prot["asc_ChangeTextCase"]   = prot.asc_ChangeTextCase;
+  prot["asc_TracePrecedents"]     = prot.asc_TracePrecedents;
+  prot["asc_TraceDependents"]     = prot.asc_TraceDependents;
+  prot["asc_RemoveTraceArrows"]   = prot.asc_RemoveTraceArrows;
 
   prot["asc_InsertPageBreak"]         = prot.asc_InsertPageBreak;
   prot["asc_RemovePageBreak"]         = prot.asc_RemovePageBreak;

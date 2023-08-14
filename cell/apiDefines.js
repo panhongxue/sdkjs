@@ -577,6 +577,12 @@ var c_oAscPopUpSelectorType = {
   };
 
 
+  var c_oAscRemoveArrowsType = {
+    all: 0,
+    precedent: 1,
+    dependent: 2
+  };
+
   //----------------------------------------------------------export----------------------------------------------------
   window['AscCommonExcel'] = window['AscCommonExcel'] || {};
   window['AscCommonExcel'].c_oAscDrawDepOptions = c_oAscDrawDepOptions;
@@ -974,6 +980,11 @@ var c_oAscPopUpSelectorType = {
   prot['all'] = prot.all;
   prot['insertRemove'] = prot.insertRemove;
   prot['reset'] = prot.reset;
+  window['Asc']['c_oAscRemoveArrowsType'] = window['Asc'].c_oAscRemoveArrowsType = c_oAscRemoveArrowsType;
+  prot = c_oAscRemoveArrowsType;
+  prot['all'] = prot.all;
+  prot['precedent'] = prot.precedent;
+  prot['dependent'] = prot.dependent;
 
 
 })(window);

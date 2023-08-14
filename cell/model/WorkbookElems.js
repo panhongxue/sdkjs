@@ -14901,6 +14901,15 @@ QueryTableField.prototype.clone = function() {
 		}
 	};
 
+	ExternalReference.prototype.putToChangedCells = function () {
+		for (let i in this.SheetDataSet) {
+			if (this.SheetDataSet.hasOwnProperty(i)) {
+				let sheetName = this.SheetNames && this.SheetNames[this.SheetDataSet[i].SheetId];
+				this.SheetDataSet[i].putToChangedCells(this.worksheets && this.worksheets[sheetName]);
+			}
+		}
+	};
+
 	ExternalReference.prototype.addSheetName = function (name, generateDefaultStructure) {
 		this.SheetNames.push(name);
 		if (generateDefaultStructure) {
@@ -15249,6 +15258,30 @@ QueryTableField.prototype.clone = function() {
 			wbView.handleChartsOnWorkbookChange(aRanges);
 		}
 		return isChanged;
+	};
+
+	ExternalSheetDataSet.prototype.putToChangedCells = function(sheet) {
+		if (!sheet) {
+			return;
+		}
+		for (var i = 0; i < this.Row.length; i++) {
+			var row = this.Row[i];
+			if (!row) {
+				continue;
+			}
+			for (var j = 0; j < this.Row[i].Cell.length; j++) {
+				var externalCell = this.Row[i].Cell[j];
+				if (!externalCell) {
+					continue;
+				}
+				var range = sheet.getRange2(externalCell.Ref);
+				range._foreach(function (cell) {
+					var api_sheet = Asc['editor'];
+					var wb = api_sheet.wbModel;
+					wb.dependencyFormulas.addToChangedCell(cell);
+				});
+			}
+		}
 	};
 
 	ExternalSheetDataSet.prototype.getRow = function(index, needGenerateRow) {

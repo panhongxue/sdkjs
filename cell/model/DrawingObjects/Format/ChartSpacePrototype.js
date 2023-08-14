@@ -470,10 +470,10 @@ CChartSpace.prototype.Get_ColorMap = CShape.prototype.Get_ColorMap;
 				{
 					const pasteSheetLinkName = oPastedLinkInfo.sheet;
 					//необходимо положить нужные данные в SheetDataSet
-					var modelExternalReference = oWbModel.externalReferences[oPastedLinkInfo.index - 1];
-					if (modelExternalReference)
+					oMainExternalReference = oWbModel.externalReferences[oPastedLinkInfo.index - 1];
+					if (oMainExternalReference)
 					{
-						modelExternalReference.updateSheetData(pasteSheetLinkName, oPastedWS, [oRange]);
+						oMainExternalReference.updateSheetData(pasteSheetLinkName, oPastedWS, [oRange]);
 					}
 					bNeedConvert = true;
 				}

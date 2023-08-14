@@ -14681,6 +14681,7 @@ QueryTableField.prototype.clone = function() {
 		this.Type = AscFormat.readLong(reader);
 		if (reader.GetBool())
 		{
+			this.referenceData = {};
 			this.referenceData["instanceId"] = AscFormat.readString(reader);
 			this.referenceData["fileKey"] = AscFormat.readString(reader);
 		}

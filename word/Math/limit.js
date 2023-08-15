@@ -34,19 +34,28 @@
 
 function CMathLimitPr()
 {
-    this.type = LIMIT_LOW;
+	this.type = LIMIT_LOW;
+	this.ctrPr   = new CMathCtrlPr();
+}
+
+CMathLimitPr.prototype.GetRPr = function ()
+{
+	return this.ctrPr.GetRPr();
 }
 
 CMathLimitPr.prototype.Set_FromObject = function(Obj)
 {
     if (undefined !== Obj.type && null !== Obj.type)
         this.type = Obj.type;
+
+	this.ctrPr.SetRPr(Obj.ctrPrp);
 };
 
 CMathLimitPr.prototype.Copy = function()
 {
     var NewPr = new CMathLimitPr();
     NewPr.type = this.type;
+	NewPr.ctrPr   = this.ctrPr;
     return NewPr;
 };
 
@@ -54,12 +63,18 @@ CMathLimitPr.prototype.Write_ToBinary = function(Writer)
 {
     // Long : type
     Writer.WriteLong(this.type);
+	Writer.WriteBool(true);
+	this.ctrPr.Write_ToBinary(Writer);
 };
 
 CMathLimitPr.prototype.Read_FromBinary = function(Reader)
 {
     // Long : type
     this.type = Reader.GetLong();
+	if (Reader.GetBool())
+	{
+		this.ctrPr.Read_FromBinary(Reader);
+	}
 };
 
 /**
@@ -215,6 +230,10 @@ function CLimit(props)
     if(props !== null && typeof(props) !== "undefined")
         this.init(props);
 
+	// согласно формату CtrPrp должен находится в LimitPr, пока оставляем this.CtrPrp, но приравняем к значению из Pr
+	if (this.Pr.ctrPr.rPr)
+		this.CtrPrp = this.Pr.ctrPr.rPr;
+
     AscCommon.g_oTableId.Add( this, this.Id );
 }
 CLimit.prototype = Object.create(CMathBase.prototype);
@@ -322,7 +341,7 @@ CLimit.prototype.Can_ModifyArgSize = function()
  */
 CLimit.prototype.GetTextOfElement = function(oMathText)
 {
-	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+	if (!(oMathText instanceof AscMath.MathTextAndStyles))
 		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
 	let strLimitSymbol  = "";
@@ -354,11 +373,13 @@ CLimit.prototype.GetTextOfElement = function(oMathText)
 		}
 	}
 
-	oMathText.SetStyle(this.CtrPrp);
-	let oNamePos = oMathText.Add(oFuncName, true, "linear")
-	oMathText.ResetStyle();
-	oMathText.AddAfter(oNamePos, new AscMath.MathText(strLimitSymbol, this.CtrPrp));
+	let oPr = this.Pr.GetRPr();
+	let oNamePos = oMathText.Add(oFuncName, true, "linear");
+
+	oMathText.AddAfter(oNamePos, new AscMath.MathText(strLimitSymbol, oPr));
 	oMathText.Add(oArgument, true, 'notBracket');
+
+	return oMathText;
 };
 
 /**
@@ -440,7 +461,7 @@ function CMathFunc(props)
     if(props !== null && typeof(props) !== "undefined")
         this.init(props);
 
-	// согласно формату CtrPrp должен находится в BoxPr, пока оставляем this.CtrPrp, но приравняем к значению из Pr
+	// согласно формату CtrPrp должен находится в FuncPr, пока оставляем this.CtrPrp, но приравняем к значению из Pr
 	if (this.Pr.ctrPr.rPr)
 		this.CtrPrp = this.Pr.ctrPr.rPr;
 

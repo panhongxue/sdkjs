@@ -44,8 +44,20 @@ function CMathNaryPr()
     this.limLoc  = undefined;
     this.subHide = false;
     this.supHide = false;
-    this.ctrPrp  = undefined;
+	this.ctrPr   = new CMathCtrlPr();
+
+	//todo
+	this.innerStyles = {
+		of: undefined,
+		sub: undefined,
+		sup: undefined,
+	}
 }
+
+CMathNaryPr.prototype.GetRPr = function ()
+{
+	return this.ctrPr.GetRPr();
+};
 
 CMathNaryPr.prototype.Set_FromObject = function(Obj)
 {
@@ -64,7 +76,11 @@ CMathNaryPr.prototype.Set_FromObject = function(Obj)
     if(true === Obj.supHide === true || 1 === Obj.supHide)
         this.supHide = true;
 
-    this.CtrPrp  = Obj.ctrPrp;
+	this.ctrPr.SetRPr(Obj.ctrPrp);
+
+	this.innerStyles.of = Obj.ofStyle;
+	this.innerStyles.sub = Obj.subStyle;
+	this.innerStyles.sup = Obj.supStyle;
 };
 
 CMathNaryPr.prototype.Copy = function()
@@ -77,7 +93,7 @@ CMathNaryPr.prototype.Copy = function()
     NewPr.limLoc  = this.limLoc ;
     NewPr.subHide = this.subHide;
     NewPr.supHide = this.supHide;
-    NewPr.CtrPrp  = this.ctrlPr;
+	NewPr.ctrPr = this.ctrPr;
 
     return NewPr;
 };
@@ -125,15 +141,8 @@ CMathNaryPr.prototype.Write_ToBinary = function(Writer)
     Writer.WriteBool(this.subHide);
     Writer.WriteBool(this.supHide);
 
-    if (this.CtrPrp)
-    {
-        Writer.WriteBool(true);
-        this.CtrPrp.WriteToBinary(Writer);
-    }
-    else
-    {
-        Writer.WriteBool(false);
-    }
+	Writer.WriteBool(true);
+	this.ctrPr.Write_ToBinary(Writer);
 };
 
 CMathNaryPr.prototype.Read_FromBinary = function(Reader)
@@ -169,12 +178,10 @@ CMathNaryPr.prototype.Read_FromBinary = function(Reader)
     this.subHide = Reader.GetBool();
     this.supHide = Reader.GetBool();
 
-    this.CtrPrp = undefined;
-    if (Reader.GetBool())
-    {
-        this.CtrPrp = new CTextPr();
-        this.CtrPrp.ReadFromBinary(Reader);
-    }
+	if (Reader.GetBool())
+	{
+		this.ctrPr.Read_FromBinary(Reader);
+	}
 };
 
 /**
@@ -202,9 +209,9 @@ function CNary(props)
     if(props !== null && props !== undefined)
         this.init(props);
 
-	// согласно формату CtrPrp должен находится в MatrixPr, пока оставляем this.CtrPrp, но приравняем к значению из Pr
-	if (this.Pr.CtrPrp)
-		this.CtrPrp = this.Pr.CtrPrp;
+	// согласно формату CtrPrp должен находится в NaryPr, пока оставляем this.CtrPrp, но приравняем к значению из Pr
+	if (this.Pr.ctrPr.rPr)
+		this.CtrPrp = this.Pr.ctrPr.rPr;
 
     AscCommon.g_oTableId.Add( this, this.Id );
 }
@@ -887,7 +894,7 @@ CNary.prototype.GetTextOfElement = function(oMathText)
     }
     else
 	{
-		let oLastPos = oMathText.AddText(new AscMath.MathText(String.fromCharCode(this.Pr.chr), this.Pr.CtrPrp));
+		let oLastPos = oMathText.AddText(new AscMath.MathText(String.fromCharCode(this.Pr.chr), this.Pr.GetRPr()));
 		let isScript = false;
 
 		if (oLower)
@@ -909,7 +916,7 @@ CNary.prototype.GetTextOfElement = function(oMathText)
 			oLastPos = oMathText.Add(oBase, true, "linear");
 			let oBaseText = oMathText.GetExact(oLastPos);
 			if (isScript && oBaseText.GetLength() > 0 && oBaseText.IsHasText())
-                oMathText.AddBefore(oLastPos, new AscMath.MathText("▒"));
+                oMathText.AddBefore(oLastPos, new AscMath.MathText("▒", oBase.CtrPrp));
 		}
 	}
 };

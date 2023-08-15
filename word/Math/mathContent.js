@@ -1207,6 +1207,7 @@ function CMathContent()
     this.ParaMath       = null;
     this.ArgSize        = new CMathArgSize();
     this.Compiled_ArgSz = new CMathArgSize();
+	this.CtrPrp         = new CTextPr();
 
     // for EqArray
     this.InfoPoints = new CInfoPoints();
@@ -1452,9 +1453,13 @@ CMathContent.prototype.Draw_Elements = function(PDSE)
     }
 
 };
-CMathContent.prototype.setCtrPrp = function()
+CMathContent.prototype.setCtrPrp = function(oPr)
 {
+	if (!oPr)
+		return;
 
+	History.Add(new CChangesMathContentTextPr(this, this.CtrPrp, oPr));
+	this.CtrPrp = oPr;
 };
 CMathContent.prototype.Is_InclineLetter = function()
 {
@@ -1601,11 +1606,19 @@ CMathContent.prototype.getFirstRPrp  = function()
 };
 CMathContent.prototype.GetCtrPrp = function()       // for placeholder
 {
-    var ctrPrp = new CTextPr();
+	if (this.CtrPrp)
+		return this.CtrPrp;
+
+    var ctrPrp = this.CtrPrp;
     if(!this.bRoot)
         ctrPrp.Merge( this.Parent.Get_CompiledCtrPrp_2() );
 
     return ctrPrp;
+};
+
+CMathContent.prototype.Is_FromDocument = function()
+{
+	return (this.ParaMath && this.ParaMath.Paragraph && this.ParaMath.Paragraph.bFromDocument);
 };
 CMathContent.prototype.IsAccent = function()
 {

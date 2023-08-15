@@ -1949,6 +1949,7 @@
 					break
 				case MathStructures.nary:
 					let lPr = {
+						ctrPrp: oTokens.style,
 						chr: oTokens.value.charCodeAt(0),
 						subHide: true,
 						supHide: true,
@@ -1962,6 +1963,8 @@
 							oNary.getBase(),
 						)
 					}
+					let oBase = oNary.getBase();
+					oBase.setCtrPrp(oTokens.thirdStyle);
 					break;
 				case MathStructures.pre_script:
 					let oPreSubSup = oContext.Add_Script(
@@ -2131,33 +2134,36 @@
 							oTokens.third,
 							oNary.getBase(),
 						);
+
+						let oBase = oNary.getBase();
+						oBase.setCtrPrp(oTokens.style.ofStyle);
+
 						UnicodeArgument(
 							oTokens.up,
 							MathStructures.bracket_block,
 							oNary.getSupMathContent()
-						)
+						);
+
+						let oUp = oNary.getSupMathContent();
+						oUp.setCtrPrp(oTokens.style.supStyle);
+
 						UnicodeArgument(
 							oTokens.down,
 							MathStructures.bracket_block,
 							oNary.getSubMathContent()
 						)
+
+						let oDown = oNary.getSubMathContent();
+						oDown.setCtrPrp(oTokens.style.subStyle);
+
 					}
 					else
 					{
 						let isSubSup = ((Array.isArray(oTokens.up) && oTokens.up.length > 0) || (!Array.isArray(oTokens.up) && oTokens.up !== undefined)) &&
 							((Array.isArray(oTokens.down) && oTokens.down.length > 0) || (!Array.isArray(oTokens.down) && oTokens.down !== undefined))
 
-						let Pr = {ctrPrp: oTokens.style[0]};
-
-						if (oTokens.style[0] && oTokens.style[1])
-						{
-							Pr.supStyle = oTokens.style.supStyle;
-							//Pr.subStyle = oTokens.style[1];
-						}
-						else
-						{
-							Pr.ctrlPr = oTokens.style.subStyle ? oTokens.style.subStyle : oTokens.style.supStyle;
-						}
+						let Pr = {};
+						Pr.ctrPrp = oTokens.style.subStyle ? oTokens.style.subStyle : oTokens.style.supStyle;
 
 						if (!isSubSup)
 						{
@@ -2178,19 +2184,28 @@
 						ConvertTokens(
 							oTokens.value,
 							SubSup.getBase()
-						)
+						);
 
 						UnicodeArgument(
 							oTokens.up,
 							MathStructures.bracket_block,
 							SubSup.getUpperIterator()
-						)
+						);
 
 						UnicodeArgument(
 							oTokens.down,
 							MathStructures.bracket_block,
 							SubSup.getLowerIterator()
-						)
+						);
+
+						// Set styles
+						let oUpper = SubSup.getUpperIterator();
+						if (oUpper && oTokens.style.supStyle)
+							oUpper.CtrPrp.Merge(oTokens.style.supStyle);
+
+						let oLower = SubSup.getLowerIterator();
+						if (oLower && oTokens.style.supStyle)
+							oLower.CtrPrp.Merge(oTokens.style.supStyle);
 					}
 					break;
 				case MathStructures.func_lim:
@@ -2199,7 +2214,7 @@
 
 					let FuncName = MathFunc.getFName();
 
-					let Limit = new CLimit({ctrPrp : new CTextPr(), type : oTokens.down !== undefined ? LIMIT_LOW : LIMIT_UP});
+					let Limit = new CLimit({ctrPrp : oTokens.style, type : oTokens.down !== undefined ? LIMIT_LOW : LIMIT_UP});
 					FuncName.Add_Element(Limit);
 
 					let LimitName = Limit.getFName();
@@ -2312,16 +2327,14 @@
 				case MathStructures.func:
 					let oFunc = oContext.Add_Function({ctrPrp: oTokens.style}, null, null);
 
-					if (!oTokens.style)
-					{
-						oTokens.style = new CTextPr();
-					}
-					oTokens.style.SetItalic(false);
-
 					ConvertTokens(
-						new MathText(oTokens.value, oTokens.style),
+						oTokens.value,
 						oFunc.getFName(),
-					)
+					);
+
+					let oName = oFunc.getFName();
+					oName.CtrPrp.SetItalic(false);
+
 					ConvertTokens(
 						oTokens.third,
 						oFunc.getArgument(),
@@ -2335,16 +2348,20 @@
 					break;
 				case MathStructures.matrix:
 					let strStartBracket, strEndBracket;
+
 					if (oTokens.strMatrixType)
 					{
-						if (oTokens.strMatrixType.length === 2) {
+						if (oTokens.strMatrixType.length === 2)
+						{
 							strStartBracket = oTokens.strMatrixType[0].charCodeAt(0)
 							strEndBracket = oTokens.strMatrixType[1].charCodeAt(0)
 						}
-						else {
+						else
+						{
 							strEndBracket = strStartBracket = oTokens.strMatrixType[0].charCodeAt(0)
 						}
 					}
+
 					let rows = oTokens.value.length;
 					let cols;
 
@@ -2353,19 +2370,47 @@
 						cols = oTokens.value[0].length;
 					}
 
-					if (strEndBracket && strStartBracket) {
-						let Delimiter = oContext.Add_DelimiterEx(new CTextPr(), 1, [null], strStartBracket, strEndBracket);
+					if (strEndBracket && strStartBracket)
+					{
+						let Delimiter = oContext.Add_DelimiterEx(
+							new CTextPr(),
+							1,
+							[null],
+							strStartBracket,
+							strEndBracket
+						);
 						oContext = Delimiter.getElementMathContent(0);
 					}
-					let oMatrix = oContext.Add_Matrix(oTokens.style, rows, cols, false, []);
 
-					for (let intRow = 0; intRow < rows; intRow++) {
-						for (let intCol = 0; intCol < cols; intCol++) {
+					let oMatrix = oContext.Add_Matrix(
+						oTokens.style.head,
+						rows,
+						cols,
+						false,
+						[]
+					);
+
+					for (let intRow = 0; intRow < rows; intRow++)
+					{
+						for (let intCol = 0; intCol < cols; intCol++)
+						{
 							let oContent = oMatrix.getContentElement(intRow, intCol);
 							ConvertTokens(
 								oTokens.value[intRow][intCol],
 								oContent,
 							);
+
+							let oPr = oTokens.style.cols[intRow]
+							if (oPr && intCol === cols - 1)
+								oContent.setCtrPrp(oPr);
+
+							let rPr = oTokens.style.rows[intRow];
+							if (rPr)
+							{
+								let cPr = rPr[intCol];
+								if (cPr)
+									oContent.setCtrPrp(oPr);
+							}
 						}
 					}
 					break;
@@ -3592,7 +3637,6 @@
 		this.Brackets 	= new ProcessingBrackets();
 
 		this.Init();
-		debugger
 		this.StartAutoCorrection();
 	}
 	/**

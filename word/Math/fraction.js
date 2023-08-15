@@ -652,13 +652,14 @@ CFraction.prototype.GetTextOfElement = function(oMathText)
 	if (!oMathText.IsLaTeX())
 	{
 		let frac;
+		let oPr = this.Pr.GetRPr();
 		switch (this.Pr.type)
 		{
-			case 0:		frac = new AscMath.MathText('/', this.Pr.GetRPr());	break;
-			case 1:		frac = new AscMath.MathText('⁄', this.Pr.GetRPr());	break;
-			case 2:		frac = new AscMath.MathText('∕', this.Pr.GetRPr());	break;
-			case 3:		frac = new AscMath.MathText('¦', this.Pr.GetRPr());	break;
-			default:	frac = new AscMath.MathText('/', this.Pr.GetRPr());	break;
+			case 0:		frac = new AscMath.MathText('/', oPr);	break;
+			case 1:		frac = new AscMath.MathText('⁄', oPr);	break;
+			case 2:		frac = new AscMath.MathText('∕', oPr);	break;
+			case 3:		frac = new AscMath.MathText('¦', oPr);	break;
+			default:	frac = new AscMath.MathText('/', oPr);	break;
 		}
 		oMathText.AddAfter(oPosNumerator, frac);
 	}

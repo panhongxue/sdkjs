@@ -2076,6 +2076,7 @@
 	window['AscDFH'].historyitem_MathMatrix_Interval      = window['AscDFH'].historyitem_type_Math | 1307;
 	window['AscDFH'].historyitem_MathMatrix_Plh           = window['AscDFH'].historyitem_type_Math | 1308;
 	window['AscDFH'].historyitem_MathDegree_SubSupType    = window['AscDFH'].historyitem_type_Math | 1401;
+	window['AscDFH'].historyitem_MathContent_TextPr       = window['AscDFH'].historyitem_type_Math | 1402;
 	//------------------------------------------------------------------------------------------------------------------
 	// Типы изменений в классе ParaRun
 	//------------------------------------------------------------------------------------------------------------------

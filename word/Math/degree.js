@@ -38,7 +38,11 @@ var g_oTextMeasurer = AscCommon.g_oTextMeasurer;
 function CMathDegreePr()
 {
     this.type = DEGREE_SUPERSCRIPT;
-    this.ctrlPr = undefined;
+	this.ctrPr   = new CMathCtrlPr();
+}
+CMathDegreePr.prototype.GetRPr = function ()
+{
+	return this.ctrPr.GetRPr();
 }
 CMathDegreePr.prototype.Set_FromObject = function(Obj)
 {
@@ -47,15 +51,13 @@ CMathDegreePr.prototype.Set_FromObject = function(Obj)
     else
         this.type = DEGREE_SUPERSCRIPT;
 
-    if (Obj.ctrlPr !== undefined)
-    {
-        this.ctrlPr = Obj.ctrlPr;
-    }
+	this.ctrPr.SetRPr(Obj.ctrPrp);
 };
 CMathDegreePr.prototype.Copy = function()
 {
     var NewPr = new CMathDegreePr();
     NewPr.type = this.type;
+	NewPr.ctrPr   = this.ctrPr;
     return NewPr;
 };
 CMathDegreePr.prototype.Write_ToBinary = function(Writer)
@@ -63,27 +65,18 @@ CMathDegreePr.prototype.Write_ToBinary = function(Writer)
     // Long : type
     Writer.WriteLong(this.type);
 
-    if (this.ctrlPr)
-    {
-        Writer.WriteBool(true);
-        this.ctrlPr.WriteToBinary(Writer);
-    }
-    else
-    {
-        Writer.WriteBool(false);
-    }
+	Writer.WriteBool(true);
+	this.ctrPr.Write_ToBinary(Writer);
 };
 CMathDegreePr.prototype.Read_FromBinary = function(Reader)
 {
     // Long : type
     this.type = Reader.GetLong(Reader);
 
-    this.ctrlPr = undefined;
-    if (Reader.GetBool())
-    {
-        this.ctrlPr = new CTextPr();
-        this.ctrlPr.ReadFromBinary(Reader);
-    }
+	if (Reader.GetBool())
+	{
+		this.ctrPr.Read_FromBinary(Reader);
+	}
 };
 
 /**
@@ -562,15 +555,16 @@ CDegree.prototype.Can_ModifyArgSize = function()
 };
 CDegree.prototype.GetTextOfElement = function(oMathText)
 {
-	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+	if (!(oMathText instanceof AscMath.MathTextAndStyles))
 		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
 	let oBase           = this.getBase();
 	let oIterator       = this.getIterator();
-    let oPosBase      = oMathText.Add(oBase, true, false);
-    let oText = new AscMath.MathText(this.Pr.type === 1 ? "^" : "_", this.Pr.ctrlPr)
-    oMathText.AddText(oText);
-    let oPosIterator  = oMathText.Add(oIterator, true, 'base');
+
+	oMathText.Add(oBase, true, false);
+	let oText = new AscMath.MathText(this.Pr.type === 1 ? "^" : "_", this.Pr.GetRPr());
+	oMathText.AddText(oText);
+	oMathText.Add(oIterator, true, 'base');
 
 	return oMathText;
 };
@@ -679,7 +673,11 @@ function CMathDegreeSubSupPr()
 {
     this.type   = DEGREE_SubSup;
     this.alnScr = false;// не выровнены, итераторы идут в соответствии с наклоном буквы/мат. объекта
-    this.ctrlPr = undefined;
+	this.ctrPr   = new CMathCtrlPr();
+}
+CMathDegreeSubSupPr.prototype.GetRPr = function ()
+{
+	return this.ctrPr.GetRPr();
 }
 CMathDegreeSubSupPr.prototype.Set_FromObject = function(Obj)
 {
@@ -691,10 +689,7 @@ CMathDegreeSubSupPr.prototype.Set_FromObject = function(Obj)
     if (DEGREE_SubSup === Obj.type || DEGREE_PreSubSup === Obj.type)
         this.type = Obj.type;
 
-    if (Obj.ctrlPr !== undefined)
-    {
-        this.ctrlPr = Obj.ctrlPr;
-    }
+	this.ctrPr.SetRPr(Obj.ctrPrp);
 };
 CMathDegreeSubSupPr.prototype.Copy = function()
 {
@@ -702,7 +697,7 @@ CMathDegreeSubSupPr.prototype.Copy = function()
 
     NewPr.type   = this.type;
     NewPr.alnScr = this.alnScr;
-    NewPr.ctrlPr = this.ctrlPr;
+    NewPr.ctrPr = this.ctrPr;
 
     return NewPr;
 };
@@ -714,15 +709,8 @@ CMathDegreeSubSupPr.prototype.Write_ToBinary = function(Writer)
     Writer.WriteLong(this.type);
     Writer.WriteBool(this.alnScr);
 
-    if (this.ctrlPr)
-    {
-        Writer.WriteBool(true);
-        this.ctrlPr.WriteToBinary(Writer);
-    }
-    else
-    {
-        Writer.WriteBool(false);
-    }
+	Writer.WriteBool(true);
+	this.ctrPr.Write_ToBinary(Writer);
 };
 CMathDegreeSubSupPr.prototype.Read_FromBinary = function(Reader)
 {
@@ -732,12 +720,10 @@ CMathDegreeSubSupPr.prototype.Read_FromBinary = function(Reader)
     this.type   = Reader.GetLong();
     this.alnScr = Reader.GetBool();
 
-    this.ctrlPr = undefined;
-    if (Reader.GetBool())
-    {
-        this.ctrlPr = new CTextPr();
-        this.ctrlPr.ReadFromBinary(Reader);
-    }
+	if (Reader.GetBool())
+	{
+		this.ctrPr.Read_FromBinary(Reader);
+	}
 };
 
 /**
@@ -1269,11 +1255,11 @@ CDegreeSubSup.prototype.GetTextOfElement = function(oMathText)
     }
     else
     {
-        let oPosBase            = oMathText.Add(oBase, true, false);
-        oMathText.AddText(new AscMath.MathText("_", this.Pr.ctrlPr ? this.Pr.ctrlPr : this.CtrPrp));
-        let oPosLowerIterator  = oMathText.Add(oLowerIterator, true, 'base');
-        oMathText.AddText(new AscMath.MathText("^", this.Pr.ctrlPr ? this.Pr.ctrlPr : this.CtrPrp));
-        let oPosUpperIterator  = oMathText.Add(oUpperIterator, true, 'base');
+        oMathText.Add(oBase, true, false);
+        oMathText.AddText(new AscMath.MathText("_", this.Pr.GetRPr()));
+        oMathText.Add(oLowerIterator, true, 'base');
+        oMathText.AddText(new AscMath.MathText("^", oUpperIterator.GetCtrPrp()));
+        oMathText.Add(oUpperIterator, true, 'base');
     }
 
 	return oMathText;

@@ -186,10 +186,12 @@
     {
         let oContent;
         let oNaryPr = this.oLookahead.style;
+		let oOfStyle;
         let strNaryLiteral = this.EatToken(Literals.nary.id).data;
 
         if (this.oLookahead.class === Literals.of.id)
         {
+			oOfStyle = this.oLookahead.style;
             this.EatToken( Literals.of.id);
             oContent = this.GetElementLiteral()
         }
@@ -202,9 +204,9 @@
             type: Struc.nary,
             value: strNaryLiteral,
             third: oContent,
+	        thirdStyle: oOfStyle,
             style: oNaryPr,
         }
-
     };
     CUnicodeParser.prototype.GetOpOpenLiteral = function ()
     {
@@ -1721,6 +1723,7 @@
     }
     CUnicodeParser.prototype.GetFunctionApplication = function(oBase)
     {
+		let oPr = this.oLookahead.style;
 		this.EatToken(this.oLookahead.class);
 
 		if (this.IsExpSubSupLiteral())
@@ -1734,7 +1737,7 @@
             type: Struc.func,
             value: oBase.data,
             third: oValue,
-            style: oBase.style,
+            style: oPr,
         }
 
     }
@@ -1746,7 +1749,7 @@
     {
         return this.IsExpLiteral() || this.oLookahead.data === "&";
     };
-    CUnicodeParser.prototype.GetRowLiteral = function ()
+    CUnicodeParser.prototype.GetRowLiteral = function (oStyle)
     {
         let arrRow = [];
         let intLength = 0;
@@ -1768,6 +1771,7 @@
             else
             {
                 this.RemoveLastStopToken();
+				oStyle[intCount] = this.oLookahead.style;
                 this.EatToken("&");
 
                 if (isAlredyGetContent === false)
@@ -1794,22 +1798,23 @@
 
         return arrRow;
     };
-    CUnicodeParser.prototype.GetRowsLiteral = function ()
+    CUnicodeParser.prototype.GetRowsLiteral = function (cols, rows)
     {
         let arrRows = [];
 		let nRow = 0;
 		let isHasContent = false;
+		let innerStyles = {};
 
         while (this.IsRowLiteral() || this.oLookahead.data === "@")
         {
             if (this.oLookahead.data === "@")
             {
+				cols[nRow] = this.oLookahead.style;
                 this.EatToken("@");
 
 				if (arrRows.length === 0 && this.oLookahead.data !== "&")
 					arrRows.push([]);
 
-				arrRows.push([]);
 				nRow++;
 
 				isHasContent = true;
@@ -1818,9 +1823,15 @@
             {
                 this.RemoveLastStopTokenForce();
                 this.SetStopToken(["&", "@"])
-                arrRows.push(this.GetRowLiteral());
+	            rows[nRow] = {}
+                arrRows.push(this.GetRowLiteral(rows[nRow]));
             }
         }
+
+		if (innerStyles[0])
+		{
+			oStyles[nRow] = {head: undefined, body: innerStyles};
+		}
 
 		if (arrRows.length === 0)
 		{
@@ -1834,7 +1845,11 @@
     };
     CUnicodeParser.prototype.GetArrayLiteral = function ()
     {
-		let oPr = this.oLookahead.style;
+		let styles = {};
+		styles.head = this.oLookahead.style;
+		styles.cols = {};
+		styles.rows = {};
+
         let type = this.EatToken(this.oLookahead.class).data;
 
         if (this.oLookahead.data !== "(")
@@ -1849,7 +1864,7 @@
             this.EatToken(this.oLookahead.class);
         }
 
-        const arrMatrixContent = this.GetRowsLiteral();
+        const arrMatrixContent = this.GetRowsLiteral(styles.cols, styles.rows);
 
         let intMaxLengthOfMatrixRow = -Infinity;
         let intIndexOfMaxMatrixRow = -1;
@@ -1882,13 +1897,13 @@
             return {
                 type: Struc.matrix,
                 value: arrMatrixContent,
-	            style: oPr,
+	            style: styles,
             };
         }
     };
     CUnicodeParser.prototype.IsArrayLiteral = function ()
     {
-        return this.oLookahead.class === Literals.matrix.id && this.oLookahead.data !== "█"
+        return this.oLookahead.class === Literals.matrix.id
     };
     CUnicodeParser.prototype.IsElementLiteral = function ()
     {

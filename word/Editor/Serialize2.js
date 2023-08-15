@@ -3361,6 +3361,9 @@ function Binary_oMathWriter(memory, oMathPara, saveParams)
 				var item = oElem.Content[i];
 				this.WriteMathElem(item, isSingle);
 			}
+
+			if (oElem instanceof CMathContent && !oElem.bRoot)
+				this.bs.WriteItem(c_oSer_OMathContentType.CtrlPr, function(){oThis.WriteCtrlPr(oElem);});
 		}
 		
 	}
@@ -13617,8 +13620,8 @@ function Binary_oMathReader(stream, oReadResult, curNote, openParams)
             res = this.bcr.Read1(length, function(t, l){
                 return oThis.ReadMathCtrlPr(t,l,props);
             });
-			if (oElem) {
-				oElem.setCtrPrp(props.ctrlPr);
+			if (oElem && props.ctrPrp) {
+				oElem.setCtrPrp(props.ctrPrp);
 			}
         }
 		else if (c_oSer_OMathContentType.Delimiter === type)

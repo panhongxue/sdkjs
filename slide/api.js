@@ -1309,6 +1309,13 @@
 	asc_docs_api.prototype.asc_setLocale = function(val)
 	{
 		this.locale = val;
+		const LCID = Asc.g_oLcidNameToIdMap[val];
+		if (AscCommon.setCurrentCultureInfo(LCID))
+		{
+			AscCommon.parserHelp.setDigitSeparator(AscCommon.g_oDefaultCultureInfo.NumberDecimalSeparator);
+			AscCommon.oGeneralEditFormatCache.cleanCache();
+			AscCommon.oNumFormatCache.cleanCache();
+		}
 	};
 	asc_docs_api.prototype.asc_getLocale = function()
 	{

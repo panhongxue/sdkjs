@@ -5018,6 +5018,7 @@ var editor;
 	if (!this.canEdit()) {
 	  return;
 	}
+	this.asc_onCloseChartFrame();
     var ws = this.wb.getWorksheet();
     var fReplaceCallback = null, sImageUrl = null, sToken = undefined;
     if(!AscCommon.isNullOrEmptyString(props.ImageUrl)){

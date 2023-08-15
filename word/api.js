@@ -6111,7 +6111,7 @@ background-repeat: no-repeat;\
 		if (!AscCommon.isRealObject(obj))
 			return;
 		var ImagePr = obj, AdditionalData, LogicDocument = this.WordControl.m_oLogicDocument;
-
+		this.asc_onCloseChartFrame();
 		/*проверка корректности данных для биржевой диаграммы*/
 		if (obj.ChartProperties && obj.ChartProperties.type === Asc.c_oAscChartTypeSettings.stock)
 		{

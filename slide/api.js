@@ -5034,6 +5034,7 @@ background-repeat: no-repeat;\
 
 	asc_docs_api.prototype.ChartApply              = function(obj)
 	{
+		this.asc_onCloseChartFrame();
 		if (obj.ChartProperties && obj.ChartProperties.type === Asc.c_oAscChartTypeSettings.stock && this.WordControl.m_oLogicDocument.Slides[this.WordControl.m_oLogicDocument.CurPage])
 		{
 			if (!AscFormat.CheckStockChart(this.WordControl.m_oLogicDocument.Slides[this.WordControl.m_oLogicDocument.CurPage].graphicObjects, this))

@@ -1064,7 +1064,7 @@ function CMathBarPr()
 	this.pos = LOCATION_BOT;
 	this.ctrPr   = new CMathCtrlPr();
 }
-CMathAccentPr.prototype.GetRPr = function ()
+CMathBarPr.prototype.GetRPr = function ()
 {
 	return this.ctrPr.GetRPr();
 }

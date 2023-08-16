@@ -5894,13 +5894,7 @@ CMathContent.prototype.Process_AutoCorrect = function (oElement)
         ? oLogicDocument. Api.getMathInputType()
         : Asc.c_oAscMathInputType.Unicode;
 
-    let isConvert = false;
-
-    //  let lastElement = this.GetLastTextElement();
-
-    // split content by cursor position
     const arrNextContent = this.SplitContentByContentPos();
-
     if (arrNextContent === false)
         return;
 

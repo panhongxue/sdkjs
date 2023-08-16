@@ -654,11 +654,10 @@
 	CUnicodeParser.prototype.GetStretchArrow = function ()
 	{
 		let oPr = this.oLookahead.style;
-		let data = this.EatToken(this.oLookahead.class).data;
+		let data = this.EatToken(this.oLookahead.class);
 		return {
 			type: Struc.horizontal,
-			value: data,
-			style: oPr,
+			data: data,
 		}
 	}
     CUnicodeParser.prototype.IsGetNameOfFunction = function ()
@@ -717,6 +716,7 @@
             let arrContent = this.GetContentOfBracket();
             oExp = arrContent[0];
             let counter = arrContent[1];
+			let middle_styles = arrContent[2];
 
             if (oExp.length === 0 && !this.IsOpCloserLiteral())
             {
@@ -762,6 +762,7 @@
                 right: strClose,
                 counter: counter,
                 style: startStyle,
+	            m_styles: middle_styles,
             };
         }
         else if (this.oLookahead.data === "├")
@@ -773,6 +774,7 @@
     {
         let arrContent = [];
         let intCountOfBracketBlock = 1;
+		let styles = [];
 
         while (this.IsExpLiteral() || this.oLookahead.class === Literals.delimiter.id || this.oLookahead.data === "ⓜ")
         {
@@ -789,6 +791,7 @@
 					arrContent.push({});
 				}
 
+				styles.push(this.oLookahead.style);
 				this.EatToken(this.oLookahead.class);
 
 				if (!this.IsExpLiteral())
@@ -799,7 +802,7 @@
 				intCountOfBracketBlock++;
 			}
 		}
-		return [arrContent, intCountOfBracketBlock];
+		return [arrContent, intCountOfBracketBlock, styles];
     }
     CUnicodeParser.prototype.GetPreScriptLiteral = function ()
     {
@@ -1211,7 +1214,8 @@
 				type: Struc.group_character,
 				hBrack: base,
 				value: oBelowAbove,
-				isBelow: type
+				isBelow: type,
+				style: oStyle,
 			}
 		}
 
@@ -2148,8 +2152,6 @@
 
         const oParser = new CUnicodeParser();
         const oTokens = oParser.Parse(str);
-
-		console.log(oTokens);
 
         if (!isGetOnlyTokens)
             ConvertTokens(oTokens, oContext);

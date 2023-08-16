@@ -4109,7 +4109,7 @@ CDelimiter.prototype.GetTextOfElement = function(oMathText)
 		let oCurrentPos = oMathText.Add(this.Content[intCount], true, false);
 		if (strSeparatorSymbol && this.Content.length > 1 && intCount < this.Content.length - 1)
 		{
-			let oSepText = new AscMath.MathText(strSeparatorSymbol, this.Pr.GetRPr());
+			let oSepText = new AscMath.MathText(strSeparatorSymbol, this.Content[intCount].GetCtrPrp());
 			oMathText.AddAfter(oCurrentPos, oSepText);
 		}
 	}
@@ -4623,7 +4623,7 @@ CGroupCharacter.prototype.Can_ChangePos = function()
  */
 CGroupCharacter.prototype.GetTextOfElement = function(oMathText)
 {
-	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+	if (!(oMathText instanceof AscMath.MathTextAndStyles))
 		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
 	let nStartCode = this.Pr.chr || this.operator.Get_CodeChr();
@@ -4663,7 +4663,9 @@ CGroupCharacter.prototype.GetTextOfElement = function(oMathText)
 
 		oMathText.AddText( new AscMath.MathText(strStart, this.Pr.GetRPr()), true, false);
 		if (nStartCode !== 9182 && nStartCode !== 9183)
-			oMathText.AddText(new AscMath.MathText(strPos, new CTextPr()), true, false);
+		{
+			oMathText.AddText(new AscMath.MathText(strPos, oBase.CtrPrp), true, false);
+		}
 		oMathText.Add(oBase, true, 'notBracket');
 	}
 

@@ -45,13 +45,6 @@ function CMathNaryPr()
     this.subHide = false;
     this.supHide = false;
 	this.ctrPr   = new CMathCtrlPr();
-
-	//todo
-	this.innerStyles = {
-		of: undefined,
-		sub: undefined,
-		sup: undefined,
-	}
 }
 
 CMathNaryPr.prototype.GetRPr = function ()
@@ -77,10 +70,6 @@ CMathNaryPr.prototype.Set_FromObject = function(Obj)
         this.supHide = true;
 
 	this.ctrPr.SetRPr(Obj.ctrPrp);
-
-	this.innerStyles.of = Obj.ofStyle;
-	this.innerStyles.sub = Obj.subStyle;
-	this.innerStyles.sup = Obj.supStyle;
 };
 
 CMathNaryPr.prototype.Copy = function()
@@ -901,14 +890,14 @@ CNary.prototype.GetTextOfElement = function(oMathText)
 		{
 			isScript = true;
 			oLastPos = oMathText.Add(oLower, true, "base");
-			oMathText.AddBefore(oLastPos, new AscMath.MathText("_"));
+			oMathText.AddBefore(oLastPos, new AscMath.MathText("_", oLower.GetCtrPrp()));
 		}
 
 		if (oUpper)
 		{
 			isScript = true;
 			oLastPos = oMathText.Add(oUpper, true, "base");
-            oMathText.AddBefore(oLastPos, new AscMath.MathText("^"));
+			oMathText.AddBefore(oLastPos, new AscMath.MathText("^", oUpper.GetCtrPrp()));
 		}
 
 		if (oBase)

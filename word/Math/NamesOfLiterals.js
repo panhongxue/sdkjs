@@ -2242,9 +2242,9 @@
 						? oTokens.isBelow
 						: MathLiterals.hbrack.GetPos(oTokens.hBrack);
 
-					if (oTokens.hBrack.value === "¯" || oTokens.hBrack.value === "▁")
+					if (oTokens.hBrack.data === "¯" || oTokens.hBrack.data === "▁")
 					{
-						let oBar = (oTokens.hBrack.value === "¯")
+						let oBar = (oTokens.hBrack.data === "¯")
 							? oContext.Add_Bar({ctrPrp : oTokens.style, pos : LOCATION_TOP}, null)
 							: oContext.Add_Bar({ctrPrp : oTokens.style, pos : LOCATION_BOT}, null);
 
@@ -2257,8 +2257,8 @@
 					else
 					{
 						let Pr = (intBracketPos === VJUST_TOP)
-							? {ctrPrp : oTokens.hBrack.style, pos : VJUST_TOP, vertJc : VJUST_BOT, chr: oTokens.hBrack.value.charCodeAt(0)}
-							: {ctrPrp : oTokens.hBrack.style, vertJc : VJUST_TOP, chr : oTokens.hBrack.value.charCodeAt(0)};
+							? {ctrPrp : oTokens.hBrack.data.style, pos : VJUST_TOP, vertJc : VJUST_BOT, chr: oTokens.hBrack.data.data.charCodeAt(0)}
+							: {ctrPrp : oTokens.hBrack.data.style, vertJc : VJUST_TOP, chr : oTokens.hBrack.data.data.charCodeAt(0)};
 
 						let Group = new CGroupCharacter(Pr);
 						oContext.Add_Element(Group);
@@ -2268,6 +2268,9 @@
 							MathStructures.bracket_block,
 							Group.getBase(),
 						);
+
+						let oBase = Group.getBase();
+						oBase.setCtrPrp(oTokens.style);
 					}
 
 					break;
@@ -2291,14 +2294,22 @@
 
 					if (oTokens.value.length >= 0)
 					{
-						for (let intCount = 0; intCount < oTokens.value.length; intCount++) {
+						for (let intCount = 0; intCount < oTokens.value.length; intCount++)
+						{
 							ConvertTokens(
 								oTokens.value[intCount],
 								oBracket.getElementMathContent(intCount)
 							);
+
+							if (oTokens.m_styles[intCount - 1])
+							{
+								let oContent = oBracket.getElementMathContent(intCount - 1);
+								oContent.setCtrPrp(oTokens.m_styles[intCount - 1]);
+							}
 						}
 					}
-					else {
+					else
+					{
 						ConvertTokens(
 							oTokens.value,
 							oBracket.getElementMathContent(0)
@@ -2402,14 +2413,17 @@
 
 							let oPr = oTokens.style.cols[intRow]
 							if (oPr && intCol === cols - 1)
+							{
 								oContent.setCtrPrp(oPr);
+								continue;
+							}
 
 							let rPr = oTokens.style.rows[intRow];
 							if (rPr)
 							{
 								let cPr = rPr[intCol];
 								if (cPr)
-									oContent.setCtrPrp(oPr);
+									oContent.setCtrPrp(cPr);
 							}
 						}
 					}
@@ -3803,6 +3817,8 @@
 
 		if (oLastElem.Type === 49)
 		{
+			if (oLastElem.Content.length < 1)
+				return false;
 			let oLastElement = oLastElem.Content[oLastElem.Content.length - 1];
 			let strValue = String.fromCharCode(oLastElement.value);
 			return GetTokenType(strValue, TokenSearch_Everything);

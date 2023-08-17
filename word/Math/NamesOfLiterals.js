@@ -2894,7 +2894,13 @@
 				if (this.position[0] - 1 >= 0)
 					this.position[0]--;
 
+				let nPrev = this.position[1];
 				this.position[1] = CMathContent.Content[this.position[0]].Content.length - 1;
+				if (nPrev === this.position[1])
+				{
+					this.position[0];
+					this.position[1] = CMathContent.Content[this.position[0] + 1].Content.length - 1;
+				}
 				return true;
 			}
 
@@ -4353,6 +4359,7 @@
 	 */
 	ProceedTokens.prototype.BIFunctionProcessing = function(oLast)
 	{
+		debugger
 		let arrPreContent = this.GetContentBlockBefore(oLast);
 		let arrPostContent = this.GetContentBlockAfter(oLast);
 

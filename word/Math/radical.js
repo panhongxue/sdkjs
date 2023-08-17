@@ -339,6 +339,12 @@ function CMathRadicalPr()
 {
     this.type    = DEGREE_RADICAL;
     this.degHide = false;
+	this.ctrPr   = new CMathCtrlPr();
+}
+
+CMathRadicalPr.prototype.GetRPr = function ()
+{
+	return this.ctrPr.GetRPr();
 }
 
 CMathRadicalPr.prototype.Set_FromObject = function(Obj)
@@ -356,6 +362,8 @@ CMathRadicalPr.prototype.Set_FromObject = function(Obj)
         this.degHide = false;
         this.type = DEGREE_RADICAL;
     }
+
+	this.ctrPr.SetRPr(Obj.ctrPrp);
 };
 CMathRadicalPr.prototype.ChangeType = function()
 {
@@ -376,6 +384,7 @@ CMathRadicalPr.prototype.Copy = function()
 
     NewPr.type    = this.type;
     NewPr.degHide = this.degHide;
+	NewPr.ctrPr   = this.ctrPr;
 
     return NewPr;
 };
@@ -387,6 +396,9 @@ CMathRadicalPr.prototype.Write_ToBinary = function(Writer)
 
     Writer.WriteLong(this.type);
     Writer.WriteBool(this.degHide);
+
+	Writer.WriteBool(true);
+	this.ctrPr.Write_ToBinary(Writer);
 };
 
 CMathRadicalPr.prototype.Read_FromBinary = function(Reader)
@@ -396,6 +408,11 @@ CMathRadicalPr.prototype.Read_FromBinary = function(Reader)
 
     this.type    = Reader.GetLong();
     this.degHide = Reader.GetBool();
+
+	if (Reader.GetBool())
+	{
+		this.ctrPr.Read_FromBinary(Reader);
+	}
 };
 
 /**
@@ -796,7 +813,7 @@ CRadical.prototype.GetTextOfElement = function(oMathText)
 	else
 	{
 		let oDegreeText		= oDegree.GetTextOfElement();
-		let oPosSqrt		= oMathText.AddText(new AscMath.MathText("√", this.CtrPrp), true);
+		let oPosSqrt		= oMathText.AddText(new AscMath.MathText("√", this.Pr.GetRPr()), true);
 		let nLengthOfDegree	= oDegreeText.GetLength();
 
 		if (nLengthOfDegree === 0 || !oDegreeText.IsHasText())
@@ -822,21 +839,21 @@ CRadical.prototype.GetTextOfElement = function(oMathText)
 			{
 				if (strDegree === "3")
 				{
-					oMathText.ChangeContent(new AscMath.MathText("∛", this.CtrPrp));
+					oMathText.ChangeContent(new AscMath.MathText("∛", this.Pr.GetRPr()));
 				}
 				else if (strDegree === "4")
 				{
-					oMathText.ChangeContent(new AscMath.MathText("∜", this.CtrPrp));
+					oMathText.ChangeContent(new AscMath.MathText("∜", this.Pr.GetRPr()));
 				}
 				oMathText.Add(oBase, true, 'notBracket');
 			}
 			else
 			{
-				oMathText.AddText(new AscMath.MathText("(", this.CtrPrp));
+				oMathText.AddText(new AscMath.MathText("(", this.Pr.GetRPr()));
 				oMathText.AddText(oDegreeText);
-				oMathText.AddText(new AscMath.MathText("&", this.CtrPrp));
+				oMathText.AddText(new AscMath.MathText("&", this.Pr.GetRPr()));
 				oMathText.Add(oBase, true, false);
-				oMathText.AddText(new AscMath.MathText(")", this.CtrPrp));
+				oMathText.AddText(new AscMath.MathText(")", this.Pr.GetRPr()));
 			}
 		}
 	}

@@ -32,9 +32,28 @@
 
 $(function () {
 	let logicDocument = AscTest.CreateLogicDocument();
+	let baseEditorApi = logicDocument.Api;
 	let ParaMath = null;
-	AscCommonWord.CMathContent.prototype.Recalculate_Range = function (){}
 
+	AscCommonWord.CMathContent.prototype.Recalculate_Range = function () {};
+
+	function GetRgbColor (clr)
+	{
+		var color = (typeof(clr) == 'object') ? clr.color : clr;
+
+		color=color.replace(/#/,'');
+		if(color.length==3) color=color.replace(/(.)/g,'$1$1');
+		color=parseInt(color,16);
+		var c = new Asc.asc_CColor();
+		c.put_type( (typeof(clr) == 'object' && clr.effectId !== undefined)? Asc.c_oAscColor.COLOR_TYPE_SCHEME : Asc.c_oAscColor.COLOR_TYPE_SRGB);
+		c.put_r(color>>16);
+		c.put_g((color&0xff00)>>8);
+		c.put_b(color&0xff);
+		c.put_a(0xff);
+		if (clr.effectId !== undefined)
+			c.put_value(clr.effectId);
+		return c;
+	}
 	function Create()
 	{
 		AscTest.ClearDocument();
@@ -79,6 +98,64 @@ $(function () {
 			});
 		}
 	}
+	function SetColor(color)
+	{
+		PutTextColor(color)
+	}
+	function PutTextColor(color)
+	{
+		var oLogicDocument = logicDocument;
+		oLogicDocument.TurnOff_Recalculate();
+		if (false === oLogicDocument.Document_Is_SelectionLocked(AscCommon.changestype_Paragraph_TextProperties))
+		{
+			oLogicDocument.StartAction(AscDFH.historydescription_Document_SetTextColor);
+
+			if (true === color.Auto)
+			{
+				oLogicDocument.AddToParagraph(new AscCommonWord.ParaTextPr({
+					Color      : {
+						Auto : true,
+						r    : 0,
+						g    : 0,
+						b    : 0
+					}, Unifill : undefined
+				}));
+			}
+			else
+			{
+				if(color && color.asc_getType && color.asc_getType() === Asc.c_oAscColor.COLOR_TYPE_SRGB)
+				{
+					var oColor = new AscCommonWord.CDocumentColor(color.r, color.g, color.b, false);
+					oLogicDocument.AddToParagraph(new AscCommonWord.ParaTextPr({Color: oColor, Unifill: undefined}));
+				}
+				else
+				{
+					var Unifill        = new AscFormat.CUniFill();
+					Unifill.fill       = new AscFormat.CSolidFill();
+					Unifill.fill.color = AscFormat.CorrectUniColor(color, Unifill.fill.color, 1);
+					oLogicDocument.AddToParagraph(new AscCommonWord.ParaTextPr({Unifill : Unifill}));
+				}
+			}
+
+			oLogicDocument.Recalculate();
+			oLogicDocument.UpdateInterface();
+			oLogicDocument.FinalizeAction();
+		}
+	}
+
+	function ChangePrColor (color, oRoot)
+	{
+		let oPr = new CTextPr();
+		oPr.SetColor(color.r, color.g, color.b);
+		oRoot.Apply_TextPr(oPr);
+		return oPr;
+	}
+
+	let red_color = GetRgbColor("FF0000");
+	let blue_color = GetRgbColor("00B0F0");
+	let green_color = GetRgbColor("00B050");
+	let yellow_color = GetRgbColor("FFFF00");
+	let black_color = GetRgbColor("000000");
 
 	QUnit.module("Autocorrection - Simple check");
 
@@ -15699,4 +15776,964 @@ $(function () {
 
 	//autocorrection triggers
 	//find tokens
+
+
+	QUnit.module("Styles - Fraction - Correct")
+
+	QUnit.test("Check style x/y", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("x");
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("/");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("y");
+		assert.ok(true, "Add 'x/y'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oFraction = r.Root.Content[1];
+		let oFractionPr = oFraction.Pr.GetRPr();
+		assert.ok(oFraction instanceof CFraction, "Created CFraction");
+		assert.deepEqual(oFractionPr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[1];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oFractionPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Check style x⁄y", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("x");
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("⁄");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("y");
+		assert.ok(true, "Add 'x⁄y'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oFraction = r.Root.Content[1];
+		let oFractionPr = oFraction.Pr.GetRPr();
+		assert.ok(oFraction instanceof CFraction, "Created CFraction");
+		assert.deepEqual(oFractionPr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[1];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oFractionPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Check style x∕y", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("x");
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("∕");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("y");
+		assert.ok(true, "Add 'x∕y'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oFraction = r.Root.Content[1];
+		let oFractionPr = oFraction.Pr.GetRPr();
+		assert.ok(oFraction instanceof CFraction, "Created CFraction");
+		assert.deepEqual(oFractionPr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[1];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oFractionPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Check style x¦y", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("x");
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("¦");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("y");
+		assert.ok(true, "Add 'x¦y'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oFraction = r.Root.Content[1];
+		let oFractionPr = oFraction.Pr.GetRPr();
+		assert.ok(oFraction instanceof CFraction, "Created CFraction");
+		assert.deepEqual(oFractionPr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[1];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oFractionPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Check style /", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("/");
+		assert.ok(true, "Add '/'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oFraction = r.Root.Content[1];
+		let oFractionPr = oFraction.Pr.GetRPr();
+		assert.ok(oFraction instanceof CFraction, "Created CFraction");
+		assert.deepEqual(oFractionPr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[0];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oFractionPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+
+	QUnit.module("Styles - Fraction - Autocorrection")
+
+	QUnit.test("Check style x/y", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		ChangePrColor(black_color, r);
+		AddTextToRoot("x");
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("/");
+		ChangePrColor(black_color, r);
+
+		AddTextToRoot("y ");
+		assert.ok(true, "Add 'x/y'");
+
+		assert.ok(true, "Convert to professional");
+
+		let oFraction = r.Root.Content[1];
+		assert.ok(oFraction instanceof CFraction, "Created CFraction");
+
+		let oFractionPr = oFraction.Pr.GetRPr();
+		assert.deepEqual(oFractionPr.Color, oRedPr.Color, "Color of fraction symbol");
+	});
+	QUnit.test("Check style x⁄y", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("x");
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("⁄");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("y ");
+		assert.ok(true, "Add 'x⁄y '");
+
+		assert.ok(true, "Convert to professional");
+
+		let oFraction = r.Root.Content[1];
+		let oFractionPr = oFraction.Pr.GetRPr();
+		assert.ok(oFraction instanceof CFraction, "Created CFraction");
+		assert.deepEqual(oFractionPr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[1];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oFractionPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Check style x∕y", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("x");
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("∕");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("y ");
+		assert.ok(true, "Add 'x∕y '");
+
+		assert.ok(true, "Convert to professional");
+
+		let oFraction = r.Root.Content[1];
+		let oFractionPr = oFraction.Pr.GetRPr();
+		assert.ok(oFraction instanceof CFraction, "Created CFraction");
+		assert.deepEqual(oFractionPr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[1];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oFractionPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Check style x¦y", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("x");
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("¦");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("y ");
+		assert.ok(true, "Add 'x¦y '");
+
+		assert.ok(true, "Convert to professional");
+
+		let oFraction = r.Root.Content[1];
+		let oFractionPr = oFraction.Pr.GetRPr();
+		assert.ok(oFraction instanceof CFraction, "Created CFraction");
+		assert.deepEqual(oFractionPr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[1];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oFractionPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Check style /", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("/ ");
+		assert.ok(true, "Add '/ '");
+
+		assert.ok(true, "Convert to professional");
+
+		let oFraction = r.Root.Content[1];
+		let oFractionPr = oFraction.Pr.GetRPr();
+		assert.ok(oFraction instanceof CFraction, "Created CFraction");
+		assert.deepEqual(oFractionPr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[0];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oFractionPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+
+	QUnit.module("Styles - Scripts - Convert");
+
+	QUnit.test("Add empty up script", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("^");
+		assert.ok(true, "Add '^'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		let oDegreePr = oDegree.Pr.GetRPr();
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+
+		let strBase = oDegree.getBase().GetTextOfElement().GetText();
+		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+		assert.deepEqual(oDegreePr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[0];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oDegreePr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Add empty down script", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("_");
+		assert.ok(true, "Add '_'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		let oDegreePr = oDegree.Pr.GetRPr();
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+
+		let strBase = oDegree.getBase().GetTextOfElement().GetText();
+		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+		assert.deepEqual(oDegreePr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[0];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oDegreePr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Add empty base up script", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("^");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("2");
+
+		assert.ok(true, "Add '^2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		let oDegreePr = oDegree.Pr.GetRPr();
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.deepEqual(oDegreePr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[0];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oRedPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Add empty base down script", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("_");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("2");
+
+		assert.ok(true, "Add '_2'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		let oDegreePr = oDegree.Pr.GetRPr();
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.deepEqual(oDegreePr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[0];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oRedPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Add empty base up script", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("^");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("(2+x)");
+		assert.ok(true, "Add '^(2+x)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		let oDegreePr = oDegree.Pr.GetRPr();
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.deepEqual(oDegreePr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		assert.ok(true, "Convert to linear");
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[1];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oRedPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Add empty base down script", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("_");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("(2+x)");
+		assert.ok(true, "Add '_(2+x)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		let oDegreePr = oDegree.Pr.GetRPr();
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.deepEqual(oDegreePr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		assert.ok(true, "Convert to linear");
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[1];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oRedPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+
+	QUnit.module("Styles - Scripts - Autocorrection");
+
+	QUnit.test("Add empty up script", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("^ ");
+		assert.ok(true, "Add '^ '");
+
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		let oDegreePr = oDegree.Pr.GetRPr();
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+
+		let strBase = oDegree.getBase().GetTextOfElement().GetText();
+		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+		assert.deepEqual(oDegreePr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[0];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oDegreePr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Add empty down script", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("_ ");
+		assert.ok(true, "Add '_ '");
+
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		let oDegreePr = oDegree.Pr.GetRPr();
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+
+		let strBase = oDegree.getBase().GetTextOfElement().GetText();
+		let strIterator = oDegree.getIterator().GetTextOfElement().GetText();
+		assert.deepEqual(oDegreePr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[0];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oDegreePr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Add empty base up script", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("^");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("2 ");
+
+		assert.ok(true, "Add '^2 '");
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		let oDegreePr = oDegree.Pr.GetRPr();
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.deepEqual(oDegreePr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[0];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oRedPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Add empty base down script", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("_");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("2 ");
+
+		assert.ok(true, "Add '_2 '");
+
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		let oDegreePr = oDegree.Pr.GetRPr();
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.deepEqual(oDegreePr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[0];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oRedPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Add empty base up script", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("^");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("(2+x) ");
+		assert.ok(true, "Add '^(2+x) '");
+
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		let oDegreePr = oDegree.Pr.GetRPr();
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.deepEqual(oDegreePr.Color, oRedPr.Color, "Color of fraction symbol");
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[1];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oRedPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Add empty base down script", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("_");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("(2+x) ");
+		assert.ok(true, "Add '_(2+x) '");
+
+		assert.ok(true, "Convert to professional");
+
+		let oDegree = r.Root.Content[1];
+		let oDegreePr = oDegree.Pr.GetRPr();
+		assert.ok(oDegree instanceof CDegree, "Created CDegree");
+		assert.deepEqual(oDegreePr.Color, oRedPr.Color, "Color of fraction symbol");
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[1];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oRedPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Add up down base script", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		ChangePrColor(black_color, r);
+		AddTextToRoot("(x*c)");
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("_");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("(x+b)");
+		let oBluePr = ChangePrColor(blue_color, r);
+		AddTextToRoot("^");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("(2+y)");
+
+		assert.ok(true, "Add '(x*c)_(x+b)^(2+y)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDegreeSubSup = r.Root.Content[1];
+		let oDegreePr = oDegreeSubSup.Pr.GetRPr();
+		let oLastContentPr = oDegreeSubSup.Content[2].CtrPrp;
+		assert.ok(oDegreeSubSup instanceof CDegreeSubSup, "Created CDegreeSubSup");
+		assert.deepEqual(oDegreePr.Color, oRedPr.Color, "Color of _ symbol");
+		assert.deepEqual(oLastContentPr.Color, oBluePr.Color, "Color of ^ symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFirstColor = Styles[3].style.Color;
+		let oSecondColor = Styles[9].style.Color;
+
+		assert.deepEqual(oRedPr.Color, oFirstColor, "Check linear color of _ symbol");
+		assert.deepEqual(oBluePr.Color, oSecondColor, "Check linear color of ^ symbol");
+	});
+
+	QUnit.module("Styles - Radical - Convert");
+
+	QUnit.test("Add empty radical", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("√");
+		assert.ok(true, "Add '√'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		let oRadicalPr = oRadical.Pr.GetRPr();
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+		assert.deepEqual(oRadicalPr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[0];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oRedPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Add radical", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("√");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("5");
+		assert.ok(true, "Add '√5 '");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		let oRadicalPr = oRadical.Pr.GetRPr();
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+		assert.deepEqual(oRadicalPr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[0];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oRedPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+
+	QUnit.module("Styles - Radical - Autocorrection");
+
+	QUnit.test("Add empty radical", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("√ ");
+		assert.ok(true, "Add '√ '");
+
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		let oRadicalPr = oRadical.Pr.GetRPr();
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+		assert.deepEqual(oRadicalPr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[0];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oRedPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+	QUnit.test("Add radical", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("√");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("5 ");
+		assert.ok(true, "Add '√5 '");
+
+		assert.ok(true, "Convert to professional");
+
+		let oRadical = r.Root.Content[1];
+		let oRadicalPr = oRadical.Pr.GetRPr();
+		assert.ok(oRadical instanceof CRadical, "Created CRadical");
+		assert.deepEqual(oRadicalPr.Color, oRedPr.Color, "Color of fraction symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[0];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oRedPr.Color, oColor, "Check linear color of fraction symbol");
+	});
+
+	QUnit.module("Styles - Nary - Convert");
+
+	QUnit.test("Add integral empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("∫");
+		assert.ok(true, "Add '∫'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		let oNaryPr = oNary.Pr.GetRPr();
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.deepEqual(oNaryPr.Color, oRedPr.Color, "Color of ∫ symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[0];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oRedPr.Color, oColor, "Check linear color of ∫ symbol");
+	});
+	QUnit.test("Add integral upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("∫");
+		let oBluePr = ChangePrColor(blue_color, r);
+		AddTextToRoot("^");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("(2+1)");
+		let yellowPr = ChangePrColor(yellow_color, r);
+		AddTextToRoot("_");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("(x+1)");
+
+		assert.ok(true, "Add '∫^(2+1)_(x+1)'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		let oNaryPr = oNary.Pr.GetRPr();
+		let oSecondContent = oNary.Content[0].CtrPrp;
+		let oThirdContent = oNary.Content[1].CtrPrp;
+
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.deepEqual(oNaryPr.Color, oRedPr.Color, "Color of ∫ symbol");
+		assert.deepEqual(oSecondContent.Color,yellowPr.Color , "Color of _ symbol");
+		assert.deepEqual(oThirdContent.Color,oBluePr.Color , "Color of ^ symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		assert.deepEqual(oRedPr.Color, Styles[0].style.Color, "Check linear color of ∫ symbol");
+		assert.deepEqual(yellowPr.Color, Styles[1].style.Color, "Check linear color of _ symbol");
+		assert.deepEqual(oBluePr.Color, Styles[7].style.Color, "Check linear color of ^ symbol");
+	});
+
+	QUnit.module("Styles - Nary - Autocorrection");
+
+	QUnit.test("Add integral empty", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("∫ ");
+		assert.ok(true, "Add '∫ '");
+
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		let oNaryPr = oNary.Pr.GetRPr();
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.deepEqual(oNaryPr.Color, oRedPr.Color, "Color of ∫ symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		let oFrac = Styles[0];
+		let oStyle = oFrac.style;
+		let oColor = oStyle.Color;
+
+		assert.deepEqual(oRedPr.Color, oColor, "Check linear color of ∫ symbol");
+	});
+	QUnit.test("Add integral upper lower block", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("∫");
+		let oBluePr = ChangePrColor(blue_color, r);
+		AddTextToRoot("^");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("(2+1)");
+		let yellowPr = ChangePrColor(yellow_color, r);
+		AddTextToRoot("_");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("(x+1) ");
+
+		assert.ok(true, "Add '∫^(2+1)_(x+1) '");
+
+		assert.ok(true, "Convert to professional");
+
+		let oNary = r.Root.Content[1];
+		let oNaryPr = oNary.Pr.GetRPr();
+		let oSecondContent = oNary.Content[0].CtrPrp;
+		let oThirdContent = oNary.Content[1].CtrPrp;
+
+		assert.ok(oNary instanceof CNary, "Created CNary");
+		assert.deepEqual(oNaryPr.Color, oRedPr.Color, "Color of ∫ symbol");
+		assert.deepEqual(oSecondContent.Color,yellowPr.Color , "Color of _ symbol");
+		assert.deepEqual(oThirdContent.Color,oBluePr.Color , "Color of ^ symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		assert.deepEqual(oRedPr.Color, Styles[0].style.Color, "Check linear color of ∫ symbol");
+		assert.deepEqual(yellowPr.Color, Styles[1].style.Color, "Check linear color of _ symbol");
+		assert.deepEqual(oBluePr.Color, Styles[7].style.Color, "Check linear color of ^ symbol");
+	});
+
+	QUnit.module("Styles - Brackets - Convert");
+
+	QUnit.test("Check bracket", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AddTextToRoot("(1+2)");
+		assert.ok(true, "Add '" + str + "'");
+
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oDelimiter = r.Root.Content[1];
+		assert.ok(oDelimiter instanceof CDelimiter, "Created CDelimiter");
+		let nCountOfColumns = oDelimiter.getColumnsCount();
+		assert.strictEqual(nCountOfColumns, num, "Check count of columns");
+
+		for (let i = 0; i < nCountOfColumns; i++)
+		{
+			let oCurrentContent = oDelimiter.getElementMathContent(i);
+			if (oCurrentContent)
+			{
+				let strCurrentContent = oCurrentContent.GetTextOfElement().GetText();
+				assert.strictEqual(strCurrentContent, arr[i], "Check " + i + " content of CDelimiter");
+			}
+		}
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to professional");
+		assert.strictEqual(r.GetText(), str, "Check linear content");
+	});
+
 })

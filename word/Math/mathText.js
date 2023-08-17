@@ -959,6 +959,13 @@ CMathText.prototype.IsNBSP = function()
     let strValue = String.fromCharCode(this.value);
     return AscMath.MathLiterals.space.SearchU(strValue);
 };
+CMathText.prototype.SetParent = function (oParent)
+{
+	if (!oParent)
+		return;
+
+	this.Parent = oParent;
+}
 ////
 CMathText.prototype.setCoeffTransform = function(sx, shx, shy, sy)
 {

@@ -1956,12 +1956,12 @@
 					}
 
 					let oNary = oContext.Add_NAry(lPr, null, null, null);
+
 					if (oTokens.third) {
-						UnicodeArgument(
+						ConvertTokens(
 							oTokens.third,
-							MathStructures.bracket_block,
 							oNary.getBase(),
-						)
+						);
 					}
 					let oBase = oNary.getBase();
 					oBase.setCtrPrp(oTokens.thirdStyle);
@@ -2279,7 +2279,7 @@
 					let arr = [null]
 					let oPr =
 						{
-							ctrPrp : oTokens.style,
+							ctrPrp : oTokens.style.startStyle,
 							column : oTokens.value.length > 0 ? oTokens.value.length : 1,
 							begChr : GetBracketCode(oTokens.left),
 							endChr : GetBracketCode(oTokens.right),
@@ -2301,10 +2301,17 @@
 								oBracket.getElementMathContent(intCount)
 							);
 
-							if (oTokens.m_styles[intCount - 1])
+							//Last content
+							if (intCount === oTokens.value.length - 1)
+							{
+								let oCon = oBracket.getElementMathContent(intCount);
+								oCon.setCtrPrp(oTokens.style.endStyle);
+							}
+
+							if (oTokens.style.middle && oTokens.style.middle[intCount - 1])
 							{
 								let oContent = oBracket.getElementMathContent(intCount - 1);
-								oContent.setCtrPrp(oTokens.m_styles[intCount - 1]);
+								oContent.setCtrPrp(oTokens.style.middle[intCount - 1]);
 							}
 						}
 					}
@@ -3944,6 +3951,7 @@
 		if (!isAllowAutoCorrect)
 			return false;
 
+
 		let oRuleLast 					= this.GetLast();
 		let oAbsoluteLastId 		= this.GetAbsoluteLast();
 		let oAbsolutePLastId	= this.GetAbsolutePreLast();
@@ -3955,6 +3963,7 @@
 		// 	this.oCMathContent.MoveCursorToEndPos();
 		// 	return true
 		// }
+
 
 		if (!oRuleLast && oFuncNamePos && oAbsoluteLastId === MathLiterals.space.id)
 		{
@@ -4019,7 +4028,7 @@
 	ProceedTokens.prototype.StartBracketAndClose = function ()
 	{
 		let oStartPos= this.Tokens.brackets.NoPair[0];
-		let str = CutContentFromEnd(this.oCMathContent, oStartPos, true).DelLastSpace();
+		let str = CutContentFromEnd(this.oCMathContent, oStartPos, false).DelLastSpace();
 		GetConvertContent(0, str, this.oCMathContent);
 	}
 
@@ -4039,7 +4048,7 @@
 
 		if (strClosePos === "┤" && strOpenPos === "├")
 		{
-			let str = CutContentFromEnd(this.oCMathContent, oStartPos, true).DelLastSpace();
+			let str = CutContentFromEnd(this.oCMathContent, oStartPos, false).DelLastSpace();
 			GetConvertContent(0, str, this.oCMathContent);
 		}
 	}
@@ -4048,7 +4057,7 @@
 	{
 		if ( this.Tokens.brackets.Pairs.length > 0)
 		{
-			let str = CutContentFromEnd(this.oCMathContent, this.Tokens.brackets.Pairs[0][1], true, true).DelLastSpace();
+			let str = CutContentFromEnd(this.oCMathContent, this.Tokens.brackets.Pairs[0][1], false, true).DelLastSpace();
 			if (str.GetText().split("_").length === 2 && str.GetText().split("^").length === 2)
 			{
 				return this.Tokens.brackets.Pairs.length > 0;
@@ -4359,7 +4368,6 @@
 	 */
 	ProceedTokens.prototype.BIFunctionProcessing = function(oLast)
 	{
-		debugger
 		let arrPreContent = this.GetContentBlockBefore(oLast);
 		let arrPostContent = this.GetContentBlockAfter(oLast);
 
@@ -4367,12 +4375,12 @@
 		{
 			let oStartPos 	= arrPreContent.start;
 			let oEndPos 	= arrPreContent.end;
-			let str 		= CutContentFromEnd(this.oCMathContent, oStartPos, true).DelLastSpace();
+			let str 		= CutContentFromEnd(this.oCMathContent, oStartPos, false).DelLastSpace();
 			GetConvertContent(0, str, this.oCMathContent);
 		}
 		else
 		{
-			let str 		= CutContentFromEnd(this.oCMathContent, oLast, true).DelLastSpace();
+			let str 		= CutContentFromEnd(this.oCMathContent, oLast, false).DelLastSpace();
 			GetConvertContent(0, str, this.oCMathContent);
 		}
 
@@ -4635,11 +4643,11 @@
 					{
 						//this.WrapExactElement(oPos);
 					}
-					else if (Wrap === "linear" && !oMath.IsBracket && oMath.GetLength() > 3)
+					else if (Wrap === "linear" && !oMath.IsBracket && oContent.GetCountForAutoProcessing() > 1)
 					{
 						this.WrapExactElement(oPos, "〖", "〗");
 					}
-					else if ((Wrap !== 'linear' && !oMath.IsBracket) || (oContent.Content.length === 1 && oContent.Content[0] instanceof ParaRun)) // Не любая скобка, оборачиваем т.к. контента > 1
+					else if (Wrap !== 'linear' && !oMath.IsBracket && oContent.GetCountForAutoProcessing() > 1) // Не любая скобка, оборачиваем т.к. контента > 1
 					{
 						this.WrapExactElement(oPos);
 					}
@@ -4862,7 +4870,14 @@
 		this.Positions = [];
 		this.arr = [];
 		this.nPos = 0;
-		return this.AddText(new AscMath.MathText(str));
+		if (str instanceof AscMath.MathText)
+		{
+			return this.AddText(str);
+		}
+		else
+		{
+			return this.AddText(new AscMath.MathText(str));
+		}
 	};
 	MathTextAndStyles.prototype.GetTextAndStyles = function()
 	{
@@ -4899,7 +4914,15 @@
 	{
 		for (let i = 0; i < newArr.length; i++)
 		{
-			oCMathContent.Add_TextInLastParaRun(newArr[i].text, undefined, newArr[i].style)
+			let oText = newArr[i].text;
+			let style = newArr[i].style;
+
+			if (oText instanceof MathText)
+			{
+				style = oText.style;
+				oText = oText.text;
+			}
+			oCMathContent.Add_TextInLastParaRun(oText, undefined, style)
 		}
 	}
 	MathTextAndStyles.prototype.DelLastSpace = function ()

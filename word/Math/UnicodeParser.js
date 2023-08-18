@@ -128,14 +128,14 @@
     };
     CUnicodeParser.prototype.WriteDataAsCharLiteral = function (arrExp)
     {
-        if (arrExp.length === 1 && arrExp[arrExp.length - 1] !== undefined && arrExp[arrExp.length - 1].type === Literals.char.id)
-        {
-            arrExp[arrExp.length - 1].value += this.EatToken(this.oLookahead.class).data;
-        }
-        else
-        {
-            arrExp.push({type: Literals.char.id, value: this.EatToken(this.oLookahead.class).data});
-        }
+		let newData = {
+			type: Literals.char.id,
+			value: this.oLookahead.data,
+			style: this.oLookahead.style
+		};
+
+        arrExp.push(newData);
+        this.EatToken(this.oLookahead.class);
     };
     CUnicodeParser.prototype.GetSpaceLiteral = function ()
     {
@@ -262,6 +262,8 @@
 
         if (this.oLookahead.data === "├")
         {
+			this.strBreakSymbol.push("|", "‖");
+
             startStyle = this.oLookahead.style;
             this.EatToken(this.oLookahead.class);
 
@@ -286,6 +288,7 @@
 
             if (this.oLookahead.class === Literals.lrBrackets.id || this.oLookahead.class === Literals.rBrackets.id || this.oLookahead.class === Literals.lBrackets.id)
             {
+	            endStyle = this.oLookahead.style;
                 strCloseLiteral = this.EatBracket();
             }
             else
@@ -302,6 +305,7 @@
                 style: {
                     startStyle : startStyle,
                     endStyle : endStyle,
+	                middle: [],
                 }
             };
         }
@@ -593,6 +597,11 @@
 					left: open,
 					right: close,
 					counter: 1,
+					style: {
+						startStyle : undefined,
+						endStyle : undefined,
+						middle: undefined,
+					}
 				}
 			}
         }
@@ -761,8 +770,11 @@
                 left: strOpen,
                 right: strClose,
                 counter: counter,
-                style: startStyle,
-	            m_styles: middle_styles,
+	            style: {
+		            startStyle : startStyle,
+		            endStyle : endStyle,
+		            middle: middle_styles,
+	            },
             };
         }
         else if (this.oLookahead.data === "├")

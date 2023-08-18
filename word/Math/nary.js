@@ -902,10 +902,11 @@ CNary.prototype.GetTextOfElement = function(oMathText)
 
 		if (oBase)
 		{
+			if (oBase.GetCountForAutoProcessing() > 1)
+				oMathText.AddText(new AscMath.MathText("▒", oBase.CtrPrp));
+
 			oLastPos = oMathText.Add(oBase, true, "linear");
 			let oBaseText = oMathText.GetExact(oLastPos);
-			if (isScript && oBaseText.GetLength() > 0 && oBaseText.IsHasText())
-                oMathText.AddBefore(oLastPos, new AscMath.MathText("▒", oBase.CtrPrp));
 		}
 	}
 };

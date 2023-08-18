@@ -4066,14 +4066,12 @@ CDelimiter.prototype.private_GetRightOperator = function(bHide)
 };
 CDelimiter.prototype.GetTextOfElement = function(oMathText)
 {
-	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+	if (!(oMathText instanceof AscMath.MathTextAndStyles))
 		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
 	oMathText.IsBracket = true;
 
 	let strSeparatorSymbol	= oMathText.IsLaTeX() ? "\\mid " : "∣";
-	let isClose = false;
-
 	let strStartSymbol = this.Pr.begChr === -1 ? "" : String.fromCharCode((this.begOper.code || this.Pr.begChr) || 40);
 	let strEndSymbol = this.Pr.endChr === -1 ? "" : String.fromCharCode((this.endOper.code || this.Pr.endChr) || 41);
 
@@ -4097,7 +4095,6 @@ CDelimiter.prototype.GetTextOfElement = function(oMathText)
 		else
 		{
 			strStartText = "├" + strStartSymbol;
-			isClose = true;
 		}
 
 		let oOpenText = new AscMath.MathText(strStartText, this.Pr.GetRPr());
@@ -4121,9 +4118,8 @@ CDelimiter.prototype.GetTextOfElement = function(oMathText)
 	else
 	{
 		let strCloseSymbol;
-		let isCloseToken = AscMath.MathLiterals.lBrackets.SearchU(strEndSymbol);
-
-		if (isCloseToken || isClose)
+		let isCloseToken = AscMath.MathLiterals.rBrackets.SearchU(strEndSymbol);
+		if ((!isCloseToken || isCloseToken && !(oMathText.arr[oMathText.arr.length - 1] instanceof AscMath.MathTextAndStyles)) && !AscMath.MathLiterals.lrBrackets.SearchU(strStartSymbol))
 		{
 			strCloseSymbol = "┤" + strEndSymbol;
 		}
@@ -4139,7 +4135,8 @@ CDelimiter.prototype.GetTextOfElement = function(oMathText)
 			}
 		}
 
-		let oText = new AscMath.MathText(strCloseSymbol, this.Pr.GetRPr());
+		let oLastConPr = this.Content[this.Content.length - 1].CtrPrp;
+		let oText = new AscMath.MathText(strCloseSymbol, oLastConPr);
 		oMathText.AddText(oText, true);
 	}
 

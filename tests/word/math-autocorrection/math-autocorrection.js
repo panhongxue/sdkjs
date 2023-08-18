@@ -4399,8 +4399,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∫5");
-		assert.ok(true, "Add '∫5'");
+		AddTextToRoot("∫▒5");
+		assert.ok(true, "Add '∫▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -4422,15 +4422,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∫5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∫▒5", "Check linear content");
 	});
 	QUnit.test("Add integral with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∫(5+1)");
-		assert.ok(true, "Add '∫(5+1)'");
+		AddTextToRoot("∫▒(5+1)");
+		assert.ok(true, "Add '∫▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -4446,13 +4446,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∫(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∫▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add iintegral empty", function (assert)
@@ -4670,8 +4670,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∬5");
-		assert.ok(true, "Add '∬5'");
+		AddTextToRoot("∬▒5");
+		assert.ok(true, "Add '∬▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -4693,15 +4693,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∬5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∬▒5", "Check linear content");
 	});
 	QUnit.test("Add iintegral with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∬(5+1)");
-		assert.ok(true, "Add '∬(5+1)'");
+		AddTextToRoot("∬▒(5+1)");
+		assert.ok(true, "Add '∬▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -4717,13 +4717,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∬(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∬▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add iiintegral empty", function (assert)
@@ -4941,8 +4941,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∭5");
-		assert.ok(true, "Add '∭5'");
+		AddTextToRoot("∭▒5");
+		assert.ok(true, "Add '∭▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -4964,15 +4964,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∭5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∭▒5", "Check linear content");
 	});
 	QUnit.test("Add iiintegral with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∭(5+1)");
-		assert.ok(true, "Add '∭(5+1)'");
+		AddTextToRoot("∭▒(5+1)");
+		assert.ok(true, "Add '∭▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -4988,13 +4988,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∭(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∭▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add iiiintegral empty", function (assert)
@@ -5212,8 +5212,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨌5");
-		assert.ok(true, "Add '⨌5'");
+		AddTextToRoot("⨌▒5");
+		assert.ok(true, "Add '⨌▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -5235,15 +5235,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨌5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨌▒5", "Check linear content");
 	});
 	QUnit.test("Add iiiintegral with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨌(5+1)");
-		assert.ok(true, "Add '⨌(5+1)'");
+		AddTextToRoot("⨌▒(5+1)");
+		assert.ok(true, "Add '⨌▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -5259,13 +5259,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨌(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨌▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add oint empty", function (assert)
@@ -5483,8 +5483,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∮5");
-		assert.ok(true, "Add '∮5'");
+		AddTextToRoot("∮▒5");
+		assert.ok(true, "Add '∮▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -5506,15 +5506,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∮5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∮▒5", "Check linear content");
 	});
 	QUnit.test("Add oint with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∮(5+1)");
-		assert.ok(true, "Add '∮(5+1)'");
+		AddTextToRoot("∮▒(5+1)");
+		assert.ok(true, "Add '∮▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -5530,13 +5530,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∮(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∮▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add oiint empty", function (assert)
@@ -5754,8 +5754,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∯5");
-		assert.ok(true, "Add '∯5'");
+		AddTextToRoot("∯▒5");
+		assert.ok(true, "Add '∯▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -5777,15 +5777,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∯5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∯▒5", "Check linear content");
 	});
 	QUnit.test("Add oiint with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∯(5+1)");
-		assert.ok(true, "Add '∯(5+1)'");
+		AddTextToRoot("∯▒(5+1)");
+		assert.ok(true, "Add '∯▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -5801,13 +5801,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∯(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∯▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add oiiint empty", function (assert)
@@ -6025,8 +6025,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∰5");
-		assert.ok(true, "Add '∰5'");
+		AddTextToRoot("∰▒5");
+		assert.ok(true, "Add '∰▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -6048,15 +6048,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∰5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∰▒5", "Check linear content");
 	});
 	QUnit.test("Add oiiint with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∰(5+1)");
-		assert.ok(true, "Add '∰(5+1)'");
+		AddTextToRoot("∰▒(5+1)");
+		assert.ok(true, "Add '∰▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -6072,13 +6072,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∰(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∰▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add prod empty", function (assert)
@@ -6296,8 +6296,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∏5");
-		assert.ok(true, "Add '∏5'");
+		AddTextToRoot("∏▒5");
+		assert.ok(true, "Add '∏▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -6319,15 +6319,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∏5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∏▒5", "Check linear content");
 	});
 	QUnit.test("Add prod with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∏(5+1)");
-		assert.ok(true, "Add '∏(5+1)'");
+		AddTextToRoot("∏▒(5+1)");
+		assert.ok(true, "Add '∏▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -6343,13 +6343,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∏(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∏▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add sum empty", function (assert)
@@ -6567,8 +6567,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∑5");
-		assert.ok(true, "Add '∑5'");
+		AddTextToRoot("∑▒5");
+		assert.ok(true, "Add '∑▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -6590,15 +6590,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∑5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∑▒5", "Check linear content");
 	});
 	QUnit.test("Add sum with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∑(5+1)");
-		assert.ok(true, "Add '∑(5+1)'");
+		AddTextToRoot("∑▒(5+1)");
+		assert.ok(true, "Add '∑▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -6614,13 +6614,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∑(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∑▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add coint empty", function (assert)
@@ -6838,8 +6838,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∲5");
-		assert.ok(true, "Add '∲5'");
+		AddTextToRoot("∲▒5");
+		assert.ok(true, "Add '∲▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -6861,15 +6861,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∲5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∲▒5", "Check linear content");
 	});
 	QUnit.test("Add coint with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∲(5+1)");
-		assert.ok(true, "Add '∲(5+1)'");
+		AddTextToRoot("∲▒(5+1)");
+		assert.ok(true, "Add '∲▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -6885,13 +6885,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∲(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∲▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add amalg empty", function (assert)
@@ -7109,8 +7109,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∐5");
-		assert.ok(true, "Add '∐5'");
+		AddTextToRoot("∐▒5");
+		assert.ok(true, "Add '∐▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -7132,15 +7132,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∐5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∐▒5", "Check linear content");
 	});
 	QUnit.test("Add amalg with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∐(5+1)");
-		assert.ok(true, "Add '∐(5+1)'");
+		AddTextToRoot("∐▒(5+1)");
+		assert.ok(true, "Add '∐▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -7156,13 +7156,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∐(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∐▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add aoint empty", function (assert)
@@ -7380,8 +7380,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∳5");
-		assert.ok(true, "Add '∳5'");
+		AddTextToRoot("∳▒5");
+		assert.ok(true, "Add '∳▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -7403,15 +7403,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∳5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∳▒5", "Check linear content");
 	});
 	QUnit.test("Add aoint with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∳(5+1)");
-		assert.ok(true, "Add '∳(5+1)'");
+		AddTextToRoot("∳▒(5+1)");
+		assert.ok(true, "Add '∳▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -7427,13 +7427,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∳(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∳▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add bigcap empty ", function (assert)
@@ -7651,8 +7651,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⋂5");
-		assert.ok(true, "Add '⋂5'");
+		AddTextToRoot("⋂▒5");
+		assert.ok(true, "Add '⋂▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -7674,15 +7674,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⋂5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⋂▒5", "Check linear content");
 	});
 	QUnit.test("Add bigcap with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⋂(5+1)");
-		assert.ok(true, "Add '⋂(5+1)'");
+		AddTextToRoot("⋂▒(5+1)");
+		assert.ok(true, "Add '⋂▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -7698,13 +7698,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⋂(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⋂▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add bigcup empty ", function (assert)
@@ -7922,8 +7922,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⋃5");
-		assert.ok(true, "Add '⋃5'");
+		AddTextToRoot("⋃▒5");
+		assert.ok(true, "Add '⋃▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -7945,15 +7945,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⋃5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⋃▒5", "Check linear content");
 	});
 	QUnit.test("Add bigcup with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⋃(5+1)");
-		assert.ok(true, "Add '⋃(5+1)'");
+		AddTextToRoot("⋃▒(5+1)");
+		assert.ok(true, "Add '⋃▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -7969,13 +7969,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⋃(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⋃▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add bigodot empty ", function (assert)
@@ -8193,8 +8193,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨀5");
-		assert.ok(true, "Add '⨀5'");
+		AddTextToRoot("⨀▒5");
+		assert.ok(true, "Add '⨀▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -8216,15 +8216,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨀5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨀▒5", "Check linear content");
 	});
 	QUnit.test("Add bigodot with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨀(5+1)");
-		assert.ok(true, "Add '⨀(5+1)'");
+		AddTextToRoot("⨀▒(5+1)");
+		assert.ok(true, "Add '⨀▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -8240,13 +8240,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨀(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨀▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add bigoplus empty ", function (assert)
@@ -8464,8 +8464,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨁5");
-		assert.ok(true, "Add '⨁5'");
+		AddTextToRoot("⨁▒5");
+		assert.ok(true, "Add '⨁▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -8487,15 +8487,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨁5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨁▒5", "Check linear content");
 	});
 	QUnit.test("Add bigoplus with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨁(5+1)");
-		assert.ok(true, "Add '⨁(5+1)'");
+		AddTextToRoot("⨁▒(5+1)");
+		assert.ok(true, "Add '⨁▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -8511,13 +8511,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨁(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨁▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add bigotimes empty ", function (assert)
@@ -8735,8 +8735,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨂5");
-		assert.ok(true, "Add '⨂5'");
+		AddTextToRoot("⨂▒5");
+		assert.ok(true, "Add '⨂▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -8758,15 +8758,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨂5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨂▒5", "Check linear content");
 	});
 	QUnit.test("Add bigotimes with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨂(5+1)");
-		assert.ok(true, "Add '⨂(5+1)'");
+		AddTextToRoot("⨂▒(5+1)");
+		assert.ok(true, "Add '⨂▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -8782,13 +8782,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨂(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨂▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add bigsqcup empty ", function (assert)
@@ -9006,8 +9006,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨆5");
-		assert.ok(true, "Add '⨆5'");
+		AddTextToRoot("⨆▒5");
+		assert.ok(true, "Add '⨆▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -9029,15 +9029,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨆5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨆▒5", "Check linear content");
 	});
 	QUnit.test("Add bigsqcup with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨆(5+1)");
-		assert.ok(true, "Add '⨆(5+1)'");
+		AddTextToRoot("⨆▒(5+1)");
+		assert.ok(true, "Add '⨆▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -9053,13 +9053,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨆(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨆▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add biguplus empty ", function (assert)
@@ -9277,8 +9277,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨄5");
-		assert.ok(true, "Add '⨄5'");
+		AddTextToRoot("⨄▒5");
+		assert.ok(true, "Add '⨄▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -9300,15 +9300,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨄5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨄▒5", "Check linear content");
 	});
 	QUnit.test("Add biguplus with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨄(5+1)");
-		assert.ok(true, "Add '⨄(5+1)'");
+		AddTextToRoot("⨄▒(5+1)");
+		assert.ok(true, "Add '⨄▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -9324,13 +9324,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨄(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨄▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add bigvee empty ", function (assert)
@@ -9548,8 +9548,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⋁5");
-		assert.ok(true, "Add '⋁5'");
+		AddTextToRoot("⋁▒5");
+		assert.ok(true, "Add '⋁▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -9571,15 +9571,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⋁5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⋁▒5", "Check linear content");
 	});
 	QUnit.test("Add bigvee with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⋁(5+1)");
-		assert.ok(true, "Add '⋁(5+1)'");
+		AddTextToRoot("⋁▒(5+1)");
+		assert.ok(true, "Add '⋁▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -9595,13 +9595,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⋁(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⋁▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add bigwedge empty ", function (assert)
@@ -9819,8 +9819,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⋀5");
-		assert.ok(true, "Add '⋀5'");
+		AddTextToRoot("⋀▒5");
+		assert.ok(true, "Add '⋀▒5'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -9842,15 +9842,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⋀5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⋀▒5", "Check linear content");
 	});
 	QUnit.test("Add bigwedge with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⋀(5+1)");
-		assert.ok(true, "Add '⋀(5+1)'");
+		AddTextToRoot("⋀▒(5+1)");
+		assert.ok(true, "Add '⋀▒(5+1)'");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -9866,13 +9866,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⋀(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⋀▒(5+1)", "Check linear content");
 	});
 
 	QUnit.module("Nary - Autocorrection");
@@ -10071,8 +10071,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∫5 ");
-		assert.ok(true, "Add '∫5 '");
+		AddTextToRoot("∫▒5 ");
+		assert.ok(true, "Add '∫▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -10091,15 +10091,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∫5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∫▒5", "Check linear content");
 	});
 	QUnit.test("Add integral with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∫(5+1) ");
-		assert.ok(true, "Add '∫(5+1) '");
+		AddTextToRoot("∫▒(5+1) ");
+		assert.ok(true, "Add '∫▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -10112,13 +10112,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∫(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∫▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add iintegral empty", function (assert)
@@ -10315,8 +10315,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∬5 ");
-		assert.ok(true, "Add '∬5 '");
+		AddTextToRoot("∬▒5 ");
+		assert.ok(true, "Add '∬▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -10335,15 +10335,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∬5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∬▒5", "Check linear content");
 	});
 	QUnit.test("Add iintegral with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∬(5+1) ");
-		assert.ok(true, "Add '∬(5+1) '");
+		AddTextToRoot("∬▒(5+1) ");
+		assert.ok(true, "Add '∬▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -10356,13 +10356,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∬(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∬▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add iiintegral empty", function (assert)
@@ -10559,8 +10559,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∭5 ");
-		assert.ok(true, "Add '∭5 '");
+		AddTextToRoot("∭▒5 ");
+		assert.ok(true, "Add '∭▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -10579,15 +10579,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∭5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∭▒5", "Check linear content");
 	});
 	QUnit.test("Add iiintegral with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∭(5+1) ");
-		assert.ok(true, "Add '∭(5+1) '");
+		AddTextToRoot("∭▒(5+1) ");
+		assert.ok(true, "Add '∭▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -10600,13 +10600,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∭(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∭▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add iiiintegral empty", function (assert)
@@ -10803,8 +10803,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨌5 ");
-		assert.ok(true, "Add '⨌5 '");
+		AddTextToRoot("⨌▒5 ");
+		assert.ok(true, "Add '⨌▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -10823,15 +10823,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨌5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨌▒5", "Check linear content");
 	});
 	QUnit.test("Add iiiintegral with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨌(5+1) ");
-		assert.ok(true, "Add '⨌(5+1) '");
+		AddTextToRoot("⨌▒(5+1) ");
+		assert.ok(true, "Add '⨌▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -10844,13 +10844,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨌(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨌▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add oint empty", function (assert)
@@ -11047,8 +11047,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∮5 ");
-		assert.ok(true, "Add '∮5 '");
+		AddTextToRoot("∮▒5 ");
+		assert.ok(true, "Add '∮▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -11067,15 +11067,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∮5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∮▒5", "Check linear content");
 	});
 	QUnit.test("Add oint with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∮(5+1) ");
-		assert.ok(true, "Add '∮(5+1) '");
+		AddTextToRoot("∮▒(5+1) ");
+		assert.ok(true, "Add '∮▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -11088,13 +11088,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∮(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∮▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add oiint empty", function (assert)
@@ -11291,8 +11291,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∯5 ");
-		assert.ok(true, "Add '∯5 '");
+		AddTextToRoot("∯▒5 ");
+		assert.ok(true, "Add '∯▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -11311,15 +11311,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∯5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∯▒5", "Check linear content");
 	});
 	QUnit.test("Add oiint with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∯(5+1) ");
-		assert.ok(true, "Add '∯(5+1) '");
+		AddTextToRoot("∯▒(5+1) ");
+		assert.ok(true, "Add '∯▒(5+1) '");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
@@ -11335,13 +11335,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∯(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∯▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add oiiint empty", function (assert)
@@ -11538,8 +11538,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∰5 ");
-		assert.ok(true, "Add '∰5 '");
+		AddTextToRoot("∰▒5 ");
+		assert.ok(true, "Add '∰▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -11558,15 +11558,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∰5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∰▒5", "Check linear content");
 	});
 	QUnit.test("Add oiiint with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∰(5+1) ");
-		assert.ok(true, "Add '∰(5+1) '");
+		AddTextToRoot("∰▒(5+1) ");
+		assert.ok(true, "Add '∰▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -11579,13 +11579,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∰(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∰▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add prod empty", function (assert)
@@ -11782,8 +11782,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∏5 ");
-		assert.ok(true, "Add '∏5 '");
+		AddTextToRoot("∏▒5 ");
+		assert.ok(true, "Add '∏▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -11802,15 +11802,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∏5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∏▒5", "Check linear content");
 	});
 	QUnit.test("Add prod with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∏(5+1) ");
-		assert.ok(true, "Add '∏(5+1) '");
+		AddTextToRoot("∏▒(5+1) ");
+		assert.ok(true, "Add '∏▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -11823,13 +11823,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∏(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∏▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add sum empty", function (assert)
@@ -12026,8 +12026,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∑5 ");
-		assert.ok(true, "Add '∑5 '");
+		AddTextToRoot("∑▒5 ");
+		assert.ok(true, "Add '∑▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -12046,15 +12046,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∑5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∑▒5", "Check linear content");
 	});
 	QUnit.test("Add sum with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∑(5+1) ");
-		assert.ok(true, "Add '∑(5+1) '");
+		AddTextToRoot("∑▒(5+1) ");
+		assert.ok(true, "Add '∑▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -12067,13 +12067,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∑(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∑▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add coint empty", function (assert)
@@ -12270,8 +12270,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∲5 ");
-		assert.ok(true, "Add '∲5 '");
+		AddTextToRoot("∲▒5 ");
+		assert.ok(true, "Add '∲▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -12290,15 +12290,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∲5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∲▒5", "Check linear content");
 	});
 	QUnit.test("Add coint with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∲(5+1) ");
-		assert.ok(true, "Add '∲(5+1) '");
+		AddTextToRoot("∲▒(5+1) ");
+		assert.ok(true, "Add '∲▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -12311,13 +12311,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∲(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∲▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add amalg empty", function (assert)
@@ -12514,8 +12514,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∐5 ");
-		assert.ok(true, "Add '∐5 '");
+		AddTextToRoot("∐▒5 ");
+		assert.ok(true, "Add '∐▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -12534,15 +12534,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∐5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∐▒5", "Check linear content");
 	});
 	QUnit.test("Add amalg with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∐(5+1) ");
-		assert.ok(true, "Add '∐(5+1) '");
+		AddTextToRoot("∐▒(5+1) ");
+		assert.ok(true, "Add '∐▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -12555,13 +12555,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∐(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∐▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add aoint empty", function (assert)
@@ -12758,8 +12758,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∳5 ");
-		assert.ok(true, "Add '∳5 '");
+		AddTextToRoot("∳▒5 ");
+		assert.ok(true, "Add '∳▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -12778,15 +12778,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∳5", "Check linear content");
+		assert.strictEqual(r.GetText(), "∳▒5", "Check linear content");
 	});
 	QUnit.test("Add aoint with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("∳(5+1) ");
-		assert.ok(true, "Add '∳(5+1) '");
+		AddTextToRoot("∳▒(5+1) ");
+		assert.ok(true, "Add '∳▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -12799,13 +12799,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "∳(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "∳▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add bigcap empty ", function (assert)
@@ -13002,8 +13002,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⋂5 ");
-		assert.ok(true, "Add '⋂5 '");
+		AddTextToRoot("⋂▒5 ");
+		assert.ok(true, "Add '⋂▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -13022,15 +13022,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⋂5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⋂▒5", "Check linear content");
 	});
 	QUnit.test("Add bigcap with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⋂(5+1) ");
-		assert.ok(true, "Add '⋂(5+1) '");
+		AddTextToRoot("⋂▒(5+1) ");
+		assert.ok(true, "Add '⋂▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -13043,13 +13043,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⋂(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⋂▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add bigcup empty ", function (assert)
@@ -13246,8 +13246,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⋃5 ");
-		assert.ok(true, "Add '⋃5 '");
+		AddTextToRoot("⋃▒5 ");
+		assert.ok(true, "Add '⋃▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -13266,15 +13266,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⋃5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⋃▒5", "Check linear content");
 	});
 	QUnit.test("Add bigcup with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⋃(5+1) ");
-		assert.ok(true, "Add '⋃(5+1) '");
+		AddTextToRoot("⋃▒(5+1) ");
+		assert.ok(true, "Add '⋃▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -13287,13 +13287,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⋃(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⋃▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add bigodot empty ", function (assert)
@@ -13490,8 +13490,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨀5 ");
-		assert.ok(true, "Add '⨀5 '");
+		AddTextToRoot("⨀▒5 ");
+		assert.ok(true, "Add '⨀▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -13510,15 +13510,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨀5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨀▒5", "Check linear content");
 	});
 	QUnit.test("Add bigodot with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨀(5+1) ");
-		assert.ok(true, "Add '⨀(5+1) '");
+		AddTextToRoot("⨀▒(5+1) ");
+		assert.ok(true, "Add '⨀▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -13531,13 +13531,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨀(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨀▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add bigoplus empty ", function (assert)
@@ -13734,8 +13734,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨁5 ");
-		assert.ok(true, "Add '⨁5 '");
+		AddTextToRoot("⨁▒5 ");
+		assert.ok(true, "Add '⨁▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -13754,15 +13754,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨁5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨁▒5", "Check linear content");
 	});
 	QUnit.test("Add bigoplus with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨁(5+1) ");
-		assert.ok(true, "Add '⨁(5+1) '");
+		AddTextToRoot("⨁▒(5+1) ");
+		assert.ok(true, "Add '⨁▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -13775,13 +13775,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨁(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨁▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add bigotimes empty ", function (assert)
@@ -13978,8 +13978,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨂5 ");
-		assert.ok(true, "Add '⨂5 '");
+		AddTextToRoot("⨂▒5 ");
+		assert.ok(true, "Add '⨂▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -13998,15 +13998,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨂5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨂▒5", "Check linear content");
 	});
 	QUnit.test("Add bigotimes with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨂(5+1) ");
-		assert.ok(true, "Add '⨂(5+1) '");
+		AddTextToRoot("⨂▒(5+1) ");
+		assert.ok(true, "Add '⨂▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -14019,13 +14019,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨂(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨂▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add bigsqcup empty ", function (assert)
@@ -14225,8 +14225,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨆5 ");
-		assert.ok(true, "Add '⨆5 '");
+		AddTextToRoot("⨆▒5 ");
+		assert.ok(true, "Add '⨆▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -14245,15 +14245,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨆5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨆▒5", "Check linear content");
 	});
 	QUnit.test("Add bigsqcup with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨆(5+1) ");
-		assert.ok(true, "Add '⨆(5+1) '");
+		AddTextToRoot("⨆▒(5+1) ");
+		assert.ok(true, "Add '⨆▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -14266,13 +14266,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨆(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨆▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add biguplus empty ", function (assert)
@@ -14469,8 +14469,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨄5 ");
-		assert.ok(true, "Add '⨄5 '");
+		AddTextToRoot("⨄▒5 ");
+		assert.ok(true, "Add '⨄▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -14489,15 +14489,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨄5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨄▒5", "Check linear content");
 	});
 	QUnit.test("Add biguplus with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⨄(5+1) ");
-		assert.ok(true, "Add '⨄(5+1) '");
+		AddTextToRoot("⨄▒(5+1) ");
+		assert.ok(true, "Add '⨄▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -14510,13 +14510,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⨄(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⨄▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add bigvee empty ", function (assert)
@@ -14713,8 +14713,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⋁5 ");
-		assert.ok(true, "Add '⋁5 '");
+		AddTextToRoot("⋁▒5 ");
+		assert.ok(true, "Add '⋁▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -14733,15 +14733,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⋁5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⋁▒5", "Check linear content");
 	});
 	QUnit.test("Add bigvee with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⋁(5+1) ");
-		assert.ok(true, "Add '⋁(5+1) '");
+		AddTextToRoot("⋁▒(5+1) ");
+		assert.ok(true, "Add '⋁▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -14754,13 +14754,13 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⋁(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⋁▒(5+1)", "Check linear content");
 	});
 
 	QUnit.test("Add bigwedge empty ", function (assert)
@@ -14957,8 +14957,8 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⋀5 ");
-		assert.ok(true, "Add '⋀5 '");
+		AddTextToRoot("⋀▒5 ");
+		assert.ok(true, "Add '⋀▒5 '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -14977,15 +14977,15 @@ $(function () {
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⋀5", "Check linear content");
+		assert.strictEqual(r.GetText(), "⋀▒5", "Check linear content");
 	});
 	QUnit.test("Add bigwedge with block base", function (assert)
 	{
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("⋀(5+1) ");
-		assert.ok(true, "Add '⋀(5+1) '");
+		AddTextToRoot("⋀▒(5+1) ");
+		assert.ok(true, "Add '⋀▒(5+1) '");
 
 		let oNary = r.Root.Content[1];
 		assert.ok(oNary instanceof CNary, "Created CNary");
@@ -14998,17 +14998,17 @@ $(function () {
 		let strLower = oLower ? oLower.GetTextOfElement().GetText() : "";
 		let strUpper =  oUpper? oUpper.GetTextOfElement().GetText() : "";
 
-		assert.strictEqual(strBase, "5+1", "Check content of nary base");
+		assert.strictEqual(strBase, "(5+1)", "Check content of nary base");
 		assert.strictEqual(strLower, "", "Check content of nary lower");
 		assert.strictEqual(strUpper, "", "Check content of nary upper");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "⋀(5+1)", "Check linear content");
+		assert.strictEqual(r.GetText(), "⋀▒(5+1)", "Check linear content");
 	});
 
 
-	function BracketEmptyCheck(str, num, arr, isAutoCorrect)
+	function BracketEmptyCheck(str, num, arr, isAutoCorrect, strToCheck)
 	{
 		QUnit.test("Check bracket "+str, function (assert)
 		{
@@ -15040,7 +15040,7 @@ $(function () {
 
 			r.ConvertView(true, 0);
 			assert.ok(true, "Convert to professional");
-			assert.strictEqual(r.GetText(), str, "Check linear content");
+			assert.strictEqual(r.GetText(), strToCheck ? strToCheck : str, "Check linear content");
 		});
 	}
 
@@ -15055,7 +15055,7 @@ $(function () {
 	BracketEmptyCheck("||", 1, [""]);
 	BracketEmptyCheck("‖‖", 1, [""]);
 	BracketEmptyCheck("[┤[", 1, [""]);
-	BracketEmptyCheck("├]┤]", 1, [""]);
+	BracketEmptyCheck("├]]", 1, [""]);
 	BracketEmptyCheck("├]┤[", 1, [""]);
 	BracketEmptyCheck("⟦⟧", 1, [""]);
 
@@ -15068,7 +15068,7 @@ $(function () {
 	BracketEmptyCheck("|x|", 1, ["x"]);
 	BracketEmptyCheck("‖x‖", 1, ["x"]);
 	BracketEmptyCheck("[x┤[", 1, ["x"]);
-	BracketEmptyCheck("├]x┤]", 1, ["x"]);
+	BracketEmptyCheck("├]x]", 1, ["x"]);
 	BracketEmptyCheck("├]x┤[", 1, ["x"]);
 	BracketEmptyCheck("⟦x⟧", 1, ["x"]);
 
@@ -15081,7 +15081,7 @@ $(function () {
 	BracketEmptyCheck("|x+1|", 1, ["x+1"]);
 	BracketEmptyCheck("‖x+1‖", 1, ["x+1"]);
 	BracketEmptyCheck("[x+1┤[", 1, ["x+1"]);
-	BracketEmptyCheck("├]x+1┤]", 1, ["x+1"]);
+	BracketEmptyCheck("├]x+1]", 1, ["x+1"]);
 	BracketEmptyCheck("├]x+1┤[", 1, ["x+1"]);
 	BracketEmptyCheck("⟦x+1⟧", 1, ["x+1"]);
 
@@ -15094,7 +15094,7 @@ $(function () {
 	BracketEmptyCheck("|(x+1)|", 1, ["(x+1)"]);
 	BracketEmptyCheck("‖(x+1)‖", 1, ["(x+1)"]);
 	BracketEmptyCheck("[(x+1)┤[", 1, ["(x+1)"]);
-	BracketEmptyCheck("├](x+1)┤]", 1, ["(x+1)"]);
+	BracketEmptyCheck("├](x+1)]", 1, ["(x+1)"]);
 	BracketEmptyCheck("├](x+1)┤[", 1, ["(x+1)"]);
 	BracketEmptyCheck("⟦(x+1)⟧", 1, ["(x+1)"]);
 
@@ -15107,7 +15107,7 @@ $(function () {
 	BracketEmptyCheck("|y∣(x+1)|", 2, [ "y", "(x+1)"]);
 	BracketEmptyCheck("‖y∣(x+1)‖", 2, [ "y", "(x+1)"]);
 	BracketEmptyCheck("[y∣(x+1)┤[", 2, [ "y", "(x+1)"]);
-	BracketEmptyCheck("├]y∣(x+1)┤]", 2, [ "y", "(x+1)"]);
+	BracketEmptyCheck("├]y∣(x+1)]", 2, [ "y", "(x+1)"]);
 	BracketEmptyCheck("├]y∣(x+1)┤[", 2, [ "y", "(x+1)"]);
 	BracketEmptyCheck("⟦y∣(x+1)⟧", 2, [ "y", "(x+1)"]);
 
@@ -15120,7 +15120,7 @@ $(function () {
 	BracketEmptyCheck("|∣(x+1)|", 2, [ "", "(x+1)"]);
 	BracketEmptyCheck("‖∣(x+1)‖", 2, [ "", "(x+1)"]);
 	BracketEmptyCheck("[∣(x+1)┤[", 2, [ "", "(x+1)"]);
-	BracketEmptyCheck("├]∣(x+1)┤]", 2, [ "", "(x+1)"]);
+	BracketEmptyCheck("├]∣(x+1)]", 2, [ "", "(x+1)"]);
 	BracketEmptyCheck("├]∣(x+1)┤[", 2, [ "", "(x+1)"]);
 	BracketEmptyCheck("⟦∣(x+1)⟧", 2, [ "", "(x+1)"]);
 
@@ -15133,7 +15133,7 @@ $(function () {
 	BracketEmptyCheck("|(x+1)∣|", 2, [ "(x+1)", ""]);
 	BracketEmptyCheck("‖(x+1)∣‖", 2, [ "(x+1)", ""]);
 	BracketEmptyCheck("[(x+1)∣┤[", 2, [ "(x+1)", ""]);
-	BracketEmptyCheck("├](x+1)∣┤]", 2, [ "(x+1)", ""]);
+	BracketEmptyCheck("├](x+1)∣]", 2, [ "(x+1)", ""]);
 	BracketEmptyCheck("├](x+1)∣┤[", 2, [ "(x+1)", ""]);
 	BracketEmptyCheck("⟦(x+1)∣⟧", 2, [ "(x+1)", ""]);
 
@@ -15146,7 +15146,7 @@ $(function () {
 	BracketEmptyCheck("|∣|", 2, [ "", ""]);
 	BracketEmptyCheck("‖∣‖", 2, [ "", ""]);
 	BracketEmptyCheck("[∣┤[", 2, [ "", ""]);
-	BracketEmptyCheck("├]∣┤]", 2, [ "", ""]);
+	BracketEmptyCheck("├]∣]", 2, [ "", ""]);
 	BracketEmptyCheck("├]∣┤[", 2, [ "", ""]);
 	BracketEmptyCheck("⟦∣⟧", 2, [ "", ""]);
 
@@ -15159,7 +15159,7 @@ $(function () {
 	BracketEmptyCheck("|∣∣|", 3, [ "", "", ""]);
 	BracketEmptyCheck("‖∣∣‖", 3, [ "", "", ""]);
 	BracketEmptyCheck("[∣∣┤[", 3, [ "", "", ""]);
-	BracketEmptyCheck("├]∣∣┤]", 3, [ "", "", ""]);
+	BracketEmptyCheck("├]∣∣]", 3, [ "", "", ""]);
 	BracketEmptyCheck("├]∣∣┤[", 3, [ "", "", ""]);
 	BracketEmptyCheck("⟦∣∣⟧", 3, [ "", "", ""]);
 
@@ -15203,35 +15203,35 @@ $(function () {
 	BracketEmptyCheck("‖y∣(x+1)┤", 2, [ "y", "(x+1)"]);
 	BracketEmptyCheck("⟦y∣(x+1)┤", 2, [ "y", "(x+1)"]);
 
-	BracketEmptyCheck("├┤)", 1, [""]);
-	BracketEmptyCheck("├┤]", 1, [""]);
-	BracketEmptyCheck("├┤}", 1, [""]);
-	BracketEmptyCheck("├┤⟩", 1, [""]);
-	BracketEmptyCheck("├┤⌋", 1, [""]);
-	BracketEmptyCheck("├┤⌉", 1, [""]);
-	BracketEmptyCheck("├┤|", 1, [""]);
-	BracketEmptyCheck("├┤‖", 1, [""]);
-	BracketEmptyCheck("├┤⟧", 1, [""]);
+	BracketEmptyCheck("├)", 1, [""], undefined, "├)┤");
+	BracketEmptyCheck("├]", 1, [""], undefined, "├]┤");
+	BracketEmptyCheck("├}", 1, [""], undefined, "├}┤");
+	BracketEmptyCheck("├⟩", 1, [""], undefined, "├⟩┤");
+	BracketEmptyCheck("├⌋", 1, [""], undefined, "├⌋┤");
+	BracketEmptyCheck("├⌉", 1, [""], undefined, "├⌉┤");
+	BracketEmptyCheck("├|", 1, [""], undefined, "|┤");
+	BracketEmptyCheck("├‖", 1, [""], undefined, "‖┤");
+	BracketEmptyCheck("├⟧", 1, [""],  undefined, "├⟧┤");
 
-	BracketEmptyCheck("├x┤)", 1, ["x"]);
-	BracketEmptyCheck("├x┤]", 1, ["x"]);
-	BracketEmptyCheck("├x┤}", 1, ["x"]);
-	BracketEmptyCheck("├x┤⟩", 1, ["x"]);
-	BracketEmptyCheck("├x┤⌋", 1, ["x"]);
-	BracketEmptyCheck("├x┤⌉", 1, ["x"]);
-	BracketEmptyCheck("├x┤|", 1, ["x"]);
-	BracketEmptyCheck("├x┤‖", 1, ["x"]);
-	BracketEmptyCheck("├x┤⟧", 1, ["x"]);
+	BracketEmptyCheck("├x)", 1, ["x"]);
+	BracketEmptyCheck("├x]", 1, ["x"]);
+	BracketEmptyCheck("├x}", 1, ["x"]);
+	BracketEmptyCheck("├x⟩", 1, ["x"]);
+	BracketEmptyCheck("├x⌋", 1, ["x"]);
+	BracketEmptyCheck("├x⌉", 1, ["x"]);
+	BracketEmptyCheck("├x|", 1, ["x"], undefined, "├x┤|");
+	BracketEmptyCheck("├x‖", 1, ["x"], undefined, "├x┤‖");
+	BracketEmptyCheck("├x⟧", 1, ["x"]);
 
-	BracketEmptyCheck("├x+1┤)", 1, ["x+1"]);
-	BracketEmptyCheck("├x+1┤]", 1, ["x+1"]);
-	BracketEmptyCheck("├x+1┤}", 1, ["x+1"]);
-	BracketEmptyCheck("├x+1┤⟩", 1, ["x+1"]);
-	BracketEmptyCheck("├x+1┤⌋", 1, ["x+1"]);
-	BracketEmptyCheck("├x+1┤⌉", 1, ["x+1"]);
-	BracketEmptyCheck("├x+1┤|", 1, ["x+1"]);
-	BracketEmptyCheck("├x+1┤‖", 1, ["x+1"]);
-	BracketEmptyCheck("├x+1┤⟧", 1, ["x+1"]);
+	BracketEmptyCheck("├x+1)", 1, ["x+1"]);
+	BracketEmptyCheck("├x+1]", 1, ["x+1"]);
+	BracketEmptyCheck("├x+1}", 1, ["x+1"]);
+	BracketEmptyCheck("├x+1⟩", 1, ["x+1"]);
+	BracketEmptyCheck("├x+1⌋", 1, ["x+1"]);
+	BracketEmptyCheck("├x+1⌉", 1, ["x+1"]);
+	BracketEmptyCheck("├x+1|", 1, ["x+1"], undefined, "├x+1┤|");
+	BracketEmptyCheck("├x+1‖", 1, ["x+1"], undefined, "├x+1┤‖");
+	BracketEmptyCheck("├x+1⟧", 1, ["x+1"]);
 
 	QUnit.module("Brackets - Autocorrection");
 
@@ -15244,7 +15244,7 @@ $(function () {
 	BracketEmptyCheck("||", 1, [""], true);
 	BracketEmptyCheck("‖‖", 1, [""], true);
 	BracketEmptyCheck("[┤[", 1, [""], true);
-	BracketEmptyCheck("├]┤]", 1, [""], true);
+	BracketEmptyCheck("├]]", 1, [""], true);
 	BracketEmptyCheck("├]┤[", 1, [""], true);
 	BracketEmptyCheck("⟦⟧", 1, [""], true);
 
@@ -15257,7 +15257,7 @@ $(function () {
 	BracketEmptyCheck("|x|", 1, ["x"], true);
 	BracketEmptyCheck("‖x‖", 1, ["x"], true);
 	BracketEmptyCheck("[x┤[", 1, ["x"], true);
-	BracketEmptyCheck("├]x┤]", 1, ["x"], true);
+	BracketEmptyCheck("├]x]", 1, ["x"], true);
 	BracketEmptyCheck("├]x┤[", 1, ["x"], true);
 	BracketEmptyCheck("⟦x⟧", 1, ["x"], true);
 
@@ -15270,7 +15270,7 @@ $(function () {
 	BracketEmptyCheck("|x+1|", 1, ["x+1"], true);
 	BracketEmptyCheck("‖x+1‖", 1, ["x+1"], true);
 	BracketEmptyCheck("[x+1┤[", 1, ["x+1"], true);
-	BracketEmptyCheck("├]x+1┤]", 1, ["x+1"], true);
+	BracketEmptyCheck("├]x+1]", 1, ["x+1"], true);
 	BracketEmptyCheck("├]x+1┤[", 1, ["x+1"], true);
 	BracketEmptyCheck("⟦x+1⟧", 1, ["x+1"], true);
 
@@ -15283,7 +15283,7 @@ $(function () {
 	BracketEmptyCheck("|(x+1)|", 1, ["(x+1)"], true);
 	BracketEmptyCheck("‖(x+1)‖", 1, ["(x+1)"], true);
 	BracketEmptyCheck("[(x+1)┤[", 1, ["(x+1)"], true);
-	BracketEmptyCheck("├](x+1)┤]", 1, ["(x+1)"], true);
+	BracketEmptyCheck("├](x+1)]", 1, ["(x+1)"], true);
 	BracketEmptyCheck("├](x+1)┤[", 1, ["(x+1)"], true);
 	BracketEmptyCheck("⟦(x+1)⟧", 1, ["(x+1)"], true);
 
@@ -15296,7 +15296,7 @@ $(function () {
 	BracketEmptyCheck("|y∣(x+1)|", 2, [ "y", "(x+1)"], true);
 	BracketEmptyCheck("‖y∣(x+1)‖", 2, [ "y", "(x+1)"], true);
 	BracketEmptyCheck("[y∣(x+1)┤[", 2, [ "y", "(x+1)"], true);
-	BracketEmptyCheck("├]y∣(x+1)┤]", 2, [ "y", "(x+1)"], true);
+	BracketEmptyCheck("├]y∣(x+1)]", 2, [ "y", "(x+1)"], true);
 	BracketEmptyCheck("├]y∣(x+1)┤[", 2, [ "y", "(x+1)"], true);
 	BracketEmptyCheck("⟦y∣(x+1)⟧", 2, [ "y", "(x+1)"], true);
 
@@ -15309,7 +15309,7 @@ $(function () {
 	BracketEmptyCheck("|∣(x+1)|", 2, [ "", "(x+1)"], true);
 	BracketEmptyCheck("‖∣(x+1)‖", 2, [ "", "(x+1)"], true);
 	BracketEmptyCheck("[∣(x+1)┤[", 2, [ "", "(x+1)"], true);
-	BracketEmptyCheck("├]∣(x+1)┤]", 2, [ "", "(x+1)"], true);
+	BracketEmptyCheck("├]∣(x+1)]", 2, [ "", "(x+1)"], true);
 	BracketEmptyCheck("├]∣(x+1)┤[", 2, [ "", "(x+1)"], true);
 	BracketEmptyCheck("⟦∣(x+1)⟧", 2, [ "", "(x+1)"], true);
 
@@ -15322,7 +15322,7 @@ $(function () {
 	BracketEmptyCheck("|(x+1)∣|", 2, [ "(x+1)", ""], true);
 	BracketEmptyCheck("‖(x+1)∣‖", 2, [ "(x+1)", ""], true);
 	BracketEmptyCheck("[(x+1)∣┤[", 2, [ "(x+1)", ""], true);
-	BracketEmptyCheck("├](x+1)∣┤]", 2, [ "(x+1)", ""], true);
+	BracketEmptyCheck("├](x+1)∣]", 2, [ "(x+1)", ""], true);
 	BracketEmptyCheck("├](x+1)∣┤[", 2, [ "(x+1)", ""], true);
 	BracketEmptyCheck("⟦(x+1)∣⟧", 2, [ "(x+1)", ""], true);
 
@@ -15335,7 +15335,7 @@ $(function () {
 	BracketEmptyCheck("|∣|", 2, [ "", ""], true);
 	BracketEmptyCheck("‖∣‖", 2, [ "", ""], true);
 	BracketEmptyCheck("[∣┤[", 2, [ "", ""], true);
-	BracketEmptyCheck("├]∣┤]", 2, [ "", ""], true);
+	BracketEmptyCheck("├]∣]", 2, [ "", ""], true);
 	BracketEmptyCheck("├]∣┤[", 2, [ "", ""], true);
 	BracketEmptyCheck("⟦∣⟧", 2, [ "", ""], true);
 
@@ -15348,7 +15348,7 @@ $(function () {
 	BracketEmptyCheck("|∣∣|", 3, [ "", "", ""], true);
 	BracketEmptyCheck("‖∣∣‖", 3, [ "", "", ""], true);
 	BracketEmptyCheck("[∣∣┤[", 3, [ "", "", ""], true);
-	BracketEmptyCheck("├]∣∣┤]", 3, [ "", "", ""], true);
+	BracketEmptyCheck("├]∣∣]", 3, [ "", "", ""], true);
 	BracketEmptyCheck("├]∣∣┤[", 3, [ "", "", ""], true);
 	BracketEmptyCheck("⟦∣∣⟧", 3, [ "", "", ""], true);
 
@@ -15392,35 +15392,35 @@ $(function () {
 	BracketEmptyCheck("‖y∣(x+1)┤", 2, [ "y", "(x+1)"], true);
 	BracketEmptyCheck("⟦y∣(x+1)┤", 2, [ "y", "(x+1)"], true);
 
-	BracketEmptyCheck("├┤)", 1, [""], true);
-	BracketEmptyCheck("├┤]", 1, [""], true);
-	BracketEmptyCheck("├┤}", 1, [""], true);
-	BracketEmptyCheck("├┤⟩", 1, [""], true);
-	BracketEmptyCheck("├┤⌋", 1, [""], true);
-	BracketEmptyCheck("├┤⌉", 1, [""], true);
-	BracketEmptyCheck("├┤|", 1, [""], true);
-	BracketEmptyCheck("├┤‖", 1, [""], true);
-	BracketEmptyCheck("├┤⟧", 1, [""], true);
+	BracketEmptyCheck("├)", 1, [""], undefined, "├)┤");
+	BracketEmptyCheck("├]", 1, [""], undefined, "├]┤");
+	BracketEmptyCheck("├}", 1, [""], undefined, "├}┤");
+	BracketEmptyCheck("├⟩", 1, [""], undefined, "├⟩┤");
+	BracketEmptyCheck("├⌋", 1, [""], undefined, "├⌋┤");
+	BracketEmptyCheck("├⌉", 1, [""], undefined, "├⌉┤");
+	BracketEmptyCheck("├|", 1, [""], undefined, "|┤");
+	BracketEmptyCheck("├‖", 1, [""], undefined, "‖┤");
+	BracketEmptyCheck("├⟧", 1, [""], undefined, "├⟧┤");
 
-	BracketEmptyCheck("├x┤)", 1, ["x"], true);
-	BracketEmptyCheck("├x┤]", 1, ["x"], true);
-	BracketEmptyCheck("├x┤}", 1, ["x"], true);
-	BracketEmptyCheck("├x┤⟩", 1, ["x"], true);
-	BracketEmptyCheck("├x┤⌋", 1, ["x"], true);
-	BracketEmptyCheck("├x┤⌉", 1, ["x"], true);
-	BracketEmptyCheck("├x┤|", 1, ["x"], true);
-	BracketEmptyCheck("├x┤‖", 1, ["x"], true);
-	BracketEmptyCheck("├x┤⟧", 1, ["x"], true);
+	BracketEmptyCheck("├x)", 1, ["x"], true);
+	BracketEmptyCheck("├x]", 1, ["x"], true);
+	BracketEmptyCheck("├x}", 1, ["x"], true);
+	BracketEmptyCheck("├x⟩", 1, ["x"], true);
+	BracketEmptyCheck("├x⌋", 1, ["x"], true);
+	BracketEmptyCheck("├x⌉", 1, ["x"], true);
+	BracketEmptyCheck("├x|", 1, ["x"], true, "├x┤|");
+	BracketEmptyCheck("├x‖", 1, ["x"], true, "├x┤‖");
+	BracketEmptyCheck("├x⟧", 1, ["x"], true);
 
-	BracketEmptyCheck("├x+1┤)", 1, ["x+1"], true);
-	BracketEmptyCheck("├x+1┤]", 1, ["x+1"], true);
-	BracketEmptyCheck("├x+1┤}", 1, ["x+1"], true);
-	BracketEmptyCheck("├x+1┤⟩", 1, ["x+1"], true);
-	BracketEmptyCheck("├x+1┤⌋", 1, ["x+1"], true);
-	BracketEmptyCheck("├x+1┤⌉", 1, ["x+1"], true);
-	BracketEmptyCheck("├x+1┤|", 1, ["x+1"], true);
-	BracketEmptyCheck("├x+1┤‖", 1, ["x+1"], true);
-	BracketEmptyCheck("├x+1┤⟧", 1, ["x+1"], true);
+	BracketEmptyCheck("├x+1)", 1, ["x+1"], true);
+	BracketEmptyCheck("├x+1]", 1, ["x+1"], true);
+	BracketEmptyCheck("├x+1}", 1, ["x+1"], true);
+	BracketEmptyCheck("├x+1⟩", 1, ["x+1"], true);
+	BracketEmptyCheck("├x+1⌋", 1, ["x+1"], true);
+	BracketEmptyCheck("├x+1⌉", 1, ["x+1"], true);
+	BracketEmptyCheck("├x+1|", 1, ["x+1"], true, "├x+1┤|");
+	BracketEmptyCheck("├x+1‖", 1, ["x+1"], true, "├x+1┤‖");
+	BracketEmptyCheck("├x+1⟧", 1, ["x+1"], true);
 
 	function FunctCorrect(str, strLinear, isAutoCorrect)
 	{
@@ -16710,30 +16710,260 @@ $(function () {
 		let r = Create();
 		assert.ok(true, "Create math equation");
 
-		AddTextToRoot("(1+2)");
-		assert.ok(true, "Add '" + str + "'");
+		AscMath.SetIsAllowAutoCorrect(false);
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("(");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("1+2");
+		let oBluePr = ChangePrColor(blue_color, r);
+		AddTextToRoot(")");
+		assert.ok(true, "Add (1+2)");
+
+		AscMath.SetIsAllowAutoCorrect(true);
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+
+		let oDelimiter = r.Root.Content[1];
+		let oDelimiterPr = oDelimiter.Pr.GetRPr();
+		assert.deepEqual(oDelimiterPr.Color, oRedPr.Color, "Color of ( symbol");
+		let oContent = oDelimiter.Content[0].CtrPrp;
+		assert.deepEqual(oContent.Color, oBluePr.Color, "Color of ) symbol");
+
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		assert.deepEqual(oRedPr.Color, Styles[0].style.Color, "Check linear color of ( symbol");
+		assert.deepEqual(oBluePr.Color, Styles[4].style.Color, "Check linear color of ) symbol");
+	});
+	QUnit.test("Check bracket with middle", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AscMath.SetIsAllowAutoCorrect(false);
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("(");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("1+2");
+		let oYeelowPr = ChangePrColor(yellow_color, r);
+		AddTextToRoot("∣");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("x");
+		let oBluePr = ChangePrColor(blue_color, r);
+		AddTextToRoot(")");
+		assert.ok(true, "Add (1+2∣x)");
+
+
+		AscMath.SetIsAllowAutoCorrect(true);
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+
+		let oDelimiter = r.Root.Content[1];
+		let oDelimiterPr = oDelimiter.Pr.GetRPr();
+		assert.deepEqual(oDelimiterPr.Color, oRedPr.Color, "Color of ( symbol");
+		let oContent = oDelimiter.Content[1].CtrPrp;
+		assert.deepEqual(oContent.Color, oBluePr.Color, "Color of ) symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		assert.deepEqual(oRedPr.Color, Styles[0].style.Color, "Check linear color of ( symbol");
+		assert.deepEqual(oYeelowPr.Color, Styles[4].style.Color, "Check linear color of ∣ symbol");
+		assert.deepEqual(oBluePr.Color, Styles[6].style.Color, "Check linear color of ) symbol");
+	});
+
+	QUnit.module("Styles - Brackets - Autocorrection");
+	QUnit.test("Check bracket", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("(");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("1+2");
+		let oBluePr = ChangePrColor(blue_color, r);
+		AddTextToRoot(") ");
+		assert.ok(true, "Add (1+2) ");
+
+		assert.ok(true, "Convert to professional");
+
+
+		let oDelimiter = r.Root.Content[1];
+		let oDelimiterPr = oDelimiter.Pr.GetRPr();
+		assert.deepEqual(oDelimiterPr.Color, oRedPr.Color, "Color of ( symbol");
+		let oContent = oDelimiter.Content[0].CtrPrp;
+		assert.deepEqual(oContent.Color, oBluePr.Color, "Color of ) symbol");
+
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		assert.deepEqual(oRedPr.Color, Styles[0].style.Color, "Check linear color of ( symbol");
+		assert.deepEqual(oBluePr.Color, Styles[4].style.Color, "Check linear color of ) symbol");
+	});
+	QUnit.test("Check bracket with middle", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("(");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("1+2");
+		let oYeelowPr = ChangePrColor(yellow_color, r);
+		AddTextToRoot("∣");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("x");
+		let oBluePr = ChangePrColor(blue_color, r);
+		AddTextToRoot(") ");
+		assert.ok(true, "Add (1+2∣x) ");
+
+		assert.ok(true, "Convert to professional");
+
+
+		let oDelimiter = r.Root.Content[1];
+		let oDelimiterPr = oDelimiter.Pr.GetRPr();
+		assert.deepEqual(oDelimiterPr.Color, oRedPr.Color, "Color of ( symbol");
+		let oContent = oDelimiter.Content[1].CtrPrp;
+		assert.deepEqual(oContent.Color, oBluePr.Color, "Color of ) symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		assert.deepEqual(oRedPr.Color, Styles[0].style.Color, "Check linear color of ( symbol");
+		assert.deepEqual(oYeelowPr.Color, Styles[4].style.Color, "Check linear color of ∣ symbol");
+		assert.deepEqual(oBluePr.Color, Styles[6].style.Color, "Check linear color of ) symbol");
+	});
+
+	QUnit.module("Styles - Functions - Convert");
+	QUnit.test("Check function", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AscMath.SetIsAllowAutoCorrect(false);
+
+		ChangePrColor(black_color, r);
+		AddTextToRoot("cos");
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("⁡");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("x");
+		assert.ok(true, "Add cos⁡x");
+
+		AscMath.SetIsAllowAutoCorrect(true);
+		r.ConvertView(false, 0);
+		assert.ok(true, "Convert to professional");
+
+		let oFunc = r.Root.Content[1];
+		let oFuncPr = oFunc.Pr.GetRPr();
+		assert.deepEqual(oFuncPr.Color, oRedPr.Color, "Color of \\funcapply symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		assert.deepEqual(oRedPr.Color, Styles[1].style.Color, "Check linear color of \\funcapply symbol");
+	});
+
+	QUnit.module("Styles - Accent - Convert");
+	QUnit.test("Check accent", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		ChangePrColor(black_color, r);
+		AddTextToRoot("c");
+		let oRedPr = ChangePrColor(red_color, r);
+		AddTextToRoot("̇");
+		assert.ok(true, "ċ");
 
 		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
 
-		let oDelimiter = r.Root.Content[1];
-		assert.ok(oDelimiter instanceof CDelimiter, "Created CDelimiter");
-		let nCountOfColumns = oDelimiter.getColumnsCount();
-		assert.strictEqual(nCountOfColumns, num, "Check count of columns");
-
-		for (let i = 0; i < nCountOfColumns; i++)
-		{
-			let oCurrentContent = oDelimiter.getElementMathContent(i);
-			if (oCurrentContent)
-			{
-				let strCurrentContent = oCurrentContent.GetTextOfElement().GetText();
-				assert.strictEqual(strCurrentContent, arr[i], "Check " + i + " content of CDelimiter");
-			}
-		}
+		let oAccent = r.Root.Content[1];
+		let oAccentPr = oAccent.Pr.GetRPr();
+		assert.deepEqual(oAccentPr.Color, oRedPr.Color, "Color of  ̇ symbol");
 
 		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+		assert.deepEqual(oRedPr.Color, Styles[1].style.Color, "Check linear color  of  ̇ symbol");
+	});
+
+	QUnit.module("Styles - Matrix - Convert");
+	QUnit.test("Check Matrix", function (assert)
+	{
+		let r = Create();
+		assert.ok(true, "Create math equation");
+
+		AscMath.SetIsAllowAutoCorrect(false);
+
+		ChangePrColor(red_color, r);
+		AddTextToRoot("■(");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("1");
+		let oRedColor = ChangePrColor(red_color, r);
+		AddTextToRoot("&");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("1");
+		ChangePrColor(red_color, r);
+		AddTextToRoot("&");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("2");
+		ChangePrColor(red_color, r);
+		AddTextToRoot("&");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("3");
+
+		let oBlueColor = ChangePrColor(blue_color, r);
+		AddTextToRoot("@");
+
+		ChangePrColor(black_color, r);
+		AddTextToRoot("4");
+		ChangePrColor(red_color, r);
+		AddTextToRoot("&");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("5");
+		ChangePrColor(red_color, r);
+		AddTextToRoot("&");
+		ChangePrColor(black_color, r);
+		AddTextToRoot("6");
+		ChangePrColor(red_color, r);
+		AddTextToRoot(")");
+
+		AscMath.SetIsAllowAutoCorrect(true);
+
+		r.ConvertView(false, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), str, "Check linear content");
+
+		let oMatrix = r.Root.Content[1];
+		let oMatrixPr = oMatrix.Pr.GetRPr();
+		assert.deepEqual(oMatrixPr.Color, oRedColor.Color, "Color of ■ symbol");
+
+		r.ConvertView(true, 0);
+		assert.ok(true, "Convert to linear");
+
+		let Styles = r.GetTextOfElement().arr;
+
+		assert.deepEqual(oRedColor.Color, Styles[0].style.Color, "Check linear color  of ■ symbol");
+		assert.deepEqual(oRedColor.Color, Styles[2].style.Color, "Check linear color  of & symbol");
+		assert.deepEqual(oRedColor.Color, Styles[4].style.Color, "Check linear color  of & symbol");
+		assert.deepEqual(oRedColor.Color, Styles[6].style.Color, "Check linear color  of & symbol");
+		assert.deepEqual(oBlueColor.Color, Styles[8].style.Color, "Check linear color  of @ symbol");
+		assert.deepEqual(oRedColor.Color, Styles[10].style.Color, "Check linear color  of & symbol");
+		assert.deepEqual(oRedColor.Color, Styles[12].style.Color, "Check linear color  of & symbol");
 	});
 
 })

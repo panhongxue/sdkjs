@@ -3300,7 +3300,7 @@ CMathContent.prototype.Add_Text = function(text, paragraph, mathStyle)
 	else if (mathStyle)
 		run.Math_Apply_Style(mathStyle);
 	
-	this.AddToContent(this.CurPos, run, false);
+	this.AddToContent(this.Content.length, run, false);
 	this.CurPos++;
 };
 CMathContent.prototype.Add_TextInLastParaRun = function(sText, Paragraph, MathStyle)
@@ -6231,6 +6231,30 @@ CMathContent.prototype.ConvertContentInLastBracketBlock = function(nInputType)
         }
     }
 };
+CMathContent.prototype.GetCountForAutoProcessing = function()
+{
+	let nCount = 0;
+
+	for (let i = 0; i < this.Content.length; i++)
+	{
+		let nContent = this.Content[i];
+
+		if (nContent instanceof ParaRun)
+		{
+			let str = nContent.GetTextOfElement().GetText();
+			if (str !== "")
+				nCount++;
+
+			continue;
+		}
+		if (!(nCount instanceof ParaRun))
+			nCount++;
+		if (nContent.Content.length > 0)
+			nCount++;
+	}
+
+	return nCount;
+}
 
 function ProceedBrackets(arrDataOfBrackets)
 {

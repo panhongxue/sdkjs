@@ -4436,7 +4436,6 @@ var editor;
    * @param {{}} [oOleObjectInfo] info from oleObject
    */
   spreadsheet_api.prototype.asc_addTableOleObjectInOleEditor = function(oOleObjectInfo) {
-		this.frameManager = new AscCommon.COleCellFrameManager();
 	  this.frameManager.obtain(oOleObjectInfo);
  	};
   /**
@@ -4445,7 +4444,6 @@ var editor;
    */
   spreadsheet_api.prototype.asc_getBinaryInfoOleObject = function () {
 		const oBinaryInfo = this.frameManager.getBinary();
-		delete this.frameManager;
 		return oBinaryInfo;
   }
 
@@ -4725,13 +4723,16 @@ var editor;
     var ws = this.wb.getWorksheet();
     return ws.objectRender.getWordChartObject();
   };
-	spreadsheet_api.prototype.asc_getBinaryFromDiagramFrame = function (bIsSave)
+	spreadsheet_api.prototype.asc_getBinaryFromDiagramFrame = function ()
 	{
-		if (this.frameManager && this.frameManager.isDiagramEditor())
+		if (this.frameManager.isDiagramEditor())
 		{
-			return this.frameManager.getBinary(bIsSave);
+			return this.frameManager.getBinary();
 		}
-		delete this.frameManager;
+		return new Promise(function (resolve)
+		{
+			resolve(null);
+		});
 	}
 
   spreadsheet_api.prototype.asc_cleanWorksheet = function() {
@@ -9051,6 +9052,7 @@ var editor;
   prot["asc_setData"] = prot.asc_setData;
   prot["asc_getData"] = prot.asc_getData;
   prot["asc_onCloseChartFrame"] = prot.asc_onCloseChartFrame;
+  prot["asc_getBinaryFromDiagramFrame"] = prot.asc_getBinaryFromDiagramFrame;
 
   // Cell comment interface
   prot["asc_addComment"] = prot.asc_addComment;

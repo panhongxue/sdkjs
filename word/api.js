@@ -9135,10 +9135,7 @@ background-repeat: no-repeat;\
 	{
 		this.frameLoader = oLoader;
 	};
-	asc_docs_api.prototype.destroyFrameLoader = function ()
-	{
-		this.frameLoader = null;
-	};
+
 	asc_docs_api.prototype.asc_doubleClickOnTableOleObject    = function(obj)
 	{
 		this.frameManager.startLoadOleEditor();	// Для совместного редактирования

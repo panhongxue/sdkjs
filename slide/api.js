@@ -7852,10 +7852,6 @@ background-repeat: no-repeat;\
 	{
 		this.frameLoader = oLoader;
 	};
-	asc_docs_api.prototype.destroyFrameLoader = function ()
-	{
-		this.frameLoader = null;
-	};
 
 	asc_docs_api.prototype.asc_addChartDrawingObject = function(nType, Placeholder)
 	{

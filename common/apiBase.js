@@ -228,7 +228,7 @@
 		this.eyedropper = new AscCommon.CEyedropper(this);
 		this.inkDrawer = new AscCommon.CInkDrawer(this);
 
-		this.frameManager = new AscCommon.CMainEditorFrameManager();
+		this.frameManager = new AscCommon.CMainEditorFrameManager(this);
 		this._correctEmbeddedWork();
 
 		return this;
@@ -491,14 +491,14 @@
 
 		if (AscCommon.chartMode === this.documentUrl)
 		{
-			this.frameManager = new AscCommon.CDiagramCellFrameManager();
+			this.frameManager = new AscCommon.CDiagramCellFrameManager(this);
         AscCommon.EncryptionWorker.isFrameEditor = true;
 			this.DocInfo.put_OfflineApp(true);
 		}
 
 		if (AscCommon.oleMode === this.documentUrl)
 		{
-			this.frameManager = new AscCommon.COleCellFrameManager();
+			this.frameManager = new AscCommon.COleCellFrameManager(this);
 			AscCommon.EncryptionWorker.isFrameEditor = true;
 			this.DocInfo.put_OfflineApp(true);
 		}
@@ -711,7 +711,7 @@
 			}
 			var blipUrl = oleBinary['imageUrl'];
 			var arrImagesForAddToHistory = oleBinary['imagesForAddToHistory'];
-			var binaryDataOfSheet = AscCommon.Base64.decode(oleBinary['binary']);
+			var binaryDataOfSheet = this.frameManager.getDecodedArray(oleBinary['binary']);
 			var sizes = AscCommon.getSourceImageSize(blipUrl);
 			var mmExtX = sizes.width * AscCommon.g_dKoef_pix_to_mm;
 			var mmExtY = sizes.height * AscCommon.g_dKoef_pix_to_mm;
@@ -923,7 +923,7 @@
 					const arrImagesForAddToHistory = oOleBinaryInfo['imagesForAddToHistory'];
 					const oSelectedOleObject = arrSelectedObjects.oleObjects[0];
 					const sBlipUrl = oOleBinaryInfo['imageUrl'];
-					const arrBinaryDataOfSheet = AscCommon.Base64.decode(oOleBinaryInfo['binary']);
+					const arrBinaryDataOfSheet = this.frameManager.getDecodedArray(oOleBinaryInfo['binary']);
 					const oSizes = AscCommon.getSourceImageSize(sBlipUrl);
 					const nImageWidthCoefficient = oOleBinaryInfo['widthCoefficient'] || 1;
 					const nImageHeightCoefficient = oOleBinaryInfo['heightCoefficient'] || 1;
@@ -1507,22 +1507,25 @@
 	{
 		this._coAuthoringInit();
 	};
-	baseEditorsApi.prototype.getConvertedXLSXFileFromUrl  = function (sUrl, sFileType, sToken, nOutputFormat, fCallback) {
+	baseEditorsApi.prototype.getConvertedXLSXFileFromUrl  = function (oDocument, nOutputFormat, fCallback) {
 		if (this.canEdit()) {
-			const oDocument = {url: sUrl, format: sFileType, token: sToken};
 			this.insertDocumentUrlsData = {
 				imageMap: null, documents: [oDocument], convertCallback: function (_api, url) {
 					_api.insertDocumentUrlsData.imageMap = url;
-					if (url['output.xlsx']) {
-						fCallback(url['output.xlsx']);
-					} else if (url['output.xlst']) {
-						fCallback(url['output.xlst']);
+					let sFileUrlAfterConvert = url['output.xlsx'] || url['output.xlst'];
+					if (sFileUrlAfterConvert) {
+						AscCommon.loadFileContent(sFileUrlAfterConvert, function (httpRequest) {
+							let arrStream = null;
+							if (httpRequest) {
+								arrStream = AscCommon.initStreamFromResponse(httpRequest);
+							}
+							fCallback(arrStream);
+						}, "arraybuffer");
 					} else {
 						fCallback(null);
 					}
 					_api.endInsertDocumentUrls();
 				}, endCallback: function (_api) {
-					fCallback(null);
 				}
 			};
 

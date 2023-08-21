@@ -40,9 +40,12 @@
 		CMain.prototype.constructor = CMain;
 	}
 
-	function CFrameManagerBase()
+	function CFrameManagerBase(api)
 	{
+		this.api = api;
 		this.isInitFrameManager = false;
+		const isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
+		this.isOpenOnClient = this.api["asc_isSupportFeature"]("ooxml") && !isLocalDesktop;
 	}
 	CFrameManagerBase.prototype.clear = function () {};
 	CFrameManagerBase.prototype.getWorkbookBinary = function () {};
@@ -82,10 +85,31 @@
 		return false;
 	};
 
-
-	function CMainEditorFrameManager()
+	CFrameManagerBase.prototype.getDecodedArray = function (stream)
 	{
-		CFrameManagerBase.call(this);
+		if (this.isOpenOnClient)
+		{
+			return new Uint8Array(stream);
+		}
+		return AscCommon.Base64.decode(stream);
+	};
+
+	CFrameManagerBase.prototype.getEncodedArray = function (arrStream)
+	{
+		if (AscCommon.checkOOXMLSignature(arrStream))
+		{
+			return Array.from(arrStream);
+		}
+
+		const nDataSize = arrStream.length;
+		const sData = AscCommon.Base64.encode(arrStream);
+		return "XLSY;v2;" + nDataSize + ";" + sData;
+	};
+
+
+	function CMainEditorFrameManager(api)
+	{
+		CFrameManagerBase.call(this, api);
 		this.isInitFrameManager = true;
 		this.isLoadingOleEditor = false;
 		this.isLoadingChartEditor = false;
@@ -114,10 +138,9 @@
 	};
 
 
-	function CCellFrameManager()
+	function CCellFrameManager(api)
 	{
-		CFrameManagerBase.call(this);
-		this.api = Asc.editor || editor;
+		CFrameManagerBase.call(this, api);
 		this.generalDocumentUrls = {};
 		this.isInitFrameManager = true;
 	}
@@ -168,7 +191,11 @@
 	CCellFrameManager.prototype.obtain = function (oInfo)
 	{
 		this.isInitFrameManager = false;
-		const sStream = oInfo["binary"];
+		let sStream = oInfo["binary"];
+		if (Array.isArray(sStream))
+		{
+			sStream = new Uint8Array(sStream);
+		}
 		this.setGeneralDocumentUrls(oInfo["documentImageUrls"] || {});
 		this.openWorkbookData(sStream);
 	};
@@ -214,9 +241,9 @@
 		this.api.sendFromGeneralToFrameEditor(oSendObject);
 	};
 
-	function COleCellFrameManager()
+	function COleCellFrameManager(api)
 	{
-		CCellFrameManager.call(this);
+		CCellFrameManager.call(this, api);
 		this.imageWidthCoefficient = null;
 		this.imageHeightCoefficient = null;
 		this.isFromSheetEditor = false;
@@ -245,13 +272,20 @@
 	}
 	COleCellFrameManager.prototype.getBinary = function ()
 	{
-		return {
-			'binary'               : this.getWorkbookBinary(),
-			'base64Image'          : this.getBase64Image(),
-			'imagesForAddToHistory': this.getImagesForHistory(),
-			'widthCoefficient'     : this.getImageWidthCoefficient(),
-			'heightCoefficient'    : this.getImageHeightCoefficient()
-		};
+		const oThis = this;
+		return new Promise(function (resolve)
+		{
+			oThis.getWorkbookBinary().then(function (workbookBinary)
+			{
+				resolve({
+					'binary'               : workbookBinary,
+					'base64Image'          : oThis.getBase64Image(),
+					'imagesForAddToHistory': oThis.getImagesForHistory(),
+					'widthCoefficient'     : oThis.getImageWidthCoefficient(),
+					'heightCoefficient'    : oThis.getImageHeightCoefficient()
+				});
+			});
+		});
 	};
 	COleCellFrameManager.prototype.calculateImageSaveCoefficients = function (nImageHeight, nImageWidth)
 	{
@@ -453,20 +487,27 @@
 
 	CDiagramCellFrameManager.prototype.getBinary = function ()
 	{
-		const noHistory = !AscCommon.History.Can_Undo();
-		if (noHistory)
+		const oThis = this;
+		return new Promise(function (resolve)
 		{
-			const oRet = {};
-			oRet['noHistory'] = true;
-			return oRet;
-		}
-		else
-		{
-			const oDiagramBinary = new Asc.asc_CChartBinary(this.mainDiagram);
-			oDiagramBinary["workbookBinary"] = this.getWorkbookBinary();
-			oDiagramBinary["imagesForAddToHistory"] = this.getImagesForHistory();
-			return oDiagramBinary;
-		}
+			const noHistory = !AscCommon.History.Can_Undo();
+			if (noHistory)
+			{
+				const oRet = {};
+				oRet['noHistory'] = true;
+				resolve(oRet);
+			}
+			else
+			{
+				const oDiagramBinary = new Asc.asc_CChartBinary(oThis.mainDiagram);
+				oThis.getWorkbookBinary().then(function (workbookBinary)
+				{
+					oDiagramBinary["workbookBinary"] = workbookBinary;
+					oDiagramBinary["imagesForAddToHistory"] = oThis.getImagesForHistory();
+					resolve(oDiagramBinary);
+				});
+			}
+		});
 	}
 
 	CDiagramCellFrameManager.prototype.updateGeneralDiagramCache = function (aRanges)
@@ -571,13 +612,6 @@
 		this.isOpenOnClient = this.api["asc_isSupportFeature"]("ooxml") && !isLocalDesktop;
 	}
 	InitClassWithoutType(CFrameDiagramBinaryLoader, CFrameBinaryLoader);
-
-	CFrameDiagramBinaryLoader.getBase64 = function (arrStream)
-	{
-		const nDataSize = arrStream.length;
-		const sData = AscCommon.Base64.encode(arrStream);
-		return "XLSY;v2;" + nDataSize + ";" + sData;
-	};
 
 	CFrameDiagramBinaryLoader.prototype.createChartSpace = function (nType, oPlaceholder)
 	{

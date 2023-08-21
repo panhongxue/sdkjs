@@ -1205,7 +1205,8 @@ CGraphicObjects.prototype =
         {
 	        if (!oSelectedChart.isExternal() && oBinary["workbookBinary"])
 	        {
-		        chart_space.setXLSX(AscCommon.Base64.decode(oBinary["workbookBinary"]));
+						const oApi = this.getEditorApi();
+		        chart_space.setXLSX(oApi.frameManager.getDecodedArray(oBinary["workbookBinary"]));
 	        }
 	        if (oBinary['imagesForAddToHistory'])
 	        {

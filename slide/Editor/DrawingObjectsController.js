@@ -348,7 +348,8 @@ DrawingObjectsController.prototype.editChart = function(binary)
 	    oSelectedChart.recalculateChart();
         if (!oSelectedChart.isExternal() && binary["workbookBinary"])
         {
-            chart_space.setXLSX(AscCommon.Base64.decode(binary["workbookBinary"]));
+					const oApi = this.getEditorApi();
+          chart_space.setXLSX(oApi.frameManager.getDecodedArray(binary["workbookBinary"]));
         }
 				if (binary['imagesForAddToHistory'])
 				{

@@ -1397,6 +1397,7 @@ function(window, undefined) {
 	CChartSpace.prototype.applySpecialPasteProps = function ()
 	{
 		const oSpecialProps = window['AscCommon'].g_specialPasteHelper.specialPasteProps;
+		const editor = Asc.editor || editor;
 		switch (oSpecialProps)
 		{
 			case Asc.c_oSpecialPasteProps.sourceFormattingEmbedding:

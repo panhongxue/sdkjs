@@ -148,9 +148,24 @@
 
 	CCellFrameManager.prototype.getWorkbookBinary = function ()
 	{
-		const oBinaryFileWriter = new AscCommonExcel.BinaryFileWriter(this.api.wbModel);
-		const arrBinaryData = oBinaryFileWriter.Write().split(';');
-		return arrBinaryData[arrBinaryData.length - 1];
+		const oThis = this;
+		return new Promise(function (resolve)
+		{
+			if (oThis.isOpenOnClient)
+			{
+				oThis.api.saveDocumentToZip(oThis.api.wb.model, AscCommon.c_oEditorId.Spreadsheet, function (data)
+				{
+					resolve(Array.from(data));
+				});
+			}
+			else
+			{
+				const oBinaryFileWriter = new AscCommonExcel.BinaryFileWriter(oThis.api.wbModel);
+				const arrBinaryData = oBinaryFileWriter.Write().split(';');
+				resolve(arrBinaryData[arrBinaryData.length - 1]);
+			}
+		});
+
 	};
 	CCellFrameManager.prototype.getAllImageIds = function ()
 	{
@@ -753,7 +768,45 @@
 		const oThis = this;
 		return new Promise(function (resolve)
 		{
-			resolve(oThis.chart.XLSX.length ? CFrameDiagramBinaryLoader.getBase64(oThis.chart.XLSX) : null);
+			if (oThis.chart.XLSX.length)
+			{
+				if (oThis.isOpenOnClient)
+				{
+					resolve(CFrameManagerBase.prototype.getEncodedArray.call(oThis, oThis.chart.XLSX));
+				}
+				else
+				{
+					if (AscCommon.checkOOXMLSignature(oThis.chart.XLSX))
+					{
+						oThis.api.getConvertedXLSXFileFromUrl({data: oThis.chart.XLSX}, Asc.c_oAscFileType.XLSY, function (arrBinaryData) {
+							if (arrBinaryData)
+							{
+								let jsZlib = new AscCommon.ZLib();
+								if (jsZlib.open(arrBinaryData))
+								{
+									if (jsZlib.files && jsZlib.files.length) {
+										arrBinaryData = jsZlib.getFile(jsZlib.files[0]);
+									}
+								}
+								resolve(Array.from(arrBinaryData));
+							}
+							else
+							{
+								resolve(null);
+							}
+						});
+					}
+					else
+					{
+						resolve(CFrameManagerBase.prototype.getEncodedArray.call(oThis, oThis.chart.XLSX));
+					}
+
+				}
+			}
+			else
+			{
+				resolve(null);
+			}
 		});
 	}
 

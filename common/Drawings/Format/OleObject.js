@@ -143,6 +143,29 @@ function (window, undefined) {
         AscCommon.History.Add(new AscDFH.CChangesDrawingsString(this, AscDFH.historyitem_ImageShapeSetData, this.m_sData, sData));
         this.m_sData = sData;
     };
+    COleObject.prototype.applySpecialPasteProps = function ()
+    {
+	    if (this.m_aBinaryData.length)
+	    {
+		    const isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
+		    const isOpenOnClient = editor["asc_isSupportFeature"]("ooxml") && !isLocalDesktop;
+		    if (isOpenOnClient && !AscCommon.checkOOXMLSignature(this.m_aBinaryData))
+		    {
+			    const base64 = editor.frameManager.getEncodedArray(this.m_aBinaryData).toUtf8();
+					const oThis = this;
+			    editor.getConvertedXLSXFileFromUrl({data: base64}, Asc.c_oAscFileType.XLSX, function (arrBinaryData) {
+				    if (arrBinaryData)
+				    {
+					    oThis.setBinaryData(arrBinaryData);
+				    }
+				    else
+				    {
+					    oThis.setBinaryData(new Uint8Array(0));
+				    }
+			    });
+		    }
+	    }
+    };
     COleObject.prototype.setDrawAspect = function (oPr) {
         AscCommon.History.Add(new AscDFH.CChangesDrawingsLong(this, AscDFH.historyitem_ImageShapeSetDrawAspect, this.m_nDrawAspect, oPr));
         this.m_nDrawAspect = oPr;
@@ -489,10 +512,16 @@ function (window, undefined) {
         if(sId) {
             let rel = reader.rels.getRelationship(sId);
             if (rel) {
-                if ("Internal" === rel.targetMode && rel.targetFullName) {
-                    this.setDataLink(rel.targetFullName.slice(1));
-                }
+            const olePart = reader.rels.pkg.getPartByUri(rel.targetFullName);
+            if (olePart)
+            {
+              const binaryData = olePart.getDocumentContent('object');
+              if (binaryData)
+              {
+                this.setBinaryData(binaryData.slice());
+              }
             }
+          }
         }
     };
 
@@ -510,14 +539,13 @@ function (window, undefined) {
                     }, this, []);
                 }
             }
-            const nDataSize = oOleObject.m_aBinaryData.length;
-            const sData = AscCommon.Base64.encode(oOleObject.m_aBinaryData);
+            const sData = oApi.frameManager.getEncodedArray(oOleObject.m_aBinaryData);
             const nImageWidth = oOleObject.extX * AscCommon.g_dKoef_mm_to_pix;
             const nImageHeight = oOleObject.extY * AscCommon.g_dKoef_mm_to_pix;
             const documentImageUrls = AscCommon.g_oDocumentUrls.urls;
 
             return {
-                "binary": "XLSY;v2;" + nDataSize  + ";" + sData,
+                "binary": sData,
                 "isFromSheetEditor": !!oOleObject.worksheet,
                 "imageWidth": nImageWidth,
                 "imageHeight": nImageHeight,

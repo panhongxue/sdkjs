@@ -1432,6 +1432,26 @@ function(window, undefined) {
 				break;
 			}
 		}
+		if (this.XLSX.length)
+		{
+			const isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
+			const isOpenOnClient = editor["asc_isSupportFeature"]("ooxml") && !isLocalDesktop;
+			if (isOpenOnClient && !AscCommon.checkOOXMLSignature(this.XLSX))
+			{
+				const base64 = editor.frameManager.getEncodedArray(this.XLSX).toUtf8();
+				const oThis = this;
+				editor.getConvertedXLSXFileFromUrl({data: base64}, Asc.c_oAscFileType.XLSX, function (arrBinaryData) {
+					if (arrBinaryData)
+					{
+						oThis.setXLSX(arrBinaryData);
+					}
+					else
+					{
+						oThis.setXLSX(new Uint8Array(0));
+					}
+				});
+			}
+		}
 	};
 	CChartSpace.prototype.fillWorksheetFromCache = function (oWorksheet)
 	{

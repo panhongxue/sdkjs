@@ -1397,7 +1397,7 @@ function(window, undefined) {
 	CChartSpace.prototype.applySpecialPasteProps = function ()
 	{
 		const oSpecialProps = window['AscCommon'].g_specialPasteHelper.specialPasteProps;
-		const editor = Asc.editor || editor;
+		const oApi = Asc.editor || editor;
 		switch (oSpecialProps)
 		{
 			case Asc.c_oSpecialPasteProps.sourceFormattingEmbedding:
@@ -1435,12 +1435,12 @@ function(window, undefined) {
 		if (this.XLSX.length)
 		{
 			const isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
-			const isOpenOnClient = editor["asc_isSupportFeature"]("ooxml") && !isLocalDesktop;
+			const isOpenOnClient = oApi["asc_isSupportFeature"]("ooxml") && !isLocalDesktop;
 			if (isOpenOnClient && !AscCommon.checkOOXMLSignature(this.XLSX))
 			{
-				const base64 = editor.frameManager.getEncodedArray(this.XLSX).toUtf8();
+				const base64 = oApi.frameManager.getEncodedArray(this.XLSX).toUtf8();
 				const oThis = this;
-				editor.getConvertedXLSXFileFromUrl({data: base64}, Asc.c_oAscFileType.XLSX, function (arrBinaryData) {
+				oApi.getConvertedXLSXFileFromUrl({data: base64}, Asc.c_oAscFileType.XLSX, function (arrBinaryData) {
 					if (arrBinaryData)
 					{
 						oThis.setXLSX(arrBinaryData);

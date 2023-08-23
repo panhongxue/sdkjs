@@ -4702,25 +4702,6 @@ background-repeat: no-repeat;\
 		}
 	};
 
-	asc_docs_api.prototype.asc_doubleClickOnTableOleObject    = function(obj)
-	{
-		this.frameManager.startLoadOleEditor();	// Для совместного редактирования
-		this.asc_onOpenChartFrame();
-
-		if(!window['IS_NATIVE_EDITOR']) {
-			this.WordControl.onMouseUpMainSimple();
-		}
-		if(this.asc_checkNeedCallback("asc_doubleClickOnTableOleObject"))
-		{
-			this.sendEvent("asc_doubleClickOnTableOleObject", obj);
-		}
-		else
-		{
-			this.sendEvent("asc_doubleClickOnChart", obj); // TODO: change event type
-		}
-	};
-
-
     asc_docs_api.prototype.asc_startEditCurrentOleObject = function(){
     	if(this.WordControl.m_oLogicDocument.Slides[this.WordControl.m_oLogicDocument.CurPage])
             this.WordControl.m_oLogicDocument.Slides[this.WordControl.m_oLogicDocument.CurPage].graphicObjects.startEditCurrentOleObject();
@@ -7848,9 +7829,13 @@ background-repeat: no-repeat;\
 		oLogicDocument.Slides[oLogicDocument.CurPage].openChartEditor();
 	}
 
-	asc_docs_api.prototype.setFrameLoader = function (oLoader)
+	asc_docs_api.prototype.asc_editOleTableInFrameEditor = function ()
 	{
-		this.frameLoader = oLoader;
+		const oLogicDocument = this.private_GetLogicDocument();
+		if (!oLogicDocument)
+			return;
+
+		oLogicDocument.Slides[oLogicDocument.CurPage].openOleEditor();
 	};
 
 	asc_docs_api.prototype.asc_addChartDrawingObject = function(nType, Placeholder)
@@ -9428,8 +9413,8 @@ background-repeat: no-repeat;\
 	asc_docs_api.prototype["asc_setHeaderFooterProperties"]       = asc_docs_api.prototype.asc_setHeaderFooterProperties;
 
 	asc_docs_api.prototype["asc_startEditCurrentOleObject"]       = asc_docs_api.prototype.asc_startEditCurrentOleObject;
-	asc_docs_api.prototype["asc_doubleClickOnTableOleObject"]     = asc_docs_api.prototype.asc_doubleClickOnTableOleObject;
 	asc_docs_api.prototype["asc_editOleObjectAction"]             = asc_docs_api.prototype.asc_editOleObjectAction;
+	asc_docs_api.prototype["asc_editOleTableInFrameEditor"]       = asc_docs_api.prototype.asc_editOleTableInFrameEditor;
 	asc_docs_api.prototype["asc_addOleObjectAction"]              = asc_docs_api.prototype.asc_addOleObjectAction;
 	asc_docs_api.prototype["asc_InputClearKeyboardElement"]       = asc_docs_api.prototype.asc_InputClearKeyboardElement;
 

@@ -1523,6 +1523,13 @@ CFootnotesController.prototype.GetChartSettings = function()
 
 	return this.CurFootnote.GetChartSettings();
 };
+CFootnotesController.prototype.OpenOleEditor = function()
+{
+	if (false === this.private_CheckFootnotesSelectionBeforeAction())
+		return;
+
+	this.CurFootnote.OpenOleEditor();
+};
 CFootnotesController.prototype.AddInlineTable = function(nCols, nRows, nMode)
 {
 	if (false === this.private_CheckFootnotesSelectionBeforeAction())

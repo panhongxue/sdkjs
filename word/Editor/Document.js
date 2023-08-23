@@ -2213,6 +2213,10 @@ CDocument.prototype.IsDocumentEditor = function()
 {
 	return true;
 };
+CDocument.prototype.OpenOleEditor = function ()
+{
+	this.Controller.OpenOleEditor();
+};
 CDocument.prototype.IsPresentationEditor = function()
 {
 	return false;

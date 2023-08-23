@@ -101,6 +101,10 @@ CLogicDocumentController.prototype.GetChartSettings = function()
 {
 	// Ничего не делаем
 };
+CLogicDocumentController.prototype.OpenOleEditor = function(Chart)
+{
+	// Ничего не делаем
+};
 CLogicDocumentController.prototype.AddSignatureLine = function(oSignatureDrawing)
 {
     this.LogicDocument.controller_AddSignatureLine(oSignatureDrawing);

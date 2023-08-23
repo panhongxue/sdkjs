@@ -147,6 +147,10 @@ CDrawingsController.prototype.GetChartSettings = function()
 {
 	return this.DrawingObjects.getChartSettings();
 };
+CDrawingsController.prototype.OpenOleEditor = function()
+{
+	this.DrawingObjects.openOleEditor();
+};
 CDrawingsController.prototype.AddInlineTable = function(nCols, nRows, nMode)
 {
 	return this.DrawingObjects.addInlineTable(nCols, nRows, nMode);

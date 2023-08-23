@@ -1760,12 +1760,12 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
 
 Slide.prototype.openChartEditor = function()
 {
-	const oChartLoader = new AscCommon.CFrameDiagramBinaryLoader(this.graphicObjects.getChartObject());
-	editor.setFrameLoader(oChartLoader);
-	oChartLoader.tryOpen();
-	this.graphicObjects.changeCurrentState(new AscFormat.NullState(this.graphicObjects));
+	this.graphicObjects.openChartEditor();
 };
-
+Slide.prototype.openOleEditor = function()
+{
+	this.graphicObjects.openOleEditor();
+};
 
     Slide.prototype.Clear_ContentChanges  = function()
     {

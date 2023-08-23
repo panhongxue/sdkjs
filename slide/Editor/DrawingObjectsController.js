@@ -168,7 +168,7 @@ DrawingObjectsController.prototype.handleOleObjectDoubleClick = function(drawing
         }
         else if (oleObject.canEditTableOleObject())
         {
-            editor.asc_doubleClickOnTableOleObject(oleObject);
+            editor.asc_editOleTableInFrameEditor();
         }
         else {
             var pluginData = new Asc.CPluginData();
@@ -311,7 +311,6 @@ DrawingObjectsController.prototype.checkSelectedObjectsAndFireCallback = functio
 DrawingObjectsController.prototype.openChartEditor = function()
 {
 	const oChartLoader = new AscCommon.CFrameDiagramBinaryLoader(this.getChartObject());
-	editor.setFrameLoader(oChartLoader);
 	oChartLoader.tryOpen();
 	this.changeCurrentState(new AscFormat.NullState(this));
 };

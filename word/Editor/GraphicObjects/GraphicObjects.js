@@ -1630,7 +1630,6 @@ CGraphicObjects.prototype =
 				if (oChart)
 				{
 					const oChartLoader = new AscCommon.CFrameDiagramBinaryLoader(oChart);
-					editor.setFrameLoader(oChartLoader);
 					oChartLoader.tryOpen();
 				}
 			}
@@ -1658,6 +1657,19 @@ CGraphicObjects.prototype =
         this.document.OnMouseUp(e, x, y, pageIndex);
     },
 
+	openOleEditor: function ()
+	{
+		if(false === this.document.Document_Is_SelectionLocked(changestype_Drawing_Props))
+		{
+			const oOleObject = this.canEditTableOleObject(true);
+			if (oOleObject)
+			{
+				const oleLoader = new AscCommon.CFrameOleBinaryLoader(oOleObject);
+				oleLoader.tryOpen();
+			}
+		}
+	},
+
     handleSignatureDblClick: function(sGuid, width, height){
         editor.sendEvent("asc_onSignatureDblClick", sGuid, width, height);
     },
@@ -1671,7 +1683,7 @@ CGraphicObjects.prototype =
             }
             else if (oleObject.canEditTableOleObject())
             {
-                editor.asc_doubleClickOnTableOleObject(oleObject);
+	            editor.asc_editOleTableInFrameEditor();
             }
             else
             {

@@ -1545,6 +1545,13 @@ CEndnotesController.prototype.GetChartSettings = function()
 
 	return this.CurEndnote.GetChartSettings();
 };
+CEndnotesController.prototype.OpenOleEditor = function()
+{
+	if (false === this.private_CheckEndnotesSelectionBeforeAction())
+		return;
+
+	this.CurEndnote.OpenChartEditor();
+};
 CEndnotesController.prototype.AddInlineTable = function(nCols, nRows, nMode)
 {
 	if (false === this.private_CheckEndnotesSelectionBeforeAction())

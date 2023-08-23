@@ -115,6 +115,10 @@ CHdrFtrController.prototype.GetChartSettings = function()
 {
 	return this.HdrFtr.GetChartSettings();
 };
+CHdrFtrController.prototype.OpenOleEditor = function()
+{
+	this.HdrFtr.OpenOleEditor();
+};
 CHdrFtrController.prototype.AddInlineTable = function(nCols, nRows, nMode)
 {
 	return this.HdrFtr.AddInlineTable(nCols, nRows, nMode);

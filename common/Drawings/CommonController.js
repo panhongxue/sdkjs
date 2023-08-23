@@ -5297,6 +5297,16 @@
 					return bReturnOle ? null : false;
 				},
 
+				openOleEditor: function () {
+					const oleObject = this.canEditTableOleObject(true);
+					if (oleObject)
+					{
+						const oOleEditor = new AscCommon.CFrameOleBinaryLoader(oleObject);
+						oOleEditor.tryOpen();
+						this.changeCurrentState(new AscFormat.NullState(this));
+					}
+				},
+
 				startEditGeometry: function () {
 					var selectedObject = this.selection.groupSelection ? this.selection.groupSelection.selectedObjects[0] :
 						this.selectedObjects[0];

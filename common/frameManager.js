@@ -593,63 +593,108 @@
 	{
 		this.api = Asc.editor || editor;
 		this.binary = null;
+		const isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
+		this.isOpenOnClient = this.api["asc_isSupportFeature"]("ooxml") && !isLocalDesktop;
+		this.XLSXBase64 = null;
+		this.eventOnOpenFrame = "";
 	}
 	CFrameBinaryLoader.prototype.loadFrame = function ()
 	{
 
 	}
-	CFrameBinaryLoader.prototype.isOpenedFrame = function ()
+
+	CFrameBinaryLoader.prototype.getNestedPromise = function (binaryData)
 	{
-		return true;
+		const oThis = this;
+		return new Promise(function (resolve)
+		{
+			if (binaryData.length)
+			{
+				if (oThis.isOpenOnClient)
+				{
+					resolve(CFrameManagerBase.prototype.getEncodedArray.call(oThis, binaryData));
+				}
+				else
+				{
+					if (AscCommon.checkOOXMLSignature(binaryData))
+					{
+						oThis.api.getConvertedXLSXFileFromUrl({data: binaryData}, Asc.c_oAscFileType.XLSY, function (arrBinaryData) {
+							if (arrBinaryData)
+							{
+								let jsZlib = new AscCommon.ZLib();
+								if (jsZlib.open(arrBinaryData))
+								{
+									if (jsZlib.files && jsZlib.files.length) {
+										arrBinaryData = jsZlib.getFile(jsZlib.files[0]);
+									}
+								}
+								resolve(Array.from(arrBinaryData));
+							}
+							else
+							{
+								resolve(null);
+							}
+						});
+					}
+					else
+					{
+						resolve(CFrameManagerBase.prototype.getEncodedArray.call(oThis, binaryData));
+					}
+
+				}
+			}
+			else
+			{
+				resolve(null);
+			}
+		});
+	};
+
+	CFrameBinaryLoader.prototype.resolvePromise = function (sStream)
+	{
+		if (this.isTruthStream(sStream))
+		{
+			this.setXLSX(sStream);
+			this.loadFrame();
+		}
+		this.endLoadWorksheet();
+	};
+
+	CFrameBinaryLoader.prototype.isTruthStream = function (arrStream)
+	{
+		return (arrStream && (arrStream.length !== 0)) || !this.isExternal();
 	}
-	CFrameBinaryLoader.prototype.isOpenedChartFrame = function ()
+	CFrameBinaryLoader.prototype.startLoadWorksheet = function ()
 	{
-		return false;
+		this.api.sync_StartAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Waiting);
 	};
-	CFrameBinaryLoader.prototype.isOpenedOleFrame = function ()
+	CFrameBinaryLoader.prototype.endLoadWorksheet = function ()
 	{
-		return false;
-	};
-	CFrameBinaryLoader.prototype.destroy = function ()
-	{
-		this.api.frameLoader = null;
-	}
-
-
-	function CFrameDiagramBinaryLoader(oChart, fCallback)
-	{
-		CFrameBinaryLoader.call(this);
-		this.chart = oChart;
-		this.canLoad = true;
-		this.XLSXBase64 = null;
-		this.fCallback = fCallback || this.resolvePromise.bind(this);
-		const isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
-		this.isOpenOnClient = this.api["asc_isSupportFeature"]("ooxml") && !isLocalDesktop;
-	}
-	InitClassWithoutType(CFrameDiagramBinaryLoader, CFrameBinaryLoader);
-
-	CFrameDiagramBinaryLoader.prototype.createChartSpace = function (nType, oPlaceholder)
-	{
-
-	};
-	CFrameDiagramBinaryLoader.prototype.isOpenedChartFrame = function ()
-	{
-		return true;
+		this.api.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Waiting);
 	};
 
-	CFrameDiagramBinaryLoader.prototype.canLoadFrame = function ()
+	CFrameBinaryLoader.prototype.tryOpen = function ()
 	{
-		return this.canLoad;
+		this.startLoadWorksheet();
+		this.resolve();
 	};
-	CFrameDiagramBinaryLoader.prototype.getBinaryChart = function ()
-	{
-		const oBinaryChart = new Asc.asc_CChartBinary(this.chart);
-		oBinaryChart.setWorkbookBinary(this.XLSXBase64);
-		oBinaryChart.setOpenWorkbookOnClient(this.isOpenOnClient);
-		return oBinaryChart;
 
+	CFrameBinaryLoader.prototype.getFrameBinary = function ()
+	{
 	};
-	CFrameDiagramBinaryLoader.prototype.setXLSX = function (sStream)
+
+	CFrameBinaryLoader.prototype.loadFrame = function ()
+	{
+		this.api.asc_onOpenChartFrame();
+		if(!window['IS_NATIVE_EDITOR'] && this.api.WordControl)
+		{
+			this.api.WordControl.onMouseUpMainSimple();
+		}
+		this.api.frameManager.startLoadChartEditor();
+		this.api.sendEvent(this.eventOnOpenFrame, this.getFrameBinary());
+	};
+
+	CFrameBinaryLoader.prototype.setXLSX = function (sStream)
 	{
 		if (sStream && sStream.length)
 		{
@@ -667,6 +712,66 @@
 			this.XLSXBase64 = null;
 		}
 	};
+
+	function CFrameOleBinaryLoader(ole, fCallback)
+	{
+		CFrameBinaryLoader.call(this);
+		this.oleObject = ole;
+		this.fCallback = fCallback || this.resolvePromise.bind(this);
+		this.eventOnOpenFrame = 'asc_doubleClickOnTableOleObject';
+	}
+	InitClassWithoutType(CFrameOleBinaryLoader, CFrameBinaryLoader);
+	CFrameOleBinaryLoader.prototype.resolve = function ()
+	{
+		const oPromise = this.getNestedPromise(this.oleObject.m_aBinaryData);
+		oPromise.then(this.fCallback);
+	};
+	CFrameOleBinaryLoader.prototype.getFrameBinary = function ()
+	{
+			const oApi = Asc.editor || editor;
+			if (!oApi.isOpenedChartFrame) {
+				oApi.frameManager.startLoadOleEditor();
+				oApi.asc_onOpenChartFrame();
+				const oController = oApi.getGraphicController();
+				if (oController) {
+					AscFormat.ExecuteNoHistory(function () {
+						oController.checkSelectedObjectsAndCallback(function () {}, [], false);
+					}, this, []);
+				}
+			}
+			const sData = oApi.frameManager.getEncodedArray(this.oleObject.m_aBinaryData);
+			const nImageWidth = this.oleObject.extX * AscCommon.g_dKoef_mm_to_pix;
+			const nImageHeight = this.oleObject.extY * AscCommon.g_dKoef_mm_to_pix;
+			const documentImageUrls = AscCommon.g_oDocumentUrls.urls;
+
+			return {
+				"binary": sData,
+				"isFromSheetEditor": !!this.oleObject.worksheet,
+				"imageWidth": nImageWidth,
+				"imageHeight": nImageHeight,
+				"documentImageUrls": documentImageUrls
+			};
+	};
+
+
+
+	function CFrameDiagramBinaryLoader(oChart, fCallback)
+	{
+		CFrameBinaryLoader.call(this);
+		this.chart = oChart;
+		this.fCallback = fCallback || this.resolvePromise.bind(this);
+		this.eventOnOpenFrame = 'asc_doubleClickOnChart';
+	}
+	InitClassWithoutType(CFrameDiagramBinaryLoader, CFrameBinaryLoader);
+
+	CFrameDiagramBinaryLoader.prototype.getFrameBinary = function ()
+	{
+		const oBinaryChart = new Asc.asc_CChartBinary(this.chart);
+		oBinaryChart.setWorkbookBinary(this.XLSXBase64);
+		oBinaryChart.setOpenWorkbookOnClient(this.isOpenOnClient);
+		return oBinaryChart;
+	};
+
 	CFrameDiagramBinaryLoader.prototype.resolveFromArray = function (arrValues)
 	{
 		const isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
@@ -694,23 +799,10 @@
 		}
 		this.fCallback(arrStream ? Array.from(arrStream) : arrStream);
 	}
-	CFrameDiagramBinaryLoader.prototype.resolvePromise = function (sStream)
-	{
-		if (this.isTruthStream(sStream))
-		{
-			this.setXLSX(sStream);
-			this.loadFrame();
-		}
-		this.endLoadWorksheet();
-	};
 
-	CFrameDiagramBinaryLoader.prototype.setCanLoad = function (bPr)
-	{
-		this.canLoad = bPr;
-	}
 	CFrameDiagramBinaryLoader.prototype.isExternal = function ()
 	{
-		return this.chart.isExternal()
+		return this.chart.isExternal();
 	}
 	CFrameDiagramBinaryLoader.prototype.isTruthStream = function (arrStream)
 	{
@@ -738,76 +830,15 @@
 		}
 		else
 		{
-			const oPromise = this.getNestedPromise();
+			const oPromise = this.getNestedPromise(this.chart.XLSX);
 			oPromise.then(this.fCallback);
 		}
 	}
-	CFrameDiagramBinaryLoader.prototype.tryOpen = function ()
-	{
-		this.startLoadWorksheet();
-		this.resolve();
-	};
 
-	CFrameDiagramBinaryLoader.prototype.loadFrame = function ()
-	{
-		this.api.asc_onOpenChartFrame();
-		if(!window['IS_NATIVE_EDITOR'])
-		{
-			this.api.WordControl.onMouseUpMainSimple();
-		}
-		this.api.frameManager.startLoadChartEditor();
-		this.api.sendEvent('asc_doubleClickOnChart', this.getBinaryChart());
-	};
 	CFrameDiagramBinaryLoader.prototype.getAscLink = function ()
 	{
 		const oExternalReference = this.chart.getExternalReference();
 		return oExternalReference.getAscLink();
-	}
-	CFrameDiagramBinaryLoader.prototype.getNestedPromise = function ()
-	{
-		const oThis = this;
-		return new Promise(function (resolve)
-		{
-			if (oThis.chart.XLSX.length)
-			{
-				if (oThis.isOpenOnClient)
-				{
-					resolve(CFrameManagerBase.prototype.getEncodedArray.call(oThis, oThis.chart.XLSX));
-				}
-				else
-				{
-					if (AscCommon.checkOOXMLSignature(oThis.chart.XLSX))
-					{
-						oThis.api.getConvertedXLSXFileFromUrl({data: oThis.chart.XLSX}, Asc.c_oAscFileType.XLSY, function (arrBinaryData) {
-							if (arrBinaryData)
-							{
-								let jsZlib = new AscCommon.ZLib();
-								if (jsZlib.open(arrBinaryData))
-								{
-									if (jsZlib.files && jsZlib.files.length) {
-										arrBinaryData = jsZlib.getFile(jsZlib.files[0]);
-									}
-								}
-								resolve(Array.from(arrBinaryData));
-							}
-							else
-							{
-								resolve(null);
-							}
-						});
-					}
-					else
-					{
-						resolve(CFrameManagerBase.prototype.getEncodedArray.call(oThis, oThis.chart.XLSX));
-					}
-
-				}
-			}
-			else
-			{
-				resolve(null);
-			}
-		});
 	}
 
 	function CDiagramUpdater(oChart)
@@ -855,6 +886,7 @@
 	window["AscCommon"].CMainEditorFrameManager  = CMainEditorFrameManager;
 	window["AscCommon"].COleCellFrameManager = COleCellFrameManager;
 	window["AscCommon"].CFrameDiagramBinaryLoader = CFrameDiagramBinaryLoader;
+	window["AscCommon"].CFrameOleBinaryLoader = CFrameOleBinaryLoader;
 	window["AscCommon"].CDiagramUpdater = CDiagramUpdater;
 	window["AscCommon"].CFrameUpdateDiagramData = CFrameUpdateDiagramData;
 })(window);

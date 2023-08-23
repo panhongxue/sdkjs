@@ -4857,22 +4857,15 @@ var editor;
     this.handlers.trigger("asc_onEndAddShape");
   };
 
-  spreadsheet_api.prototype.asc_doubleClickOnTableOleObject = function (obj) {
-    this.frameManager.startLoadOleEditor();	// Для совместного редактирования
-    this.asc_onOpenChartFrame();
-    // console.log(editor.WordControl)
-    // if(!window['IS_NATIVE_EDITOR']) {
-    //   this.WordControl.onMouseUpMainSimple();
-    // }
-    if(this.handlers.hasTrigger("asc_doubleClickOnTableOleObject"))
-    {
-      this.sendEvent("asc_doubleClickOnTableOleObject", obj);
-    }
-    else
-    {
-      this.sendEvent("asc_doubleClickOnChart", obj); // TODO: change event type
-    }
-  };
+	spreadsheet_api.prototype.asc_editOleTableInFrameEditor = function ()
+	{
+		var ws = this.wb.getWorksheet();
+		const oController = ws && ws.objectRender && ws.objectRender.controller;
+		if (oController)
+		{
+			oController.openOleEditor();
+		}
+	};
 
     spreadsheet_api.prototype.asc_canEditGeometry = function () {
         var ws = this.wb.getWorksheet();
@@ -8980,7 +8973,7 @@ var editor;
   prot["asc_addTableOleObjectInOleEditor"] = prot.asc_addTableOleObjectInOleEditor;
   prot["asc_getBinaryInfoOleObject"] = prot.asc_getBinaryInfoOleObject;
   prot["asc_editOleObjectAction"] = prot.asc_editOleObjectAction;
-  prot["asc_doubleClickOnTableOleObject"] = prot.asc_doubleClickOnTableOleObject;
+  prot["asc_editOleTableInFrameEditor"] = prot.asc_editOleTableInFrameEditor;
   prot["asc_startEditCurrentOleObject"] = prot.asc_startEditCurrentOleObject;
 
   // Auto filters interface + format as table

@@ -739,7 +739,7 @@
 					}, this, []);
 				}
 			}
-			const sData = oApi.frameManager.getEncodedArray(this.oleObject.m_aBinaryData);
+			const sData = this.XLSXBase64;
 			const nImageWidth = this.oleObject.extX * AscCommon.g_dKoef_mm_to_pix;
 			const nImageHeight = this.oleObject.extY * AscCommon.g_dKoef_mm_to_pix;
 			const documentImageUrls = AscCommon.g_oDocumentUrls.urls;

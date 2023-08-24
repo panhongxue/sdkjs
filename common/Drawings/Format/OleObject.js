@@ -408,7 +408,7 @@ function (window, undefined) {
             if(typeof sImageUrl  === "string" &&
                 (!this.blipFill || this.blipFill.RasterImageId !== sImageUrl)) {
                 const _blipFill           = new AscFormat.CBlipFill();
-                _blipFill.RasterImageId = sImageUrl;
+                _blipFill.setRasterImageId(sImageUrl);
                 this.setBlipFill(_blipFill);
             }
             if(this.m_nPixWidth !== nPixWidth || this.m_nPixHeight !== nPixHeight) {

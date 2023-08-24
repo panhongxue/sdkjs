@@ -1981,9 +1981,13 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
             const localUrl = aImagesSync[i];
             if(api.DocInfo && api.DocInfo.get_OfflineApp()) {
                 const urlWithMedia = AscCommon.g_oDocumentUrls.mediaPrefix + localUrl;
-                if (api.frameManager.getGeneralImageUrl(urlWithMedia)) {
-                    AscCommon.g_oDocumentUrls.addImageUrl(localUrl, api.frameManager.getGeneralImageUrl(urlWithMedia));
-                } else {
+	            if (api.frameManager.isFrameEditor()) {
+								const sGeneralUrl = api.frameManager.getGeneralImageUrl(urlWithMedia);
+		            if (sGeneralUrl)
+		            {
+			            AscCommon.g_oDocumentUrls.addImageUrl(localUrl, sGeneralUrl);
+		            }
+	            } else {
                     AscCommon.g_oDocumentUrls.addImageUrl(localUrl, api.documentUrl + urlWithMedia);
                 }
             }
@@ -2016,8 +2020,12 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
         for (let localUrl in oBulletImages) {
             if(api.DocInfo && api.DocInfo.get_OfflineApp()) {
                 const urlWithMedia = AscCommon.g_oDocumentUrls.mediaPrefix + localUrl;
-                if (api.frameManager.getGeneralImageUrl(urlWithMedia)) {
-                    AscCommon.g_oDocumentUrls.addImageUrl(localUrl, api.frameManager.getGeneralImageUrl(urlWithMedia));
+                if (api.frameManager.isFrameEditor()) {
+									const sGeneralUrl = api.frameManager.getGeneralImageUrl(urlWithMedia);
+									if (sGeneralUrl)
+									{
+										AscCommon.g_oDocumentUrls.addImageUrl(localUrl, sGeneralUrl);
+									}
                 } else {
                     AscCommon.g_oDocumentUrls.addImageUrl(localUrl, api.documentUrl + urlWithMedia);
                 }

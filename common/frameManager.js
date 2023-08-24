@@ -189,6 +189,10 @@
 
 	CCellFrameManager.prototype.getImagesForHistory = function ()
 	{
+		if (this.api.isOpenOOXInBrowser)
+		{
+			return [];
+		}
 		const arrRasterImageIds = this.getAllImageIds();
 		const urlsForAddToHistory = [];
 		for (let i = 0; i < arrRasterImageIds.length; i += 1)
@@ -220,7 +224,10 @@
 	};
 	CCellFrameManager.prototype.getGeneralImageUrl = function (sImageId)
 	{
-		return this.generalDocumentUrls[sImageId];
+		if (!this.api.isOpenOOXInBrowser)
+		{
+			return this.generalDocumentUrls[sImageId];
+		}
 	};
 	CCellFrameManager.prototype.openWorkbookData = function (sStream)
 	{

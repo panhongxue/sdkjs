@@ -11263,7 +11263,8 @@
 		{
 			sSheet = sheet[0];
 		}
-		return AscCommon.parserHelp.getRaw3DRef('[' + external + ']' + sSheet, range);
+		const sExternal = typeof external === 'number' ? '[' + external + ']' : '';
+		return AscCommon.parserHelp.getRaw3DRef(sExternal + sSheet, range);
 	};
 	CChartRefBase.prototype.updateToExternal = function (oMainExternalReference, arrPastedExternalReferences)
 	{
@@ -11315,11 +11316,22 @@
 					const oPastedReference = arrPastedExternalReferences[nIndex - 1];
 					if (oPastedReference)
 					{
-						let nExternalReference = oWb.getExternalLinkIndexByName(oPastedReference.Id);
-						if (nExternalReference === null)
+						let nExternalReference;
+						const oReferenceData = oApi.DocInfo && oApi.DocInfo.ReferenceData;
+						const oPastedReferenceData = oPastedReference.referenceData;
+						let bIsCurDocReference = false;
+						if (oReferenceData && oPastedReferenceData)
 						{
-							oWb.addExternalReferences([oPastedReference]);
-							nExternalReference = oWb.externalReferences.length;
+							bIsCurDocReference = oReferenceData.fileKey === oPastedReferenceData.fileKey && oReferenceData.instanceId === oPastedReferenceData.instanceId;
+						}
+						if (!bIsCurDocReference)
+						{
+							nExternalReference = oWb.getExternalLinkIndexByName(oPastedReference.Id);
+							if (nExternalReference === null)
+							{
+								oWb.addExternalReferences([oPastedReference]);
+								nExternalReference = oWb.externalReferences.length;
+							}
 						}
 						arrResult.push(this.getExternal3DRef([oParsedRef.sheet, oParsedRef.sheet2], oParsedRef.range, nExternalReference));
 					}

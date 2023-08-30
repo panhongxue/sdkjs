@@ -1413,6 +1413,7 @@ background-repeat: no-repeat;\
 			[c_oAscDocumentShortcutType.UpdateFields, 120, false, false, false],
 			[c_oAscDocumentShortcutType.Superscript, 188, true, false, false],
 			[c_oAscDocumentShortcutType.NonBreakingHyphen, 189, true, true, false],
+			[c_oAscDocumentShortcutType.NonBreakingHyphen, 173, true, true, false],
 			[c_oAscDocumentShortcutType.HorizontalEllipsis, 190, true, false, true],
 			[c_oAscDocumentShortcutType.Subscript, 190, true, false, false],
 			[c_oAscDocumentShortcutType.IncreaseFontSize, 221, true, false, false],
@@ -1429,7 +1430,9 @@ background-repeat: no-repeat;\
 			[c_oAscDocumentShortcutType.ApplyHeading3, 51, false, false, true],
 			[c_oAscDocumentShortcutType.InsertFootnoteNow, 70, true, false, true],
 			[c_oAscDocumentShortcutType.InsertEquation, 187, false, false, true],
-			[c_oAscDocumentShortcutType.SoftHyphen, 189, false, false, true]
+			[c_oAscDocumentShortcutType.InsertEquation, 61, false, false, true],
+			[c_oAscDocumentShortcutType.SoftHyphen, 189, false, false, true],
+			[c_oAscDocumentShortcutType.SoftHyphen, 173, false, false, true]
 		]);
 	}
 
@@ -1440,7 +1443,9 @@ background-repeat: no-repeat;\
 			[c_oAscDocumentShortcutType.ApplyHeading2, 50, true, false, true],
 			[c_oAscDocumentShortcutType.ApplyHeading3, 51, true, false, true],
 			[c_oAscDocumentShortcutType.InsertEquation, 187, true, false, true],
-			[c_oAscDocumentShortcutType.SoftHyphen, 189, true, false, true]
+			[c_oAscDocumentShortcutType.InsertEquation, 61, true, false, true],
+			[c_oAscDocumentShortcutType.SoftHyphen, 189, true, false, true],
+			[c_oAscDocumentShortcutType.SoftHyphen, 173, true, false, true]
 		]);
 	}
 
@@ -13708,7 +13713,61 @@ background-repeat: no-repeat;\
 		oCtx.drawImage(oOverlayCanvas, 0, 0);
 		return oCtx.getImageData(0, 0, oCanvas.width, oCanvas.height);
 	};
-
+	
+	// auto-hyphenation
+	asc_docs_api.prototype.asc_setAutoHyphenation = function(isAuto)
+	{
+		let logicDocument = this.private_GetLogicDocument();
+		if (!logicDocument)
+			return;
+		
+		logicDocument.setAutoHyphenation(isAuto);
+	};
+	asc_docs_api.prototype.asc_isAutoHyphenation = function()
+	{
+		let logicDocument = this.private_GetLogicDocument();
+		return logicDocument ? logicDocument.getDocumentSettings().isAutoHyphenation() : false;
+	};
+	asc_docs_api.prototype.asc_setHyphenateCaps = function(isHyphenateCaps)
+	{
+		let logicDocument = this.private_GetLogicDocument();
+		if (!logicDocument)
+			return;
+		
+		logicDocument.setHyphenateCaps(isHyphenateCaps);
+	};
+	asc_docs_api.prototype.asc_isHyphenateCaps = function()
+	{
+		let logicDocument = this.private_GetLogicDocument();
+		return logicDocument ? logicDocument.getDocumentSettings().isHyphenateCaps() : true;
+	};
+	asc_docs_api.prototype.asc_setConsecutiveHyphenLimit = function(limit)
+	{
+		let logicDocument = this.private_GetLogicDocument();
+		if (!logicDocument)
+			return;
+		
+		logicDocument.setConsecutiveHyphenLimit(limit);
+	};
+	asc_docs_api.prototype.asc_getConsecutiveHyphenLimit = function()
+	{
+		let logicDocument = this.private_GetLogicDocument();
+		return logicDocument ? logicDocument.getDocumentSettings().getConsecutiveHyphenLimit() : 0;
+	};
+	asc_docs_api.prototype.asc_getAutoHyphenationSettings = function()
+	{
+		let logicDocument = this.private_GetLogicDocument();
+		return logicDocument ? logicDocument.getAutoHyphenationSettings() : new AscCommon.AutoHyphenationSettings();
+	};
+	asc_docs_api.prototype.asc_setAutoHyphenationSettings = function(settings)
+	{
+		let logicDocument = this.private_GetLogicDocument();
+		if (!logicDocument)
+			return;
+		
+		logicDocument.setAutoHyphenationSettings(settings);
+	};
+	
 	//-------------------------------------------------------------export---------------------------------------------------
 	window['Asc']                                                       = window['Asc'] || {};
 	CAscSection.prototype['get_PageWidth']                              = CAscSection.prototype.get_PageWidth;
@@ -14498,6 +14557,16 @@ background-repeat: no-repeat;\
 	asc_docs_api.prototype["asc_drawPrintPreview"] 	= asc_docs_api.prototype.asc_drawPrintPreview;
 	asc_docs_api.prototype["asc_closePrintPreview"] = asc_docs_api.prototype.asc_closePrintPreview;
 	asc_docs_api.prototype["asc_getPageSize"] 		= asc_docs_api.prototype.asc_getPageSize;
+	
+	// auto hyphenation
+	asc_docs_api.prototype["asc_setAutoHyphenation"]         = asc_docs_api.prototype.asc_setAutoHyphenation;
+	asc_docs_api.prototype["asc_isAutoHyphenation"]          = asc_docs_api.prototype.asc_isAutoHyphenation;
+	asc_docs_api.prototype["asc_setHyphenateCaps"]           = asc_docs_api.prototype.asc_setHyphenateCaps;
+	asc_docs_api.prototype["asc_isHyphenateCaps"]            = asc_docs_api.prototype.asc_isHyphenateCaps;
+	asc_docs_api.prototype["asc_setConsecutiveHyphenLimit"]  = asc_docs_api.prototype.asc_setConsecutiveHyphenLimit;
+	asc_docs_api.prototype["asc_getConsecutiveHyphenLimit"]  = asc_docs_api.prototype.asc_getConsecutiveHyphenLimit;
+	asc_docs_api.prototype["asc_setAutoHyphenationSettings"] = asc_docs_api.prototype.asc_setAutoHyphenationSettings;
+	asc_docs_api.prototype["asc_getAutoHyphenationSettings"] = asc_docs_api.prototype.asc_getAutoHyphenationSettings;
 
 	CDocInfoProp.prototype['get_PageCount']             = CDocInfoProp.prototype.get_PageCount;
 	CDocInfoProp.prototype['put_PageCount']             = CDocInfoProp.prototype.put_PageCount;

@@ -1505,6 +1505,7 @@
 	// get permissions
 	baseEditorsApi.prototype.asc_getEditorPermissions            = function()
 	{
+		AscCommon.sendClientLog("debug", AscCommon.getClientInfoString("getEditorPermissions", performance.now()), this);
 		this._coAuthoringInit();
 	};
 	baseEditorsApi.prototype.getConvertedXLSXFileFromUrl  = function (oDocument, nOutputFormat, fCallback) {

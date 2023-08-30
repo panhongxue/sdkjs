@@ -30,58 +30,59 @@
  *
  */
 
-//This file contains definition of object which used in api.js
-//It need to prevent minimize the name of object's method.
+"use strict";
 
-var Asc;
-var AscDFH;
-var AscCH;
-var AscFormat;
-var AscFonts;
-var AscCommon;
-var AscCommonWord;
-var AscCommonExcel;
-var AscCommonSlide;
-var AscBuilder;
-var AscWord;
-var AscMath;
-var AscJsonConverter;
-var AscCrypto;
-var AscOForm;
-var AscHyphenation;
+const AscHyphenation = {};
 
-function jq(){}
-function DE(){}
-function SE(){}
-function SSE(){}
-function PE(){}
-function Ext(){}
-function FB(){}
-function twttr(){}
-function _gaq(){}
-
-function constructor(){}
-
-function touchstart(){}
-function touchmove(){}
-function touchend(){}
-function mousedown(){}
-function mousemove(){}
-function mouseup(){}
-function pointerdown(){}
-function pointermove(){}
-function pointerup(){}
-function MSPointerDown(){}
-function MSPointerMove(){}
-function MSPointerUp(){}
-
-var editor;
-
-var WebAssembly;
-WebAssembly.instantiate;
-WebAssembly.instantiateStreaming;
-WebAssembly.Table;
-WebAssembly.Memory;
-function grow(){}
-
-var VBArray;
+(function(window)
+{
+	// Это тестовые функции, которые должны быть заменены на нормальные
+	let BUFFER_STRING = "";
+	
+	AscHyphenation.addCodePoint = function(codePoint)
+	{
+		BUFFER_STRING += String.fromCodePoint(codePoint);
+	};
+	AscHyphenation.setLang = function(langCode)
+	{
+		return true;
+	};
+	AscHyphenation.hyphenate = function()
+	{
+		let checkString = BUFFER_STRING.toLowerCase();
+		
+		if ("abcd" === checkString)
+			return [2];
+		else if ("abb" === checkString)
+			return [1];
+		else if ("abbb" === checkString)
+			return [1];
+		else if ("aaabbb" === checkString)
+			return [3];
+		else if ("aabbb" === checkString)
+			return [2];
+		else if ("aabbbb" === checkString)
+			return [2];
+		else if ("abbb" === checkString)
+			return [1];
+		else if ("abbbb" === checkString)
+			return [1];
+		else if ("aaabbb" === checkString)
+			return [3];
+		else if ("testtest" === checkString)
+			return [4];
+		else if ("aabbbcccdddd" === checkString)
+			return [2, 5, 8];
+		else if ("ccdddd" === checkString)
+			return [3];
+		else if ("zz½www" === checkString)
+			return [2];
+		
+		return [];
+	};
+	AscHyphenation.clear = function()
+	{
+		BUFFER_STRING = "";
+	};
+	
+})(window);

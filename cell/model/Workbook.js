@@ -2281,6 +2281,7 @@
 		this.workbookFormulas = new AscCommonExcel.CWorkbookFormulas();
 		this.loadCells = [];//to return one object when nested _getCell calls
 		this.DrawingDocument = new AscCommon.CDrawingDocument();
+		this.mathTrackHandler = new AscWord.CMathTrackHandler(this.DrawingDocument, oApi);
 
 		this.aComments = [];	// Комментарии к документу
 		this.aWorksheets = [];
@@ -17770,7 +17771,7 @@
 		this.worksheet.workbook.dependencyFormulas.addToChangedRange(this.worksheet.getId(), new Asc.Range(oBBox.c1, oBBox.r1, oBBox.c2, oBBox.r2));
 		this.worksheet.workbook.dependencyFormulas.calcTree();
 		if (this.worksheet.workbook.handlers) {
-			this.worksheet.workbook.handlers.trigger("changeDocument", AscCommonExcel.docChangedType.sheetContent, this.worksheet, null, this.ws.getId());
+			this.worksheet.workbook.handlers.trigger("changeDocument", AscCommonExcel.docChangedType.sheetContent, this.worksheet, null, this.worksheet.getId());
 		}
 
 		if (false == this.worksheet.workbook.bUndoChanges && (false == this.worksheet.workbook.bRedoChanges || this.worksheet.workbook.bCollaborativeChanges)) {

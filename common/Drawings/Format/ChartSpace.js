@@ -3945,7 +3945,12 @@ function(window, undefined) {
 		}
 		copy.setDate1904(this.date1904);
 		if (this.externalData) {
-			copy.setExternalData(this.externalData.createDuplicate());
+			const oCopyExternalData = {};
+			if (this.externalData.m_autoUpdate)
+			{
+				oCopyExternalData.m_autoUpdate = {m_val: this.externalData.m_autoUpdate.m_val};
+			}
+			copy.setExternalData(oCopyExternalData);
 		}
 		if (this.XLSX) {
 			copy.setXLSX(this.XLSX.slice());

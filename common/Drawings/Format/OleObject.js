@@ -525,41 +525,9 @@ function (window, undefined) {
         }
     };
 
-    function asc_putBinaryDataToFrameFromTableOleObject(oOleObject)
-    {
-        if (oOleObject instanceof AscFormat.COleObject) {
-            const oApi = Asc.editor || editor;
-            if (!oApi.isOpenedChartFrame) {
-                oApi.frameManager.startLoadOleEditor();
-                oApi.asc_onOpenChartFrame();
-                const oController = oApi.getGraphicController();
-                if (oController) {
-                    AscFormat.ExecuteNoHistory(function () {
-                        oController.checkSelectedObjectsAndCallback(function () {}, [], false);
-                    }, this, []);
-                }
-            }
-            const sData = oApi.frameManager.getEncodedArray(oOleObject.m_aBinaryData);
-            const nImageWidth = oOleObject.extX * AscCommon.g_dKoef_mm_to_pix;
-            const nImageHeight = oOleObject.extY * AscCommon.g_dKoef_mm_to_pix;
-            const documentImageUrls = AscCommon.g_oDocumentUrls.urls;
-
-            return {
-                "binary": sData,
-                "isFromSheetEditor": !!oOleObject.worksheet,
-                "imageWidth": nImageWidth,
-                "imageHeight": nImageHeight,
-                "documentImageUrls": documentImageUrls
-            };
-        }
-        return {
-            "binary": null
-        };
-    }
     window['Asc'] = window['Asc'] || {};
     window['AscFormat'] = window['AscFormat'] || {};
     window['AscFormat'].COleObject = COleObject;
-    window['Asc'].asc_putBinaryDataToFrameFromTableOleObject = window['Asc']['asc_putBinaryDataToFrameFromTableOleObject'] = asc_putBinaryDataToFrameFromTableOleObject;
     window['AscFormat'].EOLEDrawAspect = EOLEDrawAspect;
 
 })(window);

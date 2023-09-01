@@ -434,8 +434,6 @@
 	}
 	CDiagramCellFrameManager.prototype.setMainDiagram = function (oInfo)
 	{
-		AscFormat.ExecuteNoHistory(function ()
-		{
 			const asc_chart_binary = new Asc.asc_CChartBinary();
 			asc_chart_binary.asc_setBinary(oInfo["binary"]);
 			const oModel = this.api.wb.getWorksheet().model;
@@ -444,7 +442,6 @@
 
 			oNewChartSpace.convertToFrameChart();
 			this.mainDiagram = oNewChartSpace;
-		}, this, []);
 	}
 	CDiagramCellFrameManager.prototype.preObtain = function (oInfo)
 	{

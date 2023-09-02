@@ -827,12 +827,22 @@
 			}
 			case c_oAscFrameDataType.UpdateDiagramInFrame:
 			{
-				const sBase64 = oInformation["workbookBinary"];
+				const base64 = oInformation["workbookBinary"];
 				const wbModel = new AscCommonExcel.Workbook(this.handlers, this);
 				const oOldWbModel = this.wbModel;
+				const bOldOpenOOXInBrowser = this.isOpenOOXInBrowser;
 				this.wbModel = wbModel;
-				const oReader = new AscCommonExcel.BinaryFileReader();
-				oReader.Read(sBase64, wbModel);
+				this.isOpenOOXInBrowser = this["asc_isSupportFeature"]("ooxml") && AscCommon.checkOOXMLSignature(base64);
+				const isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
+				if (!isLocalDesktop && this.isOpenOOXInBrowser)
+				{
+					this.openDocumentFromZip(wbModel, base64);
+				}
+				else
+				{
+					const oReader = new AscCommonExcel.BinaryFileReader();
+					oReader.Read(sBase64, wbModel);
+				}
 				const oChartSpaceBinary = new Asc.asc_CChartBinary();
 				oChartSpaceBinary.asc_setBinary(oInformation["binary"]);
 				const oWorksheet = wbModel.getWorksheet(0);
@@ -842,6 +852,7 @@
 				oChartSpace.handleUpdateChart();
 				oChartSpace.recalculate();
 				this.wbModel = oOldWbModel;
+				this.isOpenOOXInBrowser = bOldOpenOOXInBrowser;
 				this.sendFromFrameToGeneralEditor(new AscCommon.CFrameUpdateDiagramData(oChartSpace));
 				break;
 			}

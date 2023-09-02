@@ -845,7 +845,7 @@
 				else
 				{
 					const oReader = new AscCommonExcel.BinaryFileReader();
-					oReader.Read(sBase64, wbModel);
+					oReader.Read(base64, wbModel);
 				}
 				const oChartSpaceBinary = new Asc.asc_CChartBinary();
 				oChartSpaceBinary.asc_setBinary(oInformation["binary"]);

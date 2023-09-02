@@ -9158,26 +9158,7 @@ background-repeat: no-repeat;\
 
 	asc_docs_api.prototype.asc_editChartDrawingObject = function(chartBinary)
 	{
-		/**/
-		const arrChanges = AscCommon.History.UndoChartPreviewPoint();
-		if (chartBinary['noHistory'])
-		{
-			if (arrChanges)
-			{
-				this.WordControl.m_oLogicDocument.RecalculateByChanges(arrChanges);
-			}
-			return;
-		}
-		// Находим выделенную диаграмму и накатываем бинарник
-		if (AscFormat.isObject(chartBinary))
-		{
-			if (false === this.WordControl.m_oLogicDocument.Document_Is_SelectionLocked(changestype_Paragraph_Content))
-			{
-				this.WordControl.m_oLogicDocument.StartAction(AscDFH.historydescription_Document_EditChart);
-				this.WordControl.m_oLogicDocument.EditChart(chartBinary);
-				this.WordControl.m_oLogicDocument.FinalizeAction();
-			}
-		}
+		this.WordControl.m_oLogicDocument.FinalizeEditChart(chartBinary);
 	};
 
 	asc_docs_api.prototype.sync_closeChartEditor = function()

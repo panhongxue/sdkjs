@@ -819,8 +819,12 @@
 					}
 					else
 					{
+						const nPointType = oLogicDocument.IsDocumentEditor() ? AscDFH.historydescription_Document_EditChart : AscDFH.historydescription_Presentation_EditChart;
+						oLogicDocument.StartAction(nPointType);
 						oLogicDocument.EditChart(oBinaryData);
 						this.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Waiting);
+						this.asc_onCloseFrameEditor();
+						oLogicDocument.FinalizeAction();
 					}
 				}
 				break;

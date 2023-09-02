@@ -2340,8 +2340,11 @@ background-repeat: no-repeat;\
 		const oChart = oGraphicController && oGraphicController.getSingleSelectedChart();
 		if (oChart)
 		{
-			const oUpdater = new AscCommon.CDiagramUpdater(oChart);
-			oUpdater.update();
+			if (this.WordControl.m_oLogicDocument.Document_Is_SelectionLocked(changestype_Drawing_Props) === false)
+			{
+				const oUpdater = new AscCommon.CDiagramUpdater(oChart);
+				oUpdater.update();
+			}
 		}
 	};
 	asc_docs_api.prototype._autoSaveInner = function () {
@@ -7864,7 +7867,7 @@ background-repeat: no-repeat;\
 		// Находим выделенную диаграмму и накатываем бинарник
 		if (AscCommon.isRealObject(chartBinary))
 		{
-			this.WordControl.m_oLogicDocument.EditChart(chartBinary);
+			this.WordControl.m_oLogicDocument.FinalizeEditChart(chartBinary);
 		}
 	};
 

@@ -6027,30 +6027,34 @@ CPresentation.prototype.UpdateChart = function (binary) {
 		this.DrawingDocument.OnRecalculatePage(this.CurPage, oSlide);
 	}
 };
-CPresentation.prototype.EditChart = function (binary) {
-	var _this = this;
+CPresentation.prototype.FinalizeEditChart = function (binary)
+{
+	const oThis = this;
 	const oSlide = this.GetCurrentSlide();
 	if (oSlide)
 	{
-			AscCommon.History.UndoChartPreviewPoint();
-			if (binary['noHistory'])
+		AscCommon.History.UndoChartPreviewPoint();
+		if (binary['noHistory'])
+		{
+			const oChart = oSlide.graphicObjects.getSingleSelectedChart();
+			if (oChart)
 			{
-				const oChart = oSlide.graphicObjects.getSingleSelectedChart();
-				if (oChart)
-				{
-					oChart.recalcChart();
-				}
+				oChart.recalcChart();
 			}
-			else
+		}
+		else
 		{
 			oSlide.graphicObjects.checkSelectedObjectsAndCallback(function () {
-				oSlide.graphicObjects.editChart(binary);
-				_this.Document_UpdateInterfaceState();
-			}, [binary], false, AscDFH.historydescription_Presentation_EditChart);
+				oThis.EditChart(binary);
+			}, [], false, AscDFH.historydescription_Presentation_EditChart);
 		}
 	}
 };
-
+CPresentation.prototype.EditChart = function (binary) {
+	const oSlide = this.GetCurrentSlide();
+	oSlide.graphicObjects.editChart(binary);
+	this.Document_UpdateInterfaceState();
+};
 CPresentation.prototype.GetChartObject = function (type) {
 	return this.Slides[this.CurPage].graphicObjects.getChartObject(type, undefined, undefined, true);
 };

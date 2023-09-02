@@ -852,6 +852,7 @@
 
 	CDiagramUpdater.prototype.update = function ()
 	{
+		this.api.asc_onOpenFrameEditor();
 		this.frameLoader.startLoadWorksheet();
 		this.frameLoader.resolve();
 	};
@@ -875,7 +876,7 @@
 		else
 		{
 			this.frameLoader.endLoadWorksheet();
-			// todo
+			this.api.asc_onCloseFrameEditor();
 		}
 	};
 

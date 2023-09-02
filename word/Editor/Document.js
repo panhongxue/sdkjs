@@ -5996,7 +5996,28 @@ CDocument.prototype.AddTextArt = function(nStyle)
 CDocument.prototype.AddSignatureLine = function(oSignatureDrawing){
     this.Controller.AddSignatureLine(oSignatureDrawing);
 };
-
+CDocument.prototype.FinalizeEditChart = function(chartBinary)
+{
+	const arrChanges = AscCommon.History.UndoChartPreviewPoint();
+	if (chartBinary['noHistory'])
+	{
+		if (arrChanges)
+		{
+			this.RecalculateByChanges(arrChanges);
+		}
+		return;
+	}
+	// Находим выделенную диаграмму и накатываем бинарник
+	if (AscFormat.isObject(chartBinary))
+	{
+		if (false === this.Document_Is_SelectionLocked(changestype_Paragraph_Content))
+		{
+			this.StartAction(AscDFH.historydescription_Document_EditChart);
+			this.EditChart(chartBinary);
+			this.FinalizeAction();
+		}
+	}
+};
 CDocument.prototype.EditChart = function(Chart)
 {
 	this.Controller.EditChart(Chart);

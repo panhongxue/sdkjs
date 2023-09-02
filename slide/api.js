@@ -1228,7 +1228,7 @@
 
 	asc_docs_api.prototype.isDocumentModified = function()
 	{
-		if (!this.canSave || this.isOpenedChartFrame)
+		if (!this.canSave || this.isOpenedFrameEditor)
 		{
 			// Пока идет сохранение, мы не закрываем документ
 			return true;
@@ -4782,7 +4782,7 @@ background-repeat: no-repeat;\
 
 	asc_docs_api.prototype._addImageUrl = function(urls, obj)
 	{
-		if (obj && obj.sendUrlsToFrameEditor && this.isOpenedChartFrame) {
+		if (obj && obj.sendUrlsToFrameEditor && this.isOpenedFrameEditor) {
 			this.addImageUrlsFromGeneralToFrameEditor(urls);
 			return;
 		}
@@ -5022,7 +5022,7 @@ background-repeat: no-repeat;\
 
 	asc_docs_api.prototype.ChartApply              = function(obj)
 	{
-		this.asc_onCloseChartFrame();
+		this.asc_onCloseFrameEditor();
 		if (obj.ChartProperties && obj.ChartProperties.type === Asc.c_oAscChartTypeSettings.stock && this.WordControl.m_oLogicDocument.Slides[this.WordControl.m_oLogicDocument.CurPage])
 		{
 			if (!AscFormat.CheckStockChart(this.WordControl.m_oLogicDocument.Slides[this.WordControl.m_oLogicDocument.CurPage].graphicObjects, this))
@@ -7822,7 +7822,7 @@ background-repeat: no-repeat;\
 
 		if (!AscFormat.isRealNumber(type))
 		{
-			this.asc_onOpenChartFrame();
+			this.asc_onOpenFrameEditor();
 			oLogicDocument.Document_Is_SelectionLocked(AscCommon.changestype_Drawing_Props);
 		}
 		return oLogicDocument.GetChartObject(type);
@@ -7832,8 +7832,10 @@ background-repeat: no-repeat;\
 		const oLogicDocument = this.private_GetLogicDocument();
 		if (!oLogicDocument)
 			return;
-
-		oLogicDocument.Slides[oLogicDocument.CurPage].openChartEditor();
+		if(oLogicDocument.Document_Is_SelectionLocked(changestype_Drawing_Props) === false)
+		{
+			oLogicDocument.Slides[oLogicDocument.CurPage].openChartEditor();
+		}
 	}
 
 	asc_docs_api.prototype.asc_editOleTableInFrameEditor = function ()
@@ -7842,7 +7844,10 @@ background-repeat: no-repeat;\
 		if (!oLogicDocument)
 			return;
 
-		oLogicDocument.Slides[oLogicDocument.CurPage].openOleEditor();
+		if(oLogicDocument.Document_Is_SelectionLocked(changestype_Drawing_Props) === false)
+		{
+			oLogicDocument.Slides[oLogicDocument.CurPage].openOleEditor();
+		}
 	};
 
 	asc_docs_api.prototype.asc_addChartDrawingObject = function(nType, Placeholder)
@@ -7866,7 +7871,7 @@ background-repeat: no-repeat;\
 	asc_docs_api.prototype.asc_applyChartSettings = function (oAscChartSettings)
 	{
 		const oLogicDocument = this.private_GetLogicDocument();
-		this.asc_onCloseChartFrame();
+		this.asc_onCloseFrameEditor();
 		if (oLogicDocument)
 		{
 			const oController = oLogicDocument.GetCurrentController();
@@ -7879,16 +7884,16 @@ background-repeat: no-repeat;\
 		if (oLogicDocument)
 		{
 			if(bNoLock !== true) {
-				this.asc_onOpenChartFrame();
+				this.asc_onOpenFrameEditor();
 			}
 			const oController = oLogicDocument.GetCurrentController();
 			return oController.getChartSettings();
 		}
 	};
 
-	asc_docs_api.prototype.asc_onCloseChartFrame               = function()
+	asc_docs_api.prototype.asc_onCloseFrameEditor               = function()
 	{
-		AscCommon.baseEditorsApi.prototype.asc_onCloseChartFrame.call(this);
+		AscCommon.baseEditorsApi.prototype.asc_onCloseFrameEditor.call(this);
 		this.WordControl.m_bIsMouseLock = false;
 	};
 
@@ -9207,7 +9212,7 @@ background-repeat: no-repeat;\
 	asc_docs_api.prototype['set_PositionOnPage']                  = asc_docs_api.prototype.set_PositionOnPage;
 	asc_docs_api.prototype['get_OriginalSizeImage']               = asc_docs_api.prototype.get_OriginalSizeImage;
 	asc_docs_api.prototype['asc_FitImagesToSlide']                = asc_docs_api.prototype.asc_FitImagesToSlide;
-	asc_docs_api.prototype['asc_onCloseChartFrame']               = asc_docs_api.prototype.asc_onCloseChartFrame;
+	asc_docs_api.prototype['asc_onCloseFrameEditor']               = asc_docs_api.prototype.asc_onCloseFrameEditor;
 	asc_docs_api.prototype['sync_AddImageCallback']               = asc_docs_api.prototype.sync_AddImageCallback;
 	asc_docs_api.prototype['sync_ImgPropCallback']                = asc_docs_api.prototype.sync_ImgPropCallback;
 	asc_docs_api.prototype['SetDrawingFreeze']                    = asc_docs_api.prototype.SetDrawingFreeze;

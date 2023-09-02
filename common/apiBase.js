@@ -124,7 +124,8 @@
 		this.textArtPreviewManager = null;
 		this.shapeElementId        = null;
 		// Режим вставки диаграмм в редакторе документов
-		this.isOpenedChartFrame    = false;
+		this.isOpenedFrameEditor    = false;
+		this.openedFrameEditorType  = null;
 
 		this.MathMenuLoad          = false;
 
@@ -733,12 +734,27 @@
 		this.sendEvent("asc_sendFromFrameToGeneralEditor", oData);
 	};
 
-	baseEditorsApi.prototype.sendFromGeneralToFrameEditor = function (oData)
+	baseEditorsApi.prototype.sendFromGeneralToOleEditor = function (oData)
 	{
-		this.sendEvent("asc_sendFromGeneralToFrameEditor", oData);
+		this.sendEvent("asc_sendFromGeneralToOleEditor", oData);
 	};
 
+	baseEditorsApi.prototype.sendFromGeneralToChartEditor = function (oData)
+	{
+		this.sendEvent("asc_sendFromGeneralToChartEditor", oData);
+	};
 
+	baseEditorsApi.prototype.sendFromGeneralToOpenedFrameEditor = function (oData)
+	{
+		if (this.openedFrameEditorType === AscCommon.FrameEditorTypes.OleEditor)
+		{
+			this.sendFromGeneralToOleEditor(oData);
+		}
+		else if (this.openedFrameEditorType === AscCommon.FrameEditorTypes.ChartEditor)
+		{
+			this.sendFromGeneralToChartEditor(oData);
+		}
+	};
 	baseEditorsApi.prototype.asc_getInformationBetweenFrameAndGeneralEditor = function (oData)
 	{
 		const nType = oData["type"];
@@ -758,7 +774,7 @@
 			case c_oAscFrameDataType.OpenFrame: // TODO: это нужно перенести в web-apps,
 				// при открытии и закрытии фрейма метод должен вызываться там, в 7.2 это сделать не успели
 			{
-				this.asc_onOpenChartFrame();
+				this.asc_onOpenFrameEditor(oInformation["editorType"]);
 				break;
 			}
 			case c_oAscFrameDataType.ShowImageDialogInFrame:
@@ -870,7 +886,7 @@
 	};
 
 	baseEditorsApi.prototype.sendStartUploadImageActionToFrameEditor = function () {
-		this.sendFromGeneralToFrameEditor({
+		this.sendFromGeneralToOpenedFrameEditor({
 			"type": c_oAscFrameDataType.StartUploadImageAction,
 		});
 	}
@@ -883,7 +899,7 @@
 			const url = urls[i];
 			urlsForAddToDocumentUrls[AscCommon.g_oDocumentUrls.getLocal(url)] = url;
 		}
-		this.sendFromGeneralToFrameEditor({
+		this.sendFromGeneralToOpenedFrameEditor({
 			"type": AscCommon.c_oAscFrameDataType.GetUrlsFromImageDialog,
 			"information": urlsForAddToDocumentUrls
 		});
@@ -1846,14 +1862,14 @@
 			}
 		};
 		this.CoAuthoringApi.onDocumentOpen = function (inputWrap) {
-			if (t.isOpenedChartFrame) {
+			if (t.isOpenedFrameEditor) {
 				const oSentInformation = {
 					"type": c_oAscFrameDataType.GetLoadedImages,
 					"information": {
 						"inputWrap": inputWrap
 					}
 				};
-				t.sendFromGeneralToFrameEditor(oSentInformation);
+				t.sendFromGeneralToOpenedFrameEditor(oSentInformation);
 			}
 			if (AscCommon.EncryptionWorker.isNeedCrypt())
 			{
@@ -2313,16 +2329,18 @@
 	{
 		return this.textArtPreviewManager.getWordArtStyles();
 	};
-	baseEditorsApi.prototype.asc_onOpenChartFrame                = function()
+	baseEditorsApi.prototype.asc_onOpenFrameEditor                = function(nEditorType)
 	{
 		if(this.isMobileVersion){
 			return;
 		}
-		this.isOpenedChartFrame = true;
+		this.isOpenedFrameEditor = true;
+		this.openedFrameEditorType = nEditorType || AscCommon.FrameEditorTypes.JustBlock;
 	};
-	baseEditorsApi.prototype.asc_onCloseChartFrame               = function()
+	baseEditorsApi.prototype.asc_onCloseFrameEditor               = function()
 	{
-		this.isOpenedChartFrame = false;
+		this.isOpenedFrameEditor = false;
+		this.openedFrameEditorType = null;
 	};
 	baseEditorsApi.prototype.asc_setInterfaceDrawImagePlaceShape = function(elementId)
 	{
@@ -2392,7 +2410,7 @@
 			{
 				t.sendEvent("asc_onError", error, c_oAscError.Level.NoCritical);
 			}
-			if (obj && obj.sendUrlsToFrameEditor && t.isOpenedChartFrame)
+			if (obj && obj.sendUrlsToFrameEditor && t.isOpenedFrameEditor)
 			{
 				t.sendStartUploadImageActionToFrameEditor();
 			}
@@ -2408,7 +2426,7 @@
 		}
 		else
 		{
-			if (obj && obj.sendUrlsToFrameEditor && t.isOpenedChartFrame)
+			if (obj && obj.sendUrlsToFrameEditor && t.isOpenedFrameEditor)
 			{
 				this.sendStartUploadImageActionToFrameEditor();
 			}

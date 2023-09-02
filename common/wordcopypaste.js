@@ -2319,12 +2319,12 @@ function sendImgUrls(api, images, callback, bNotShowError, token) {
     "id": api.documentId, "c": "imgurls", "userid": api.documentUserId, "saveindex": g_oDocumentUrls.getMaxIndex(),
     "tokenDownload": token, "data": images
   };
-  if (!api.isOpenedChartFrame) {
+  if (!api.isOpenedFrameEditor) {
       api.sync_StartAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.LoadImage);
   }
 
   api.fCurCallback = function (input) {
-    if (!api.isOpenedChartFrame) {
+    if (!api.isOpenedFrameEditor) {
         api.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.LoadImage);
     }
     var nError = c_oAscError.ID.No;

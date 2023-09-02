@@ -1110,7 +1110,7 @@
 
 	asc_docs_api.prototype.isDocumentModified = function()
 	{
-		if (!this.canSave || this.isOpenedChartFrame)
+		if (!this.canSave || this.isOpenedFrameEditor)
 		{
 			// Пока идет сохранение, мы не закрываем документ
 			return true;
@@ -2920,8 +2920,10 @@ background-repeat: no-repeat;\
 		const oLogicDocument = this.private_GetLogicDocument();
 		if (!oLogicDocument)
 			return;
-
-		oLogicDocument.OpenOleEditor();
+		if(false === oLogicDocument.Document_Is_SelectionLocked(changestype_Drawing_Props))
+		{
+			oLogicDocument.OpenOleEditor();
+		}
 	};
 	asc_docs_api.prototype.asc_DownloadAsMailMerge         = function(typeFile, StartIndex, EndIndex, bIsDownload)
 	{
@@ -5794,7 +5796,7 @@ background-repeat: no-repeat;\
 	{
 		if (oOptionObject)
 		{
-			if (oOptionObject.sendUrlsToFrameEditor && this.isOpenedChartFrame)
+			if (oOptionObject.sendUrlsToFrameEditor && this.isOpenedFrameEditor)
 			{
 				this.addImageUrlsFromGeneralToFrameEditor(arrUrls);
 				return;
@@ -6123,7 +6125,7 @@ background-repeat: no-repeat;\
 		if (!AscCommon.isRealObject(obj))
 			return;
 		var ImagePr = obj, AdditionalData, LogicDocument = this.WordControl.m_oLogicDocument;
-		this.asc_onCloseChartFrame();
+		this.asc_onCloseFrameEditor();
 		/*проверка корректности данных для биржевой диаграммы*/
 		if (obj.ChartProperties && obj.ChartProperties.type === Asc.c_oAscChartTypeSettings.stock)
 		{
@@ -9079,7 +9081,7 @@ background-repeat: no-repeat;\
 	{
 		if (!AscFormat.isRealNumber(type))
 		{
-			this.asc_onOpenChartFrame();
+			this.asc_onOpenFrameEditor();
 			this.WordControl.m_oLogicDocument.Document_Is_SelectionLocked(AscCommon.changestype_Drawing_Props);
 		}
 
@@ -9089,7 +9091,7 @@ background-repeat: no-repeat;\
 	asc_docs_api.prototype.asc_applyChartSettings = function (oAscChartSettings)
 	{
 		const oLogicDocument = this.private_GetLogicDocument();
-		this.asc_onCloseChartFrame();
+		this.asc_onCloseFrameEditor();
 		if (oLogicDocument)
 		{
 			return oLogicDocument.ApplyChartSettings(oAscChartSettings);
@@ -9109,7 +9111,7 @@ background-repeat: no-repeat;\
 		if (oLogicDocument)
 		{
 			if(bNoLock !== true) {
-				this.asc_onOpenChartFrame();
+				this.asc_onOpenFrameEditor();
 			}
 			return oLogicDocument.GetChartSettings();
 		}
@@ -9141,12 +9143,16 @@ background-repeat: no-repeat;\
 		const oLogicDocument = this.private_GetLogicDocument();
 		if (!oLogicDocument)
 			return;
-		oLogicDocument.OpenChartEditor();
+
+		if(false === oLogicDocument.Document_Is_SelectionLocked(changestype_Drawing_Props))
+		{
+			oLogicDocument.OpenChartEditor();
+		}
 	};
 
-	asc_docs_api.prototype.asc_onCloseChartFrame               = function()
+	asc_docs_api.prototype.asc_onCloseFrameEditor               = function()
 	{
-		AscCommon.baseEditorsApi.prototype.asc_onCloseChartFrame.call(this);
+		AscCommon.baseEditorsApi.prototype.asc_onCloseFrameEditor.call(this);
 		this.WordControl.m_bIsMouseLock = false;
 	};
 
@@ -14257,7 +14263,7 @@ background-repeat: no-repeat;\
 	asc_docs_api.prototype['asc_updateChartData']                       = asc_docs_api.prototype.asc_updateChartData;
 	asc_docs_api.prototype['asc_getChartSettings']                      = asc_docs_api.prototype.asc_getChartSettings;
 	asc_docs_api.prototype['asc_editChartInFrameEditor']                = asc_docs_api.prototype.asc_editChartInFrameEditor;
-	asc_docs_api.prototype['asc_onCloseChartFrame']                     = asc_docs_api.prototype.asc_onCloseChartFrame;
+	asc_docs_api.prototype['asc_onCloseFrameEditor']                     = asc_docs_api.prototype.asc_onCloseFrameEditor;
 	asc_docs_api.prototype['asc_editChartDrawingObject']                = asc_docs_api.prototype.asc_editChartDrawingObject;
 	asc_docs_api.prototype['asc_getChartPreviews']                      = asc_docs_api.prototype.asc_getChartPreviews;
 	asc_docs_api.prototype['asc_getTextArtPreviews']                    = asc_docs_api.prototype.asc_getTextArtPreviews;

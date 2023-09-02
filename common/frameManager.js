@@ -58,7 +58,6 @@
 	CFrameManagerBase.prototype.updateGeneralDiagramCache = function (aRanges) {};
 	CFrameManagerBase.prototype.sendLoadImages = function (arrImages, token, bNotShowError) {};
 	CFrameManagerBase.prototype.sendFromFrameToGeneralEditor = function (oSendObject) {};
-	CFrameManagerBase.prototype.sendFromGeneralToFrameEditor = function (oSendObject) {};
 	CFrameManagerBase.prototype.getAscSettings               = function (oSendObject) {};
 	CFrameManagerBase.prototype.startLoadOleEditor = function () {};
 	CFrameManagerBase.prototype.endLoadOleEditor = function () {};
@@ -258,11 +257,6 @@
 		this.api.sendFromFrameToGeneralEditor(oSendObject);
 	};
 
-	CCellFrameManager.prototype.sendFromGeneralToFrameEditor = function (oSendObject)
-	{
-		this.api.sendFromGeneralToFrameEditor(oSendObject);
-	};
-
 	function COleCellFrameManager(api)
 	{
 		CCellFrameManager.call(this, api);
@@ -344,7 +338,8 @@
 		oApi.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.LoadImage);
 
 		this.sendFromFrameToGeneralEditor({
-			"type": AscCommon.c_oAscFrameDataType.OpenFrame
+			"type": AscCommon.c_oAscFrameDataType.OpenFrame,
+			"information": {"editorType": FrameEditorTypes.OleEditor}
 		});
 		oApi.fAfterLoad = function ()
 		{
@@ -597,6 +592,7 @@
 	{
 		this.api = Asc.editor || editor;
 		this.binary = null;
+		this.frameEditorType = AscCommon.FrameEditorTypes.JustBlock;
 		const isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
 		this.isOpenOnClient = this.api["asc_isSupportFeature"]("ooxml") && !isLocalDesktop;
 		this.XLSXBase64 = null;
@@ -689,7 +685,7 @@
 
 	CFrameBinaryLoader.prototype.loadFrame = function ()
 	{
-		this.api.asc_onOpenChartFrame();
+		this.api.asc_onOpenFrameEditor(this.frameEditorType);
 		if(!window['IS_NATIVE_EDITOR'] && this.api.WordControl)
 		{
 			this.api.WordControl.onMouseUpMainSimple();
@@ -721,6 +717,7 @@
 	{
 		CFrameBinaryLoader.call(this);
 		this.oleObject = ole;
+		this.frameEditorType = AscCommon.FrameEditorTypes.OleEditor;
 		this.fCallback = fCallback || this.resolvePromise.bind(this);
 		this.eventOnOpenFrame = 'asc_doubleClickOnTableOleObject';
 	}
@@ -733,9 +730,9 @@
 	CFrameOleBinaryLoader.prototype.getFrameBinary = function ()
 	{
 			const oApi = Asc.editor || editor;
-			if (!oApi.isOpenedChartFrame) {
+			if (!oApi.isOpenedFrameEditor) {
 				oApi.frameManager.startLoadOleEditor();
-				oApi.asc_onOpenChartFrame();
+				oApi.asc_onOpenFrameEditor(this.frameEditorType);
 				const oController = oApi.getGraphicController();
 				if (oController) {
 					AscFormat.ExecuteNoHistory(function () {
@@ -763,6 +760,7 @@
 	{
 		CFrameBinaryLoader.call(this);
 		this.chart = oChart;
+		this.frameEditorType = AscCommon.FrameEditorTypes.ChartEditor;
 		this.fCallback = fCallback || this.resolvePromise.bind(this);
 		this.eventOnOpenFrame = 'asc_doubleClickOnChart';
 	}
@@ -883,8 +881,14 @@
 
 	CDiagramUpdater.prototype.sendToFrameEditor = function (oBinary)
 	{
-		this.api.sendFromGeneralToFrameEditor(new CGeneralUpdateDiagramData(oBinary));
+		this.api.sendFromGeneralToChartEditor(new CGeneralUpdateDiagramData(oBinary));
 	}
+
+	const FrameEditorTypes = {
+		JustBlock: 0,
+		OleEditor: 1,
+		ChartEditor: 2
+	};
 
 	window["AscCommon"].CDiagramCellFrameManager = CDiagramCellFrameManager;
 	window["AscCommon"].CMainEditorFrameManager  = CMainEditorFrameManager;
@@ -893,4 +897,5 @@
 	window["AscCommon"].CFrameOleBinaryLoader = CFrameOleBinaryLoader;
 	window["AscCommon"].CDiagramUpdater = CDiagramUpdater;
 	window["AscCommon"].CFrameUpdateDiagramData = CFrameUpdateDiagramData;
+	window["AscCommon"].FrameEditorTypes = FrameEditorTypes;
 })(window);

@@ -168,7 +168,7 @@ DrawingObjectsController.prototype.handleOleObjectDoubleClick = function(drawing
         }
         else if (oleObject.canEditTableOleObject())
         {
-            editor.asc_editOleTableInFrameEditor();
+            this.openOleEditor();
         }
         else {
             var pluginData = new Asc.CPluginData();

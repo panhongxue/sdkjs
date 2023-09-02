@@ -393,7 +393,7 @@ var editor;
   };
 	spreadsheet_api.prototype._saveCheck = function() {
 		return !this.isFrameEditor() && c_oAscAdvancedOptionsAction.None === this.advancedOptionsAction &&
-			!this.isLongAction() && !this.asc_getIsTrackShape() && !this.isOpenedChartFrame &&
+			!this.isLongAction() && !this.asc_getIsTrackShape() && !this.isOpenedFrameEditor &&
 			History.IsEndTransaction();
 	};
 	spreadsheet_api.prototype._haveOtherChanges = function () {
@@ -1556,7 +1556,7 @@ var editor;
   };
 
   spreadsheet_api.prototype.asc_isDocumentModified = function() {
-    if (!this.canSave || this.asc_getCellEditMode() || this.isOpenedChartFrame) {
+    if (!this.canSave || this.asc_getCellEditMode() || this.isOpenedFrameEditor) {
       // Пока идет сохранение или редактирование ячейки, мы не закрываем документ
       return true;
     } else if (History && History.Have_Changes) {
@@ -4378,13 +4378,13 @@ var editor;
 	{
 		var ws = this.wb.getWorksheet();
 		var ret = ws.objectRender.editChartDrawingObject(oAscChartSettings);
-		this.asc_onCloseChartFrame();
+		this.asc_onCloseFrameEditor();
 		return ret;
 	};
 	spreadsheet_api.prototype.asc_getChartSettings = function (bNoLock)
 	{
 		if(bNoLock !== true){
-			this.asc_onOpenChartFrame();
+			this.asc_onOpenFrameEditor();
 		}
 		var ws = this.wb.getWorksheet();
 		return ws.objectRender.getAscChartObject(bNoLock);
@@ -4397,14 +4397,14 @@ var editor;
   spreadsheet_api.prototype.asc_addChartDrawingObject = function(chart) {
     var ws = this.wb.getWorksheet();
     if (ws.model.getSheetProtection(Asc.c_oAscSheetProtectType.objects)) {
-      this.asc_onCloseChartFrame();
+      this.asc_onCloseFrameEditor();
       return false;
     }
 
     AscFonts.IsCheckSymbols = true;
     var ret = ws.objectRender.addChartDrawingObject(chart);
     AscFonts.IsCheckSymbols = false;
-    this.asc_onCloseChartFrame();
+    this.asc_onCloseFrameEditor();
     return ret;
   };
 
@@ -4533,7 +4533,7 @@ var editor;
     this.asc_addImage();
   };
   spreadsheet_api.prototype._addImageUrl = function(arrUrls, oOptionObject) {
-    if (oOptionObject && oOptionObject.sendUrlsToFrameEditor && this.isOpenedChartFrame) {
+    if (oOptionObject && oOptionObject.sendUrlsToFrameEditor && this.isOpenedFrameEditor) {
       this.addImageUrlsFromGeneralToFrameEditor(arrUrls);
       return;
     }
@@ -4867,7 +4867,17 @@ var editor;
 		const oController = ws && ws.objectRender && ws.objectRender.controller;
 		if (oController)
 		{
-			oController.openOleEditor();
+			const oOleObject = this.asc_canEditTableOleObject(true);
+			if (oOleObject)
+			{
+				this.checkObjectsLock([oOleObject.Get_Id()], function (bNoLock)
+				{
+					if (bNoLock)
+					{
+						oController.openOleEditor();
+					}
+				});
+			}
 		}
 	};
 
@@ -5016,7 +5026,7 @@ var editor;
 	if (!this.canEdit()) {
 	  return;
 	}
-	this.asc_onCloseChartFrame();
+	this.asc_onCloseFrameEditor();
     var ws = this.wb.getWorksheet();
     var fReplaceCallback = null, sImageUrl = null, sToken = undefined;
     if(!AscCommon.isNullOrEmptyString(props.ImageUrl)){
@@ -9050,7 +9060,7 @@ var editor;
   prot["asc_addImage"] = prot.asc_addImage;
   prot["asc_setData"] = prot.asc_setData;
   prot["asc_getData"] = prot.asc_getData;
-  prot["asc_onCloseChartFrame"] = prot.asc_onCloseChartFrame;
+  prot["asc_onCloseFrameEditor"] = prot.asc_onCloseFrameEditor;
   prot["asc_getBinaryFromDiagramFrame"] = prot.asc_getBinaryFromDiagramFrame;
 
   // Cell comment interface

@@ -1624,15 +1624,12 @@ CGraphicObjects.prototype =
 
 		openChartEditor: function ()
 		{
-			if(false === this.document.Document_Is_SelectionLocked(changestype_Drawing_Props))
-			{
 				const oChart = this.getChartObject();
 				if (oChart)
 				{
 					const oChartLoader = new AscCommon.CFrameDiagramBinaryLoader(oChart);
 					oChartLoader.tryOpen();
 				}
-			}
 		},
 
 	tryUpdateChart: function ()
@@ -1650,24 +1647,25 @@ CGraphicObjects.prototype =
 
     handleChartDoubleClick: function(drawing, chart, e, x, y, pageIndex)
     {
-				this.openChartEditor(chart);
-        this.clearTrackObjects();
-        this.clearPreTrackObjects();
-        this.changeCurrentState(new AscFormat.NullState(this));
-        this.document.OnMouseUp(e, x, y, pageIndex);
+
+	    if(false === this.document.Document_Is_SelectionLocked(changestype_Drawing_Props))
+	    {
+		    this.openChartEditor(chart);
+		    this.clearTrackObjects();
+		    this.clearPreTrackObjects();
+		    this.changeCurrentState(new AscFormat.NullState(this));
+		    this.document.OnMouseUp(e, x, y, pageIndex);
+	    }
     },
 
 	openOleEditor: function ()
 	{
-		if(false === this.document.Document_Is_SelectionLocked(changestype_Drawing_Props))
-		{
 			const oOleObject = this.canEditTableOleObject(true);
 			if (oOleObject)
 			{
 				const oleLoader = new AscCommon.CFrameOleBinaryLoader(oOleObject);
 				oleLoader.tryOpen();
 			}
-		}
 	},
 
     handleSignatureDblClick: function(sGuid, width, height){
@@ -1683,7 +1681,7 @@ CGraphicObjects.prototype =
             }
             else if (oleObject.canEditTableOleObject())
             {
-	            editor.asc_editOleTableInFrameEditor();
+	            this.openOleEditor();
             }
             else
             {

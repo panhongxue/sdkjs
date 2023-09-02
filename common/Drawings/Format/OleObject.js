@@ -147,13 +147,14 @@ function (window, undefined) {
     {
 	    if (this.m_aBinaryData.length)
 	    {
+				const oApi = Asc.editor || editor;
 		    const isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
-		    const isOpenOnClient = editor["asc_isSupportFeature"]("ooxml") && !isLocalDesktop;
+		    const isOpenOnClient = oApi["asc_isSupportFeature"]("ooxml") && !isLocalDesktop;
 		    if (isOpenOnClient && !AscCommon.checkOOXMLSignature(this.m_aBinaryData))
 		    {
-			    const base64 = editor.frameManager.getEncodedArray(this.m_aBinaryData).toUtf8();
+			    const base64 = oApi.frameManager.getEncodedArray(this.m_aBinaryData).toUtf8();
 					const oThis = this;
-			    editor.getConvertedXLSXFileFromUrl({data: base64}, Asc.c_oAscFileType.XLSX, function (arrBinaryData) {
+			    oApi.getConvertedXLSXFileFromUrl({data: base64}, Asc.c_oAscFileType.XLSX, function (arrBinaryData) {
 				    if (arrBinaryData)
 				    {
 					    oThis.setBinaryData(arrBinaryData);

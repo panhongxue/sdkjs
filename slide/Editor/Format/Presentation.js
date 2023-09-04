@@ -6033,13 +6033,12 @@ CPresentation.prototype.FinalizeEditChart = function (binary)
 	const oSlide = this.GetCurrentSlide();
 	if (oSlide)
 	{
-		AscCommon.History.UndoChartPreviewPoint();
+		const arrChanges = AscCommon.History.UndoChartPreviewPoint();
 		if (binary['noHistory'])
 		{
-			const oChart = oSlide.graphicObjects.getSingleSelectedChart();
-			if (oChart)
+			if (arrChanges)
 			{
-				oChart.recalcChart();
+				this.Recalculate(this.History.Get_RecalcData(null, arrChanges));
 			}
 		}
 		else

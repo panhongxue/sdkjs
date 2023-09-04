@@ -40,6 +40,12 @@
 		CMain.prototype.constructor = CMain;
 	}
 
+	const FrameEditorTypes = {
+		JustBlock: 0,
+		OleEditor: 1,
+		ChartEditor: 2
+	};
+
 	function CFrameManagerBase(api)
 	{
 		this.api = api;
@@ -884,12 +890,6 @@
 	{
 		this.api.sendFromGeneralToChartEditor(new CGeneralUpdateDiagramData(oBinary));
 	}
-
-	const FrameEditorTypes = {
-		JustBlock: 0,
-		OleEditor: 1,
-		ChartEditor: 2
-	};
 
 	window["AscCommon"].CDiagramCellFrameManager = CDiagramCellFrameManager;
 	window["AscCommon"].CMainEditorFrameManager  = CMainEditorFrameManager;

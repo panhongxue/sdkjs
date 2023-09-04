@@ -904,6 +904,7 @@
 		this.tmpViewRulers  = null;
 		this.tmpZoomType    = null;
 		this.tmpDocumentUnits = null;
+		this.tmpInterfaceLocale = null;
 
 		// это чтобы сразу показать ридер, без возможности вернуться в редактор/вьюер
 		this.isOnlyReaderMode = false;
@@ -1187,6 +1188,11 @@
 
 	asc_docs_api.prototype.asc_setLocale = function(val)
 	{
+		if (!this.isLoadFullApi)
+		{
+			this.tmpInterfaceLocale = val;
+			return;
+		}
 		this.InterfaceLocale = val;
 		const LCID = Asc.g_oLcidNameToIdMap[val];
 		if (AscCommon.setCurrentCultureInfo(LCID))
@@ -9681,6 +9687,12 @@ background-repeat: no-repeat;\
 		{
 			this.asc_SetDocumentUnits(this.tmpDocumentUnits);
 			this.tmpDocumentUnits = null;
+		}
+
+		if (null !== this.tmpInterfaceLocale)
+		{
+			this.asc_setLocale(this.tmpInterfaceLocale);
+			this.tmpInterfaceLocale = null;
 		}
 
 		this.asc_setViewMode(this.isViewMode);

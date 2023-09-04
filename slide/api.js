@@ -601,6 +601,7 @@
 		this.tmpViewRulers = null;
 		this.tmpZoomType   = null;
         this.tmpDocumentUnits = null;
+		this.tmpLocale = null;
 
         this.DocumentUrl     = "";
 		this.bNoSendComments = false;
@@ -1308,6 +1309,11 @@
 	};
 	asc_docs_api.prototype.asc_setLocale = function(val)
 	{
+		if (!this.isLoadFullApi)
+		{
+			this.tmpLocale = val;
+			return;
+		}
 		this.locale = val;
 		const LCID = Asc.g_oLcidNameToIdMap[val];
 		if (AscCommon.setCurrentCultureInfo(LCID))
@@ -8070,6 +8076,11 @@ background-repeat: no-repeat;\
             this.tmpDocumentUnits = null;
         }
 
+				if (null !== this.tmpLocale)
+				{
+					this.asc_setLocale(this.tmpLocale);
+					this.tmpLocale = null;
+				}
 		this.asc_setViewMode(this.isViewMode);
 
 		if (this.isReporterMode)

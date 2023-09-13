@@ -6249,8 +6249,8 @@ CMathContent.prototype.GetCountForAutoProcessing = function()
 		}
 		if (!(nCount instanceof ParaRun))
 			nCount++;
-		if (nContent.Content.length > 0)
-			nCount++;
+		// if (nContent.Content.length > 0)
+		// 	nCount++;
 	}
 
 	return nCount;

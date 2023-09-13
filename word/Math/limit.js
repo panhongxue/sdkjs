@@ -374,7 +374,7 @@ CLimit.prototype.GetTextOfElement = function(oMathText)
 	}
 
 	let oPr = this.Pr.GetRPr();
-	let oNamePos = oMathText.Add(oFuncName, true, "linear");
+	let oNamePos = oMathText.Add(oFuncName, true, "linearDefault");
 
 	oMathText.AddAfter(oNamePos, new AscMath.MathText(strLimitSymbol, oPr));
 	oMathText.Add(oArgument, true, 'notBracket');

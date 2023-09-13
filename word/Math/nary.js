@@ -889,7 +889,7 @@ CNary.prototype.GetTextOfElement = function(oMathText)
 		if (oLower)
 		{
 			isScript = true;
-			oLastPos = oMathText.Add(oLower, true, "base");
+			oLastPos = oMathText.Add(oLower, true, "notBracket");
 			oMathText.AddBefore(oLastPos, new AscMath.MathText("_", oLower.GetCtrPrp()));
 		}
 
@@ -902,7 +902,7 @@ CNary.prototype.GetTextOfElement = function(oMathText)
 
 		if (oBase)
 		{
-			if (oBase.GetCountForAutoProcessing() > 1)
+			if (oBase.GetCountForAutoProcessing() >= 1)
 				oMathText.AddText(new AscMath.MathText("▒", oBase.CtrPrp));
 
 			oLastPos = oMathText.Add(oBase, true, "linear");

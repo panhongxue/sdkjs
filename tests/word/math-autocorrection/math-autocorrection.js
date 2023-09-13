@@ -3361,11 +3361,11 @@ $(function () {
 		strIterator = oDegree.getIterator().GetTextOfElement().GetText();
 
 		assert.strictEqual(strBase, "4", "Check content of degree base");
-		assert.strictEqual(strIterator, "5^(6^7)", "Check content of degree iterator");
+		assert.strictEqual(strIterator, "5^6^7", "Check content of degree iterator");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "x^2^3^4^(5^(6^7))", "Check linear content");
+		assert.strictEqual(r.GetText(), "x^2^3^4^5^6^7", "Check linear content");
 	});
 	QUnit.test("Add chain down script", function (assert)
 	{
@@ -3399,11 +3399,11 @@ $(function () {
 		strIterator = oDegree.getIterator().GetTextOfElement().GetText();
 
 		assert.strictEqual(strBase, "4", "Check content of degree base");
-		assert.strictEqual(strIterator, "5_(6_7)", "Check content of degree iterator");
+		assert.strictEqual(strIterator, "5_6_7", "Check content of degree iterator");
 
 		r.ConvertView(true, 0);
 		assert.ok(true, "Convert to professional");
-		assert.strictEqual(r.GetText(), "x_2_3_4_(5_(6_7))", "Check linear content");
+		assert.strictEqual(r.GetText(), "x_2_3_4_5_6_7", "Check linear content");
 	});
 
 	//todo prescript
@@ -15587,7 +15587,7 @@ $(function () {
 
 	QUnit.module("Limit - Correct")
 	//todo
-	function LimitCorrect(str, strLimit, type, isAutoCorrect)
+	function LimitCorrect(str, strLimit, type, isAutoCorrect, isGroupCharacter)
 	{
 		QUnit.test("Check limit " + str, function (assert)
 		{
@@ -15603,8 +15603,9 @@ $(function () {
 			assert.ok(true, "Convert to professional");
 
 			let oFunc = r.Root.Content[1];
-			assert.ok(oFunc instanceof CLimit, "Created CLimit");
-			assert.strictEqual(oFunc.Pr.type, type, "Check up or down");
+
+			assert.ok(isGroupCharacter ? oFunc instanceof CGroupCharacter : oFunc instanceof CLimit, "Created CLimit");
+			!isGroupCharacter && assert.strictEqual(oFunc.Pr.type, type, "Check up or down");
 
 			r.ConvertView(true, 0);
 			assert.ok(true, "Convert to professional");
@@ -15626,10 +15627,10 @@ $(function () {
 	LimitCorrect("[x*u]┬y", "[x*u]┬y", 0, false);
 	LimitCorrect("[x*u]┬(y+1)", "[x*u]┬(y+1)", 0, false);
 
-	LimitCorrect("→┴y", "→┴y", 1, false);
-	LimitCorrect("→┴(y+1)", "→┴(y+1)", 1, false);
-	LimitCorrect("→┬y", "→┬y", 0, false);
-	LimitCorrect("→┬(y+1)", "→┬(y+1)", 0, false);
+	LimitCorrect("→┴y", "→┴y", 1, false, true);
+	LimitCorrect("→┴(y+1)", "→┴(y+1)", 1, false, true);
+	LimitCorrect("→┬y", "→┬y", 0, false, true);
+	LimitCorrect("→┬(y+1)", "→┬(y+1)", 0, false, true);
 
 	QUnit.module("Limit - Autocorrect")
 
@@ -15643,10 +15644,10 @@ $(function () {
 	LimitCorrect("[x*u]┬y ", "[x*u]┬y", 0, true);
 	LimitCorrect("[x*u]┬(y+1) ", "[x*u]┬(y+1)", 0, true);
 
-	LimitCorrect("→┴y ", "→┴y", 1, true);
-	LimitCorrect("→┴(y+1) ", "→┴(y+1)", 1, true);
-	LimitCorrect("→┬y ", "→┬y", 0, true);
-	LimitCorrect("→┬(y+1) ", "→┬(y+1)", 0, true);
+	LimitCorrect("→┴y ", "→┴y", 1, true, true);
+	LimitCorrect("→┴(y+1) ", "→┴(y+1)", 1, true, true);
+	LimitCorrect("→┬y ", "→┬y", 0, true, true);
+	LimitCorrect("→┬(y+1) ", "→┬(y+1)", 0, true, true);
 
 	QUnit.module("Underbar/Overbar - Correct")
 

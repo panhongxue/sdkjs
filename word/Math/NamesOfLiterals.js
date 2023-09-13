@@ -2258,7 +2258,11 @@
 					{
 						let Pr = (intBracketPos === VJUST_TOP)
 							? {ctrPrp : oTokens.hBrack.data.style, pos : VJUST_TOP, vertJc : VJUST_BOT, chr: oTokens.hBrack.data.data.charCodeAt(0)}
-							: {ctrPrp : oTokens.hBrack.data.style, vertJc : VJUST_TOP, chr : oTokens.hBrack.data.data.charCodeAt(0)};
+							: {
+								ctrPrp : typeof oTokens.hBrack.data === "object" ? oTokens.hBrack.data.style : oTokens.hBrack.style,
+								vertJc : VJUST_TOP,
+								chr : typeof oTokens.hBrack.data === "object" ?  oTokens.hBrack.data.data.charCodeAt(0) :  oTokens.hBrack.data.charCodeAt(0)
+							};
 
 						let Group = new CGroupCharacter(Pr);
 						oContext.Add_Element(Group);
@@ -3975,7 +3979,12 @@
 			return true
 		}
 
-		if (this.IsPCFunction(oRuleLast) && this.IsTrigger(oAbsoluteLastId))
+		if (this.IsBIFunctionProcessing(oRuleLast) && this.IsTrigger(oAbsoluteLastId))
+		{
+			this.BIFunctionProcessing(oRuleLast);
+			return true;
+		}
+		else if (this.IsPCFunction(oRuleLast) && this.IsTrigger(oAbsoluteLastId))
 		{
 			this.PCFunctionProcessing(oRuleLast);
 		}
@@ -3983,10 +3992,7 @@
 		{
 			this.PRFunctionProcessing(oRuleLast);
 		}
-		else if (this.IsBIFunctionProcessing(oRuleLast) && this.IsTrigger(oAbsoluteLastId))
-		{
-			this.BIFunctionProcessing(oRuleLast);
-		}
+
 		if (this.IsStartAndCloseBracket() && this.IsTrigger(oAbsoluteLastId))
 		{
 			this.StartCloseBracket();
@@ -4358,7 +4364,8 @@
 		return MathLiterals.subSup.id 		=== intLastTokenType
 			|| MathLiterals.divide.id 		=== intLastTokenType
 			|| MathLiterals.of.id			=== intLastTokenType
-			|| MathLiterals.invisible.id	=== intLastTokenType;
+			|| MathLiterals.invisible.id	=== intLastTokenType
+			|| MathLiterals.hbrack.id       === intLastTokenType;
 	};
 	/**
 	 * Processing BIFunction type of math content.
@@ -4642,6 +4649,10 @@
 					else if (Wrap === "linear" && oMath.IsBracket) // Если любая скобка, не оборачиваем
 					{
 						//this.WrapExactElement(oPos);
+					}
+					else if (Wrap === "linearDefault" && !oMath.IsBracket)
+					{
+						this.WrapExactElement(oPos);
 					}
 					else if (Wrap === "linear" && !oMath.IsBracket && oContent.GetCountForAutoProcessing() > 1)
 					{

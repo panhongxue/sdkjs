@@ -467,6 +467,24 @@
 					oUp = this.GetSoOperandLiteral();
 				}
 			}
+			else if (this.IsOperandLiteral())
+			{
+				oDown = this.GetOperandLiteral("custom");
+
+				return {
+					type: Struc.limit,
+					base: {
+						type: Struc.group_character,
+						hBrack: strHBracket,
+						value: oBase,
+						up: oUp,
+						down: oDown,
+						style: oPr,
+					},
+					value: oDown,
+					style: oPr,
+				}
+			}
 
 			return {
 				type: Struc.group_character,

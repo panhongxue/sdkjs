@@ -267,8 +267,10 @@
 	{
 		let word = this.private_GetLaTeXWord(str);
 
-		if (this.IsLaTeXInclude[word])
+		if (typeof word === "string" && this.IsLaTeXInclude(word))
 			return word;
+		else if (this.IsLaTeXInclude(str[0]))
+			return str[0];
 	};
 	// Search in Unicode group of tokens
 	LexerLiterals.prototype.SearchU = function (str)
@@ -543,7 +545,7 @@
 			"\\lfloor" : "⌊",
 			"\\lbbrack" : "⟦",
 			"\\lmoust" : "⎰",
-
+			"{": "{",
 		};
 		this.Init();
 	}
@@ -580,6 +582,7 @@
 			"\\rbrack" : "]",
 			"\\rceil" : "⌉",
 			"\\rfloor" : "⌋",
+			"}" : "}",
 		};
 		this.Init();
 	}
@@ -703,6 +706,10 @@
 			"_" : 1,
 			"^" : 1,
 		};
+		this.LaTeX = {
+			"_": "_",
+			"^": "^",
+		}
 		this.Init();
 	}
 	TokenSubSup.prototype = Object.create(LexerLiterals.prototype);
@@ -944,7 +951,7 @@
 	TokenFunctionLiteral.prototype.constructor = TokenFunctionLiteral;
 	TokenFunctionLiteral.prototype.IsLaTeXInclude = function (str)
 	{
-		if (MathAutoCorrectionFuncNames.includes(str.slice(1)) || limitFunctions.includes(str.slice(1)))
+		if (MathAutoCorrectionFuncNames.includes(str.slice(1)) || limitFunctions.includes(str.slice(1)) || (str.length > 0 && str[0] === "\\"))
 			return str;
 	};
 	TokenFunctionLiteral.prototype.IsUnicodeInclude = function(arrStr)
@@ -4630,6 +4637,10 @@
 					this.WrapExactElement(oPos);
 				}
 			}
+			else if (this.LaTeX)
+			{
+				this.WrapExactElement(oPos);
+			}
 			else if (oMath.GetLength() > 1)
 			{
 				if (Array.isArray(Wrap) && Wrap.length === 2)
@@ -4793,6 +4804,9 @@
 	};
 	MathTextAndStyles.prototype.AddBefore = function(oPos, oContent, isNotCopyStyle)
 	{
+		if (!oContent)
+			return;
+
 		let arrPositions = this.GetArrPos(oPos, true);
 		let oCurrentContainer = this.GetExact(oPos);
 		let oCurrent = !isNotCopyStyle && oCurrentContainer instanceof MathText ?  oCurrentContainer.GetStyle() : undefined;

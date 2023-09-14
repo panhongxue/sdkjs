@@ -648,7 +648,8 @@
             this.IsHBracketLiteral()    ||
 	        this.IsStretchArrow()       ||
             this.IsGetNameOfFunction()  ||
-            this.oLookahead.class === "▁" || this.oLookahead.class === "¯";
+            this.oLookahead.class === "▁" ||
+	        this.oLookahead.class === "¯";
     };
     CUnicodeParser.prototype.GetFunctionLiteral = function ()
     {
@@ -2178,7 +2179,6 @@
     {
         if (undefined === str || null === str)
             return
-
 
         const oParser = new CUnicodeParser();
         const oTokens = oParser.Parse(str);

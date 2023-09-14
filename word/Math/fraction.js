@@ -644,25 +644,39 @@ CFraction.prototype.GetTextOfElement = function(oMathText)
 	if (!(oMathText instanceof AscMath.MathTextAndStyles))
 		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
+	let oFracContent;
+	let oPr = this.Pr.GetRPr();
 	let oNumerator			= this.getNumerator();
 	let oDenominator		= this.getDenominator();
+
+	oMathText.SetStyle(oPr);
 	let oPosNumerator		= oMathText.Add(oNumerator, true, 'base');
+	oMathText.SetStyle(oPr);
 	let oPosDenominator		= oMathText.Add(oDenominator, true, 'base');
 
 	if (!oMathText.IsLaTeX())
 	{
-		let frac;
-		let oPr = this.Pr.GetRPr();
 		switch (this.Pr.type)
 		{
-			case 0:		frac = new AscMath.MathText('/', oPr);	break;
-			case 1:		frac = new AscMath.MathText('⁄', oPr);	break;
-			case 2:		frac = new AscMath.MathText('∕', oPr);	break;
-			case 3:		frac = new AscMath.MathText('¦', oPr);	break;
-			default:	frac = new AscMath.MathText('/', oPr);	break;
+			case BAR_FRACTION:			oFracContent = new AscMath.MathText('/', oPr);	break;
+			case SKEWED_FRACTION:		oFracContent = new AscMath.MathText('⁄', oPr);	break;
+			case LINEAR_FRACTION:		oFracContent = new AscMath.MathText('∕', oPr);	break;
+			case NO_BAR_FRACTION:		oFracContent = new AscMath.MathText('¦', oPr);	break;
+			default:					oFracContent = new AscMath.MathText('/', oPr);	break;
 		}
-		oMathText.AddAfter(oPosNumerator, frac);
+		oMathText.AddAfter(oPosNumerator, oFracContent);
 	}
+	else
+	{
+		switch (this.Pr.type)
+		{
+			case NO_BAR_FRACTION:		oFracContent = new AscMath.MathText('\\binom', oPr);	break;
+			case BAR_FRACTION:			oFracContent = new AscMath.MathText('\\frac', oPr);		break;
+			default:					oFracContent = new AscMath.MathText('\\sfrac', oPr);	break;
+		}
+		oMathText.AddBefore(oPosNumerator, oFracContent);
+	}
+
 	return oMathText;
 };
 /**

@@ -1475,6 +1475,26 @@
 		this.verticalAxes.length = 0;
 		this.depthAxes.length = 0;
 	};
+	asc_ChartSettings.prototype.getExternalReference = function ()
+	{
+		if (this.chartSpace && this.chartSpace.externalReference)
+		{
+			return this.chartSpace.externalReference.getAscLink();
+		}
+	};
+	asc_ChartSettings.prototype.setExternalReference = function (v)
+	{
+		if (this.chartSpace)
+		{
+			const oExternalReference = new AscCommonExcel.CChartExternalReference();
+			oExternalReference.initFromObj(v);
+			this.chartSpace.setExternalReference(oExternalReference);
+			if (this.chartSpace.XLSX && this.chartSpace.XLSX.length)
+			{
+				this.chartSpace.setXLSX(new Uint8Array(0));
+			}
+		}
+	};
 	asc_ChartSettings.prototype.equalBool = function(a, b){
 		return ((!!a) === (!!b));
 	};
@@ -7410,6 +7430,9 @@
 	prot["getView3d"] = prot.getView3d;
 	prot["putView3d"] = prot.putView3d;
 	prot["setView3d"] = prot.setView3d;
+
+	prot["setExternalReference"] = prot.setExternalReference;
+	prot["getExternalReference"] = prot.getExternalReference;
 
 
 	window["AscCommon"].asc_CRect = asc_CRect;

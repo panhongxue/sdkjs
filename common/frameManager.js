@@ -402,16 +402,22 @@
 	{
 		return true;
 	};
-	CDiagramCellFrameManager.prototype.updateProtectChart = function (bProtect)
+	CDiagramCellFrameManager.prototype.updateProtectChart = function ()
 	{
-		if (bProtect && this.api.canEdit())
+		let oAscLink;
+		if (this.mainDiagram.externalReference)
+		{
+			oAscLink = this.mainDiagram.externalReference.getAscLink();
+		}
+		if (oAscLink && this.api.canEdit())
 		{
 			this.api.asc_addRestriction(Asc.c_oAscRestrictionType.View);
-		} else if (!bProtect && !this.api.canEdit())
+		}
+		else if (!oAscLink && !this.api.canEdit())
 		{
 			this.api.asc_removeRestriction(Asc.c_oAscRestrictionType.View);
 		}
-		this.api.sendEvent('asc_onShowProtectedChartPopup', bProtect);
+		this.api.sendEvent('asc_onShowProtectedChartPopup', oAscLink);
 	};
 	CDiagramCellFrameManager.prototype.repairDiagramXLSX = function ()
 	{
@@ -492,14 +498,7 @@
 			}
 			oThis.selectMainDiagram();
 			oThis.api.wb.onFrameEditorReady();
-			if (oThis.mainDiagram.isExternal())
-			{
-				oThis.updateProtectChart(true);
-			}
-			else
-			{
-				oThis.updateProtectChart(false);
-			}
+			oThis.updateProtectChart();
 			oApi.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Open);
 			delete oApi.fAfterLoad;
 		}
@@ -846,7 +845,10 @@
 	CFrameDiagramBinaryLoader.prototype.getAscLink = function ()
 	{
 		const oExternalReference = this.chart.getExternalReference();
-		return oExternalReference.getAscLink();
+		if (oExternalReference)
+		{
+			return oExternalReference.getAscLink();
+		}
 	}
 
 	function CDiagramUpdater(oChart)

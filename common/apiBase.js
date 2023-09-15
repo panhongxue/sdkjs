@@ -4854,6 +4854,16 @@
 			this.sendEvent("asc_onError", c_oAscError.ID.ConvertationSaveError, c_oAscError.Level.NoCritical);
 	};
 
+	baseEditorsApi.prototype.asc_openExternalReference = function(externalReference) {
+		let isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
+		if (isLocalDesktop) {
+			alert("NEED SUPPORT LOCAL OPEN FILE");
+			return null;
+		} else {
+			return externalReference;
+		}
+	};
+
 	//----------------------------------------------------------export----------------------------------------------------
 	window['AscCommon']                = window['AscCommon'] || {};
 	window['AscCommon'].baseEditorsApi = baseEditorsApi;
@@ -4927,5 +4937,5 @@
 	prot['asc_convertNumFormat2NumFormatLocal'] = prot.asc_convertNumFormat2NumFormatLocal;
 	prot['asc_convertNumFormatLocal2NumFormat'] = prot.asc_convertNumFormatLocal2NumFormat;
 	prot['asc_getCurrencySymbols'] = prot.asc_getCurrencySymbols;
-
+	prot["asc_openExternalReference"] = prot.asc_openExternalReference;
 })(window);

@@ -212,6 +212,7 @@
 		this.internalEvents = {};
 
 		this.skinObject = config['skin'];
+		this.isDarkMode = false;
 
 		this.Shortcuts = new AscCommon.CShortcuts();
 		this.initDefaultShortcuts();
@@ -280,9 +281,6 @@
 			t.sendEvent("asc_onError", Asc.c_oAscError.ID.LoadingScriptError, c_oAscError.Level.NoCritical);
 		});
 
-		AscCommon.loadSmartArtBinary(function (){}, function (err) {
-			t.sendEvent("asc_onError", Asc.c_oAscError.ID.LoadingBinError, c_oAscError.Level.NoCritical);
-		});
 
 
 		var oldOnError = window.onerror;
@@ -374,6 +372,10 @@
 	{
 		return this.editorId;
 	};
+	baseEditorsApi.prototype.isPdfEditor = function()
+	{
+		return false;
+	};
 	baseEditorsApi.prototype.getEditorErrorInfo = function()
 	{
 		return "";
@@ -382,9 +384,9 @@
 	// modules
 	baseEditorsApi.prototype._loadModules = function()
 	{
-		this.modulesCount = 2;
+		this.modulesCount = 1;
 		AscFonts.load(this, this._onSuccessLoadModule.bind(this), this._onErrorLoadModule.bind(this));
-		AscCommon.zlib_load(this._onSuccessLoadModule.bind(this), this._onErrorLoadModule.bind(this));
+		//AscCommon.zlib_load(this._onSuccessLoadModule.bind(this), this._onErrorLoadModule.bind(this));
 	};
 	baseEditorsApi.prototype._onSuccessLoadModule = function()
 	{
@@ -602,7 +604,7 @@
 		this.isLockScrollToTarget = isLock;
 	};
 	// Просмотр PDF
-	baseEditorsApi.prototype.isPdfViewer                     = function()
+	baseEditorsApi.prototype.isPdfEditor                     = function()
 	{
 		return false;
 	};
@@ -1073,7 +1075,7 @@
 		switch (this.editorId)
 		{
 			case c_oEditorId.Word:
-				res = !this.isPdfViewer();
+				res = true;
 				break;
 			case c_oEditorId.Presentation:
 				res = true;
@@ -2570,16 +2572,6 @@
 	{
 	};
 
-	baseEditorsApi.prototype.asc_selectSearchingResults = function(value)
-	{
-		if (this.selectSearchingResults === value)
-		{
-			return;
-		}
-		this.selectSearchingResults = value;
-		this._selectSearchingResults(value);
-	};
-
 
 	baseEditorsApi.prototype.asc_startEditCurrentOleObject = function(){
 
@@ -2607,7 +2599,7 @@
 	
 	baseEditorsApi.prototype.asc_setShapeNames = function(oShapeNames)
 	{
-		if(oShapeNames !== null && typeof oShapeNames === "object") 
+		if(oShapeNames !== null && typeof oShapeNames === "object")
 		{
 			this.shapeNames = oShapeNames;
 		}
@@ -2616,7 +2608,7 @@
 	baseEditorsApi.prototype.getShapeName = function(sPreset)
 	{
 		var sShapeName = this.shapeNames[sPreset];
-		if(typeof sShapeName !== "string" || sShapeName.length === 0) 
+		if(typeof sShapeName !== "string" || sShapeName.length === 0)
 		{
 			sShapeName = "Shape";
 		}
@@ -3649,8 +3641,7 @@
 		if (!this.canSave || !this._saveCheck())
 			return 0;
 
-		//pdf viewer
-		if (this.isUseNativeViewer && this.isDocumentRenderer && this.isDocumentRenderer())
+		if (this.isPdfEditor())
 			return 0;
 
 		//viewer
@@ -4326,7 +4317,12 @@
 		this.Shortcuts.Add(nActionType, sShortcut[0], sShortcut[1], sShortcut[2], sShortcut[3]);
 		return nActionType;
 	};
-	baseEditorsApi.prototype.asc_setSkin = function(obj)
+	baseEditorsApi.prototype.asc_setSkin = baseEditorsApi.prototype["asc_setSkin"] = function(skin)
+	{
+		AscCommon.updateGlobalSkin(skin);
+		this.updateSkin(skin);
+	};
+	baseEditorsApi.prototype.updateSkin = function()
 	{
 	};
 	baseEditorsApi.prototype.isLocalMode = function()
@@ -4366,27 +4362,93 @@
 	baseEditorsApi.prototype.asc_correctEnterText = function(oldValue, newValue)
 	{
 	};
+	baseEditorsApi.prototype.asc_setContentDarkMode = baseEditorsApi.prototype["asc_setContentDarkMode"] = function(isDarkMode)
+	{
+		if (this.isDarkMode === isDarkMode)
+			return;
+
+		this.isDarkMode = isDarkMode;
+
+		this.updateDarkMode();
+	};
+	baseEditorsApi.prototype.updateDarkMode = function()
+	{
+	};
+	//---------------------------------------------------------statistics-----------------------------------------------
+	baseEditorsApi.prototype.startGetDocInfo = function()
+	{
+		this.sync_GetDocInfoStartCallback();
+		this.sync_GetDocInfoEndCallback();
+	};
+	baseEditorsApi.prototype.stopGetDocInfo = function()
+	{
+		this.sync_GetDocInfoStopCallback();
+	};
+	baseEditorsApi.prototype.sync_DocInfoCallback = function(obj)
+	{
+		this.sendEvent("asc_onDocInfo", new AscCommon.CDocInfoProp(obj));
+	};
+	baseEditorsApi.prototype.sync_GetDocInfoStartCallback = function()
+	{
+		this.sendEvent("asc_onGetDocInfoStart");
+	};
+	baseEditorsApi.prototype.sync_GetDocInfoStopCallback = function()
+	{
+		this.sendEvent("asc_onGetDocInfoStop");
+	};
+	baseEditorsApi.prototype.sync_GetDocInfoEndCallback = function()
+	{
+		this.sendEvent("asc_onGetDocInfoEnd");
+	};
 	//---------------------------------------------------------search-----------------------------------------------------
+	baseEditorsApi.prototype.asc_searchEnabled = function(isEnabled)
+	{
+	};
 	baseEditorsApi.prototype.asc_findText = function(oProps, isNext, callback)
 	{
+		return 0;
 	};
 	baseEditorsApi.prototype.asc_endFindText = function()
 	{
 	};
+	baseEditorsApi.prototype.asc_selectSearchingResults = function(isShow)
+	{
+		if (this.selectSearchingResults === isShow)
+			return;
+
+		this.selectSearchingResults = isShow;
+
+		this._selectSearchingResults(isShow);
+	};
+	baseEditorsApi.prototype.asc_isSelectSearchingResults = function()
+	{
+		return this.selectSearchingResults;
+	};
+	baseEditorsApi.prototype._selectSearchingResults = function()
+	{
+	};
+	baseEditorsApi.prototype.asc_StartTextAroundSearch = function()
+	{
+	};
 	baseEditorsApi.prototype.sync_setSearchCurrent = function(nCurrent, nOverallCount)
 	{
+		this.sendEvent("asc_onSetSearchCurrent", nCurrent, nOverallCount);
 	};
 	baseEditorsApi.prototype.sync_startTextAroundSearch = function()
 	{
+		this.sendEvent("asc_onStartTextAroundSearch");
 	};
 	baseEditorsApi.prototype.sync_endTextAroundSearch = function()
 	{
+		this.sendEvent("asc_onEndTextAroundSearch");
 	};
 	baseEditorsApi.prototype.sync_getTextAroundSearchPack = function(arrElements)
 	{
+		this.sendEvent("asc_onGetTextAroundSearchPack", arrElements);
 	};
 	baseEditorsApi.prototype.sync_removeTextAroundSearch = function(sId)
 	{
+		this.sendEvent("asc_onRemoveTextAroundSearch", [sId]);
 	};
 	//---------------------------------------------------------version----------------------------------------------------
 	baseEditorsApi.prototype["GetVersion"] = baseEditorsApi.prototype.GetVersion = function()
@@ -4802,6 +4864,7 @@
 	prot['asc_addRestriction'] = prot.asc_addRestriction;
 	prot['asc_removeRestriction'] = prot.asc_removeRestriction;
 	prot['asc_selectSearchingResults'] = prot.asc_selectSearchingResults;
+	prot['asc_isSelectSearchingResults'] = prot.asc_isSelectSearchingResults;
 	prot['asc_showRevision'] = prot.asc_showRevision;
 	prot['asc_getAdvancedOptions'] = prot.asc_getAdvancedOptions;
 	prot['asc_Print'] = prot.asc_Print;
@@ -4852,6 +4915,12 @@
 	prot['asc_StartDrawInk'] = prot.asc_StartDrawInk;
 	prot['asc_StartInkEraser'] = prot.asc_StartInkEraser;
 	prot['asc_StopInkDrawer'] = prot.asc_StopInkDrawer;
+	prot['startGetDocInfo'] = prot.startGetDocInfo;
+	prot['stopGetDocInfo'] = prot.stopGetDocInfo;
+	prot["can_CopyCut"] = prot.can_CopyCut;
+	prot["asc_searchEnabled"] = prot.asc_searchEnabled;
+	prot['asc_findText'] = prot.asc_findText;
+	prot['asc_endFindText'] = prot.asc_endFindText;
 	prot['asc_getFormatCells'] = prot.asc_getFormatCells;
 	prot['asc_getLocaleExample'] = prot.asc_getLocaleExample;
 	prot['asc_getAdditionalCurrencySymbols'] = prot.asc_getAdditionalCurrencySymbols;

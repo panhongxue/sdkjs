@@ -1289,9 +1289,10 @@
 	CGraphicObjectBase.prototype.updateTransformMatrix = function()
 	{
 		var oParentTransform = null;
-		if(this.parent && this.parent.Get_ParentParagraph)
+		let oParent = (this.parent || this.group);
+		if(oParent && oParent.Get_ParentParagraph)
 		{
-			var oParagraph = this.parent.Get_ParentParagraph();
+			var oParagraph = oParent.Get_ParentParagraph();
 			if(oParagraph)
 			{
 				oParentTransform = oParagraph.Get_ParentTextTransform();
@@ -2995,6 +2996,9 @@
 	CGraphicObjectBase.prototype.getAnimTexture = function (scale, bMorph) {
 		const oBounds = this.getBoundsByDrawing(bMorph);
 		const oCanvas = oBounds.createCanvas(scale);
+		if(!oCanvas) {
+			return null;
+		}
 		const oGraphics = oBounds.createGraphicsFromCanvas(oCanvas, scale)
 		const nX = oBounds.x * oGraphics.m_oCoordTransform.sx;
 		const nY = oBounds.y * oGraphics.m_oCoordTransform.sy;
@@ -3180,7 +3184,7 @@
 			}
 		}
 	};
-	CGraphicObjectBase.prototype.compareForMorph = function(oDrawingToCheck, oCandidate) {
+	CGraphicObjectBase.prototype.compareForMorph = function(oDrawingToCheck, oCandidate, oMapPaired) {
 		if(oCandidate) {
 			return oCandidate;
 		}

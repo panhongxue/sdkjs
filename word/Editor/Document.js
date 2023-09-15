@@ -2225,6 +2225,10 @@ CDocument.prototype.IsSpreadSheetEditor = function()
 {
 	return false;
 };
+CDocument.prototype.IsPdfEditor = function()
+{
+	return false;
+};
 CDocument.prototype.Init                           = function()
 {
 
@@ -5965,14 +5969,14 @@ CDocument.prototype.CanUnGroup = function()
 {
 	return this.DrawingObjects.canUnGroup();
 };
-CDocument.prototype.AddInlineImage = function(W, H, Img, Chart, bFlow)
+CDocument.prototype.AddInlineImage = function(W, H, Img, GraphicObject, bFlow)
 {
 	if (undefined === bFlow)
 		bFlow = false;
 
 
     this.TurnOff_InterfaceEvents();
-    this.Controller.AddInlineImage(W, H, Img, Chart, bFlow);
+    this.Controller.AddInlineImage(W, H, Img, GraphicObject, bFlow);
     this.TurnOn_InterfaceEvents(true);
 };
 
@@ -9047,12 +9051,13 @@ CDocument.prototype.OnKeyDown = function(e)
 	{
 		if (e.KeyCode === 8) // BackSpace
 		{
+			const bIsWord = bIsMacOs ? e.AltKey : e.CtrlKey;
 			this.CheckSubFormBeforeRemove(-1);
 
 			if (false === this.Document_Is_SelectionLocked(AscCommon.changestype_Remove, null, true, this.IsFormFieldEditing()))
 			{
 				this.StartAction(AscDFH.historydescription_Document_BackSpaceButton);
-				this.Remove(-1, true, false, false, e.CtrlKey, true);
+				this.Remove(-1, true, false, false, bIsWord, true);
 				this.FinalizeAction();
 				this.private_UpdateCursorXY(true, true);
 			}
@@ -9486,9 +9491,21 @@ CDocument.prototype.OnKeyDown = function(e)
 			// Чтобы при зажатой клавише курсор не пропадал
 			if (true !== e.ShiftKey)
 				this.DrawingDocument.TargetStart();
+			if (!AscFormat.getTargetTextObject(this.DrawingObjects) && this.DrawingObjects.selectedObjects.length)
+			{
+				this.MoveCursorLeft(e.ShiftKey, e.CtrlKey);
+			}
+			else if (bIsMacOs && e.CtrlKey === true)
+			{
+				this.MoveCursorToStartOfLine(true === e.ShiftKey);
+				this.Document_UpdateInterfaceState();
+				this.Document_UpdateRulersState();
+			}
+			else
+			{
+				this.MoveCursorLeft(e.ShiftKey, bIsMacOs ? e.AltKey : e.CtrlKey);
+			}
 
-			this.DrawingDocument.UpdateTargetFromPaint = true;
-			this.MoveCursorLeft(true === e.ShiftKey, true === e.CtrlKey);
 			this.private_CheckCursorPosInFillingFormMode();
 			this.CheckComplexFieldsInSelection();
 			bRetValue = keydownresult_PreventAll;
@@ -9526,9 +9543,21 @@ CDocument.prototype.OnKeyDown = function(e)
 			// Чтобы при зажатой клавише курсор не пропадал
 			if (true !== e.ShiftKey)
 				this.DrawingDocument.TargetStart();
+			if (!AscFormat.getTargetTextObject(this.DrawingObjects) && this.DrawingObjects.selectedObjects.length)
+			{
+				this.MoveCursorRight(e.ShiftKey, e.CtrlKey);
+			}
+			else if (bIsMacOs && e.CtrlKey === true)
+			{
+				this.MoveCursorToEndOfLine(true === e.ShiftKey);
+				this.Document_UpdateInterfaceState();
+				this.Document_UpdateRulersState();
+			}
+			else
+			{
+				this.MoveCursorRight(e.ShiftKey, bIsMacOs ? e.AltKey : e.CtrlKey);
+			}
 
-			this.DrawingDocument.UpdateTargetFromPaint = true;
-			this.MoveCursorRight(true === e.ShiftKey, true === e.CtrlKey);
 			this.private_CheckCursorPosInFillingFormMode();
 			this.CheckComplexFieldsInSelection();
 			bRetValue = keydownresult_PreventAll;
@@ -15609,6 +15638,10 @@ CDocument.prototype.GetDrawingObjects = function()
 {
 	return this.DrawingObjects;
 };
+CDocument.prototype.getDrawingObjects = function()
+{
+	return this.DrawingObjects;
+};
 CDocument.prototype.Get_Api = function()
 {
 	return this.Api;
@@ -18881,7 +18914,7 @@ CDocument.prototype.controller_AddNewParagraph = function(bRecalculate, bForceAd
 		}
 	}
 };
-CDocument.prototype.controller_AddInlineImage = function(W, H, Img, Chart, bFlow)
+CDocument.prototype.controller_AddInlineImage = function(W, H, Img, GraphicObject, bFlow)
 {
 	if (true == this.Selection.Use)
 		this.Remove(1, true);
@@ -18890,19 +18923,26 @@ CDocument.prototype.controller_AddInlineImage = function(W, H, Img, Chart, bFlow
 	if (type_Paragraph == Item.GetType())
 	{
 		var Drawing;
-		if (!AscCommon.isRealObject(Chart))
+		if (!AscCommon.isRealObject(GraphicObject))
 		{
 			Drawing   = new ParaDrawing(W, H, null, this.DrawingDocument, this, null);
 			var Image = this.DrawingObjects.createImage(Img, 0, 0, W, H);
 			Image.setParent(Drawing);
 			Drawing.Set_GraphicObject(Image);
 		}
+		else if (GraphicObject.isSmartArtObject && GraphicObject.isSmartArtObject())
+		{
+			Drawing   = new ParaDrawing(W, H, null, this.DrawingDocument, this, null);
+			GraphicObject.setParent(Drawing);
+			Drawing.Set_GraphicObject(GraphicObject);
+			Drawing.setExtent(GraphicObject.spPr.xfrm.extX, GraphicObject.spPr.xfrm.extY);
+		}
 		else
 		{
 			Drawing   = new ParaDrawing(W, H, null, this.DrawingDocument, this, null);
-			Chart.setParent(Drawing);
-			Drawing.Set_GraphicObject(Chart);
-			Drawing.setExtent(Chart.spPr.xfrm.extX, Chart.spPr.xfrm.extY);
+			GraphicObject.setParent(Drawing);
+			Drawing.Set_GraphicObject(GraphicObject);
+			Drawing.setExtent(GraphicObject.spPr.xfrm.extX, GraphicObject.spPr.xfrm.extY);
 		}
 		if (true === bFlow)
 		{
@@ -18918,7 +18958,7 @@ CDocument.prototype.controller_AddInlineImage = function(W, H, Img, Chart, bFlow
 	}
 	else
 	{
-		Item.AddInlineImage(W, H, Img, Chart, bFlow);
+		Item.AddInlineImage(W, H, Img, GraphicObject, bFlow);
 	}
 };
 CDocument.prototype.AddPlaceholderImages = function (aImages, oPlaceholder)

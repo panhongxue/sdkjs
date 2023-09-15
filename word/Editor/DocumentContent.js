@@ -1438,7 +1438,7 @@ CDocumentContent.prototype.Draw                           = function(nPageIndex,
         pGraphics.Start_Command(AscFormat.DRAW_COMMAND_CONTENT);
     }
 
-	var nPixelError = this.DrawingDocument.GetMMPerDot(1);
+	var nPixelError = this.DrawingDocument && this.DrawingDocument.GetMMPerDot(1);
 
 	var ClipInfo = this.ClipInfo[CurPage];
     if (ClipInfo)
@@ -2931,11 +2931,11 @@ CDocumentContent.prototype.Extend_ToPos                       = function(X, Y)
     this.LogicDocument.Recalculate();
     this.LogicDocument.FinalizeAction();
 };
-CDocumentContent.prototype.AddInlineImage = function(W, H, Img, Chart, bFlow)
+CDocumentContent.prototype.AddInlineImage = function(W, H, Img, GraphicObject, bFlow)
 {
 	if (docpostype_DrawingObjects === this.CurPos.Type)
 	{
-		return this.DrawingObjects.addInlineImage(W, H, Img, Chart, bFlow);
+		return this.DrawingObjects.addInlineImage(W, H, Img, GraphicObject, bFlow);
 	}
 	else //if ( docpostype_Content === this.CurPos.Type )
 	{
@@ -2946,19 +2946,26 @@ CDocumentContent.prototype.AddInlineImage = function(W, H, Img, Chart, bFlow)
 		if (type_Paragraph == Item.GetType())
 		{
 			var Drawing;
-			if (!AscCommon.isRealObject(Chart))
+			if (!AscCommon.isRealObject(GraphicObject))
 			{
 				Drawing   = new ParaDrawing(W, H, null, this.DrawingDocument, this, null);
 				var Image = this.DrawingObjects.createImage(Img, 0, 0, W, H);
 				Image.setParent(Drawing);
 				Drawing.Set_GraphicObject(Image);
 			}
+			else if (GraphicObject.isSmartArtObject && GraphicObject.isSmartArtObject())
+			{
+				Drawing   = new ParaDrawing(W, H, null, this.DrawingDocument, this, null);
+				GraphicObject.setParent(Drawing);
+				Drawing.Set_GraphicObject(GraphicObject);
+				Drawing.setExtent(GraphicObject.spPr.xfrm.extX, GraphicObject.spPr.xfrm.extY);
+			}
 			else
 			{
 				Drawing   = new ParaDrawing(W, H, null, this.DrawingDocument, this, null);
-				Chart.setParent(Drawing);
-				Drawing.Set_GraphicObject(Chart);
-				Drawing.setExtent(Chart.spPr.xfrm.extX, Chart.spPr.xfrm.extY);
+				GraphicObject.setParent(Drawing);
+				Drawing.Set_GraphicObject(GraphicObject);
+				Drawing.setExtent(GraphicObject.spPr.xfrm.extX, GraphicObject.spPr.xfrm.extY);
 			}
 			if (true === bFlow)
 			{
@@ -2974,7 +2981,7 @@ CDocumentContent.prototype.AddInlineImage = function(W, H, Img, Chart, bFlow)
 		}
 		else
 		{
-			Item.AddInlineImage(W, H, Img, Chart, bFlow);
+			Item.AddInlineImage(W, H, Img, GraphicObject, bFlow);
 		}
 	}
 };

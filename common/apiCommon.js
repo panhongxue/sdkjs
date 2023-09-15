@@ -7072,6 +7072,70 @@
 	asc_CFormatCellsInfo.prototype.asc_getSymbol = function () {return this.symbol;};
 	asc_CFormatCellsInfo.prototype.asc_getCurrencySymbol = function () {return this.currency;};
 
+
+	/**
+	 * @constructor
+	 */
+	function CDocInfoProp(obj)
+	{
+		if (obj)
+		{
+			this.PageCount      = obj.PageCount;
+			this.WordsCount     = obj.WordsCount;
+			this.ParagraphCount = obj.ParagraphCount;
+			this.SymbolsCount   = obj.SymbolsCount;
+			this.SymbolsWSCount = obj.SymbolsWSCount;
+		}
+		else
+		{
+			this.PageCount      = -1;
+			this.WordsCount     = -1;
+			this.ParagraphCount = -1;
+			this.SymbolsCount   = -1;
+			this.SymbolsWSCount = -1;
+		}
+	}
+	CDocInfoProp.prototype.get_PageCount      = function()
+	{
+		return this.PageCount;
+	};
+	CDocInfoProp.prototype.put_PageCount      = function(v)
+	{
+		this.PageCount = v;
+	};
+	CDocInfoProp.prototype.get_WordsCount     = function()
+	{
+		return this.WordsCount;
+	};
+	CDocInfoProp.prototype.put_WordsCount     = function(v)
+	{
+		this.WordsCount = v;
+	};
+	CDocInfoProp.prototype.get_ParagraphCount = function()
+	{
+		return this.ParagraphCount;
+	};
+	CDocInfoProp.prototype.put_ParagraphCount = function(v)
+	{
+		this.ParagraphCount = v;
+	};
+	CDocInfoProp.prototype.get_SymbolsCount   = function()
+	{
+		return this.SymbolsCount;
+	};
+	CDocInfoProp.prototype.put_SymbolsCount   = function(v)
+	{
+		this.SymbolsCount = v;
+	};
+	CDocInfoProp.prototype.get_SymbolsWSCount = function()
+	{
+		return this.SymbolsWSCount;
+	};
+	CDocInfoProp.prototype.put_SymbolsWSCount = function(v)
+	{
+		this.SymbolsWSCount = v;
+	};
+
     /*
      * Export
      * -----------------------------------------------------------------------------
@@ -8058,6 +8122,19 @@
 	window["Asc"]["PluginType"] = window["Asc"].PluginType = PluginType;
 	window["Asc"]["CPluginVariation"] = window["Asc"].CPluginVariation = CPluginVariation;
 	window["Asc"]["CPlugin"] = window["Asc"].CPlugin = CPlugin;
+
+	window["AscCommon"].CDocInfoProp = CDocInfoProp;
+	CDocInfoProp.prototype['get_PageCount']      = CDocInfoProp.prototype.get_PageCount;
+	CDocInfoProp.prototype['put_PageCount']      = CDocInfoProp.prototype.put_PageCount;
+	CDocInfoProp.prototype['get_WordsCount']     = CDocInfoProp.prototype.get_WordsCount;
+	CDocInfoProp.prototype['put_WordsCount']     = CDocInfoProp.prototype.put_WordsCount;
+	CDocInfoProp.prototype['get_ParagraphCount'] = CDocInfoProp.prototype.get_ParagraphCount;
+	CDocInfoProp.prototype['put_ParagraphCount'] = CDocInfoProp.prototype.put_ParagraphCount;
+	CDocInfoProp.prototype['get_SymbolsCount']   = CDocInfoProp.prototype.get_SymbolsCount;
+	CDocInfoProp.prototype['put_SymbolsCount']   = CDocInfoProp.prototype.put_SymbolsCount;
+	CDocInfoProp.prototype['get_SymbolsWSCount'] = CDocInfoProp.prototype.get_SymbolsWSCount;
+	CDocInfoProp.prototype['put_SymbolsWSCount'] = CDocInfoProp.prototype.put_SymbolsWSCount;
+
 
 	window["Asc"]["asc_CFormatCellsInfo"] = window["Asc"].asc_CFormatCellsInfo = asc_CFormatCellsInfo;
 	prot = asc_CFormatCellsInfo.prototype;

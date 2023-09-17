@@ -269,9 +269,25 @@
 
 		if (typeof word === "string" && this.IsLaTeXInclude(word))
 			return word;
+
+		else if (this.IsUnicodeInclude(str[0]))
+			return str[0];
+
 		else if (this.IsLaTeXInclude(str[0]))
 			return str[0];
 	};
+	LexerLiterals.prototype.GetLaTeXWordFromSymbol = function (str)
+	{
+		let arr = Object.entries(this.LaTeX);
+
+		for (let i = 0; i < arr.length; i++)
+		{
+			let curArr = arr[i];
+
+			if (curArr[1] === str)
+				return curArr[0];
+		}
+	}
 	// Search in Unicode group of tokens
 	LexerLiterals.prototype.SearchU = function (str)
 	{
@@ -537,7 +553,6 @@
 		};
 		this.LaTeX = {
 			"\\begin" : "〖",
-			"\\bra" : "⟨",
 			"\\langle" : "⟨",
 			"\\lbrace" : "{",
 			"\\lbrack" : "[",
@@ -545,7 +560,7 @@
 			"\\lfloor" : "⌊",
 			"\\lbbrack" : "⟦",
 			"\\lmoust" : "⎰",
-			"{": "{",
+			"\\bra" : "⟨",
 		};
 		this.Init();
 	}
@@ -576,13 +591,12 @@
 		};
 		this.LaTeX = {
 			"\\end" : "〗",
-			"\\ket" : "⟩",
 			"\\rangle" : "⟩",
+			"\\ket" : "⟩",
 			"\\rbrace" : "}",
 			"\\rbrack" : "]",
 			"\\rceil" : "⌉",
 			"\\rfloor" : "⌋",
-			"}" : "}",
 		};
 		this.Init();
 	}
@@ -706,10 +720,6 @@
 			"_" : 1,
 			"^" : 1,
 		};
-		this.LaTeX = {
-			"_": "_",
-			"^": "^",
-		}
 		this.Init();
 	}
 	TokenSubSup.prototype = Object.create(LexerLiterals.prototype);
@@ -1173,6 +1183,8 @@
 	// the higher an element is, the lower its priority
 	const arrTokensCheckerList = [
 		MathLiterals.char,
+		MathLiterals.func,
+		MathLiterals.LaTeX,
 		MathLiterals.delimiter,
 		MathLiterals.special,
 		MathLiterals.of,
@@ -1195,8 +1207,6 @@
 		MathLiterals.radical,
 		MathLiterals.other,
 		MathLiterals.alphanumeric,
-		MathLiterals.LaTeX,
-		MathLiterals.func,
 		MathLiterals.subSup
 	];
 
@@ -2050,7 +2060,7 @@
 				case MathStructures.sub_sub:
 					if (oTokens.value && oTokens.value.type === MathStructures.func)
 					{
-						let oFunc = oContext.Add_Function({ctrPrp: oTokens.style}, null, null);
+						let oFunc = oContext.Add_Function({ctrPrp: oTokens.value.style}, null, null);
 						let oFuncName = oFunc.getFName();
 
 						let Pr = (oTokens.up && oTokens.down)
@@ -2066,7 +2076,13 @@
 							null,
 							null
 						);
-						SubSup.getBase().Add_Text(oTokens.value.value, Paragraph, STY_PLAIN)
+
+						oTokens.value.type = 0;
+						UnicodeArgument(
+							oTokens.value,
+							MathStructures.bracket_block,
+							SubSup.getBase()
+						);
 
 						if (oTokens.up) {
 							UnicodeArgument(
@@ -2090,6 +2106,15 @@
 								oFuncArgument
 							)
 						}
+
+						// Set styles
+						let oUpper = SubSup.getUpperIterator();
+						if (oUpper && oTokens.style.supStyle)
+							oUpper.CtrPrp.Merge(oTokens.style.supStyle);
+
+						let oLower = SubSup.getLowerIterator();
+						if (oLower && oTokens.style.subStyle)
+							oLower.CtrPrp.Merge(oTokens.style.subStyle);
 					}
 					else if (oTokens.value && oTokens.value.type === MathStructures.func_lim)
 					{
@@ -2286,7 +2311,6 @@
 
 					break;
 				case MathStructures.bracket_block:
-
 					let arr = [null]
 					let oPr =
 						{
@@ -2356,6 +2380,7 @@
 				case MathStructures.func:
 					let oFunc = oContext.Add_Function({ctrPrp: oTokens.style}, null, null);
 
+					oTokens.value.type = 0;
 					ConvertTokens(
 						oTokens.value,
 						oFunc.getFName(),
@@ -2549,6 +2574,19 @@
 
 		}
 		if (code) {
+			if (MathLiterals.rBrackets.LaTeX[code])
+			{
+				return MathLiterals.rBrackets.LaTeX[code].charCodeAt(0);
+			}
+			else if (MathLiterals.lrBrackets.LaTeX[code])
+			{
+				return MathLiterals.lrBrackets.LaTeX[code].charCodeAt(0);
+			}
+			else if (MathLiterals.lBrackets.LaTeX[code])
+			{
+				return MathLiterals.lBrackets.LaTeX[code].charCodeAt(0);
+			}
+
 			let strBracket = oBrackets[code];
 			if (strBracket) {
 				return strBracket
@@ -2953,68 +2991,73 @@
 	{
 		return this.Cursor >= 0;
 	};
+
 	function CMathContentIterator(oCMathContent)
 	{
-		this._paraRun = null;
-		this._index = 0;
-		this._content = oCMathContent.Content;
-
-		this.counter = 0;
+		if (oCMathContent instanceof CMathContent)
+		{
+			this._content 	= oCMathContent.Content;
+			this._paraRun 	= null;
+			this._nParaRun	= 0;
+			this._index 	= oCMathContent.Content.length - 1; // индекс текущего элемента
+			this.counter 	= 0; 								// количество отданных элементов
+		}
 	}
 	CMathContentIterator.prototype.Count = function ()
 	{
 		this.counter++;
 	};
-	CMathContentIterator.prototype.Reset = function (El, RunPos, nIndex, Counter)
-	{
-		this._paraRun.Cursor = RunPos;
-		this._index = nIndex;
-		this.counter = Counter;
-
-		return El;
-	}
 	CMathContentIterator.prototype.Next = function()
 	{
 		if (!this.IsHasContent())
 			return false;
 
-		if (this._paraRun)
+		if (this._nParaRun >= 0 && this._paraRun)
 		{
-			if (this._paraRun.IsHasContent())
-			{
-				this.Count();
-				return this._paraRun.GetNext();
-			}
-			else
-			{
-				this._paraRun = null;
-				this._index++;
-				return this.Next();
-			}
+			return this.GetValue();
 		}
 		else
 		{
-			let intCurrentIndex = this._content.length - 1 - this._index;
-			let oCurrentContent = this._content[intCurrentIndex];
+			let oCurrentContent = this._content[this._index];
 
-			if (oCurrentContent.Type !== 49)
+			if (!oCurrentContent instanceof ParaRun)
 			{
-				this._index++;
-				this.Count();
-				return oCurrentContent;
+				// прерываем обработку здесь точно не слово для автокоррекции
+				return false;
 			}
 			else
 			{
-				this._paraRun = new ParaRunIterator(oCurrentContent)
-				return this.Next();
+				this._index--;
+				this._paraRun 	= oCurrentContent;
+				this._nParaRun 	= oCurrentContent.GetElementsCount() - 1;
+				return this.GetValue();
 			}
 		}
 	};
+	CMathContentIterator.prototype.IsHasContent = function ()
+	{
+		return this._index >= 0 || this._nParaRun >= 0;
+	};
+	CMathContentIterator.prototype.GetValue = function()
+	{
+		if (this._nParaRun >= 0)
+		{
+			this.Count();
+			this._nParaRun--;
+			let oMathText = this._paraRun.GetElement(this._nParaRun + 1);
+
+			// если не текст просто прерываем обработку, здесь точно не слово для автокоррекции
+			if (!(oMathText instanceof CMathText))
+				return false;
+
+			return String.fromCharCode(oMathText.GetCodePoint());
+		}
+		return false;
+	}
 	CMathContentIterator.prototype.NextCopy = function()
 	{
-		let nParaCopy = this._paraRun.Cursor;
-
-		let nIndex = this._index = 0;
+		let nParaCopy = this._nParaRun;
+		let nIndex = this._index;
 		let counter = this.counter;
 
 		if (!this.IsHasContent())
@@ -3022,39 +3065,16 @@
 
 		if (this._paraRun)
 		{
-			if (this._paraRun.IsHasContent())
-			{
-				this.Count();
-				return this.Reset(this._paraRun.GetNext(), nParaCopy, nIndex, counter);
-			}
-			else
-			{
-				this._paraRun = null;
-				this._index++;
-				return this.Reset(this.Next(), nParaCopy, nIndex, counter);
-			}
-		}
-		else
-		{
-			let intCurrentIndex = this._content.length - 1 - this._index;
-			let oCurrentContent = this._content[intCurrentIndex];
-
-			if (oCurrentContent.Type !== 49)
-			{
-				this._index++;
-				this.Count();
-				return this.Reset(oCurrentContent, nParaCopy, nIndex, counter);
-			}
-			else
-			{
-				this._paraRun = new ParaRunIterator(oCurrentContent)
-				return this.Reset(this.Next(), nParaCopy, nIndex, counter);
-			}
+			return this.Reset(this.Next(), nParaCopy, nIndex, counter);
 		}
 	};
-	CMathContentIterator.prototype.IsHasContent = function ()
+	CMathContentIterator.prototype.Reset = function (El, RunPos, nIndex, Counter)
 	{
-		return (this._content && this._index < this._content.length && ((this._paraRun && this._paraRun.Cursor !== -1) || !this._paraRun));
+		this._nParaRun = RunPos;
+		this._index = nIndex;
+		this.counter = Counter;
+
+		return El;
 	};
 
 	function IsNeedSkipSpecial(oContentIterator, isSkipSpecial, currentContent)
@@ -3154,8 +3174,12 @@
 
 			if (oContentToSearch[strWord])
 			{
-				let intRootIndex = oContent.Content.length - oContentIterator._index - 1;
-				let intChildIndex = oContentIterator._paraRun.Cursor + 1;
+
+				if (oContentIterator._index === -1)
+					oContentIterator._index = 0;
+
+				let intRootIndex = oContent.Content.length - (oContentIterator._index + 1);
+				let intChildIndex = oContentIterator._nParaRun + 1;
 				let oDelMark = new PositionIsCMathContent(intRootIndex, intChildIndex);
 
 				CutContentFromEnd(oContent, oDelMark, false);
@@ -3962,6 +3986,7 @@
 		if (!isAllowAutoCorrect)
 			return false;
 
+		debugger
 
 		let oRuleLast 					= this.GetLast();
 		let oAbsoluteLastId 		= this.GetAbsoluteLast();
@@ -4639,7 +4664,25 @@
 			}
 			else if (this.LaTeX)
 			{
-				this.WrapExactElement(oPos);
+				console.log(this.LaTeX)
+				if (oMath.GetText() === "")
+					return;
+
+				if (Array.isArray(Wrap) && oMath.GetLength() >= 1)
+				{
+					this.WrapExactElement(oPos, Wrap[0], Wrap[1]);
+				}
+				else if (Wrap === "base")
+				{
+					if (oMath.GetLength() > 1)
+					{
+						this.WrapExactElement(oPos);
+					}
+				}
+				else
+				{
+					this.WrapExactElement(oPos);
+				}
 			}
 			else if (oMath.GetLength() > 1)
 			{
@@ -4835,6 +4878,7 @@
 	MathTextAndStyles.prototype.WrapExactElement = function(oPos, strOne, strTwo)
 	{
 		let oToken;
+
 		if (oPos instanceof MathTextAndStyles)
 		{
 			oToken = oPos;
@@ -4846,15 +4890,18 @@
 
 		if (strOne && strTwo)
 		{
-			oToken.Wrap(strOne, strTwo);
+			let oStyle = this.GetStyle();
+			oToken.Wrap(new MathText(strOne, oStyle), new MathText(strTwo, oStyle));
 			return;
 		}
 
-		if (!this.IsLaTeX()) {
+		if (!this.IsLaTeX())
+		{
 			let oStyle = this.GetStyle();
 			oToken.Wrap(new MathText("(", oStyle), new MathText(")", oStyle));
 		}
-		else {
+		else
+		{
 			let oStyle = this.GetStyle();
 			oToken.Wrap(new MathText("{", oStyle), new MathText("}", oStyle));
 		}

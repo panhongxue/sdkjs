@@ -794,21 +794,12 @@ CRadical.prototype.GetTextOfElement = function(oMathText)
 
 	if (oMathText.IsLaTeX())
 	{
-		let oPosSqrt		= oMathText.AddText("\\sqrt");
-		let oPosDegree		= oMathText.Add(oDegree);
-
-		if (oMathText.GetLengthOfContentByPos(oPosDegree) > 1)
-		{
-			let oElementDegree = oMathText.GetExact(oPosDegree);
-			oElementDegree.Wrap("[", "]");
-		}
-
-		let oPosBase		= oMathText.Add(oBase);
-		if (oMathText.GetLengthOfContentByPos(oPosBase) > 1)
-		{
-			let oElementBase = oMathText.GetExact(oPosBase);
-			oElementBase.Wrap("{", "}");
-		}
+		let oPr = this.Pr.GetRPr();
+		let oPosSqrt		= oMathText.AddText(new AscMath.MathText("\\sqrt", oPr), true);
+		oMathText.SetStyle(oPr);
+		let oPosDegree		= oMathText.Add(oDegree, true, ["[", "]"]);
+		oMathText.SetStyle(oPr);
+		let oPosBase		= oMathText.Add(oBase, true, "base");
 	}
 	else
 	{

@@ -519,7 +519,7 @@ CMathFunc.prototype.fillContent = function()
 };
 CMathFunc.prototype.GetTextOfElement = function(oMathText)
 {
-	if (oMathText === undefined || !oMathText instanceof AscMath.MathTextAndStyles)
+	if (!(oMathText instanceof AscMath.MathTextAndStyles))
 		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
 	let oFuncName = this.getFName();
@@ -539,18 +539,16 @@ CMathFunc.prototype.GetTextOfElement = function(oMathText)
 			oMathText.WrapExactElement(oArgumentPos, "〖", "〗");
 		}
 	}
-    else
-    {
-        // oArgument.wrap("{", "}");
-        // if (AscMath.SearchFunctionName(oFuncName))
-        //     oFuncName.text = '\\' + oFuncName.text;
-		//
-        // arrContent.push(oFuncName, oArgument);
-    }
+	else
+	{
+		oMathText.AddText(new AscMath.MathText("\\", this.Pr.GetRPr()));
+		oMathText.Add(oFuncName, false, false);
+		oMathText.SetStyle(this.Pr.GetRPr());
+		oMathText.Add(oArgument, true, "base");
+	}
 
 	return oMathText;
 };
-
 
 //--------------------------------------------------------export----------------------------------------------------
 window['AscCommonWord'] = window['AscCommonWord'] || {};

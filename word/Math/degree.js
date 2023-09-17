@@ -562,9 +562,9 @@ CDegree.prototype.GetTextOfElement = function(oMathText)
 	let oIterator       = this.getIterator();
 
 	oMathText.Add(oBase, true, false);
-	let oText = new AscMath.MathText(this.Pr.type === 1 ? "^" : "_", this.Pr.GetRPr());
+	let oText = new AscMath.MathText(this.Pr.type === 1 ? "^" : "_", oIterator.GetCtrPrp());
 	oMathText.AddText(oText);
-	oMathText.SetStyle(this.Pr.GetRPr());
+	oMathText.SetStyle(oIterator.GetCtrPrp());
 	oMathText.Add(oIterator, true, 'base');
 
 	return oMathText;
@@ -1257,8 +1257,8 @@ CDegreeSubSup.prototype.GetTextOfElement = function(oMathText)
     else
     {
         oMathText.Add(oBase, true, false);
-        oMathText.AddText(new AscMath.MathText("_", this.Pr.GetRPr()));
-		oMathText.SetStyle(this.Pr.GetRPr());
+        oMathText.AddText(new AscMath.MathText("_", oLowerIterator.GetCtrPrp()));
+		oMathText.SetStyle(oLowerIterator.GetCtrPrp());
         oMathText.Add(oLowerIterator, true, 'base');
         oMathText.AddText(new AscMath.MathText("^", oUpperIterator.GetCtrPrp()));
 	    oMathText.SetStyle(oUpperIterator.GetCtrPrp());

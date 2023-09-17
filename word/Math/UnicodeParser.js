@@ -1761,20 +1761,23 @@
 		let oPr = this.oLookahead.style;
 		this.EatToken(this.oLookahead.class);
 
-		if (this.IsExpSubSupLiteral())
-		{
-			return this.GetExpSubSupLiteral(oBase);
+		oBase = {
+			type: Struc.char,
+			value: oBase.data,
+			style: oBase.style,
 		}
+
+		if (this.IsExpSubSupLiteral())
+			return this.GetExpSubSupLiteral(oBase);
 
         let oValue = this.GetOperandLiteral();
 
         return {
             type: Struc.func,
-            value: oBase.data,
+            value: oBase,
             third: oValue,
             style: oPr,
         }
-
     }
     CUnicodeParser.prototype.IsOperandLiteral = function ()
     {

@@ -844,44 +844,64 @@ CNary.prototype.Can_ModifyArgSize = function()
  */
 CNary.prototype.GetTextOfElement = function(oMathText)
 {
-	if (!oMathText)
-		oMathText = new AscMath.MathTextAndStyles(false);
+	if (!(oMathText instanceof AscMath.MathTextAndStyles))
+		oMathText = new AscMath.MathTextAndStyles(oMathText);
 
 	let strStartCode;
 	let oBase	= this.getBase();
 	let oUpper	= this.getUpperIterator();
 	let oLower	= this.getLowerIterator();
 
-    if (oMathText.IsLaTeX())
-    {
-        switch (this.Pr.chr)
-        {
-            case 8747:	strStartCode = '\\int';			break;
-            case 8748:	strStartCode = '\\iint';		break;
-            case 8749:	strStartCode = '\\iiint';		break;
-            case 8750:
-            case 8755:	strStartCode = '\\oint';		break;
-            case 8751:	strStartCode = '\\oiint';		break;
-            case 8752:	strStartCode = '\\oiiint';		break;
-            case 8721:	strStartCode = '\\sum';			break;
-            case 8719:	strStartCode = '\\prod';		break;
-            case 8720:	strStartCode = '\\coprod';		break;
-            case 8899:	strStartCode = '\\bigcup';		break;
-            case 8898:	strStartCode = '\\bigcap';		break;
-            case 8897:	strStartCode = '\\bigvee';		break;
-            case 8896:	strStartCode = '\\bigwedge';	break;
-            case 10753:	strStartCode = '\\bigoplus';	break;
-            case 10754:	strStartCode = '\\bigotimes';	break;
-            case 10756:	strStartCode = '\\biguplus';	break;
-            case 10764:	strStartCode = '\\iiiint';		break;
-            case 10758: strStartCode = '\\bigsqcup';	break;
-            case 10752: strStartCode = '\\bigodot';		break;
-            default: break;
-        }
+	if (oMathText.IsLaTeX())
+	{
+		switch (this.Pr.chr)
+		{
+			case 8747:	strStartCode = '\\int';			break;
+			case 8748:	strStartCode = '\\iint';		break;
+			case 8749:	strStartCode = '\\iiint';		break;
+			case 8750:
+			case 8755:	strStartCode = '\\oint';		break;
+			case 8751:	strStartCode = '\\oiint';		break;
+			case 8752:	strStartCode = '\\oiiint';		break;
+			case 8721:	strStartCode = '\\sum';			break;
+			case 8719:	strStartCode = '\\prod';		break;
+			case 8720:	strStartCode = '\\coprod';		break;
+			case 8899:	strStartCode = '\\bigcup';		break;
+			case 8898:	strStartCode = '\\bigcap';		break;
+			case 8897:	strStartCode = '\\bigvee';		break;
+			case 8896:	strStartCode = '\\bigwedge';	break;
+			case 10753:	strStartCode = '\\bigoplus';	break;
+			case 10754:	strStartCode = '\\bigotimes';	break;
+			case 10756:	strStartCode = '\\biguplus';	break;
+			case 10764:	strStartCode = '\\iiiint';		break;
+			case 10758: strStartCode = '\\bigsqcup';	break;
+			case 10752: strStartCode = '\\bigodot';		break;
+			default: break;
+		}
 
-		let oPosNaryChar = oMathText.AddText(strStartCode);
-    }
-    else
+		let oPosNaryChar = oMathText.AddText(new AscMath.MathText(strStartCode, this.Pr.GetRPr()));
+
+		if (oLower)
+		{
+			oMathText.AddText(new AscMath.MathText("_", oLower.GetCtrPrp()));
+			oMathText.SetStyle(oLower.GetCtrPrp());
+			oMathText.Add(oLower, true);
+		}
+
+		if (oUpper)
+		{
+			oMathText.AddText(new AscMath.MathText("^", oUpper.GetCtrPrp()));
+			oMathText.SetStyle(oUpper.GetCtrPrp());
+			oMathText.Add(oUpper, true);
+		}
+
+		if (oBase)
+		{
+			oMathText.SetStyle(this.Pr.GetRPr());
+			oMathText.Add(oBase, true, "base");
+		}
+	}
+	else
 	{
 		let oLastPos = oMathText.AddText(new AscMath.MathText(String.fromCharCode(this.Pr.chr), this.Pr.GetRPr()));
 		let isScript = false;

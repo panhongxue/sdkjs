@@ -650,9 +650,9 @@ CFraction.prototype.GetTextOfElement = function(oMathText)
 	let oDenominator		= this.getDenominator();
 
 	oMathText.SetStyle(oPr);
-	let oPosNumerator		= oMathText.Add(oNumerator, true, 'base');
+	let oPosNumerator		= oMathText.Add(oNumerator, true, oMathText.IsLaTeX() ? undefined : 'base');
 	oMathText.SetStyle(oPr);
-	let oPosDenominator		= oMathText.Add(oDenominator, true, 'base');
+	let oPosDenominator		= oMathText.Add(oDenominator, true, oMathText.IsLaTeX() ? undefined : 'base');
 
 	if (!oMathText.IsLaTeX())
 	{

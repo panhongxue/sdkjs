@@ -4071,7 +4071,9 @@ CDelimiter.prototype.GetTextOfElement = function(oMathText)
 
 	oMathText.IsBracket = true;
 
-	let strSeparatorSymbol	= oMathText.IsLaTeX() ? "\\mid " : "∣";
+	debugger
+
+	let strSeparatorSymbol	= oMathText.IsLaTeX() ? "\\mid" : "∣";
 	let strStartSymbol = this.Pr.begChr === -1 ? "" : String.fromCharCode((this.begOper.code || this.Pr.begChr) || 40);
 	let strEndSymbol = this.Pr.endChr === -1 ? "" : String.fromCharCode((this.endOper.code || this.Pr.endChr) || 41);
 
@@ -4080,7 +4082,18 @@ CDelimiter.prototype.GetTextOfElement = function(oMathText)
 
 	if (oMathText.IsLaTeX())
 	{
-		let oText = new AscMath.MathText(strStartSymbol === "" ? "." : strStartSymbol);
+		if (strStartSymbol)
+		{
+			let tempStrSymbol = strStartSymbol;
+			strStartSymbol = AscMath.MathLiterals.lBrackets.GetLaTeXWordFromSymbol(strStartSymbol);
+			if (strStartSymbol === undefined)
+				strStartSymbol = tempStrSymbol;
+		}
+		else
+		{
+			strStartSymbol = "\\left";
+		}
+		let oText = new AscMath.MathText(strStartSymbol === "\\left" ? "\\left. " : "\\left" + strStartSymbol + " ", this.Pr.GetRPr());
 		oMathText.AddText(oText);
 	}
 	else
@@ -4113,7 +4126,20 @@ CDelimiter.prototype.GetTextOfElement = function(oMathText)
 
 	if (oMathText.IsLaTeX())
 	{
-		oMathText.AddText(new AscMath.MathText(strEndSymbol === "\\right" ? "\\right." : strEndSymbol), true);
+		let oLastConPr = this.Content[this.Content.length - 1].CtrPrp;
+		if (strEndSymbol)
+		{
+			let tempStrSymbol = strEndSymbol;
+			strEndSymbol = AscMath.MathLiterals.rBrackets.GetLaTeXWordFromSymbol(strEndSymbol);
+			if (strEndSymbol === undefined)
+				strEndSymbol = tempStrSymbol;
+		}
+		else
+		{
+			strEndSymbol = "\\right";
+		}
+
+		oMathText.AddText(new AscMath.MathText(strEndSymbol === "\\right" ? "\\right. " : "\\right" + strEndSymbol + " ", oLastConPr), true);
 	}
 	else
 	{

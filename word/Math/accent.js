@@ -720,6 +720,7 @@ CAccent.prototype.GetTextOfElement = function(oMathText)
 
 	let oBase = this.getBase();
 	let strAccent = String.fromCharCode(this.Pr.chr);
+	let oPr = this.Pr.GetRPr();
 	
 	if (oMathText.IsLaTeX())
 	{
@@ -742,17 +743,12 @@ CAccent.prototype.GetTextOfElement = function(oMathText)
 			case 8411:	strAccent = '\\dddot';				break;
 			case 8417:	strAccent = '\\overleftrightarrow';	break;
 		}
-		let oNameAccent = oMathText.Add(
-			strAccent,
-			false,
-			false,
-		);
-		oMathText.AddAfter(oBase, oNameAccent);
+		let oNameAccent = oMathText.AddText(new AscMath.MathText(strAccent, oPr), false);
+		oMathText.Add(oBase, true);
 	}
 	else
 	{
 		oMathText.Add(oBase, true, "isNotOneLetter");
-		let oPr = this.Pr.GetRPr();
 		let oAccentText = new AscMath.MathText(strAccent, oPr);
 		oMathText.AddText(oAccentText);
 	}

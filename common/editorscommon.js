@@ -13571,7 +13571,7 @@
 	window["AscCommon"].c_oAscImageUploadProp = c_oAscImageUploadProp;
 })(window);
 
-window["asc_initAdvancedOptions"] = function(_code, _file_hash, _docInfo)
+window["asc_initAdvancedOptions"] = function(_code, _file_hash, _docInfo, _filePath)
 {
     if (window.isNativeOpenPassword)
 	{
@@ -13601,7 +13601,7 @@ window["asc_initAdvancedOptions"] = function(_code, _file_hash, _docInfo)
     }
 
     window.checkPasswordFromPlugin = false;
-    _editor._onNeedParams(undefined, (_code == 90 || _code == 91) ? true : undefined);
+    _editor._onNeedParams(_filePath, (_code == 90 || _code == 91) ? true : undefined);
 };
 
 window["asc_IsNeedBuildCryptedFile"] = function()

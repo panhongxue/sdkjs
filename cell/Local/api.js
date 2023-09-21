@@ -53,12 +53,29 @@ var c_oAscError = Asc.c_oAscError;
 	{
 		var type;
 		var options;
+		var cp;
+		
 		if (opt_isPassword) {
 			type = Asc.c_oAscAdvancedOptionsID.DRM;
 		} else {
 			type = Asc.c_oAscAdvancedOptionsID.CSV;
-			var cp = JSON.parse("{\"codepage\":46,\"delimiter\":1}");
-			cp['encodings'] = AscCommon.getEncodingParams();
+			var cp = {
+				'codepage': AscCommon.c_oAscCodePageUtf8, "delimiter": AscCommon.c_oAscCsvDelimiter.Comma,
+				'encodings': AscCommon.getEncodingParams()
+			};
+			// Получаем содержимое файла для точного определения кодировки, разделитель пока по умолчанию
+			if (data) {
+				var _data =  window["AscDesktopEditor"]["LocalFileGetRaw"](data);
+				if (_data) {
+					var dataUint = new Uint8Array(_data);
+					var bom = AscCommon.getEncodingByBOM(dataUint);
+					if (AscCommon.c_oAscCodePageNone !== bom.encoding) {
+						cp['codepage'] = bom.encoding;
+						_data = dataUint.subarray(bom.size);
+					}
+					cp['data'] = _data;
+				}				
+			}
 			options = new AscCommon.asc_CAdvancedOptions(cp);
 		}
 		this.handlers.trigger("asc_onAdvancedOptions", type, options);

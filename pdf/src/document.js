@@ -158,6 +158,9 @@ var CPresentation = CPresentation || function(){};
 
         for (let i = 0; i < aParentsInfo.length; i++) {
             let nIdx = aParentsInfo[i]["i"];
+            if (!oChilds[nIdx])
+                continue;
+
             let sType = oChilds[nIdx][0].GetType();
 
             let oParent = private_createField(aParentsInfo[i]["name"], sType, undefined, undefined, this);
@@ -549,6 +552,9 @@ var CPresentation = CPresentation || function(){};
         let oViewer = editor.getDocumentRenderer();
         let oField = this.activeForm;
 
+        if (oField.IsNeedDrawHighlight())
+            return;
+
         if ([AscPDF.FIELD_TYPES.checkbox, AscPDF.FIELD_TYPES.radiobutton].includes(oField.GetType())) {
             oField.onMouseUp();
         }
@@ -558,7 +564,6 @@ var CPresentation = CPresentation || function(){};
 
             if (oField.IsNeedRevertShiftView()) {
                 oField.RevertContentViewToOriginal();
-                oField.AddToRedraw();
             }
 
             if (oField.IsNeedCommit()) {
@@ -599,6 +604,10 @@ var CPresentation = CPresentation || function(){};
             oViewer.Api.WordControl.m_oDrawingDocument.TargetEnd(); // убираем курсор
         }
 
+        // суть в том, что мы рисуем background только когда форма активна, если неактивна - рисуем highlight вместо него.
+        if (oField.GetBackgroundColor())
+            oField.AddToRedraw();
+
         oViewer._paint();
     };
     CPDFDoc.prototype.OnExitFieldByClick = function() {
@@ -608,6 +617,10 @@ var CPresentation = CPresentation || function(){};
 
         oActiveForm.UpdateScroll && oActiveForm.UpdateScroll(false); // убираем скрол
         oActiveForm.SetDrawHighlight(true);
+
+        // суть в том, что мы рисуем background только когда форма активна, если неактивна - рисуем highlight вместо него.
+        if (oActiveForm.GetBackgroundColor())
+            oActiveForm.AddToRedraw();
 
         // если чекбокс то выходим сразу
         if ([AscPDF.FIELD_TYPES.checkbox, AscPDF.FIELD_TYPES.radiobutton].includes(oActiveForm.GetType())) {
@@ -624,6 +637,10 @@ var CPresentation = CPresentation || function(){};
         }
         
         if (oActiveForm.IsNeedCommit()) {
+            if (oActiveForm.IsNeedRevertShiftView()) {
+                oActiveForm.RevertContentViewToOriginal();
+            }
+
             let isValid = true;
             if ([AscPDF.FIELD_TYPES.text, AscPDF.FIELD_TYPES.combobox].includes(oActiveForm.GetType())) {
                 isValid = oActiveForm.DoValidateAction(oActiveForm.GetValue());
@@ -651,10 +668,6 @@ var CPresentation = CPresentation || function(){};
             if (oActiveForm.IsChanged() == false) {
                 oActiveForm.SetDrawFromStream(true);
                 oActiveForm.AddToRedraw();
-
-                if (oActiveForm.IsNeedRevertShiftView()) {
-                    oActiveForm.RevertContentViewToOriginal();
-                }
             }
 
             if (oActiveForm.IsNeedRevertShiftView()) {
@@ -670,11 +683,11 @@ var CPresentation = CPresentation || function(){};
         
         oActiveForm.Blur();
         oViewer.Api.WordControl.m_oDrawingDocument.TargetEnd();
-        if (oActionsQueue.IsInProgress() == false) {
+        if (oActionsQueue.IsInProgress() == false && this.mouseDownField == null) {
             oViewer._paint();
         }
 
-        if (oActiveForm && oActiveForm.content && oActiveForm.content.IsSelectionUse()) {
+        if (oActiveForm && oActiveForm.content && oActiveForm.content.IsSelectionUse() && this.mouseDownField == null) {
             oActiveForm.content.RemoveSelection();
             oViewer.onUpdateOverlay();
         }
@@ -683,22 +696,23 @@ var CPresentation = CPresentation || function(){};
         let oViewer         = editor.getDocumentRenderer();
         let oActionsQueue   = this.GetActionsQueue();
 
+        // суть в том, что мы рисуем background только когда форма активна, если неактивна - рисуем highlight вместо него.
+        if (oField.GetBackgroundColor())
+            oField.AddToRedraw();
+
         switch (oField.GetType())
         {
             case AscPDF.FIELD_TYPES.text:
             case AscPDF.FIELD_TYPES.combobox:
                 oField.SetDrawHighlight(false);
                 oField.onMouseDown(AscCommon.global_mouseEvent.X, AscCommon.global_mouseEvent.Y, event);
-                    
                 oViewer.onUpdateOverlay();
-                if (oField.IsEditable() != false)
                 break;
             case AscPDF.FIELD_TYPES.listbox:
                 oField.SetDrawHighlight(false);
                 oField.onMouseDown(AscCommon.global_mouseEvent.X, AscCommon.global_mouseEvent.Y, event);
                 
                 oViewer.Api.WordControl.m_oDrawingDocument.TargetEnd();
-                oViewer.onUpdateOverlay();
                 break;
             case AscPDF.FIELD_TYPES.button:
             case AscPDF.FIELD_TYPES.radiobutton:
@@ -784,7 +798,7 @@ var CPresentation = CPresentation || function(){};
             }
         }
 
-        if (IsOnDrawer == true) {
+        if (IsOnDrawer == true || oViewer.Api.isMarkerFormat) {
             this.mouseDownAnnot = null;
             this.mouseDownField = null
             oDrawingObjects.OnMouseDown(e, X, Y, oViewer.currentPage);
@@ -1046,11 +1060,6 @@ var CPresentation = CPresentation || function(){};
 
             oViewer.onUpdateOverlay();
         }
-        // else if (!oViewer.isMouseMoveBetweenDownUp && oField.content && oField.content.IsSelectionUse())
-        // {
-        //     oField.content.RemoveSelection();
-        //     oViewer.onUpdateOverlay();
-        // }
 
         switch (oField.GetType())
         {
@@ -1064,10 +1073,7 @@ var CPresentation = CPresentation || function(){};
                     let oDoc = oField.GetDocument();
                     oDoc.DoCalculateFields();
                     oDoc.CommitFields();
-                    
-                    oViewer._paint();
                 }
-                let cursorType = "pointer";
                 break;
             default:
                 oField.onMouseUp();
@@ -1354,6 +1360,9 @@ var CPresentation = CPresentation || function(){};
             return null;
         
         let oField = private_createField(cName, cFieldType, nPageNum, aScaledCoords, this);
+        if (!oField)
+            return null;
+
         oField._origRect = aCoords;
 
         this.widgets.push(oField);
@@ -1429,6 +1438,7 @@ var CPresentation = CPresentation || function(){};
         let oViewer         = editor.getDocumentRenderer();
         let oFile           = oViewer.file;
         let aSelQuads       = oFile.getSelectionQuads();
+
         if (aSelQuads.length == 0)
             return;
 
@@ -2161,7 +2171,7 @@ var CPresentation = CPresentation || function(){};
                 oField = new AscPDF.CRadioButtonField(cName, nPageNum, oCoords, oPdfDoc);
                 break;
             case AscPDF.FIELD_TYPES.signature:
-                oField = null;
+                oField = new AscPDF.CSignatureField(cName, nPageNum, oCoords, oPdfDoc);;
                 break;
             case AscPDF.FIELD_TYPES.text:
                 oField = new AscPDF.CTextField(cName, nPageNum, oCoords, oPdfDoc);

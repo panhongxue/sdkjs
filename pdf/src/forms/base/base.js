@@ -1287,6 +1287,8 @@
             case AscPDF.FIELD_TYPES.button:
                 return new AscPDF.ApiPushButtonField(this);
         }
+
+        return null;
     };
 
     // pdf api methods
@@ -1309,6 +1311,8 @@
             let nMaxShiftY                  = this._scrollInfo.scroll.maxScrollY;
             this._scrollInfo.scrollCoeff    = Math.abs(this._curShiftView.y / nMaxShiftY);
         }
+
+        this.AddToRedraw();
     };
     CBaseField.prototype.IsWidget = function() {
         return this._isWidget;
@@ -1616,6 +1620,9 @@
 
         let oApiColor   = color.convert(oRGB, aColor[0]);
         this._textColor = oApiColor.slice(1);
+
+        this.SetWasChanged(true);
+        this.AddToRedraw();
     };
     
     CBaseField.prototype.SetTextColor = function(aColor) {
@@ -1636,6 +1643,9 @@
             oApiPara.SetColor(oRGB.r, oRGB.g, oRGB.b, false);
             oPara.RecalcCompiledPr(true);
         }
+        
+        this.SetWasChanged(true);
+        this.AddToRedraw();
     };
     CBaseField.prototype.GetTextColor = function() {
         return this._textColor;

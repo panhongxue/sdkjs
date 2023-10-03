@@ -1504,7 +1504,8 @@ background-repeat: no-repeat;\
 			[Asc.c_oAscPresentationShortcutType.EnDash, 189, true, true, false],
 			[Asc.c_oAscPresentationShortcutType.EnDash, 173, true, true, false],
 			[Asc.c_oAscPresentationShortcutType.DecreaseFont, 219, true, false, false],
-			[Asc.c_oAscPresentationShortcutType.IncreaseFont, 221, true, false, false]
+			[Asc.c_oAscPresentationShortcutType.IncreaseFont, 221, true, false, false],
+			[Asc.c_oAscPresentationShortcutType.SpeechWorker, 90, true, false, true]
 		];
 		this.initShortcuts(aShortcuts, false)
 	};
@@ -2136,7 +2137,7 @@ background-repeat: no-repeat;\
 		return !!(this.WordControl && this.WordControl.DemonstrationManager && this.WordControl.DemonstrationManager.Mode);
 	};
 
-	asc_docs_api.prototype.asc_PasteData = function(_format, data1, data2, text_data)
+	asc_docs_api.prototype.asc_PasteData = function(_format, data1, data2, text_data, null_param, callback)
 	{
 	    if (!this.canEdit())
     	    return;
@@ -2150,7 +2151,7 @@ background-repeat: no-repeat;\
 			this.WordControl.m_oLogicDocument.Create_NewHistoryPoint(AscDFH.historydescription_Document_PasteHotKey);
 
 			window['AscCommon'].g_specialPasteHelper.Paste_Process_Start(arguments[5]);
-			AscCommon.Editor_Paste_Exec(this, _format, data1, data2, text_data);
+			AscCommon.Editor_Paste_Exec(this, _format, data1, data2, text_data, undefined, callback);
 		}
 	};
 
@@ -4353,13 +4354,25 @@ background-repeat: no-repeat;\
 	{
 		this.WordControl.m_oLogicDocument.AddToLayout();
 	};
-	asc_docs_api.prototype.asc_AddAnimation      = function(nPresetClass, nPresetId, nPresetSubtype, bReplace, bPreview)
+	asc_docs_api.prototype.asc_AddAnimation      = function(nPresetClass, nPresetId, nPresetSubtype, oColor, bReplace, bPreview)
 	{
+
+		let oColor_, bReplace_, bPreview_;
+		if(arguments.length === 6) {
+			oColor_ =  oColor;
+			bReplace_ = bReplace;
+			bPreview_ = bPreview;
+		}
+		else {
+			oColor_ =  null;
+			bReplace_ = oColor;
+			bPreview_ = bReplace;
+		}
 		var bStartPreview = true;
-		if(bPreview === false) {
+		if(bPreview_ === false) {
 			bStartPreview = false;
 		}
-		this.WordControl.m_oLogicDocument.AddAnimation(nPresetClass, nPresetId, nPresetSubtype, bReplace, bStartPreview);
+		this.WordControl.m_oLogicDocument.AddAnimation(nPresetClass, nPresetId, nPresetSubtype, oColor_, bReplace_, bStartPreview);
 	};
 	asc_docs_api.prototype.asc_getCurSlideObjectsNames = function()
 	{
@@ -8837,6 +8850,24 @@ background-repeat: no-repeat;\
 		oCtx.drawImage(oViewerCanvas, 0, 0);
 		oCtx.drawImage(oOverlayCanvas, 0, 0);
 		return oCtx.getImageData(0, 0, oCanvas.width, oCanvas.height);
+	};
+	asc_docs_api.prototype.getSelectionState = function()
+	{
+		const oLogicDocument = this.private_GetLogicDocument();
+		if(!oLogicDocument)
+		{
+			return null;
+		}
+		return oLogicDocument.GetSelectionState();
+	};
+	asc_docs_api.prototype.getSpeechDescription = function(prevState, action)
+	{
+		const oLogicDocument = this.private_GetLogicDocument();
+		if(!oLogicDocument)
+		{
+			return null;
+		}
+		return oLogicDocument.GetSpeechDescription(prevState, action);
 	};
 	//-------------------------------------------------------------export---------------------------------------------------
 	window['Asc']                                                 = window['Asc'] || {};

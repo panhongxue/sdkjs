@@ -84,7 +84,7 @@
         oReply.SetContents(CommentData.m_sText);
         oReply.SetModDate(CommentData.m_sOOTime);
         oReply.SetAuthor(CommentData.m_sUserName);
-        oReply.SetHidden(false);
+        oReply.SetDisplay(window["AscPDF"].Api.Objects.display["visible"]);
 
         this._replies.push(oReply);
     };
@@ -129,14 +129,14 @@
 
         return null;
     };
-    CAnnotationText.prototype.Copy = function() {
+    CAnnotationText.prototype.LazyCopy = function() {
         let oDoc = this.GetDocument();
         oDoc.TurnOffHistory();
 
-        let oNewInk = new CAnnotationText(AscCommon.CreateGUID(), this.GetPage(), this.GetRect().slice(), oDoc);
+        let oNewAnnot = new CAnnotationText(AscCommon.CreateGUID(), this.GetPage(), this.GetRect().slice(), oDoc);
 
         if (this._pagePos) {
-            oNewInk._pagePos = {
+            oNewAnnot._pagePos = {
                 x: this._pagePos.x,
                 y: this._pagePos.y,
                 w: this._pagePos.w,
@@ -144,15 +144,19 @@
             }
         }
 
+        
         if (this._origRect)
-            oNewInk._origRect = this._origRect.slice();
+            oNewAnnot._origRect = this._origRect.slice();
 
-        oNewInk.SetAuthor(this.GetAuthor());
-        oNewInk.SetModDate(this.GetModDate());
-        oNewInk.SetCreationDate(this.GetCreationDate());
-        oNewInk.SetContents(this.GetContents());
+        oNewAnnot._originView = this._originView;
+        oNewAnnot._apIdx = this._apIdx;
+        oNewAnnot.SetOriginPage(this.GetOriginPage());
+        oNewAnnot.SetAuthor(this.GetAuthor());
+        oNewAnnot.SetModDate(this.GetModDate());
+        oNewAnnot.SetCreationDate(this.GetCreationDate());
+        oNewAnnot.SetContents(this.GetContents());
 
-        return oNewInk;
+        return oNewAnnot;
     };
     CAnnotationText.prototype.Draw = function(oGraphics) {
         if (this.IsHidden() == true)
@@ -178,8 +182,8 @@
 
         let nScaleX = nWidth / imgW;
         let nScaleY = nHeight / imgH;
-        let wScaled = imgW * nScaleX ;
-        let hScaled = imgH * nScaleY ;
+        let wScaled = imgW * nScaleX + 0.5 >> 0;
+        let hScaled = imgH * nScaleY + 0.5 >> 0;
 
         var canvas = document.createElement('canvas');
         var context = canvas.getContext('2d');
@@ -189,7 +193,7 @@
         canvas.height = hScaled;
 
         // Draw the image onto the canvas
-        context.drawImage(ICON_TO_DRAW, 0, 0, imgW, imgH, 0, 0, wScaled >> 0, hScaled >> 0);
+        context.drawImage(ICON_TO_DRAW, 0, 0, imgW, imgH, 0, 0, wScaled, hScaled);
 
         // Get the pixel data of the canvas
         var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
@@ -216,33 +220,22 @@
 
         // Draw the comment note
         // oGraphics.DrawImage(canvas, 0, 0, wScaled, hScaled, x, y, wScaled, hScaled);
-        oGraphics.DrawImage(canvas, 0, 0,  canvas.width, canvas.height, aOrigRect[0], aOrigRect[1], canvas.width, canvas.height);
+        oGraphics.SetIntegerGrid(true);
+        oGraphics.DrawImage(canvas, 0, 0,  canvas.width / oViewer.zoom, canvas.height / oViewer.zoom, aOrigRect[0], aOrigRect[1], canvas.width / oViewer.zoom, canvas.height / oViewer.zoom);
+        oGraphics.SetIntegerGrid(false);
     };
-    CAnnotationText.prototype.onMouseDown = function(e) {
-        let oViewer         = editor.getDocumentRenderer();
-        let oDrawingObjects = oViewer.DrawingObjects;
-        let oDoc            = this.GetDocument();
-        let oDrDoc          = oDoc.GetDrawingDocument();
-
-        this.selectStartPage = this.GetPage();
-        let {X, Y} = oDrDoc.ConvertCoordsFromCursor2(e.clientX, e.clientY);
-        oDrawingObjects.OnMouseDown(e, X, Y, oViewer.currentPage);
-    };
-    CAnnotationText.prototype.createMoveTrack = function() {
-        return new AscFormat.MoveAnnotationTrack(this);
-    };
-    
+        
     CAnnotationText.prototype.onMouseUp = function() {
         let oViewer = editor.getDocumentRenderer();
 
-        let {X, Y} = AscPDF.GetGlobalCoordsByPageCoords(this._pagePos.x + this._pagePos.w / oViewer.zoom, this._pagePos.y + this._pagePos.h / (2 * oViewer.zoom), this.GetPage(), true);
-        editor.sync_ShowComment([this.GetId()], X, Y)
+        let oPos = AscPDF.GetGlobalCoordsByPageCoords(this._pagePos.x + this._pagePos.w / oViewer.zoom, this._pagePos.y + this._pagePos.h / (2 * oViewer.zoom), this.GetPage(), true);
+        editor.sync_ShowComment([this.GetId()], oPos["X"], oPos["Y"])
     };
 
     CAnnotationText.prototype.GetAscCommentData = function() {
         let oAscCommData = new Asc["asc_CCommentDataWord"](null);
         oAscCommData.asc_putText(this.GetContents());
-        oAscCommData.asc_putOnlyOfficeTime(this.GetModDate());
+        oAscCommData.asc_putOnlyOfficeTime(this.GetModDate().toString());
         oAscCommData.asc_putUserId(editor.documentUserId);
         oAscCommData.asc_putUserName(this.GetAuthor());
         oAscCommData.asc_putSolved(false);

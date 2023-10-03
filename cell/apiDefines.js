@@ -119,7 +119,8 @@ var c_oAscScrollType = {
 
 var c_oAscHyperlinkType = {
   WebLink: 1,
-  RangeLink: 2
+  RangeLink: 2,
+  FileLink: 3
 };
 
 var c_oAscMouseMoveType = {
@@ -360,7 +361,8 @@ var c_oAscVisibleAreaOleEditorBorderColor = new CColor(32, 139, 255);
     sheetRemove: 3,
     sheetRename: 4,
     sheetChangeIndex: 5,
-    markModifiedSearch: 6
+    markModifiedSearch: 6,
+    mergeRange: 7
   };
 
   var c_oAscLockNameFrozenPane = "frozenPane";
@@ -683,6 +685,7 @@ var c_oAscPopUpSelectorType = {
   prot = c_oAscHyperlinkType;
   prot['WebLink'] = prot.WebLink;
   prot['RangeLink'] = prot.RangeLink;
+  prot['FileLink'] = prot.FileLink;
   window['Asc']['c_oAscMouseMoveType'] = window['Asc'].c_oAscMouseMoveType = c_oAscMouseMoveType;
   prot = c_oAscMouseMoveType;
   prot['None'] = prot.None;

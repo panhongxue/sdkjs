@@ -526,6 +526,9 @@ function (window, undefined) {
         }
     };
 
+    COleObject.prototype.getTypeName = function () {
+        return AscCommon.translateManager.getValue("Object");
+    };
     window['Asc'] = window['Asc'] || {};
     window['AscFormat'] = window['AscFormat'] || {};
     window['AscFormat'].COleObject = COleObject;

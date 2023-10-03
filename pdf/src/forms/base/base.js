@@ -99,8 +99,11 @@
     let VALID_ROTATIONS = [0, 90, 180, 270];
 
     const MAX_TEXT_SIZE = 32767;
-
-    // freeze objects
+	
+	const DEFAULT_FIELD_FONT = "Arial";
+	
+	
+	// freeze objects
     Object.freeze(FIELDS_HIGHLIGHT);
     Object.freeze(ALIGN_TYPE);
     Object.freeze(FONT_STRETCH);
@@ -198,11 +201,27 @@
 
         this._partialName = sName;
         this.api = this.GetFormApi();
+        this["api"] = this.api;
     }
     
     CBaseField.prototype.AddToChildsMap = function(nIdx) {
         this.GetDocument().AddFieldToChildsMap(this, nIdx);
     };
+    /**
+	 * Can or not enter text into form.
+	 * @memberof CBaseField
+	 * @typeofeditors ["PDF"]
+	 */
+    CBaseField.prototype.IsEditable = function() {
+        return false;
+    };
+	/**
+	 * Check if fonts are available, if not then we download them
+	 * @returns {boolean}
+	 */
+	CBaseField.prototype.checkFonts = function() {
+		return this._doc && 1 === this._doc.defaultFontsLoaded;
+	};
     /**
 	 * Invokes only on open forms.
 	 * @memberof CBaseField
@@ -239,7 +258,27 @@
         return this.needCommit;
     };
     CBaseField.prototype.SetPage = function(nPage) {
-        this._page = nPage;
+        let nCurPage = this.GetPage();
+        if (nPage == nCurPage)
+            return;
+
+
+        let oViewer = editor.getDocumentRenderer();
+        let nCurIdxOnPage = oViewer.pagesInfo.pages[nCurPage].fields ? oViewer.pagesInfo.pages[nCurPage].fields.indexOf(this) : -1;
+        if (oViewer.pagesInfo.pages[nPage]) {
+            if (oViewer.pagesInfo.pages[nPage].fields == null) {
+                oViewer.pagesInfo.pages[nPage].fields = [];
+            }
+
+            if (nCurIdxOnPage != -1)
+                oViewer.pagesInfo.pages[nCurPage].fields.splice(nCurIdxOnPage, 1);
+
+            if (oViewer.pagesInfo.pages[nPage].fields.indexOf(this) == -1)
+                oViewer.pagesInfo.pages[nPage].fields.push(this);
+
+            this._page = nPage;
+            this.selectStartPage = nPage;
+        }
     };
     CBaseField.prototype.GetPage = function() {
         return this._page;
@@ -258,6 +297,8 @@
     CBaseField.prototype.GetKids = function() {
         return this._kids;
     };
+
+    CBaseField.prototype.Recalculate = function() {};
     /**
 	 * Removes field from kids.
 	 * @memberof CBaseField
@@ -295,8 +336,13 @@
         var arrRects    = [];
         var oBounds     = this.getFormRelRect();
 
-        let nPageIndX = oViewer.pageDetector.pages[0].x / AscCommon.AscBrowser.retinaPixelRatio * g_dKoef_pix_to_mm;
-        let nPageIndY = oViewer.pageDetector.pages[0].y / AscCommon.AscBrowser.retinaPixelRatio * g_dKoef_pix_to_mm;
+        let nPage = this.GetPage();
+        let oPage = oViewer.pageDetector.pages.find(function(page) {
+            return page.num == nPage;
+        });
+        
+        let nPageIndX = oPage.x / AscCommon.AscBrowser.retinaPixelRatio * g_dKoef_pix_to_mm;
+        let nPageIndY = oPage.y / AscCommon.AscBrowser.retinaPixelRatio * g_dKoef_pix_to_mm;
 
         var nLeft   = Math.max(X, oBounds.X) + nPageIndX / oViewer.zoom;
         var nRight  = Math.min(X + W, oBounds.X + oBounds.W) + nPageIndX / oViewer.zoom;
@@ -594,8 +640,6 @@
 
         if (null == aBgColor)
             oCtx.globalAlpha = 0.8;
-        else
-            oCtx.globalAlpha = 1;
 
         oCtx.globalCompositeOperation = "destination-over";
         if (this.IsNeedDrawFromStream())
@@ -1069,7 +1113,7 @@
     };
     CBaseField.prototype.SetNeedRecalc = function(bRecalc, bSkipAddToRedraw) {
         if (bRecalc == false) {
-            this._needRecalc = false;
+            this._needRecalc = !this.checkFonts();
         }
         else {
             this._needRecalc = true;
@@ -1084,13 +1128,14 @@
         let oViewer = editor.getDocumentRenderer();
 
         if (oViewer.IsOpenFormsInProgress == false) {
-            this._wasChanged            = isChanged;
-            this._originView.normal     = null;
-            this._originView.mouseDown  = null;
-            this._originView.rollover   = null;
-            
+            this._wasChanged = isChanged;
             this.SetDrawFromStream(!isChanged);
         }
+    };
+    CBaseField.prototype.ClearCache = function() {
+        this._originView.normal     = null;
+        this._originView.mouseDown  = null;
+        this._originView.rollover   = null;
     };
     CBaseField.prototype.IsChanged = function() {
         return this._wasChanged;  
@@ -1166,7 +1211,7 @@
         this._display = nType;
     };
     CBaseField.prototype.GetDisplay = function() {
-        return this._display;''
+        return this._display;
     };
     CBaseField.prototype.GetDefaultValue = function() {
         if (this._defaultValue == null && this.GetParent())
@@ -1271,6 +1316,8 @@
             case AscPDF.FIELD_TYPES.button:
                 return new AscPDF.ApiPushButtonField(this);
         }
+
+        return null;
     };
 
     // pdf api methods
@@ -1293,6 +1340,8 @@
             let nMaxShiftY                  = this._scrollInfo.scroll.maxScrollY;
             this._scrollInfo.scrollCoeff    = Math.abs(this._curShiftView.y / nMaxShiftY);
         }
+
+        this.AddToRedraw();
     };
     CBaseField.prototype.IsWidget = function() {
         return this._isWidget;
@@ -1524,17 +1573,18 @@
 	 */
     CBaseField.prototype.GetOriginViewInfo = function() {
         let oViewer     = editor.getDocumentRenderer();
-        let oPageInfo   = oViewer.pagesInfo.pages[this.GetPage()];
-        let oPage       = oViewer.drawingPages[this.GetPage()];
+        let oFile       = oViewer.file;
+        let nPage       = this.GetOriginPage();
+        let oOriginPage = oFile.pages.find(function(page) {
+            return page.originIndex == nPage;
+        });
 
-        let w = (oPage.W * AscCommon.AscBrowser.retinaPixelRatio) >> 0;
-        let h = (oPage.H * AscCommon.AscBrowser.retinaPixelRatio) >> 0;
+        let w = ((oOriginPage.W * 96 / oOriginPage.Dpi) >> 0) * AscCommon.AscBrowser.retinaPixelRatio * oViewer.zoom >> 0;
+        let h = ((oOriginPage.H * 96 / oOriginPage.Dpi) >> 0) * AscCommon.AscBrowser.retinaPixelRatio * oViewer.zoom >> 0;
 
-        if (oPageInfo.fieldsAPInfo == null || oPageInfo.fieldsAPInfo.size.w != w || oPageInfo.fieldsAPInfo.size.h != h) {
-            let oFile   = oViewer.file;
-           
-            oPageInfo.fieldsAPInfo = {
-                info: oFile.nativeFile["getInteractiveFormsAP"](this.GetOriginPage(), w, h),
+        if (oOriginPage.fieldsAPInfo == null || oOriginPage.fieldsAPInfo.size.w != w || oOriginPage.fieldsAPInfo.size.h != h) {
+            oOriginPage.fieldsAPInfo = {
+                info: oFile.nativeFile["getInteractiveFormsAP"](nPage, w, h),
                 size: {
                     w: w,
                     h: h
@@ -1542,34 +1592,48 @@
             }
         }
         
-        for (let i = 0; i < oPageInfo.fieldsAPInfo.info.length; i++) {
-            if (oPageInfo.fieldsAPInfo.info[i]["i"] == this._apIdx)
-                return oPageInfo.fieldsAPInfo.info[i];
+        for (let i = 0; i < oOriginPage.fieldsAPInfo.info.length; i++) {
+            if (oOriginPage.fieldsAPInfo.info[i]["i"] == this._apIdx)
+                return oOriginPage.fieldsAPInfo.info[i];
         }
 
         return null;
     };
+	
+    CBaseField.prototype.DrawOnPage = function(pdfGraphics, textBoxGraphics, pageIndex) {
+        if (this.IsHidden())
+            return;
+		
+        if (this.IsNeedDrawFromStream()) {
+            this.Recalculate();
+            this.DrawFromStream(pdfGraphics);
+        }
+        else
+            this.DrawFromTextBox(pdfGraphics, textBoxGraphics, pageIndex);
+    };
 
     CBaseField.prototype.DrawFromStream = function(oGraphicsPDF) {
-        if (this.IsHidden() == true)
-            return;
-            
         let originView      = this.GetOriginView(this.IsHovered && this.IsHovered() ? AscPDF.APPEARANCE_TYPE.rollover : undefined);
-        let aOrigRect       = this.GetOrigRect();
         let nGrScale        = oGraphicsPDF.GetScale();
 
-        let X       = aOrigRect[0];
-        let Y       = aOrigRect[1];
-        let nWidth  = aOrigRect[2] - aOrigRect[0];
-        let nHeight = aOrigRect[3] - aOrigRect[1];
-        
         if (originView) {
-            oGraphicsPDF.ClearRect(X, Y, nWidth, nHeight);
-            
             oGraphicsPDF.DrawImage(originView, 0, 0, originView.width / nGrScale, originView.height / nGrScale, originView.x / nGrScale, originView.y / nGrScale, originView.width / nGrScale, originView.height / nGrScale);
-            // oGraphicsPDF.DrawImage(originView, 0, 0, nWidth + 2 / nGrScale, nHeight + 2 / nGrScale, X - 1 / nGrScale, Y - 1 / nGrScale, nWidth + 2 / nGrScale, nHeight + 2 / nGrScale);
         }
     };
+	CBaseField.prototype.DrawFromTextBox = function(pdfGraphics, textBoxGraphics, pageIndex) {
+		let _t = this;
+		if (!this._doc.checkDefaultFieldFonts(function() {
+			let viewer = _t._doc.GetDocumentRenderer();
+			if (!viewer)
+				return;
+			
+			viewer.repaintFormsOnPage(pageIndex);
+		})) {
+			return;
+		}
+		
+		this.Draw(pdfGraphics, textBoxGraphics);
+	};
     CBaseField.prototype.GetParent = function() {
         return this._parent;
     };
@@ -1609,6 +1673,9 @@
 
         let oApiColor   = color.convert(oRGB, aColor[0]);
         this._textColor = oApiColor.slice(1);
+
+        this.SetWasChanged(true);
+        this.AddToRedraw();
     };
     
     CBaseField.prototype.SetTextColor = function(aColor) {
@@ -1629,6 +1696,9 @@
             oApiPara.SetColor(oRGB.r, oRGB.g, oRGB.b, false);
             oPara.RecalcCompiledPr(true);
         }
+        
+        this.SetWasChanged(true);
+        this.AddToRedraw();
     };
     CBaseField.prototype.GetTextColor = function() {
         return this._textColor;
@@ -1826,6 +1896,7 @@
     window["AscPDF"].FONT_STRETCH       = FONT_STRETCH;
     window["AscPDF"].FONT_STYLE         = FONT_STYLE;
     window["AscPDF"].FONT_WEIGHT        = FONT_WEIGHT;
+	window["AscPDF"].DEFAULT_FIELD_FONT = DEFAULT_FIELD_FONT;
 
     window["AscPDF"].CBaseField = CBaseField;
     window["AscPDF"]["GetGlobalCoordsByPageCoords"] = window["AscPDF"].GetGlobalCoordsByPageCoords = GetGlobalCoordsByPageCoords;

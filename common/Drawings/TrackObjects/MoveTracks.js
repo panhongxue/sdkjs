@@ -668,29 +668,37 @@ function MoveAnnotationTrack(originalObject)
     this.x              = originalObject._pagePos.x;
     this.y              = originalObject._pagePos.y;
     this.viewer         = editor.getDocumentRenderer();
-    this.objectToDraw   = originalObject.Copy();
+    this.objectToDraw   = originalObject.LazyCopy();
+    this.pageIndex      = originalObject.GetPage();
 
-    this.track = function(dx, dy)
+    this.track = function(dx, dy, pageIndex)
     {
         this.bIsTracked = true;
         this.x = this.originalObject._pagePos.x + dx * AscCommon.g_dKoef_mm_to_pix;
         this.y = this.originalObject._pagePos.y + dy * AscCommon.g_dKoef_mm_to_pix;
+        this.pageIndex = pageIndex;
+
+        this.initCanvas();
     };
-    this.initCanvas = function() {
-        let nPage   = this.originalObject.GetPage();
+    this.initCanvas = function(bStart) {
+        let nPage   = this.pageIndex;
 
-        let page = this.viewer.drawingPages[nPage];
-        let w = (page.W * AscCommon.AscBrowser.retinaPixelRatio) >> 0;
-        let h = (page.H * AscCommon.AscBrowser.retinaPixelRatio) >> 0;
+        if (bStart || nPage != this.objectToDraw.GetPage()) {
+            let page = this.viewer.drawingPages[nPage];
+            let w = (page.W * AscCommon.AscBrowser.retinaPixelRatio) >> 0;
+            let h = (page.H * AscCommon.AscBrowser.retinaPixelRatio) >> 0;
 
-        this.tmpCanvas = document.createElement('canvas');
-        this.tmpCanvas.width = w;
-        this.tmpCanvas.height = h;
+            this.tmpCanvas = document.createElement('canvas');
+            this.tmpCanvas.width = w;
+            this.tmpCanvas.height = h;
+        }
     };
 
     this.draw = function(oDrawer)
     {
         // рисуем на отдельном канвасе
+        this.objectToDraw.SetPage(this.pageIndex);
+
         let page = this.viewer.drawingPages[this.objectToDraw.GetPage()];
         if (!page)
             return;
@@ -739,7 +747,10 @@ function MoveAnnotationTrack(originalObject)
         oDrawer.m_oContext.globalAlpha = 0.5;
 
         this.objectToDraw.SetPosition(this.x, this.y, true);
-        this.objectToDraw.Draw(oGraphicsPDF, oGraphicsWord);
+        if (this.originalObject.IsNeedDrawFromStream())
+            this.objectToDraw.DrawFromStream(oGraphicsPDF, oGraphicsWord);
+        else
+            this.objectToDraw.Draw(oGraphicsPDF, oGraphicsWord);
 
         oDrawer.m_oContext.drawImage(this.tmpCanvas, 0, 0, w, h, x, y, w, h);
     };
@@ -768,6 +779,7 @@ function MoveAnnotationTrack(originalObject)
         let oDoc = this.viewer.getPDFDoc();
         oDoc.CreateNewHistoryPoint();
         this.originalObject.SetPosition(X, Y);
+        this.originalObject.SetPage(this.pageIndex);
         oDoc.TurnOffHistory();
     };
 
@@ -775,8 +787,8 @@ function MoveAnnotationTrack(originalObject)
     {
         return {x: this.x, y: this.y};
     };
-
-    this.initCanvas();
+    
+    this.initCanvas(true);
 }
 
 

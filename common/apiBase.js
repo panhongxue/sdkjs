@@ -376,6 +376,10 @@
 	{
 		return false;
 	};
+	baseEditorsApi.prototype.isDocumentRenderer = function()
+	{
+		return false;
+	};
 	baseEditorsApi.prototype.getEditorErrorInfo = function()
 	{
 		return "";
@@ -602,11 +606,6 @@
 	baseEditorsApi.prototype.asc_LockScrollToTarget          = function(isLock)
 	{
 		this.isLockScrollToTarget = isLock;
-	};
-	// Просмотр PDF
-	baseEditorsApi.prototype.isPdfEditor                     = function()
-	{
-		return false;
 	};
 	baseEditorsApi.prototype.isLiveViewer                     = function()
 	{
@@ -1191,25 +1190,9 @@
 		{
 			let perfEnd = performance.now();
 			AscCommon.sendClientLog("debug", AscCommon.getClientInfoString("onDownloadFile", perfEnd - perfStart), t);
-			let errorData;
-			if (c_oAscError.ID.No === error) {
-				let editorId = AscCommon.getEditorBySignature(result.data);
-				//todo AscCommon.checkNativeViewerSignature(result.data);
-				let isNativeViewerFormat = -1 !== Asc.c_sNativeViewerFormats.indexOf(t.documentFormat);
-				if (!(!isNativeViewerFormat && t.editorId === editorId || (isNativeViewerFormat && editorId === null))) {
-					error = c_oAscError.ID.ConvertationOpenFormat;
-					switch(editorId) {
-						case AscCommon.c_oEditorId.Word: errorData = 'docx';break;
-						case AscCommon.c_oEditorId.Spreadsheet: errorData = 'xlsx';break;
-						case AscCommon.c_oEditorId.Presentation: errorData = 'pptx';break;
-						default: errorData = 'pdf';break;
-					}
-				}
-			}
 			if (c_oAscError.ID.No !== error)
 			{
-				var err = c_oAscError.ID.No !== error ? error : c_oAscError.ID.ConvertationOpenError;
-				t.sendEvent("asc_onError",  err, c_oAscError.Level.Critical, errorData);
+				t.sendEvent("asc_onError", error, c_oAscError.Level.Critical);
 				return;
 			}
 			t.onEndLoadFile(result);
@@ -1311,20 +1294,24 @@
 	baseEditorsApi.prototype.getLogicDocument = function () {};
 	baseEditorsApi.prototype._createSmartArt = function () {};
 	baseEditorsApi.prototype.asc_createSmartArt = function (nSmartArtType, oPlaceholderObject) {
-		if (!AscCommon.g_oBinarySmartArts) {
-			return;
-		}
-		AscCommon.History.Create_NewPoint(AscDFH.historydescription_Document_AddSmartArt);
-		const oSmartArt = new AscFormat.SmartArt();
-		oSmartArt.fillByPreset(nSmartArtType);
-		const oController = this.getGraphicController();
-		this._createSmartArt(oSmartArt, oPlaceholderObject);
-		oController.clearTrackObjects();
-		oController.clearPreTrackObjects();
-		oController.updateOverlay();
-		oController.changeCurrentState(new AscFormat.NullState(oController));
-		oController.updateSelectionState();
-		return oSmartArt;
+		const oThis = this;
+		AscCommon.g_oBinarySmartArts.checkLoadDrawing().then(function()
+		{
+			return AscCommon.g_oBinarySmartArts.checkLoadData(nSmartArtType);
+		}).then(function()
+		{
+			AscCommon.History.Create_NewPoint(AscDFH.historydescription_Document_AddSmartArt);
+			const oSmartArt = new AscFormat.SmartArt();
+			oSmartArt.fillByPreset(nSmartArtType);
+			const oController = oThis.getGraphicController();
+			oThis._createSmartArt(oSmartArt, oPlaceholderObject);
+			oController.clearTrackObjects();
+			oController.clearPreTrackObjects();
+			oController.updateOverlay();
+			oController.changeCurrentState(new AscFormat.NullState(oController));
+			oController.updateSelectionState();
+			return oSmartArt;
+		});
 	};
 	baseEditorsApi.prototype.forceSave = function()
 	{
@@ -2504,7 +2491,8 @@
 
 	baseEditorsApi.prototype.asc_addOleObject = function(oPluginData)
 	{
-		if(this.isViewMode) {
+		if(this.isViewMode || this.isPdfEditor())
+		{
 			return;
 		}
 		let oThis      = this;
@@ -2541,7 +2529,8 @@
 
 	baseEditorsApi.prototype.asc_editOleObject = function(oPluginData)
 	{
-		if(this.isViewMode){
+		if(this.isViewMode || this.isPdfEditor())
+		{
 			return;
 		}
 		var oThis      = this;
@@ -2786,6 +2775,25 @@
 		}
 		if (this.isLoadFullApi && this.DocInfo && this.openResult && this._isLoadedModules())
 		{
+			let error = c_oAscError.ID.No, errorData;
+			let editorId = AscCommon.getEditorBySignature(this.openResult.data);
+			//todo AscCommon.checkNativeViewerSignature(this.openResult.data);
+			let isNativeViewerFormat = -1 !== Asc.c_sNativeViewerFormats.indexOf(this.documentFormat);
+			if (!(!isNativeViewerFormat && this.editorId === editorId || (isNativeViewerFormat && editorId === null))) {
+				error = c_oAscError.ID.ConvertationOpenFormat;
+				switch(editorId) {
+					case AscCommon.c_oEditorId.Word: errorData = 'docx';break;
+					case AscCommon.c_oEditorId.Spreadsheet: errorData = 'xlsx';break;
+					case AscCommon.c_oEditorId.Presentation: errorData = 'pptx';break;
+					default: errorData = 'pdf';break;
+				}
+			}
+			if (c_oAscError.ID.No !== error)
+			{
+				this.sendEvent("asc_onError", error, c_oAscError.Level.Critical, errorData);
+				return;
+			}
+
 			this.openDocument(this.openResult);
 			this.sendEvent("asc_onDocumentPassword", ("" !== this.currentPassword));
 			this.openResult = null;
@@ -2809,7 +2817,6 @@
 		this.ImageLoader = AscCommon.g_image_loader;
 		this.FontLoader.put_Api(this);
 		this.ImageLoader.put_Api(this);
-		this.FontLoader.SetStandartFonts();
 
 		this.chartPreviewManager   = new AscCommon.ChartPreviewManager();
 		this.smartArtPreviewManager   = new AscCommon.SmartArtPreviewDrawer();
@@ -3116,7 +3123,7 @@
 		var arrCharCodes = [code];
         AscFonts.FontPickerByCharacter.checkTextLight(arrCharCodes, true);
 
-        var fonts = [new AscFonts.CFont(AscFonts.g_fontApplication.GetFontInfoName(familyName), 0, "", 0, null)];
+        var fonts = [new AscFonts.CFont(AscFonts.g_fontApplication.GetFontInfoName(familyName))];
         AscFonts.FontPickerByCharacter.extendFonts(fonts);
 
         this.asyncMethodCallback = function() {
@@ -3829,6 +3836,10 @@
 	baseEditorsApi.prototype.asc_setMacros = function(sData)
 	{
 		if (!this.macros)
+			return true;
+
+		// we shouldn't create a history point and update it if macros haven't been changed
+		if (this.macros.Data && this.macros.Data === sData)
 			return true;
 
 		if (true === AscCommon.CollaborativeEditing.Get_GlobalLock())
@@ -4800,6 +4811,12 @@
 	};
 	baseEditorsApi.prototype.getInkCursorType = function() {
 		return this.inkDrawer.getCursorType();
+	};
+	
+	baseEditorsApi.prototype.getSelectionState = function() {
+	};
+	baseEditorsApi.prototype.getSpeechDescription = function(prevState, action) {
+		return null;
 	};
 
 	// methods for desktop:

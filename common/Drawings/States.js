@@ -198,7 +198,7 @@ StartAddNewShape.prototype =
                             oPresentation.StartAction(0);
                             let oTiming;
                             let aAddedEffects;
-                            aAddedEffects = oCurSlide.addAnimation(AscFormat.PRESET_CLASS_PATH, AscFormat.MOTION_SQUARE, 0, this.bReplace);
+                            aAddedEffects = oCurSlide.addAnimation(AscFormat.PRESET_CLASS_PATH, AscFormat.MOTION_SQUARE, 0, null, this.bReplace);
                             oTiming = oCurSlide.timing;
                             if(!oTiming) {
                                 oPresentation.FinalizeAction();
@@ -981,16 +981,14 @@ RotateState.prototype =
     {
         if(this.drawingObjects.canEdit() && this.bSamePos !== true)
         {
-					const bIsMac = AscCommon.AscBrowser.isMacOs;
-	        const bCopyKey = bIsMac ? e.AltKey : e.CtrlKey;
             var tracks = [].concat(this.drawingObjects.arrTrackObjects);
             var group = this.group;
             var drawingObjects = this.drawingObjects;
             var oThis = this;
             var bIsMoveState = (this instanceof MoveState);
             var bIsTrackInChart = (tracks.length > 0 && (tracks[0] instanceof AscFormat.MoveChartObjectTrack));
-            var bCopyOnMove = bCopyKey && bIsMoveState && !bIsTrackInChart;
-            var bCopyOnMoveInGroup = (bCopyKey && oThis instanceof MoveInGroupState && !oThis.hasObjectInSmartArt);
+            var bCopyOnMove = e.CtrlKey && bIsMoveState && !bIsChartFrame && !bIsTrackInChart;
+            var bCopyOnMoveInGroup = (e.CtrlKey && oThis instanceof MoveInGroupState && !oThis.hasObjectInSmartArt);
             var i, j;
             var copy;
             if(bCopyOnMove)

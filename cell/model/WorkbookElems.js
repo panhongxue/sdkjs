@@ -14754,6 +14754,13 @@ QueryTableField.prototype.clone = function() {
 			this.referenceData["fileKey"] = AscFormat.readString(reader);
 		}
 	};
+	CChartExternalReference.prototype.setReferenceData = function (fileId, portalName) {
+		ExternalReferenceBase.prototype.setReferenceData.call(this, fileId, portalName);
+		try {
+			this.Id = JSON.parse(fileId)["fileName"];
+		} catch (e) {
+		}
+	};
 	AscDFH.drawingsConstructorsMap[AscDFH.historyitem_ChartSpace_SetExternalReference] = CChartExternalReference;
 
 	function ExternalReference() {

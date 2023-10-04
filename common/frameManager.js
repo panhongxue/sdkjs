@@ -496,6 +496,12 @@
 			{
 				oThis.arrAfterLoadCallbacks[i]();
 			}
+			oThis.isCacheEqual = oThis.mainDiagram.isEqualCacheAndWorkbookData();
+			if (!oThis.isCacheEqual)
+			{
+				oThis.mainDiagram.recalculateReferences();
+				oThis.sendUpdateDiagram();
+			}
 			oThis.selectMainDiagram();
 			oThis.api.wb.onFrameEditorReady();
 			oThis.updateProtectChart();
@@ -509,7 +515,7 @@
 		const oThis = this;
 		return new Promise(function (resolve)
 		{
-			const noHistory = !AscCommon.History.Can_Undo();
+			const noHistory = !AscCommon.History.Can_Undo() && oThis.isCacheEqual;
 			if (noHistory)
 			{
 				const oRet = {};

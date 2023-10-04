@@ -1813,6 +1813,112 @@ function(window, undefined) {
 		}
 		return mapWorksheets;
 	};
+	CChartSpace.prototype.isEqualCacheAndWorkbookData = function ()
+	{
+		function IsEqualRefCacheAndWorkbookData(oRef)
+		{
+			let bEqualData = true;
+			const oCache = oRef.numCache ? oRef.numCache : (oRef.strCache ? oRef.strCache : null);
+			if (oCache)
+			{
+				let sFormula = oRef.f + "";
+				const arrParsedRef = AscFormat.fParseChartFormula(sFormula);
+				if (!Array.isArray(arrParsedRef) || arrParsedRef.length === 0)
+				{
+					return bEqualData;
+				}
+				let nPtIndex = 0;
+				for (let i = 0; i < arrParsedRef.length; ++i)
+				{
+					const oParsedRef = arrParsedRef[i];
+					const oRange = oParsedRef.bbox;
+					const oWorksheet = oParsedRef.worksheet;
+					if (oRange)
+					{
+						if (oRange.r1 === oRange.r2)
+						{
+							for (let j = oRange.c1; j <= oRange.c2; ++j)
+							{
+								oWorksheet._getCell(oRange.r1, j, function (cell)
+								{
+									const oPt = oCache.getPtByIndex(nPtIndex);
+									if (oPt)
+									{
+										bEqualData = cell.getValue() === String(oPt.val);
+									}
+									++nPtIndex;
+								});
+								if (!bEqualData)
+								{
+									return bEqualData;
+								}
+							}
+						}
+						else
+						{
+							for (let j = oRange.r1; j <= oRange.r2; ++j)
+							{
+								oWorksheet._getCell(j, oRange.c1, function (cell)
+								{
+									const oPt = oCache.getPtByIndex(nPtIndex);
+									if (oPt)
+									{
+										bEqualData = cell.getValue() === String(oPt.val);
+									}
+									++nPtIndex;
+								});
+								if (!bEqualData)
+								{
+									return bEqualData;
+								}
+							}
+						}
+					}
+				}
+			}
+			return bEqualData;
+		}
+
+		const arrSeries = this.getAllSeries();
+		for (let i = 0; i < arrSeries.length; i += 1)
+		{
+			const oSeria = arrSeries[i];
+			const oVal = oSeria.val || oSeria.yVal;
+			if (oVal && oVal.numRef)
+			{
+				if (!IsEqualRefCacheAndWorkbookData(oVal.numRef))
+				{
+					return false;
+				}
+			}
+			const oCat = oSeria.cat || oSeria.xVal;
+			if (oCat)
+			{
+				if (oCat.numRef)
+				{
+					if (!IsEqualRefCacheAndWorkbookData(oCat.numRef))
+					{
+						return false;
+					}
+				}
+				if (oCat.strRef)
+				{
+					if (!IsEqualRefCacheAndWorkbookData(oCat.strRef))
+					{
+						return false;
+					}
+				}
+			}
+			if (oSeria.tx && oSeria.tx.strRef)
+			{
+				if (!IsEqualRefCacheAndWorkbookData(oSeria.tx.strRef))
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	};
 	CChartSpace.prototype.canPasteExternal = function ()
 	{
 		const oExternalReference = this.getExternalReference();

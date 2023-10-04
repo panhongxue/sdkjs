@@ -8176,6 +8176,9 @@
 					var _this = this;
 					var callback2 = function (bLock, bSync) {
 						if (bLock) {
+
+							const API = _this.getEditorApi();
+							API.sendEvent("asc_onUserActionStart");
 							var nPointType = AscFormat.isRealNumber(nHistoryPointType) ? nHistoryPointType : AscDFH.historydescription_CommonControllerCheckSelected;
 							History.Create_NewPoint(nPointType);
 							if (bSync !== true) {
@@ -8192,6 +8195,7 @@
 							callback.apply(_this, args);
 							_this.startRecalculate();
 							oApi.checkChangesSize();
+							API.sendEvent("asc_onUserActionEnd");
 							if (!(bNoSendProps === true)) {
 								_this.drawingObjects.sendGraphicObjectProps();
 							}
@@ -8211,10 +8215,15 @@
 					}
 					var _this = this;
 					var callback2 = function (bLock) {
+
+						const API = _this.getEditorApi();
+						API.sendEvent("asc_onUserActionStart");
 						if (bLock) {
 							History.Create_NewPoint();
 						}
 						callback.apply(_this, [bLock]);
+
+						API.sendEvent("asc_onUserActionEnd");
 						if (bLock) {
 							_this.startRecalculate();
 							_this.drawingObjects.sendGraphicObjectProps();

@@ -61,6 +61,19 @@ CPDFGraphics.prototype.GetScale = function() {
     let oViewer = editor.getDocumentRenderer();
     return AscCommon.AscBrowser.retinaPixelRatio * oViewer.zoom * (96 / oViewer.file.pages[this.GetCurPage()].Dpi);
 };
+CPDFGraphics.prototype.Translate = function(cx, cy) {
+    this.context.translate(cx, cy);
+};
+CPDFGraphics.prototype.Rotate = function(rad) {
+    this.context.rotate(rad);
+    this.rotate = rad;
+};
+CPDFGraphics.prototype.Save = function() {
+    this.context.save();
+};
+CPDFGraphics.prototype.Restore = function() {
+    this.context.restore();
+};
 CPDFGraphics.prototype.Transform = function(sx,shy,shx,sy,tx,ty)
 {
     var _t = this.m_oTransform;

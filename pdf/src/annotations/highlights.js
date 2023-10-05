@@ -532,6 +532,8 @@
         // рисуем всегда в пиксельной сетке. при наклонных линиях - +- 1 пиксел - ничего страшного
         let pointOffset = (overlay.m_oContext.lineWidth & 1) ? 0.5 : 0;
         
+        const angle = oViewer.getPageRotate(pageIndex);
+
         for (let i = 0, countPolygons = polygon.regions.length; i < countPolygons; i++)
         {
             let region = polygon.regions[i];
@@ -540,8 +542,11 @@
             if (2 > countPoints)
                 continue;
 
-            let X = indLeft + region[0][0] * nScale;
-            let Y = indTop + region[0][1] * nScale;
+                
+            const rotatedPoint1 = AscPDF.rotatePoint(w, h, region[0][0] * nScale, region[0][1] * nScale, angle);
+
+            let X = indLeft + rotatedPoint1.x;
+            let Y = indTop + rotatedPoint1.y;
 
             overlay.m_oContext.moveTo((X >> 0) + pointOffset, (Y >> 0) + pointOffset);
 
@@ -550,8 +555,10 @@
 
             for (let j = 1, countPoints = region.length; j < countPoints; j++)
             {
-                X = indLeft + region[j][0] * nScale;
-                Y = indTop + region[j][1] * nScale;;
+                const rotatedPoint2 = AscPDF.rotatePoint(w, h, region[j][0] * nScale, region[j][1] * nScale, angle);
+
+                X = indLeft + rotatedPoint2.x;
+                Y = indTop + rotatedPoint2.y;
 
                 overlay.m_oContext.lineTo((X >> 0) + pointOffset, (Y >> 0) + pointOffset);
                 overlay.CheckPoint1(X, Y);

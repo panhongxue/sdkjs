@@ -146,11 +146,14 @@
         let indLeft = ((xCenter * AscCommon.AscBrowser.retinaPixelRatio) >> 0) - (w >> 1);
         let indTop  = ((page.Y - yPos) * AscCommon.AscBrowser.retinaPixelRatio) >> 0;
 
-        
-        let x1 = Math.round(indLeft + aOrigRect[0] * nScale);
-        let y1 = Math.round(indTop + aOrigRect[1] * nScale);
-        let x2 = Math.round(indLeft + aOrigRect[2] * nScale + 0.5);
-        let y2 = Math.round(indTop + aOrigRect[3] * nScale + 0.5);
+        const angle         = oViewer.getPageRotate(nPage);
+        const rotatedPoint1 = AscPDF.rotatePoint(w, h, aOrigRect[0] * nScale, aOrigRect[1] * nScale, angle);
+        const rotatedPoint2 = AscPDF.rotatePoint(w, h, aOrigRect[2] * nScale, aOrigRect[3] * nScale, angle);
+
+        let x1 = Math.round(indLeft + rotatedPoint1.x);
+        let y1 = Math.round(indTop + rotatedPoint1.y);
+        let x2 = Math.round(indLeft + rotatedPoint2.x + 0.5);
+        let y2 = Math.round(indTop + rotatedPoint2.y + 0.5);
 
         overlay.m_oContext.lineWidth    = Math.round(rPR);
         overlay.m_oContext.globalAlpha  = 1;

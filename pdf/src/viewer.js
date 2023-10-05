@@ -134,8 +134,6 @@
 		this.parent = document.getElementById(id);
 		this.thumbnails = null;
 		
-		this.bCachedMarkupAnnnots = false;
-
 		this.offsetTop = 0;
 
 		this.x = 0;
@@ -1634,8 +1632,14 @@
 					if (true !== bGetHidden && oAnnot.IsHidden() == true || false == oAnnot.IsComment())
 						continue;
 					
-					if (pageObject.x >= oAnnot._origRect[0] && pageObject.x <= oAnnot._origRect[0] + nAnnotWidth &&
-						pageObject.y >= oAnnot._origRect[1] && pageObject.y <= oAnnot._origRect[1] + nAnnotHeight)
+					const angle = this.getPageRotate(pageObject.index);
+					const w = this.file.pages[pageObject.index].W;
+					const h = this.file.pages[pageObject.index].H;
+
+					const rotatedPoint = rotatePoint(w, h, pageObject.x, pageObject.y, angle);
+
+					if (rotatedPoint.x >= oAnnot._origRect[0] && rotatedPoint.x <= oAnnot._origRect[0] + nAnnotWidth &&
+						rotatedPoint.y >= oAnnot._origRect[1] && rotatedPoint.y <= oAnnot._origRect[1] + nAnnotHeight)
 					{
 						if (bGetHidden)
 							return oAnnot;
@@ -1653,13 +1657,19 @@
 					if (true !== bGetHidden && oAnnot.IsHidden() == true || oAnnot.IsComment())
 						continue;
 					
-					if (pageObject.x >= oAnnot._origRect[0] && pageObject.x <= oAnnot._origRect[0] + nAnnotWidth &&
-						pageObject.y >= oAnnot._origRect[1] && pageObject.y <= oAnnot._origRect[1] + nAnnotHeight)
+					const angle = this.getPageRotate(pageObject.index);
+					const w = this.file.pages[pageObject.index].W;
+					const h = this.file.pages[pageObject.index].H;
+
+					const rotatedPoint = rotatePoint(w, h, pageObject.x, pageObject.y, angle);
+
+					if (rotatedPoint.x >= oAnnot._origRect[0] && rotatedPoint.x <= oAnnot._origRect[0] + nAnnotWidth &&
+						rotatedPoint.y >= oAnnot._origRect[1] && rotatedPoint.y <= oAnnot._origRect[1] + nAnnotHeight)
 					{
 						// у маркап аннотаций ищем по quads (т.к. rect too wide)
 						if (oAnnot.IsTextMarkup())
 						{
-							if (oAnnot.IsInQuads(pageObject.x, pageObject.y))
+							if (oAnnot.IsInQuads(rotatedPoint.x, rotatedPoint.y))
 								return oAnnot;
 						}
 						// у draw аннотаций ищем по path
@@ -2394,8 +2404,10 @@
 							this.file.cacheManager.unlock(page.Image);
 						
 						delete page.Image;
+						delete page.ImageTmp;
 						delete page.ImageForms;
 						delete page.ImageAnnots;
+						
 						oDoc.ClearCache(i);
 					}
 				}
@@ -2436,48 +2448,32 @@
 				{
 					if (!this.file.cacheManager)
 					{
-						if (this.bCachedMarkupAnnnots)
-						{
-							if (this.pagesInfo.pages[i].needRedrawHighlights || this.isClearPages || (page.Image && ((page.Image.requestWidth !== natW) || (page.Image.requestHeight !== natH))))
-								delete page.Image;
-						}
-						else
-						{
-							if (this.isClearPages || (page.Image && ((page.Image.requestWidth !== natW) || (page.Image.requestHeight !== natH))))
-								delete page.Image;
-						}
+						if (this.isClearPages || (page.Image && ((page.Image.requestWidth !== natW) || (page.Image.requestHeight !== natH))))
+							delete page.Image;
 					}
 					else
 					{
-						if (this.bCachedMarkupAnnnots)
+						if (this.isClearPages || (page.Image && ((page.Image.requestWidth < natW) || (page.Image.requestHeight < natH))))
 						{
-							if (this.pagesInfo.pages[i].needRedrawHighlights || this.isClearPages || (page.Image && ((page.Image.requestWidth < natW) || (page.Image.requestHeight < natH))))
-							{
-								if (this.file.cacheManager)
-									this.file.cacheManager.unlock(page.Image);
+							if (this.file.cacheManager)
+								this.file.cacheManager.unlock(page.Image);
 
-								delete page.Image;
-							}
+							delete page.Image;
 						}
-						else
-						{
-							if (this.isClearPages || (page.Image && ((page.Image.requestWidth < natW) || (page.Image.requestHeight < natH))))
-							{
-								if (this.file.cacheManager)
-									this.file.cacheManager.unlock(page.Image);
-
-								delete page.Image;
-							}
-						}
-						
 					}
 				}
 
 				if (!page.Image && !isStretchPaint)
 				{
 					page.Image = this.file.getPage(i, natW, natH, undefined, this.Api.isDarkMode ? 0x3A3A3A : 0xFFFFFF);
-					if (this.bCachedMarkupAnnnots)
-						this._paintMarkupAnnotsOnPage(i, page.Image.getContext("2d"));
+					page.ImageTmp = null;
+
+					if (!page.ImageTmp) {
+						page.ImageTmp = document.createElement('canvas');
+						page.ImageTmp.width = page.Image.width;
+						page.ImageTmp.height = page.Image.height;
+						page.ImageTmp.getContext("2d").drawImage(page.Image, 0, 0);
+					}
 
 					// нельзя кэшировать с вотермарком - так как есть поворот
 					//if (this.Api.watermarkDraw)
@@ -2489,9 +2485,12 @@
 
 				if (page.Image)
 				{
+					let canvasToDraw = page.ImageTmp;
+					this._paintMarkupAnnotsOnPage(i, canvasToDraw.getContext("2d"));
+
 					if (0 === rotateAngle)
 					{
-						ctx.drawImage(page.Image, 0, 0, page.Image.width, page.Image.height, x, y, w, h);
+						ctx.drawImage(canvasToDraw, 0, 0, canvasToDraw.width, canvasToDraw.height, x, y, w, h);
 					}
 					else
 					{
@@ -2500,8 +2499,8 @@
 
 						ctx.save();
 						ctx.translate(cx, cy);
-						ctx.rotate(rotateAngle * Math.PI / 2);
-						ctx.drawImage(page.Image, -0.5 * natW, -0.5 * natH, natW, natH);
+						ctx.rotate(rotateAngle * Math.PI / 180);
+						ctx.drawImage(canvasToDraw, -0.5 * natW, -0.5 * natH, natW, natH);
 						ctx.restore();
 					}
 					this.pagesInfo.setPainted(i);
@@ -2517,9 +2516,6 @@
 					this.Api.watermarkDraw.Draw(ctx, x, y, w, h);
 
 				this.pageDetector.addPage(i, x, y, w, h);
-
-				if (false == this.bCachedMarkupAnnnots)
-					this._paintMarkupAnnotsOnPage(i, ctx);
 			}
 			
 			this.isClearPages = false;
@@ -3320,7 +3316,7 @@
 			if (!this.file.pages[pageNum])
 				return 0;
 
-			let value = this.file.pages[pageNum].angle;
+			let value = this.file.pages[pageNum].Rotate;
 			return (undefined === value) ? 0 : value;
 		};
 
@@ -3364,6 +3360,15 @@
 			let h = (page.H * AscCommon.AscBrowser.retinaPixelRatio) >> 0;
 
 			let cachedImg = page.ImageForms;
+			let rotateAngle = this.getPageRotate(i);
+			let natW = w;
+			let natH = h;
+			if (rotateAngle & 1)
+			{
+				natW = h;
+				natH = w;
+			}
+
 			if (!cachedImg || this.pagesInfo.pages[i].needRedrawForms || cachedImg.width != w || cachedImg.height != h)
 			{
 				// рисуем на отдельном канвасе, кешируем
@@ -3405,7 +3410,21 @@
 			let x = ((xCenter * AscCommon.AscBrowser.retinaPixelRatio) >> 0) - (w >> 1);
 			let y = ((page.Y - yPos) * AscCommon.AscBrowser.retinaPixelRatio) >> 0;
 			
-			ctx.drawImage(page.ImageForms, 0, 0, page.ImageForms.width, page.ImageForms.height, x, y, w, h);
+			if (0 === rotateAngle)
+			{
+				ctx.drawImage(page.ImageForms, 0, 0, page.ImageForms.width, page.ImageForms.height, x, y, w, h);
+			}
+			else
+			{
+				let cx = x + 0.5 * w;
+				let cy = y + 0.5 * h;
+
+				ctx.save();
+				ctx.translate(cx, cy);
+				ctx.rotate(rotateAngle * Math.PI / 180);
+				ctx.drawImage(page.ImageForms, -0.5 * natW, -0.5 * natH, natW, natH);
+				ctx.restore();
+			}
 		}
 		
 		let oDoc = this.getPDFDoc();
@@ -3448,6 +3467,15 @@
 			let w = (page.W * AscCommon.AscBrowser.retinaPixelRatio) >> 0;
 			let h = (page.H * AscCommon.AscBrowser.retinaPixelRatio) >> 0;
 			
+			let rotateAngle = this.getPageRotate(i);
+			let natW = w;
+			let natH = h;
+			if (rotateAngle & 1)
+			{
+				natW = h;
+				natH = w;
+			}
+
 			if (!cachedImg || this.pagesInfo.pages[i].needRedrawAnnots || cachedImg.width != w || cachedImg.height != h)
 			{
 				tmpCanvas.width = w;
@@ -3492,50 +3520,28 @@
 				this.pagesInfo.pages[i].needRedrawAnnots = false;
 			}
 			
-			// if (this.pagesInfo.pages[i].annots != null) {
-			// 	let bFromStream = this.pagesInfo.pages[i].annots.find(function(field) {
-			// 		if (field.IsNeedDrawFromStream() == true)
-			// 			return true;
-			// 	});
-				
-			// 	if (bFromStream) {
-			// 		this.pagesInfo.pages[i].annots.forEach(function(field) {
-			// 			// если форма не менялась, рисуем внешний вид из потока
-			// 			if (field.IsNeedDrawFromStream() == true)
-			// 				field.DrawFromStream();
-			// 		});
-			// 	}
-			// }
-			
 			let x = (((xCenter * AscCommon.AscBrowser.retinaPixelRatio) >> 0)) - (w >> 1);
 			let y = (((page.Y - yPos) * AscCommon.AscBrowser.retinaPixelRatio) >> 0);
-			// let x = (((xCenter * AscCommon.AscBrowser.retinaPixelRatio) >> 0)) - (w >> 1) + page.ImageAnnots.maxRect.xMin;
-			// let y = (((page.Y - yPos) * AscCommon.AscBrowser.retinaPixelRatio) >> 0) + page.ImageAnnots.maxRect.yMin;
 			
-			ctx.drawImage(page.ImageAnnots, 0, 0, page.ImageAnnots.width, page.ImageAnnots.height, x, y, w, h);
+			if (0 === rotateAngle)
+			{
+				ctx.drawImage(page.ImageAnnots, 0, 0, page.ImageAnnots.width, page.ImageAnnots.height, x, y, w, h);
+			}
+			else
+			{
+				let cx = x + 0.5 * w;
+				let cy = y + 0.5 * h;
 
-			// let wCropped = page.ImageAnnots.maxRect.xMax - page.ImageAnnots.maxRect.xMin;
-			// let hCropped = page.ImageAnnots.maxRect.yMax - page.ImageAnnots.maxRect.yMin;
-
-			// ctx.drawImage(page.ImageAnnots, page.ImageAnnots.maxRect.xMin, page.ImageAnnots.maxRect.yMin, wCropped, hCropped, x, y, wCropped, hCropped);
-			//let time2 = performance.now();
-			// console.log("time: " + (time2 - time1));
+				ctx.save();
+				ctx.translate(cx, cy);
+				ctx.rotate(rotateAngle * Math.PI / 180);
+				ctx.drawImage(page.ImageAnnots, -0.5 * natW, -0.5 * natH, natW, natH);
+				ctx.restore();
+			}
 		}
-		
-		// if (this.activeForm && this.activeForm.UpdateScroll)
-		// 	this.activeForm.UpdateScroll(true);
-		// if (this.activeForm && [AscPDF.FIELD_TYPES.combobox, AscPDF.FIELD_TYPES.text].includes(this.activeForm.GetType()))
-		// 	this.activeForm.content.RecalculateCurPos();
 	};
 	CHtmlPage.prototype._paintMarkupAnnotsOnPage = function(pageIndex, ctx)
 	{
-		let xCenter = this.width >> 1;
-		let yPos = this.scrollY >> 0;
-		if (this.documentWidth > this.width)
-		{
-			xCenter = (this.documentWidth >> 1) - (this.scrollX) >> 0;
-		}
-		
         let aAnnots = this.pagesInfo.pages[pageIndex].annots != null ? this.pagesInfo.pages[pageIndex].annots : null;
 		if (this.pagesInfo.pages[pageIndex].graphics == null)
 			this.pagesInfo.pages[pageIndex].graphics = {};
@@ -3547,17 +3553,14 @@
 		if (!page)
 			return;
 
-		let w = (page.W * AscCommon.AscBrowser.retinaPixelRatio) >> 0;
-		let h = (page.H * AscCommon.AscBrowser.retinaPixelRatio) >> 0;
-		
-		let indLeft = ((xCenter * AscCommon.AscBrowser.retinaPixelRatio) >> 0) - (w >> 1);
-        let indTop  = ((page.Y - yPos) * AscCommon.AscBrowser.retinaPixelRatio) >> 0;
-
-		if (this.pagesInfo.pages[pageIndex].needRedrawHighlights || false == this.bCachedMarkupAnnnots)
+		if (this.pagesInfo.pages[pageIndex].needRedrawHighlights)
 		{
+			ctx.clearRect(0, 0, page.Image.width, page.Image.height);
+			ctx.drawImage(page.Image, 0, 0);
+
 			let nScale		= AscCommon.AscBrowser.retinaPixelRatio * this.zoom;
-			let widthPx		= this.canvas.width;
-			let heightPx	= this.canvas.height;
+			let widthPx		= ctx.canvas.width;
+			let heightPx	= ctx.canvas.height;
 			
 			let oGraphicsPDF = new AscPDF.CPDFGraphics();
 			oGraphicsPDF.SetCurPage(pageIndex);
@@ -3565,15 +3568,6 @@
 			this.pagesInfo.pages[pageIndex].graphics.pdf = oGraphicsPDF;
 			oGraphicsPDF.Init(ctx, widthPx * nScale, heightPx * nScale);
 
-			if (false == this.bCachedMarkupAnnnots) {
-				ctx.save();
-				ctx.beginPath();
-				ctx.rect(indLeft, indTop, w, h);
-				ctx.clip();
-				ctx.setTransform(1, 0, 0, 1, indLeft, indTop);
-			}
-				
-			
 			if (this.pagesInfo.pages[pageIndex].annots != null) {
 				this.pagesInfo.pages[pageIndex].annots.forEach(function(annot) {
 					if (annot.IsTextMarkup()) {
@@ -3585,10 +3579,6 @@
 				});
 			}
 			
-			if (false == this.bCachedMarkupAnnnots) {
-				ctx.restore();
-			}
-
 			this.pagesInfo.pages[pageIndex].needRedrawHighlights = false;
 		}
 	};
@@ -3898,6 +3888,34 @@
 		};
 	};
 	
+	function rotatePoint(w, h, x, y, angle) {
+		// Переводим угол в радианы
+		const radians = (angle * Math.PI) / 180;
+	
+		// Вычисляем центр листа
+		const centerX = w / 2;
+		const centerY = h / 2;
+	
+		// Смещаем точку относительно центра листа
+		const xOffset = x - centerX;
+		const yOffset = y - centerY;
+	
+		// Вычисляем новые координаты после поворота
+		const rotatedX = Math.cos(radians) * xOffset - Math.sin(radians) * yOffset;
+		const rotatedY = Math.sin(radians) * xOffset + Math.cos(radians) * yOffset;
+	
+		// Смещаем точку обратно к исходному положению
+		const newX = rotatedX + centerX;
+		const newY = rotatedY + centerY;
+	
+		// Округляем результаты, если необходимо
+		const roundedX = Math.round(newX * 100) / 100;
+		const roundedY = Math.round(newY * 100) / 100;
+	
+		return { x: roundedX, y: roundedY };
+	}
+	
+	
 	AscCommon.CViewer = CHtmlPage;
 	AscCommon.ViewerZoomMode = ZoomMode;
 	AscCommon.CCacheManager = CCacheManager;
@@ -3906,5 +3924,6 @@
 	    window["AscPDF"] = {};
 
 	window["AscPDF"].CPageInfo = CPageInfo;
+	window["AscPDF"].rotatePoint = rotatePoint;
 
 })();

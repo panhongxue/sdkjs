@@ -51,34 +51,43 @@ var c_oAscError = Asc.c_oAscError;
 
 	spreadsheet_api.prototype._onNeedParams = function(data, opt_isPassword)
 	{
+		var t = this;
 		var type;
 		var options;
-		var cp;
-		
+				
 		if (opt_isPassword) {
 			type = Asc.c_oAscAdvancedOptionsID.DRM;
+			t.handlers.trigger("asc_onAdvancedOptions", type, options);
 		} else {
 			type = Asc.c_oAscAdvancedOptionsID.CSV;
 			var cp = {
 				'codepage': AscCommon.c_oAscCodePageUtf8, "delimiter": AscCommon.c_oAscCsvDelimiter.Comma,
 				'encodings': AscCommon.getEncodingParams()
 			};
-			// Получаем содержимое файла для точного определения кодировки, разделитель пока по умолчанию
-			if (data) {
-				var _data =  window["AscDesktopEditor"]["LocalFileGetRaw"](data);
-				if (_data) {
-					var dataUint = new Uint8Array(_data);
-					var bom = AscCommon.getEncodingByBOM(dataUint);
-					if (AscCommon.c_oAscCodePageNone !== bom.encoding) {
-						cp['codepage'] = bom.encoding;
-						_data = dataUint.subarray(bom.size);
-					}
-					cp['data'] = _data;
-				}				
-			}
 			options = new AscCommon.asc_CAdvancedOptions(cp);
+			
+			// Получаем содержимое файла для точного определения кодировки, разделитель пока по умолчанию
+			if (data && typeof Blob !== 'undefined' && typeof FileReader !== 'undefined') {
+				AscCommon.loadFileContent(data, function(httpRequest) {
+					if (httpRequest && httpRequest.response) {
+						let data = httpRequest.response;
+						var dataUint = new Uint8Array(data);
+						var bom = AscCommon.getEncodingByBOM(dataUint);
+						if (AscCommon.c_oAscCodePageNone !== bom.encoding) {
+							cp['codepage'] = bom.encoding;
+							data = dataUint.subarray(bom.size);
+						}
+						cp['data'] = data;
+						options = new AscCommon.asc_CAdvancedOptions(cp);
+						t.handlers.trigger("asc_onAdvancedOptions", type, options);
+					} else {
+						t.handlers.trigger("asc_onError", c_oAscError.ID.Unknown, c_oAscError.Level.Critical);
+					}
+				}, "arraybuffer");
+			}
+			else
+				t.handlers.trigger("asc_onAdvancedOptions", type, options);
 		}
-		this.handlers.trigger("asc_onAdvancedOptions", type, options);
 	};
 	spreadsheet_api.prototype.asc_addImageDrawingObject = function(urls, imgProp, token)
 	{

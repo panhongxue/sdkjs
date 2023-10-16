@@ -7982,7 +7982,7 @@ function(window, undefined) {
 						var ser = series[ii];
 						var pts = ser.getNumPts();
 						this.ptsCount += pts.length;
-
+						ser.recalculateTrendline();
 						ser.compiledSeriesBrush = new AscFormat.CUniFill();
 						ser.compiledSeriesBrush.merge(base_fills2[ser.idx]);
 						if (ser.spPr && ser.spPr.Fill) {
@@ -8252,6 +8252,7 @@ function(window, undefined) {
 						for(var i = 0; i < series.length; ++i) {
 							var default_line = parents.theme.themeElements.fmtScheme.lnStyleLst[0];
 							var ser = series[i];
+							ser.recalculateTrendline();
 							var pts = ser.getNumPts();
 							this.ptsCount += pts.length;
 							if(oChart.scatterStyle === AscFormat.SCATTER_STYLE_SMOOTH || oChart.scatterStyle === AscFormat.SCATTER_STYLE_SMOOTH_MARKER) {
@@ -8413,6 +8414,7 @@ function(window, undefined) {
 							base_line_fills = getArrayFillsFromBase(style.line2, nMaxSeriesIdx);
 						for(var i = 0; i < series.length; ++i) {
 							var ser = series[i];
+							ser.recalculateTrendline();
 							var compiled_brush = new AscFormat.CUniFill();
 							compiled_brush.merge(base_fills[ser.idx]);
 							if(ser.spPr && ser.spPr.Fill) {

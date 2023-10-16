@@ -67,7 +67,10 @@
 
 			/** @type RegExp */
 			this.reWordBegining = new XRegExp("[^\\p{L}\\p{N}][\\p{L}\\p{N}]", "i");
-
+			// new
+			// /** @type RegExp */
+			// this.reWordEnding = new XRegExp("[^\\p{L}\\p{N}.,;][\\p{N}]|[^\\p{L}\\p{N}][^\\p{N}]|(?<=[^\\p{N}])[^\\p{L}\\p{N}]|\\s(?<!$)", "gi");
+			// this.reWordBegining = new XRegExp("[^\\p{L}\\p{N}.,;][\\p{N}]|[^\\p{L}\\p{N}][^\\p{N}]|\\s(?<!$)", "gi");
 			return this;
 		}
 
@@ -103,15 +106,20 @@
 
 		CellTextRender.prototype.getPrevWord = function (pos) {
 			//TODO регулярку не меняю, перегоняю в строку
-			var s = AscCommonExcel.convertUnicodeToSimpleString(this.chars);
-			var i = asc_lastindexof(s.slice(0, pos), this.reWordBegining);
+			let s = AscCommonExcel.convertUnicodeToSimpleString(this.chars);
+			let testReg = new XRegExp("[^\\p{L}\\p{N}.,;][\\p{N}]|[^\\p{L}\\p{N}][^\\p{N}]|\\s(?<!$)", "gi");
+			let i = asc_lastindexof(s.slice(0, pos), testReg);
 			return i >= 0 ? i + 1 : 0;
 		};
 
 		CellTextRender.prototype.getNextWord = function (pos) {
 			//TODO регулярку не меняю, перегоняю в строку
-			var s = AscCommonExcel.convertUnicodeToSimpleString(this.chars);
-			var i = s.slice(pos).search(this.reWordBegining);
+			let s = AscCommonExcel.convertUnicodeToSimpleString(this.chars);
+			let testReg = new XRegExp("[^\\p{L}\\p{N}.,;][\\p{N}]|[^\\p{L}\\p{N}][^\\p{N}]|(?<=[^\\p{N}])[^\\p{L}\\p{N}]|\\s(?<!$)", "gi");
+			let i = s.slice(pos).search(testReg);
+			// TODO
+			// If don't add one, single elements will not be selected. If add one, a delimiter will be selected along with the string.
+			// Either parse the string differently or work on the regular expression."
 			return i >= 0 ? pos + (i + 1) : this.getEndOfLine(pos);
 		};
 

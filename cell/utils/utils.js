@@ -88,9 +88,9 @@
 		}
 
 		function lastIndexOf(s, regExp, fromIndex) {
-			var end = fromIndex >= 0 && fromIndex <= s.length ? fromIndex : s.length;
-			for (var i = end - 1; i >= 0; --i) {
-				var j = s.slice(i, end).search(regExp);
+			let end = fromIndex >= 0 && fromIndex <= s.length ? fromIndex : s.length;
+			for (let i = end - 1; i >= 0; --i) {
+				let j = s.slice(i, end).search(regExp);
 				if (j >= 0) {return i + j;}
 			}
 			return -1;

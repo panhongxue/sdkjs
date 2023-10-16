@@ -2944,10 +2944,10 @@
 			} else {
 				// Dbl click
 				this.isSelectMode = c_oAscCellEditorSelectState.word;
-				// Окончание слова
-				var endWord = this.textRender.getNextWord(this.cursorPos);
-				// Начало слова (ищем по окончанию, т.к. могли попасть в пробел)
-				var startWord = this.textRender.getPrevWord(endWord);
+				// Ending of the word
+				let endWord = this.textRender.getNextWord(this.cursorPos);
+				// Beginning of a word (we search by the ending because it might have ended up in a space).
+				let startWord = this.textRender.getPrevWord(endWord);
 
 				this._moveCursor(kPosition, startWord);
 				this._selectChars(kPosition, endWord);

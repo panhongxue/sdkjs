@@ -2287,6 +2287,21 @@ background-repeat: no-repeat;\
 			}
 		}
 	};
+	asc_docs_api.prototype.asc_changeChartExternalReference = function (oChart, oReferenceInfo)
+	{
+		if (oChart && !oChart.bDeleted)
+		{
+			const oLogicDocument = this.private_GetLogicDocument();
+			if (!oLogicDocument)
+				return;
+
+			if(false === oLogicDocument.Document_Is_SelectionLocked(changestype_Drawing_Props))
+			{
+				oLogicDocument.Create_NewHistoryPoint(AscDFH.historydescription_Document_ChangeChartReference);
+				oChart.changeExternalReference(oReferenceInfo);
+			}
+		}
+	};
 	asc_docs_api.prototype._autoSaveInner = function () {
 		if (this.WordControl.DemonstrationManager && this.WordControl.DemonstrationManager.Mode) {
 			return;
@@ -9116,6 +9131,7 @@ background-repeat: no-repeat;\
 	asc_docs_api.prototype['asc_moveAnimationLater']              = asc_docs_api.prototype.asc_moveAnimationLater;
 	asc_docs_api.prototype['asc_onShowAnimTab']                   = asc_docs_api.prototype.asc_onShowAnimTab;
 	asc_docs_api.prototype['asc_updateChartData']                 = asc_docs_api.prototype.asc_updateChartData;
+	asc_docs_api.prototype['asc_changeChartExternalReference']    = asc_docs_api.prototype.asc_changeChartExternalReference;
 
 
 	asc_docs_api.prototype['StartAddShape']                       = asc_docs_api.prototype.StartAddShape;

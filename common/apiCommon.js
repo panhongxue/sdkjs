@@ -1482,19 +1482,6 @@
 			return this.chartSpace.externalReference.getAscLink();
 		}
 	};
-	asc_ChartSettings.prototype.setExternalReference = function (v)
-	{
-		if (this.chartSpace)
-		{
-			const oExternalReference = new AscCommonExcel.CChartExternalReference();
-			oExternalReference.initFromObj(v);
-			this.chartSpace.setExternalReference(oExternalReference);
-			if (this.chartSpace.XLSX && this.chartSpace.XLSX.length)
-			{
-				this.chartSpace.setXLSX(new Uint8Array(0));
-			}
-		}
-	};
 	asc_ChartSettings.prototype.equalBool = function(a, b){
 		return ((!!a) === (!!b));
 	};
@@ -7431,7 +7418,6 @@
 	prot["putView3d"] = prot.putView3d;
 	prot["setView3d"] = prot.setView3d;
 
-	prot["setExternalReference"] = prot.setExternalReference;
 	prot["getExternalReference"] = prot.getExternalReference;
 
 

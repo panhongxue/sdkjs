@@ -9165,6 +9165,23 @@ background-repeat: no-repeat;\
 		}
 	};
 
+	asc_docs_api.prototype.asc_changeChartExternalReference = function (oChart, oReferenceInfo)
+	{
+		if (oChart && !oChart.bDeleted)
+		{
+			const oLogicDocument = this.private_GetLogicDocument();
+			if (!oLogicDocument)
+				return;
+
+			if(false === oLogicDocument.Document_Is_SelectionLocked(changestype_Drawing_Props))
+			{
+				oLogicDocument.StartAction(AscDFH.historydescription_Document_ChangeChartReference);
+				oChart.changeExternalReference(oReferenceInfo);
+				oLogicDocument.FinalizeAction();
+			}
+		}
+	};
+
 	asc_docs_api.prototype.asc_onCloseFrameEditor               = function()
 	{
 		AscCommon.baseEditorsApi.prototype.asc_onCloseFrameEditor.call(this);
@@ -14286,6 +14303,7 @@ background-repeat: no-repeat;\
 	asc_docs_api.prototype['asc_updateChartData']                       = asc_docs_api.prototype.asc_updateChartData;
 	asc_docs_api.prototype['asc_getChartSettings']                      = asc_docs_api.prototype.asc_getChartSettings;
 	asc_docs_api.prototype['asc_editChartInFrameEditor']                = asc_docs_api.prototype.asc_editChartInFrameEditor;
+	asc_docs_api.prototype['asc_changeChartExternalReference']          = asc_docs_api.prototype.asc_changeChartExternalReference;
 	asc_docs_api.prototype['asc_onCloseFrameEditor']                     = asc_docs_api.prototype.asc_onCloseFrameEditor;
 	asc_docs_api.prototype['asc_editChartDrawingObject']                = asc_docs_api.prototype.asc_editChartDrawingObject;
 	asc_docs_api.prototype['asc_getChartPreviews']                      = asc_docs_api.prototype.asc_getChartPreviews;

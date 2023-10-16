@@ -4529,6 +4529,24 @@ function(window, undefined) {
 		History.Add(new CChangesDrawingsObjectNoId(this, AscDFH.historyitem_ChartSpace_SetExternalReference, this.externalReference, oExternalReference));
 		this.externalReference = oExternalReference;
 	};
+	CChartSpace.prototype.changeExternalReference = function (oExternalReferenceInfo)
+	{
+		if (oExternalReferenceInfo === null)
+		{
+			this.setExternalReference(null);
+		}
+		else
+		{
+			const oReference = new AscCommonExcel.CChartExternalReference();
+			oReference.initFromObj(oExternalReferenceInfo);
+			this.setExternalReference(oReference);
+		}
+		const oApi = Asc.editor || editor;
+		if (oApi)
+		{
+			oApi.sendEvent("asc_onUpdateChartExternalReference");
+		}
+	};
 	CChartSpace.prototype.setExternalPath = function (sPath)
 	{
 		const oReference = new AscCommonExcel.CChartExternalReference();

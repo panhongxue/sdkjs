@@ -2949,6 +2949,11 @@
 				// Beginning of a word (we search by the ending because it might have ended up in a space).
 				let startWord = this.textRender.getPrevWord(endWord);
 
+				if (endWord === startWord) {
+					startWord = this.cursorPos;
+					endWord = this.cursorPos + 1;
+				}
+
 				this._moveCursor(kPosition, startWord);
 				this._selectChars(kPosition, endWord);
 			}

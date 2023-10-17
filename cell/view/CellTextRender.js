@@ -107,7 +107,9 @@
 		CellTextRender.prototype.getPrevWord = function (pos) {
 			//TODO регулярку не меняю, перегоняю в строку
 			let s = AscCommonExcel.convertUnicodeToSimpleString(this.chars);
-			let testReg = new XRegExp("[^\\p{L}\\p{N}.,;][\\p{N}]|[^\\p{L}\\p{N}][^\\p{N}]|\\s(?<!$)", "gi");
+			let testReg = /[^A-Za-z0-9.,;](?=\d)|\W(?=\D)|(?<=\D)\W|\s(?<!$)|[^A-Za-z0-9.,;]$/gi
+			// testReg = new XRegExp("[^\\p{L}\\p{N}.,;](?=\\p{N})|[^\\p{L}\\p{N}](?=^\\p{N})|(?<=^\\p{N})[^\\p{L}\\p{N}]|\\s(?<!$)|[^\\p{L}\\p{N}.,;]$", "gi")
+			// testReg = new XRegExp("[^\\p{L}\\p{N}.,;](?=[^\\p{N}])|\\p{P}(?=[^\\p{N}])|(?<=[^\\p{N}])\\p{P}|\\p{Z}(?<!$)|[^\\p{L}\\p{N}.,;]$", "gi");
 			let i = asc_lastindexof(s.slice(0, pos), testReg);
 			return i >= 0 ? i + 1 : 0;
 		};
@@ -116,11 +118,11 @@
 			//TODO регулярку не меняю, перегоняю в строку
 			let s = AscCommonExcel.convertUnicodeToSimpleString(this.chars);
 			let testReg = new XRegExp("[^\\p{L}\\p{N}.,;][\\p{N}]|[^\\p{L}\\p{N}][^\\p{N}]|(?<=[^\\p{N}])[^\\p{L}\\p{N}]|\\s(?<!$)", "gi");
+			let str = s.slice(pos);
 			let i = s.slice(pos).search(testReg);
-			// TODO
 			// If don't add one, single elements will not be selected. If add one, a delimiter will be selected along with the string.
-			// Either parse the string differently or work on the regular expression."
-			return i >= 0 ? pos + (i + 1) : this.getEndOfLine(pos);
+			// return i >= 0 ? pos + (i) : this.getEndOfLine(pos);
+			return i > 0 ? pos + (i) : this.getEndOfLine2(pos, str);
 		};
 
 		CellTextRender.prototype.getBeginOfLine = function (pos) {
@@ -148,6 +150,17 @@
 			// pos - на последней линии
 			var lastChar = this.chars.length - 1;
 			return pos > lastChar ? pos : lastChar + (this.charWidths[lastChar] !== 0 ? 1 : 0);
+		};
+
+		CellTextRender.prototype.getEndOfLine2 = function (pos, string) {
+			let reg = /[^A-Za-z0-9.,;]\d|\W\D|(?<=\D)\W|\s(?<!$)|$/g
+			reg = /$|[^A-Za-z0-9.,;]|[\d\D][^A-Za-z0-9.,;]|\s/gi
+			let res = string.search(reg);
+			if (res === 0) {
+				return pos + 1;
+			}
+			res = (res + pos) < pos ? this.getEndOfLine(pos) : (res + pos);
+			return res;
 		};
 
 		CellTextRender.prototype.getBeginOfText = function () {

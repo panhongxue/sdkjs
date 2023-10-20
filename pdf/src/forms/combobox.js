@@ -220,6 +220,8 @@
         let oDoc            = this.GetDocument();
         let oActionsQueue   = oDoc.GetActionsQueue();
 
+        let bHighlight = this.IsNeedDrawHighlight();
+
         function callbackAfterFocus(x, y, e) {
             let oPos = AscPDF.GetPageCoordsByGlobalCoords(x, y, this.GetPage());
             let X       = oPos["X"];
@@ -241,12 +243,13 @@
                 this.content.Selection_SetStart(X, Y, 0, e);
             }
             
+            this.SetDrawHighlight(false);
             this.content.RecalculateCurPos();
             if (this.IsNeedDrawFromStream() == true) {
                 this.SetDrawFromStream(false);
                 this.AddToRedraw();
             }
-            else if (this.curContent === this.contentFormat) {
+            else if (this.curContent === this.contentFormat || bHighlight) {
                 this.AddToRedraw();
             }
         }
@@ -633,6 +636,8 @@
     CComboBoxField.prototype.CalcDocPos             = AscPDF.CTextField.prototype.CalcDocPos;
     CComboBoxField.prototype.GetCalcOrderIndex      = AscPDF.CTextField.prototype.GetCalcOrderIndex;
     CComboBoxField.prototype.SetCalcOrderIndex      = AscPDF.CTextField.prototype.SetCalcOrderIndex;
+    CComboBoxField.prototype.UndoNotAppliedChanges  = AscPDF.CTextField.prototype.UndoNotAppliedChanges;
+    CComboBoxField.prototype.UnionLastHistoryPoints = AscPDF.CTextField.prototype.UnionLastHistoryPoints;
 
 	window["AscPDF"].CComboBoxField = CComboBoxField;
 })();

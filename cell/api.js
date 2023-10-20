@@ -8836,6 +8836,18 @@ var editor;
 		return ws.removeTraceArrows(type);
 	};
 
+	/** Returns array of function info
+	 * @param {number} pos - cursor position
+	 * @param {string} s - cell text
+	 * @returns {asc_CCompleteMenu[]}
+	 */
+	spreadsheet_api.prototype.asc_GetEditableFunctions = function(pos, s) {
+		let wb = this.wb;
+		if (!wb) {
+			return;
+		}
+		return wb.getEditableFunctions(pos, s);
+	};
 	spreadsheet_api.prototype.getSelectionState = function() {
 		let wb = this.wb;
 		if (!wb) {
@@ -9422,12 +9434,13 @@ var editor;
   prot["asc_ResetAllPageBreaks"]      = prot.asc_ResetAllPageBreaks;
   prot["asc_GetPageBreaksDisableType"]= prot.asc_GetPageBreaksDisableType;
 
+  prot["asc_GetEditableFunctions"]= prot.asc_GetEditableFunctions;
+
   prot["asc_StartGoalSeek"]= prot.asc_StartGoalSeek;
   prot["asc_CloseGoalClose"]= prot.asc_CloseGoalClose;
   prot["asc_PauseGoalSeek"]= prot.asc_PauseGoalSeek;
   prot["asc_ContinueGoalSeek"]= prot.asc_ContinueGoalSeek;
   prot["asc_StepGoalSeek"]= prot.asc_StepGoalSeek;
-
 
 
 

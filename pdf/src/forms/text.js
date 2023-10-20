@@ -376,6 +376,8 @@
         let oDoc            = this.GetDocument();
         let oActionsQueue   = oDoc.GetActionsQueue();
 
+        let bHighlight = this.IsNeedDrawHighlight();
+        
         function callbackAfterFocus(x, y, e) {
             
             let oPos    = AscPDF.GetPageCoordsByGlobalCoords(x, y, this.GetPage());
@@ -394,11 +396,12 @@
             if (this._doNotScroll == false && this.IsMultiline())
                 this.UpdateScroll(true);
 
+            this.SetDrawHighlight(false);
             if (this.IsNeedDrawFromStream() == true) {
                 this.SetDrawFromStream(false);
                 this.AddToRedraw();
             }
-            else if (this.curContent === this.contentFormat) {
+            else if (this.curContent === this.contentFormat || bHighlight) {
                 this.AddToRedraw();
             }
         }
@@ -822,7 +825,14 @@
         
         let isCanFormat = oViewer.isOnUndoRedo != true ? this.DoKeystrokeAction(null, false, true) : true;
         if (!isCanFormat) {
-            editor.sendEvent("asc_onFormatErrorPdfForm", oDoc.GetWarningInfo());
+            let oWarningInfo = oDoc.GetWarningInfo();
+            if (!oWarningInfo) {
+                oWarningInfo = {
+                    "format": "",
+                    "target": this
+                };
+            }
+            editor.sendEvent("asc_onFormatErrorPdfForm", oWarningInfo);
             return false;
         }
 
@@ -914,7 +924,12 @@
 
         if (isValid == false) {
             let oWarningInfo = oDoc.GetWarningInfo();
-            if ((oWarningInfo["greater"] != null || oWarningInfo["less"] != null))
+            if (!oWarningInfo) {
+                oWarningInfo = {
+                    "target": this
+                };
+            }
+            if (oWarningInfo["greater"] != null || oWarningInfo["less"] != null)
                 editor.sendEvent("asc_onValidateErrorPdfForm", oWarningInfo);
             
             return isValid;
@@ -1059,7 +1074,7 @@
 
         if (nSelStart != nSelEnd)
             this.content.Remove(nDirection, true, false, false, bWord);
-        
+
         // скрипт keystroke мог поменять change значение, поэтому
         this.InsertChars(AscWord.CTextFormFormat.prototype.GetBuffer(oDoc.event["change"].toString()));
 

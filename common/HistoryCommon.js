@@ -4474,7 +4474,9 @@
 	window['AscDFH'].historydescription_Document_SetHyphenateCaps                   = 0x01a8;
 	window['AscDFH'].historydescription_Document_RemoveMathShortcut                 = 0x01a9;
 	window['AscDFH'].historydescription_Presentation_ShowChartPreview               = 0x01aa;
-	window['AscDFH'].historydescription_Document_ChangeChartReference               = 0x01ab;
+	window['AscDFH'].historydescription_Document_UpdateCharts                       = 0x01ab;
+	window['AscDFH'].historydescription_Document_ChangeExternalChartReference       = 0x01ac;
+	window['AscDFH'].historydescription_Document_RemoveExternalChartReferences      = 0x01ad;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

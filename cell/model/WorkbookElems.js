@@ -14744,6 +14744,7 @@ QueryTableField.prototype.clone = function() {
 	function CChartExternalReference(chart)
 	{
 		ExternalReferenceBase.call(this);
+		this.chart = chart;
 	}
 	AscFormat.InitClassWithoutType(CChartExternalReference, ExternalReferenceBase);
 
@@ -14779,6 +14780,29 @@ QueryTableField.prototype.clone = function() {
 			this.Id = JSON.parse(fileId)["fileName"];
 		} catch (e) {
 		}
+	};
+	CChartExternalReference.prototype.createDuplicate = function (fileId, portalName) {
+		const oCopy = ExternalReferenceBase.prototype.createDuplicate.call(this, fileId, portalName);
+		oCopy.chart = this.chart;
+		return oCopy;
+	};
+	CChartExternalReference.prototype.updateData = function (wb, oPortalData) {
+		Asc.editor.wbModel = wb;
+		this.chart.worksheet = wb.getWorksheet(0);
+		this.chart.recalculateReferences(true);
+
+		var oReferenceData = oPortalData && oPortalData["referenceData"];
+		if (oReferenceData && (!this.referenceData || (this.referenceData["instanceId"] !== oReferenceData["instanceId"] || this.referenceData["fileKey"] !== oReferenceData["fileKey"]))) {
+			this.setReferenceData(oReferenceData["fileKey"], oReferenceData["instanceId"]);
+		}
+
+		var path = oPortalData && oPortalData["path"];
+		if (path && this.Id !== path) {
+			this.setId(path);
+		}
+
+		this.chart.worksheet = undefined;
+		delete Asc.editor.wbModel;
 	};
 	AscDFH.drawingsConstructorsMap[AscDFH.historyitem_ChartSpace_SetExternalReference] = CChartExternalReference;
 

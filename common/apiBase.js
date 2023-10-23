@@ -5053,6 +5053,18 @@
 		}
 	};
 
+	baseEditorsApi.prototype.asc_getExternalReferences = function() {
+	};
+
+	baseEditorsApi.prototype.asc_updateExternalReferences = function(arr) {
+	};
+
+	baseEditorsApi.prototype.asc_removeExternalReferences = function(arr) {
+	};
+
+	baseEditorsApi.prototype.asc_changeExternalReference = function(eR, to) {
+	};
+
 	//----------------------------------------------------------export----------------------------------------------------
 	window['AscCommon']                = window['AscCommon'] || {};
 	window['AscCommon'].baseEditorsApi = baseEditorsApi;

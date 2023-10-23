@@ -587,6 +587,9 @@ function(window, undefined) {
 	};
 	drawingsChangesMap[AscDFH.historyitem_ChartSpace_SetExternalReference] = function (oClass, value) {
 		oClass.externalReference = value;
+		if (value) {
+			value.chart = oClass;
+		}
 	};
 	drawingsChangesMap[AscDFH.historyitem_ChartSpace_SetPivotSource] = function (oClass, value) {
 		oClass.pivotSource = value;
@@ -1971,10 +1974,6 @@ function(window, undefined) {
 	CChartSpace.prototype.getExternalPath = function ()
 	{
 		return this.externalReference && this.externalReference.Id;
-	}
-	CChartSpace.prototype.updateData = function ()
-	{
-		(new AscCommon.CDiagramUpdater(this)).update();
 	}
 	CChartSpace.prototype.isExternal = function()
 	{
@@ -4314,6 +4313,9 @@ function(window, undefined) {
 				this.addToRecalculate();
 				break;
 			}
+			case AscDFH.historyitem_type_StrCache:
+			case AscDFH.historyitem_type_MultiLvlStrCache:
+			case AscDFH.historyitem_type_NumLit:
 			case AscDFH.historyitem_ChartSpace_SetChart: {
 				this.handleUpdateType();
 				break;
@@ -4537,7 +4539,7 @@ function(window, undefined) {
 		}
 		else
 		{
-			const oReference = new AscCommonExcel.CChartExternalReference();
+			const oReference = new AscCommonExcel.CChartExternalReference(this);
 			oReference.initFromObj(oExternalReferenceInfo);
 			this.setExternalReference(oReference);
 		}
@@ -4549,13 +4551,13 @@ function(window, undefined) {
 	};
 	CChartSpace.prototype.setExternalPath = function (sPath)
 	{
-		const oReference = new AscCommonExcel.CChartExternalReference();
+		const oReference = new AscCommonExcel.CChartExternalReference(this);
 		oReference.Id = sPath;
 		this.setExternalReference(oReference);
 	};
 	CChartSpace.prototype.setPortalData = function (fileKey, instanceId)
 	{
-		const oReference = new AscCommonExcel.CChartExternalReference();
+		const oReference = new AscCommonExcel.CChartExternalReference(this);
 		oReference.setReferenceData(fileKey, instanceId);
 		this.setExternalReference(oReference);
 	};

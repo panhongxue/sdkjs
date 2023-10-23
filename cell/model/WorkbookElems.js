@@ -14713,7 +14713,7 @@ QueryTableField.prototype.clone = function() {
 		//path
 		//referenceData
 		if (obj["path"] !== this.Id) {
-			this.setId(obj["path"]);
+			this.setId(this._checkAndCorrectPath(obj["path"], obj["filePath"]));
 		}
 
 		if (obj["referenceData"] && (!this.referenceData || this.referenceData["instanceId"] !== obj["referenceData"]["instanceId"] ||
@@ -14722,7 +14722,26 @@ QueryTableField.prototype.clone = function() {
 		}
 	};
 
-	function CChartExternalReference()
+	ExternalReferenceBase.prototype._checkAndCorrectPath = function (sPath, sAbsolutePath) {
+		if (!sPath || 1 === sPath.indexOf("../")) {
+			// sPath -> ../../from.xlsx
+			//sAbsolutePath - > C:\root\from.xlsx
+			// need -> /root/from.xlsx
+			if (sAbsolutePath) {
+				sPath = sAbsolutePath.substring(sAbsolutePath.indexOf("\\"))
+				sPath = sPath.replace(/\\/g,"/")
+			}
+		} else if (sPath && -1 !== sPath.indexOf(":/")) {
+			// sPath -> C:/root/from1.xlsx
+			//need -> file:///C:\root\from1.xlsx
+			sPath = sPath.replace(/\//g,"\\");
+			sPath = "file:///" + sPath;
+		}
+
+		return sPath;
+	};
+
+	function CChartExternalReference(chart)
 	{
 		ExternalReferenceBase.call(this);
 	}

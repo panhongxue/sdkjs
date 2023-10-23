@@ -85,7 +85,13 @@ function(window, undefined) {
 
 
 	const DEFAULT_LBLS_DISTANCE = 10.0 * (25.4 / 72);///TODO
-
+	function checkExternalChart(chart) {
+		const oApi = Asc.editor;
+		const oExternalLinkCollector = oApi && oApi.externalChartCollector;
+		if (oExternalLinkCollector) {
+			oExternalLinkCollector.checkChart(chart);
+		}
+	}
 	function checkVerticalTitle(title) {
 		return false;
 	}
@@ -402,7 +408,7 @@ function(window, undefined) {
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetEndBinaryData] = CChangesEndChartSpaceBinary;
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetNvGrFrProps] = CChangesDrawingsObject;
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetThemeOverride] = CChangesDrawingsObject;
-	AscDFH.changesFactory[AscDFH.historyitem_ShapeSetBDeleted] = CChangesDrawingsBool;
+	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetBDeleted] = CChangesDrawingsBool;
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetParent] = CChangesDrawingsObject;
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetChart] = CChangesDrawingsObject;
 	AscDFH.changesFactory[AscDFH.historyitem_ChartSpace_SetClrMapOvr] = CChangesDrawingsObject;
@@ -563,8 +569,9 @@ function(window, undefined) {
 	drawingsChangesMap[AscDFH.historyitem_ChartSpace_SetThemeOverride] = function (oClass, value) {
 		oClass.themeOverride = value;
 	};
-	drawingsChangesMap[AscDFH.historyitem_ShapeSetBDeleted] = function (oClass, value) {
+	drawingsChangesMap[AscDFH.historyitem_ChartSpace_SetBDeleted] = function (oClass, value) {
 		oClass.bDeleted = value;
+		checkExternalChart(oClass);
 	};
 	drawingsChangesMap[AscDFH.historyitem_ChartSpace_SetParent] = function (oClass, value) {
 		oClass.oldParent = oClass.parent;
@@ -590,6 +597,7 @@ function(window, undefined) {
 		if (value) {
 			value.chart = oClass;
 		}
+		checkExternalChart(oClass);
 	};
 	drawingsChangesMap[AscDFH.historyitem_ChartSpace_SetPivotSource] = function (oClass, value) {
 		oClass.pivotSource = value;
@@ -3674,6 +3682,11 @@ function(window, undefined) {
 		}
 		this.spPr.setFill(this.spPr.Fill ? this.spPr.Fill.createDuplicate() : this.spPr.Fill);
 	};
+	CChartSpace.prototype.setBDeleted = function (pr) {
+		History.Add(new AscDFH.CChangesDrawingsBool(this, AscDFH.historyitem_ChartSpace_SetBDeleted, this.bDeleted, pr));
+		this.bDeleted = pr;
+		checkExternalChart(this);
+	};
 	CChartSpace.prototype.setFill = function (fill) {
 		if (!this.spPr) {
 			this.setSpPr(new AscFormat.CSpPr());
@@ -4530,24 +4543,7 @@ function(window, undefined) {
 	{
 		History.Add(new CChangesDrawingsObjectNoId(this, AscDFH.historyitem_ChartSpace_SetExternalReference, this.externalReference, oExternalReference));
 		this.externalReference = oExternalReference;
-	};
-	CChartSpace.prototype.changeExternalReference = function (oExternalReferenceInfo)
-	{
-		if (oExternalReferenceInfo === null)
-		{
-			this.setExternalReference(null);
-		}
-		else
-		{
-			const oReference = new AscCommonExcel.CChartExternalReference(this);
-			oReference.initFromObj(oExternalReferenceInfo);
-			this.setExternalReference(oReference);
-		}
-		const oApi = Asc.editor || editor;
-		if (oApi)
-		{
-			oApi.sendEvent("asc_onUpdateChartExternalReference");
-		}
+		checkExternalChart(this);
 	};
 	CChartSpace.prototype.setExternalPath = function (sPath)
 	{

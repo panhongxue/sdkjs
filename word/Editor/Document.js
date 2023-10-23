@@ -11920,6 +11920,8 @@ CDocument.prototype.private_UpdateInterface = function(isSaveCurrentReviewChange
 
 	this.UpdateSelectedReviewChanges(isSaveCurrentReviewChange);
 
+	oApi.externalChartCollector.onUpdateExternalList();
+
 	this.Document_UpdateUndoRedoState();
 	this.Document_UpdateCanAddHyperlinkState();
 	this.Document_UpdateSectionPr();

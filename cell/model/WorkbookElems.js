@@ -14781,8 +14781,8 @@ QueryTableField.prototype.clone = function() {
 		} catch (e) {
 		}
 	};
-	CChartExternalReference.prototype.createDuplicate = function (fileId, portalName) {
-		const oCopy = ExternalReferenceBase.prototype.createDuplicate.call(this, fileId, portalName);
+	CChartExternalReference.prototype.createDuplicate = function () {
+		const oCopy = ExternalReferenceBase.prototype.createDuplicate.call(this);
 		oCopy.chart = this.chart;
 		return oCopy;
 	};
@@ -14791,14 +14791,21 @@ QueryTableField.prototype.clone = function() {
 		this.chart.worksheet = wb.getWorksheet(0);
 		this.chart.recalculateReferences(true);
 
-		var oReferenceData = oPortalData && oPortalData["referenceData"];
+		const oReferenceData = oPortalData && oPortalData["referenceData"];
+		let oCopy;
 		if (oReferenceData && (!this.referenceData || (this.referenceData["instanceId"] !== oReferenceData["instanceId"] || this.referenceData["fileKey"] !== oReferenceData["fileKey"]))) {
-			this.setReferenceData(oReferenceData["fileKey"], oReferenceData["instanceId"]);
+			oCopy = this.createDuplicate();
+			oCopy.setReferenceData(oReferenceData["fileKey"], oReferenceData["instanceId"]);
 		}
 
 		var path = oPortalData && oPortalData["path"];
 		if (path && this.Id !== path) {
-			this.setId(path);
+			oCopy = oCopy ? oCopy : this.createDuplicate();
+			oCopy.setId(path);
+		}
+
+		if (oCopy) {
+			this.chart.setExternalReference(oCopy);
 		}
 
 		this.chart.worksheet = undefined;

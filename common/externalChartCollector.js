@@ -44,6 +44,7 @@ function (window, undefined) {
 		this.api = null;
 		this.logicDocument = null;
 		this.isInit = false;
+		this.isNeedSend = false;
 	}
 
 	CExternalChartCollector.prototype.init = function (oApi) {
@@ -53,24 +54,39 @@ function (window, undefined) {
 			this.isInit = true;
 		}
 	};
-	CExternalChartCollector.prototype.addChart = function (oChart) {
-		if (oChart.isExternal()) {
+
+	CExternalChartCollector.prototype.onUpdateExternalList = function () {
+		if (this.isNeedSend) {
+			this.api.sendEvent("asc_onUpdateExternalReferenceList");
+			this.isNeedSend = false;
+		}
+	};
+
+	CExternalChartCollector.prototype.checkChart = function (oChart) {
+		if (!oChart.bDeleted && oChart.isExternal()) {
 			this.mapChartReferences[oChart.GetId()] = oChart;
 		} else {
 			delete this.mapChartReferences[oChart.GetId()];
 		}
-	};
+		this.isNeedSend = true;
+	}
 
 	CExternalChartCollector.prototype.getExternalReferences = function () {
 		const arrReferences = [];
+		const arrDelete = [];
 		for (let sId in this.mapChartReferences) {
 			const oChart = this.mapChartReferences[sId];
-			if (!oChart.bDeleted) {
+			if (oChart.IsUseInDocument()) {
 				const oReference = oChart.getExternalReference();
 				if (oReference) {
-					arrReferences.push(oReference);
+					arrReferences.push(oReference.getAscLink());
 				}
+			} else {
+				arrDelete.push(sId);
 			}
+		}
+		for (let i = 0; i < arrDelete.length; i += 1) {
+			delete this.mapChartReferences[arrDelete[i]];
 		}
 		return arrReferences;
 	};
@@ -79,7 +95,7 @@ function (window, undefined) {
 		if (!this.isInit) {
 			return;
 		}
-
+		const oThis = this;
 		const oLogicDocument = this.logicDocument;
 		const oApi = this.api;
 		const mapExternalReferences = {};
@@ -168,6 +184,7 @@ function (window, undefined) {
 				fCallback && fCallback(true);
 				oApi.sendEvent("asc_onStartUpdateExternalReference", false);
 				oLogicDocument.FinalizeAction();
+				oThis.onUpdateExternalList();
 			};
 
 			oApi.sendEvent("asc_onStartUpdateExternalReference", true);
@@ -198,7 +215,7 @@ function (window, undefined) {
 			oChart.setExternalReference(null);
 		}
 		this.logicDocument.FinalizeAction();
-		this.api.sendEvent("asc_onUpdateExternalReferenceList");
+		this.onUpdateExternalList();
 	};
 
 	CExternalChartCollector.prototype.changeExternalReference = function (oAscExternalReference, oExternalInfo) {
@@ -214,7 +231,7 @@ function (window, undefined) {
 		chart.setExternalReference(oNewReference);
 
 		this.logicDocument.FinalizeAction();
-		this.api.sendEvent("asc_onUpdateExternalReferenceList");
+		this.onUpdateExternalList();
 	};
 
 	AscCommon.CExternalChartCollector = CExternalChartCollector;

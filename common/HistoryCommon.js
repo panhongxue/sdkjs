@@ -2454,6 +2454,7 @@
 	window['AscDFH'].historyitem_ChartSpace_SetPartBinaryData  = window['AscDFH'].historyitem_type_ChartSpace | 23;
 	window['AscDFH'].historyitem_ChartSpace_SetEndBinaryData   = window['AscDFH'].historyitem_type_ChartSpace | 24;
 	window['AscDFH'].historyitem_ChartSpace_SetExternalReference    = window['AscDFH'].historyitem_type_ChartSpace | 25;
+	window['AscDFH'].historyitem_ChartSpace_SetBDeleted        = window['AscDFH'].historyitem_type_ChartSpace | 26;
 
 	window['AscDFH'].historyitem_Legend_SetLayout      = window['AscDFH'].historyitem_type_Legend | 1;
 	window['AscDFH'].historyitem_Legend_AddLegendEntry = window['AscDFH'].historyitem_type_Legend | 2;

@@ -8982,6 +8982,8 @@ CPresentation.prototype.Document_UpdateInterfaceState = function () {
 	this.Api.sendEvent("asc_onCanUnGroup", this.canUnGroup());
 	this.Api.sendEvent("asc_onCanCopyCut", this.Can_CopyCut());
 
+	this.Api.externalChartCollector.onUpdateExternalList();
+
 	AscCommon.g_specialPasteHelper.SpecialPasteButton_Update_Position();
 };
 

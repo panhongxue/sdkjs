@@ -14781,11 +14781,6 @@ QueryTableField.prototype.clone = function() {
 		} catch (e) {
 		}
 	};
-	CChartExternalReference.prototype.createDuplicate = function () {
-		const oCopy = ExternalReferenceBase.prototype.createDuplicate.call(this);
-		oCopy.chart = this.chart;
-		return oCopy;
-	};
 	CChartExternalReference.prototype.updateData = function (wb, oPortalData) {
 		Asc.editor.wbModel = wb;
 		this.chart.worksheet = wb.getWorksheet(0);

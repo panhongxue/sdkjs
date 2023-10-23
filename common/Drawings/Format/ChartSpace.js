@@ -4543,6 +4543,9 @@ function(window, undefined) {
 	{
 		History.Add(new CChangesDrawingsObjectNoId(this, AscDFH.historyitem_ChartSpace_SetExternalReference, this.externalReference, oExternalReference));
 		this.externalReference = oExternalReference;
+		if (this.externalReference) {
+			this.externalReference.chart = this;
+		}
 		checkExternalChart(this);
 	};
 	CChartSpace.prototype.setExternalPath = function (sPath)

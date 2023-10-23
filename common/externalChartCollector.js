@@ -153,7 +153,7 @@ function (window, undefined) {
 								for (let j = 0; j < arrExternalChartReferences.length; j += 1) {
 									const oExternalReference = arrExternalChartReferences[j].externalReference;
 									if (oExternalReference) {
-										oExternalReference.updateData(wb, _arrAfterPromise[j].data);
+										oExternalReference.updateData(wb, _arrAfterPromise[i].data);
 										oExternalReference.chart.handleUpdateChart();
 									}
 								}
@@ -169,7 +169,7 @@ function (window, undefined) {
 								for (let j = 0; j < arrExternalChartReferences.length; j += 1) {
 									const oExternalReference = arrExternalChartReferences[j].externalReference;
 									if (oExternalReference) {
-										oExternalReference.updateData(wb, _arrAfterPromise[j].data);
+										oExternalReference.updateData(wb, _arrAfterPromise[i].data);
 										oExternalReference.chart.handleUpdateChart();
 									}
 								}

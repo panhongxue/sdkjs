@@ -4637,36 +4637,44 @@ function(window, undefined) {
 	CChartSpace.prototype.clearChartDataCache = function () {
 		this.clearDataCache();
 	};
-	CChartSpace.prototype.recalculateReferences = function () {
-		var oSelectedSeries = this.getSelectedSeries();
-		if (AscFormat.isRealNumber(this.selection.series)) {
-			if (!oSelectedSeries) {
-				this.selection.series = null;
-				this.selection.datPoint = null;
-				this.selection.markers = null;
+	CChartSpace.prototype.recalculateReferences = function (bWithHistory) {
+		const oThis = this;
+		const fCallback = function () {
+			var oSelectedSeries = oThis.getSelectedSeries();
+			if (AscFormat.isRealNumber(oThis.selection.series)) {
+				if (!oSelectedSeries) {
+					oThis.selection.series = null;
+					oThis.selection.datPoint = null;
+					oThis.selection.markers = null;
+				}
 			}
-		}
-		var worksheet = this.worksheet;
-		if (!worksheet)
-			return;
-		var charts, series, i, j, ser;
-		charts = this.chart.plotArea.charts;
-		for (i = 0; i < charts.length; ++i) {
-			series = charts[i].series;
-			for (j = 0; j < series.length; ++j) {
-				series[j].updateData(this.displayEmptyCellsAs, this.displayHidden);
+			var worksheet = oThis.worksheet;
+			if (!worksheet)
+				return;
+			var charts, series, i, j, ser;
+			charts = oThis.chart.plotArea.charts;
+			for (i = 0; i < charts.length; ++i) {
+				series = charts[i].series;
+				for (j = 0; j < series.length; ++j) {
+					series[j].updateData(oThis.displayEmptyCellsAs, oThis.displayHidden);
+				}
 			}
-		}
-		var aTitles = this.getAllTitles();
-		for (i = 0; i < aTitles.length; ++i) {
-			var oTitle = aTitles[i];
-			if (oTitle.tx) {
-				oTitle.tx.update();
+			var aTitles = oThis.getAllTitles();
+			for (i = 0; i < aTitles.length; ++i) {
+				var oTitle = aTitles[i];
+				if (oTitle.tx) {
+					oTitle.tx.updateWithHistory();
+				}
 			}
-		}
-		var aAxis = this.chart.plotArea.axId;
-		for (i = 0; i < aAxis.length; ++i) {
-			aAxis[i].updateNumFormat();
+			var aAxis = oThis.chart.plotArea.axId;
+			for (i = 0; i < aAxis.length; ++i) {
+				aAxis[i].updateNumFormat();
+			}
+		};
+		if (bWithHistory) {
+			fCallback();
+		} else {
+			AscFormat.ExecuteNoHistory(fCallback, this, []);
 		}
 	};
 	CChartSpace.prototype.checkEmptyVal = function (val) {

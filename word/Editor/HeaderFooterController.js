@@ -103,10 +103,6 @@ CHdrFtrController.prototype.OpenChartEditor = function()
 {
 	this.HdrFtr.OpenChartEditor();
 };
-CHdrFtrController.prototype.TryUpdateChart = function()
-{
-	this.HdrFtr.TryUpdateChart();
-};
 CHdrFtrController.prototype.ApplyChartSettings = function(oChartSettings)
 {
 	return this.HdrFtr.ApplyChartSettings(oChartSettings);

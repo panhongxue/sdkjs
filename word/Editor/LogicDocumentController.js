@@ -89,10 +89,6 @@ CLogicDocumentController.prototype.OpenChartEditor = function()
 {
 	// Ничего не делаем
 };
-CLogicDocumentController.prototype.TryUpdateChart = function()
-{
-	// Ничего не делаем
-};
 CLogicDocumentController.prototype.ApplyChartSettings = function(oChartSettings)
 {
 	// Ничего не делаем

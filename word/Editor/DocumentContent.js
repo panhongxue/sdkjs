@@ -3164,13 +3164,6 @@ CDocumentContent.prototype.OpenOleEditor = function()
 		return this.LogicDocument.DrawingObjects.openOleEditor();
 	}
 };
-CDocumentContent.prototype.TryUpdateChart = function()
-{
-	if (docpostype_DrawingObjects === this.CurPos.Type)
-	{
-		return this.LogicDocument.DrawingObjects.tryUpdateChart();
-	}
-};
 CDocumentContent.prototype.ApplyChartSettings = function(oChartSettings)
 {
 	if (docpostype_DrawingObjects === this.CurPos.Type)

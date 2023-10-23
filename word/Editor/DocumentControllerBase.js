@@ -348,11 +348,6 @@ CDocumentControllerBase.prototype.OpenChartEditor = function(){};
  */
 CDocumentControllerBase.prototype.OpenOleEditor = function(){};
 /**
- * Пробуем обновить диаграмму без открытия фрейма.
- * @param Chart
- */
-CDocumentControllerBase.prototype.TryUpdateChart = function(){};
-/**
  * Применяем настройки диаграммы.
  * @param ChartSettings
  */

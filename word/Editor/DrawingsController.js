@@ -135,10 +135,6 @@ CDrawingsController.prototype.OpenChartEditor = function()
 {
 	this.DrawingObjects.openChartEditor();
 };
-CDrawingsController.prototype.TryUpdateChart = function()
-{
-	this.DrawingObjects.tryUpdateChart();
-};
 CDrawingsController.prototype.ApplyChartSettings = function(oChartSettings)
 {
 	this.DrawingObjects.editChartDrawingObjects(oChartSettings);

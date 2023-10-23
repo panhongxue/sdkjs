@@ -9123,14 +9123,6 @@ background-repeat: no-repeat;\
 			return oLogicDocument.ApplyChartSettings(oAscChartSettings);
 		}
 	};
-	asc_docs_api.prototype.asc_updateChartData = function ()
-	{
-		const oLogicDocument = this.private_GetLogicDocument();
-		if (oLogicDocument)
-		{
-			oLogicDocument.TryUpdateChart();
-		}
-	};
 	asc_docs_api.prototype.asc_getChartSettings = function (bNoLock)
 	{
 		const oLogicDocument = this.private_GetLogicDocument();
@@ -9173,23 +9165,6 @@ background-repeat: no-repeat;\
 		if(false === oLogicDocument.Document_Is_SelectionLocked(changestype_Drawing_Props))
 		{
 			oLogicDocument.OpenChartEditor();
-		}
-	};
-
-	asc_docs_api.prototype.asc_changeChartExternalReference = function (oChart, oReferenceInfo)
-	{
-		if (oChart && !oChart.bDeleted)
-		{
-			const oLogicDocument = this.private_GetLogicDocument();
-			if (!oLogicDocument)
-				return;
-
-			if(false === oLogicDocument.Document_Is_SelectionLocked(changestype_Drawing_Props))
-			{
-				oLogicDocument.StartAction(AscDFH.historydescription_Document_ChangeChartReference);
-				oChart.changeExternalReference(oReferenceInfo);
-				oLogicDocument.FinalizeAction();
-			}
 		}
 	};
 
@@ -14311,10 +14286,8 @@ background-repeat: no-repeat;\
 	asc_docs_api.prototype['asc_getChartObject']                        = asc_docs_api.prototype.asc_getChartObject;
 	asc_docs_api.prototype['asc_addChartDrawingObject']                 = asc_docs_api.prototype.asc_addChartDrawingObject;
 	asc_docs_api.prototype['asc_applyChartSettings']                    = asc_docs_api.prototype.asc_applyChartSettings;
-	asc_docs_api.prototype['asc_updateChartData']                       = asc_docs_api.prototype.asc_updateChartData;
 	asc_docs_api.prototype['asc_getChartSettings']                      = asc_docs_api.prototype.asc_getChartSettings;
 	asc_docs_api.prototype['asc_editChartInFrameEditor']                = asc_docs_api.prototype.asc_editChartInFrameEditor;
-	asc_docs_api.prototype['asc_changeChartExternalReference']          = asc_docs_api.prototype.asc_changeChartExternalReference;
 	asc_docs_api.prototype['asc_onCloseFrameEditor']                     = asc_docs_api.prototype.asc_onCloseFrameEditor;
 	asc_docs_api.prototype['asc_editChartDrawingObject']                = asc_docs_api.prototype.asc_editChartDrawingObject;
 	asc_docs_api.prototype['asc_getChartPreviews']                      = asc_docs_api.prototype.asc_getChartPreviews;

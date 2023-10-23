@@ -1502,13 +1502,6 @@ CFootnotesController.prototype.OpenChartEditor = function()
 
 	this.CurFootnote.OpenChartEditor();
 };
-CFootnotesController.prototype.TryUpdateChart = function()
-{
-	if (false === this.private_CheckFootnotesSelectionBeforeAction())
-		return;
-
-	this.CurFootnote.TryUpdateChart();
-};
 CFootnotesController.prototype.ApplyChartSettings = function(oChartSettings)
 {
 	if (false === this.private_CheckFootnotesSelectionBeforeAction())

@@ -1676,19 +1676,6 @@ CGraphicObjects.prototype =
 				}
 		},
 
-	tryUpdateChart: function ()
-	{
-		if(false === this.document.Document_Is_SelectionLocked(changestype_Drawing_Props))
-		{
-			const oChart = this.getChartObject();
-			if (oChart)
-			{
-				var oUpdater = new AscCommon.CDiagramUpdater(oChart);
-				oUpdater.update();
-			}
-		}
-	},
-
     handleChartDoubleClick: function(drawing, chart, e, x, y, pageIndex)
     {
 

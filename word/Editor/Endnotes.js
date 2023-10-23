@@ -1519,13 +1519,7 @@ CEndnotesController.prototype.OpenChartEditor = function()
 
 	this.CurEndnote.OpenChartEditor();
 };
-CEndnotesController.prototype.TryUpdateChart = function()
-{
-	if (false === this.private_CheckEndnotesSelectionBeforeAction())
-		return;
 
-	this.CurEndnote.TryUpdateChart();
-};
 CEndnotesController.prototype.ApplyChartSettings = function(oChartSettings)
 {
 	if (false === this.private_CheckEndnotesSelectionBeforeAction())

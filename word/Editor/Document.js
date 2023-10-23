@@ -6038,10 +6038,6 @@ CDocument.prototype.OpenChartEditor = function()
 {
 	this.Controller.OpenChartEditor();
 };
-CDocument.prototype.TryUpdateChart = function()
-{
-	this.Controller.TryUpdateChart();
-};
 CDocument.prototype.ApplyChartSettings = function(oChartSettings)
 {
 	return this.Controller.ApplyChartSettings(oChartSettings);

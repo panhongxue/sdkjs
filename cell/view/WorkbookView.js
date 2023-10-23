@@ -5338,7 +5338,7 @@
 							if (editor !== AscCommon.c_oEditorId.Spreadsheet) {
 								continue;
 							}
-							let updatedData = window["Asc"]["editor"].openDocumentFromZip2(wb ? wb : t.model, stream);
+							let updatedData = window["Asc"]["editor"].openWorkbookForExternalReferencesFromZip(wb ? wb : t.model, stream);
 							if (updatedData) {
 								eR && eR.updateData(updatedData, _arrAfterPromise[i].data);
 							}

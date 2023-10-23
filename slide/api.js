@@ -647,7 +647,7 @@
 		if (this.isReporterMode)
 			this.watermarkDraw = null;
 
-		this.externalChartCollector = new AscCommon.CExternalChartCollector(this);
+		this.externalChartCollector = new AscCommon.CExternalChartCollector();
 		this._init();
 	}
 
@@ -1518,6 +1518,8 @@ background-repeat: no-repeat;\
 
 		if (this.WordControl.MobileTouchManager)
 			this.WordControl.MobileTouchManager.delegate.LogicDocument = this.WordControl.m_oLogicDocument;
+
+		this.externalChartCollector.init(this);
 	};
 
 	asc_docs_api.prototype.SetInterfaceDrawImagePlaceSlide = function(div_id)

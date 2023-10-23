@@ -39,12 +39,20 @@
 function (window, undefined) {
 
 
-	function CExternalChartCollector(oApi) {
+	function CExternalChartCollector() {
 		this.mapChartReferences = {};
-		this.api = oApi;
-		this.logicDocument = this.api.getLogicDocument();
+		this.api = null;
+		this.logicDocument = null;
+		this.isInit = false;
 	}
 
+	CExternalChartCollector.prototype.init = function (oApi) {
+		this.api = oApi;
+		this.logicDocument = this.api.getLogicDocument();
+		if (this.api && this.logicDocument) {
+			this.isInit = true;
+		}
+	};
 	CExternalChartCollector.prototype.addChart = function (oChart) {
 		if (oChart.isExternal()) {
 			this.mapChartReferences[oChart.GetId()] = oChart;
@@ -68,10 +76,11 @@ function (window, undefined) {
 	};
 
 	CExternalChartCollector.prototype.updateExternalReferences = function (arrExternalReferences, fCallback) {
-		const oLogicDocument = this.logicDocument;
-		if (!oLogicDocument) {
+		if (!this.isInit) {
 			return;
 		}
+
+		const oLogicDocument = this.logicDocument;
 		const oApi = this.api;
 		const mapExternalReferences = {};
 
@@ -179,8 +188,9 @@ function (window, undefined) {
 	};
 
 	CExternalChartCollector.prototype.removeExternalReferences = function (arrReferences) {
-		if (!this.logicDocument)
+		if (!this.isInit) {
 			return;
+		}
 
 		this.logicDocument.StartAction(AscDFH.historydescription_Document_RemoveExternalChartReferences);
 		for (let i = 0; i < arrReferences.length; i++) {
@@ -192,8 +202,9 @@ function (window, undefined) {
 	};
 
 	CExternalChartCollector.prototype.changeExternalReference = function (oAscExternalReference, oExternalInfo) {
-		if (!this.logicDocument)
+		if (!this.isInit) {
 			return;
+		}
 
 		this.logicDocument.StartAction(AscDFH.historydescription_Document_ChangeExternalChartReference);
 

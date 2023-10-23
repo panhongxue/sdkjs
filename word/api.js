@@ -966,7 +966,7 @@
 
 		//g_clipboardBase.Init(this);
 
-		this.externalChartCollector = new AscCommon.CExternalChartCollector(this);
+		this.externalChartCollector = new AscCommon.CExternalChartCollector();
 		this._init();
 	}
 
@@ -1485,6 +1485,8 @@ background-repeat: no-repeat;\
 			this.ShowParaMarks = false;
 			this.WordControl.HideRulers();
 		}
+
+		this.externalChartCollector.init(this);
 	};
 
 	asc_docs_api.prototype.InitViewer = function()

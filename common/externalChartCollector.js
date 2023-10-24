@@ -91,6 +91,34 @@ function (window, undefined) {
 		return arrReferences;
 	};
 
+	CExternalChartCollector.prototype.getCharts = function (arrExternalReferences) {
+		const arrResult = [];
+		if (arrExternalReferences) {
+			if (this.logicDocument.IsDocumentEditor()) {
+				for (let i = 0; i < arrExternalReferences.length; i += 1) {
+					const oReference = arrExternalReferences[i];
+					const oParaDrawing = oReference.externalReference.chart.GetParaDrawing();
+					if (oParaDrawing) {
+						arrResult.push(oParaDrawing);
+					}
+				}
+			} else {
+				for (let i = 0; i < arrExternalReferences.length; i += 1) {
+					const oReference = arrExternalReferences[i];
+					arrResult.push(oReference.externalReference.chart);
+				}
+			}
+		}
+		return arrResult;
+	}
+
+	CExternalChartCollector.prototype.isLocked = function (arrCharts) {
+		if (!this.isInit) {
+			return true;
+		}
+
+		return this.logicDocument.Document_Is_SelectionLocked(AscCommon.changestype_None, {Type: AscCommon.changestype_2_ElementsArray_and_Type, CheckType: changestype_Drawing_Props, Elements:arrCharts});
+	}
 	CExternalChartCollector.prototype.updateExternalReferences = function (arrExternalReferences, fCallback) {
 		if (!this.isInit) {
 			return;
@@ -100,12 +128,20 @@ function (window, undefined) {
 		const oApi = this.api;
 		const mapExternalReferences = {};
 
+		const arrCharts = this.getCharts(arrExternalReferences);
+		if (this.isLocked(arrCharts)) {
+			return;
+		}
+		oApi.asc_onOpenFrameEditor();
+
 		if (arrExternalReferences && arrExternalReferences.length) {
 			let isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
 			const doUpdateData = function (_arrAfterPromise) {
 				if (!_arrAfterPromise.length) {
 					fCallback && fCallback(true);
 					oApi.sendEvent("asc_onStartUpdateExternalReference", false);
+					oApi.asc_onCloseFrameEditor();
+					oThis.isLocked(arrCharts);
 					return;
 				}
 				oLogicDocument.StartAction(AscDFH.historydescription_Document_UpdateCharts);
@@ -188,6 +224,8 @@ function (window, undefined) {
 				}
 				oLogicDocument.FinalizeAction();
 				oThis.onUpdateExternalList();
+				oApi.asc_onCloseFrameEditor();
+				oThis.isLocked(arrCharts);
 			};
 
 			oApi.sendEvent("asc_onStartUpdateExternalReference", true);
@@ -208,7 +246,7 @@ function (window, undefined) {
 	};
 
 	CExternalChartCollector.prototype.removeExternalReferences = function (arrReferences) {
-		if (!this.isInit) {
+		if (!this.isInit || this.isLocked(this.getCharts(arrReferences))) {
 			return;
 		}
 
@@ -222,7 +260,7 @@ function (window, undefined) {
 	};
 
 	CExternalChartCollector.prototype.changeExternalReference = function (oAscExternalReference, oExternalInfo) {
-		if (!this.isInit) {
+		if (!this.isInit || this.isLocked(this.getCharts([oAscExternalReference]))) {
 			return;
 		}
 

@@ -11632,6 +11632,26 @@ CPresentation.prototype.Document_Is_SelectionLocked = function (CheckType, Addit
 		this.viewPrLock.Lock.Check(check_obj);
 	}
 
+	if (CheckType === AscCommon.changestype_None) {
+		if (AdditionalData) {
+			if (AscCommon.changestype_2_ElementsArray_and_Type === AdditionalData.Type) {
+				if (AdditionalData.CheckType === AscCommon.changestype_Drawing_Props) {
+					const arrElements = AdditionalData.Elements;
+					for (let i = 0; i < arrElements.length; ++i) {
+						const oCheckObj =
+							{
+								"type"   : c_oAscLockTypeElemPresentation.Object,
+								"slideId": slide_id,
+								"objId"  : arrElements[i].Get_Id(),
+								"guid"   : arrElements[i].Get_Id()
+							};
+						arrElements[i].Lock.Check(oCheckObj);
+					}
+				}
+			}
+		}
+	}
+
 	var bResult = AscCommon.CollaborativeEditing.OnEnd_CheckLock(DontLockInFastMode);
 
 	if (true === bResult) {

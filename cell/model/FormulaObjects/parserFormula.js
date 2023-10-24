@@ -8166,66 +8166,171 @@ function parserFormula( formula, parent, _ws ) {
 		return false;
 	};
 
+	/**
+	 * Class representative an iterative calculations logic
+	 * @constructor
+	 */
 	function CalcRecursion() {
-		this.level = 0;
-		this.elemsPart = [];
-		this.elems = [];
-		this.isForceBacktracking = false;
-		this.isProcessRecursion = false;
+		this.nLevel = 0;
+		this.nIterStep = 0;
+		this.bIsForceBacktracking = false;
+		this.nPrevCellValue = null;
+
+		this.bIsEnabledRecursion = false;
+		this.nMaxIterations = 100; // Max iterations of recursion calculations. Default value: 100.
+		this.nRelativeError = 1e-4; // Relative error between current and previous cell value. Default value: 1e-4.
+		/*for chrome63(real maximum call stack size is 12575) nMaxRecursion that cause exception is 783
+		by measurement: stack size in doctrenderer is one fourth smaller than chrome*/
+		this.nMaxRecursion = 300; // Default value: 300
 	}
 
-	//for chrome63(real maximum call stack size is 12575) MAXRECURSION that cause excaption is 783
-	//by measurement: stack size in doctrenderer is one fourth smaller than chrome
-	CalcRecursion.prototype.MAXRECURSION = 300;
+	/**
+	 * Method returns maximum recursion level.
+	 * @memberof CalcRecursion
+	 * @returns {number}
+	 */
+	CalcRecursion.prototype.getMaxRecursion = function () {
+		return this.nMaxRecursion;
+	};
+	/**
+	 * Method sets a flag who recognizes recursion needs force backtracking.
+	 * Uses if level of recursion exceeds max level.
+	 * @memberof CalcRecursion
+	 * @param {boolean} bIsForceBacktracking
+	 */
+	CalcRecursion.prototype.setIsForceBacktracking = function (bIsForceBacktracking) {
+		this.bIsForceBacktracking = bIsForceBacktracking;
+	};
+	/**
+	 * Method returns a flag who recognizes recursion needs force backtracking.
+	 * Uses if level of recursion exceeds max level.
+	 * @memberof CalcRecursion
+	 * @returns {boolean}
+	 */
+	CalcRecursion.prototype.getIsForceBacktracking = function () {
+		return this.bIsForceBacktracking;
+	};
+	/**
+	 * Method increases recursion level. Uses for tracking a level of recursion.
+	 * @memberof CalcRecursion
+	 */
 	CalcRecursion.prototype.incLevel = function () {
+		this.nLevel++;
+	};
+	/**
+	 * Method decreases recursion level. Uses for actualizes a level of recursion
+	 * in case when one of recursion is finished.
+	 * @memberof CalcRecursion
+	 */
+	CalcRecursion.prototype.decLevel = function () {
+		this.nLevel--;
+	};
+	/**
+	 * Method returns level of recursion.
+	 * @memberof CalcRecursion
+	 * @returns {number}
+	 */
+	CalcRecursion.prototype.getLevel = function () {
+		return this.nLevel;
+	};
+	/**
+	 * Method checks the level of recursion exceeds max level or not.
+	 * @memberof CalcRecursion
+	 * @returns {boolean}
+	 */
+	CalcRecursion.prototype.checkLevel = function () {
 		if (this.getIsForceBacktracking()) {
 			return false;
 		}
-		var res = this.level <= CalcRecursion.prototype.MAXRECURSION;
-		if (res) {
-			this.level++;
-		} else {
+
+		let res = this.getLevel() <= this.getMaxRecursion();
+		if (!res) {
 			this.setIsForceBacktracking(true);
 		}
+
 		return res;
 	};
-	CalcRecursion.prototype.decLevel = function () {
-		this.level--;
+	/**
+	 * Method increases iteration step.
+	 * @memberof CalcRecursion
+	 */
+	CalcRecursion.prototype.incIterStep = function () {
+		this.nIterStep++;
 	};
-	CalcRecursion.prototype.getLevel = function () {
-		return this.level;
+	/**
+	 * Method returns iteration step.
+	 * @memberof CalcRecursion
+	 * @returns {number}
+	 */
+	CalcRecursion.prototype.getIterStep = function () {
+		return this.nIterStep;
 	};
-	CalcRecursion.prototype.insert = function (val) {
-		this.elemsPart.push(val);
+	/**
+	 * Method sets a flag who recognizes an iteration calculations setting is enabled or not.
+	 * @memberof CalcRecursion
+	 * @param {boolean} bIsEnabledRecursion
+	 */
+	CalcRecursion.prototype.setIsEnabledRecursion = function (bIsEnabledRecursion) {
+		this.bIsEnabledRecursion = bIsEnabledRecursion;
 	};
-	CalcRecursion.prototype.foreachInReverse = function (callback) {
-		for (var i = this.elems.length - 1; i >= 0; --i) {
-			var elemsPart = this.elems[i];
-			for (var j = 0; j < elemsPart.length; ++j) {
-				callback(elemsPart[j]);
-				if (this.getIsForceBacktracking()) {
-					return;
-				}
-			}
-		}
+	/**
+	 * Method returns a flag who recognizes an iteration calculations setting is enabled or not.
+	 * @memberof CalcRecursion
+	 * @returns {boolean}
+	 */
+	CalcRecursion.prototype.getIsEnabledRecursion = function () {
+		return this.bIsEnabledRecursion;
 	};
-	CalcRecursion.prototype.setIsForceBacktracking = function (val) {
-		if (!this.isForceBacktracking) {
-			this.elemsPart = [];
-			this.elems.push(this.elemsPart);
-		}
-		this.isForceBacktracking = val;
+	/**
+	 * Method sets a previous cell value.
+	 * Uses for compare different between previous and current calculated cell value with relative error.
+	 * @memberof CalcRecursion
+	 * @param {number} nPrevCellValue
+	 */
+	CalcRecursion.prototype.setPrevCellValue = function (nPrevCellValue) {
+		this.nPrevCellValue = nPrevCellValue;
 	};
-	CalcRecursion.prototype.getIsForceBacktracking = function () {
-		return this.isForceBacktracking;
+	/**
+	 * Method returns a previous cell value.
+	 * Uses for compare different between previous and current calculated cell value with relative error.
+	 * @memberof CalcRecursion
+	 * @returns {number}
+	 */
+	CalcRecursion.prototype.getPrevCellValue = function () {
+		return this.nPrevCellValue;
 	};
-	CalcRecursion.prototype.setIsProcessRecursion = function (val) {
-		this.isProcessRecursion = val;
+	/**
+	 * Method sets a maximum iterations.
+	 * @memberof CalcRecursion
+	 * @param {number} nMaxIterations
+	 */
+	CalcRecursion.prototype.setMaxIterations = function (nMaxIterations) {
+		this.nMaxIterations = nMaxIterations;
 	};
-	CalcRecursion.prototype.getIsProcessRecursion = function () {
-		return this.isProcessRecursion;
+	/**
+	 * Method returns a maximum iterations.
+	 * @memberof CalcRecursion
+	 * @returns {number}
+	 */
+	CalcRecursion.prototype.getMaxIterations = function () {
+		return this.nMaxIterations;
 	};
-	var g_cCalcRecursion =  new CalcRecursion();
+	/**
+	 * Method sets a relative error.
+	 * @param {number} nRelativeError
+	 */
+	CalcRecursion.prototype.setRelativeError = function (nRelativeError) {
+		this.nRelativeError = nRelativeError;
+	};
+	/**
+	 * Method returns a relative error.
+	 * @returns {number}
+	 */
+	CalcRecursion.prototype.getRelativeError = function () {
+		return this.nRelativeError;
+	}
+
+	const g_cCalcRecursion = new CalcRecursion();
 
 	function parseNum(str) {
 		if (str.indexOf("x") > -1 || str == "" || str.match(/^\s+$/))//исключаем запись числа в 16-ричной форме из числа.

@@ -12452,6 +12452,7 @@
 
 		this.isDirty = false;
 		this.isCalc = false;
+		this.isMainCellForIterCalc = false;
 
 		this._hasChanged = false;
 	}
@@ -13577,19 +13578,44 @@
 			this.ws.workbook.handlers.trigger("changeDocument", AscCommonExcel.docChangedType.cellValue, this, null, this.ws.getId());
 		}
 	};
+	/**
+	 * Method sets flag who recogmizes is main cell for iteration calculations
+	 * Uses for only with enabled iterative calculations setting
+	 * @memberof Cell
+	 * @param {boolean} isMainCellForIterCalc
+	 */
+	Cell.prototype.setMainCellForIterCalc = function (isMainCellForIterCalc) {
+		this.isMainCellForIterCalc = isMainCellForIterCalc;
+	};
+	/**
+	 * Method returns flag who recognizes is main cell for iteration calculations
+	 * Uses for only with enabled iterative calculations setting
+	 * @memberof Cell
+	 * @returns {boolean}
+	 */
+	Cell.prototype.getMainCellForIterCalc = function () {
+		return this.isMainCellForIterCalc;
+	};
 	Cell.prototype._checkDirty = function(){
-		var t = this;
+		const t = this;
+		// Checks cell contains formula or formula is not calculated yet
 		if (this.getIsDirty()) {
-			if (g_cCalcRecursion.incLevel()) {
-				var isCalc = this.getIsCalc();
+			g_cCalcRecursion.incLevel();
+			if (g_cCalcRecursion.checkLevel()) {
+				const isCalc = this.getIsCalc();
 				this.setIsCalc(true);
-				var calculatedArrayFormulas = [];
+				if (g_cCalcRecursion.getIsEnabledRecursion() && g_cCalcRecursion.getLevel() === 1) {
+					this.setIsDirty(false);
+					//TODO make initMainCellForIterCalc function, who fills bool type attribute recognizes that this cell starts iteration
+					// e.g. A1 = A1+B1, B1 = B1+C1, C1 = 1 - mainCellForIterCalc is A1.
+				}
+				const calculatedArrayFormulas = [];
 				this.processFormula(function(parsed) {
 					if (!isCalc) {
 						//***array-formula***
 						//добавлен последний параметр для обработки формулы массива
 						if(parsed.getArrayFormulaRef()) {
-							var listenerId = parsed.getListenerId();
+							const listenerId = parsed.getListenerId();
 							if(parsed.checkFirstCellArray(t) && !calculatedArrayFormulas[listenerId]) {
 								parsed.calculate();
 								calculatedArrayFormulas[listenerId] = 1;
@@ -13599,7 +13625,7 @@
 									calculatedArrayFormulas[listenerId] = 1;
 								}
 
-								var oldParent = parsed.parent;
+								let oldParent = parsed.parent;
 								parsed.parent = new AscCommonExcel.CCellWithFormula(t.ws, t.nRow, t.nCol);
 								parsed._endCalculate();
 								parsed.parent = oldParent;
@@ -13613,27 +13639,19 @@
 				});
 
 				g_cCalcRecursion.decLevel();
-				if (g_cCalcRecursion.getIsForceBacktracking()) {
-					g_cCalcRecursion.insert({ws: this.ws, nRow: this.nRow, nCol: this.nCol});
-					if (0 === g_cCalcRecursion.getLevel() && !g_cCalcRecursion.getIsProcessRecursion()) {
-						g_cCalcRecursion.setIsProcessRecursion(true);
-						do {
-							g_cCalcRecursion.setIsForceBacktracking(false);
-							g_cCalcRecursion.foreachInReverse(function(elem) {
-								elem.ws._getCellNoEmpty(elem.nRow, elem.nCol, function(cell) {
-									if(cell && cell.getIsDirty()){
-										cell.setIsCalc(false);
-										cell._checkDirty();
-									}
-								});
-							});
-						} while (g_cCalcRecursion.getIsForceBacktracking());
-						g_cCalcRecursion.setIsProcessRecursion(false);
-					}
-				} else {
-					this.setIsCalc(false);
+				this.setIsCalc(false);
+				if (!g_cCalcRecursion.getIsEnabledRecursion()) {
 					this.setIsDirty(false);
 				}
+			}
+		} else if (g_cCalcRecursion.getIsEnabledRecursion()) {
+			if (g_cCalcRecursion.getIsForceBacktracking()) {
+				 return;
+			}
+			if (this.getMainCellForIterCalc() && g_cCalcRecursion.getIterStep() < g_cCalcRecursion.getMaxRecursion()) {
+				g_cCalcRecursion.incIterStep();
+				this.setIsDirty(true);
+				this._checkDirty();
 			}
 		}
 	};

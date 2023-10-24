@@ -183,6 +183,9 @@ function (window, undefined) {
 				}
 				fCallback && fCallback(true);
 				oApi.sendEvent("asc_onStartUpdateExternalReference", false);
+				if (oLogicDocument.IsDocumentEditor()) {
+					oLogicDocument.Recalculate();
+				}
 				oLogicDocument.FinalizeAction();
 				oThis.onUpdateExternalList();
 			};

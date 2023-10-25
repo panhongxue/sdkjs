@@ -1464,193 +1464,9 @@ function(window, undefined) {
 			}
 		}
 	};
-	CChartSpace.prototype.fillWorksheetFromCache = function (oWorksheet)
+	CChartSpace.prototype.getWorksheetsFromCache = function (oParentWb, bInsertWorksheets)
 	{
-		let nMaxRow = 0, nMaxColumn = 0;
-		let oSeries;
-		const parserHelp = AscCommon.parserHelp;
-		const series = this.getAllSeries();
-		function fFillCell(oCell, sNumFormat, value)
-		{
-			var oCellValue = new AscCommonExcel.CCellValue();
-			if (AscFormat.isRealNumber(value))
-			{
-				oCellValue.number = value;
-				oCellValue.type = AscCommon.CellValueType.Number;
-			}
-			else
-			{
-				oCellValue.text = value;
-				oCellValue.type = AscCommon.CellValueType.String;
-			}
-			oCell.setNumFormat(sNumFormat);
-			oCell.setValueData(new AscCommonExcel.UndoRedoData_CellValueData(null, oCellValue));
-		}
-
-		function fillTableFromRef(ref)
-		{
-			var cache = ref.numCache ? ref.numCache : (ref.strCache ? ref.strCache : null);
-			var lit_format_code;
-			if (cache)
-			{
-				lit_format_code = (typeof cache.formatCode === "string" && cache.formatCode.length > 0) ? cache.formatCode : "General";
-
-				var sFormula = ref.f + "";
-				if (sFormula[0] === '(')
-					sFormula = sFormula.slice(1);
-				if (sFormula[sFormula.length - 1] === ')')
-					sFormula = sFormula.slice(0, -1);
-				var f1 = sFormula;
-
-				var arr_f = f1.split(",");
-				var pt_index = 0, i, j, pt, nPtCount, k;
-				for (i = 0; i < arr_f.length; ++i)
-				{
-					var parsed_ref = parserHelp.parse3DRef(arr_f[i]);
-					if (parsed_ref)
-					{
-							var range = oWorksheet.getRange2(parsed_ref.range);
-							if (range)
-							{
-								range = range.bbox;
-
-								if (range.r1 > nMaxRow)
-									nMaxRow = range.r1;
-								if (range.r2 > nMaxRow)
-									nMaxRow = range.r2;
-
-								if (range.c1 > nMaxColumn)
-									nMaxColumn = range.c1;
-								if (range.c2 > nMaxColumn)
-									nMaxColumn = range.c2;
-
-								if (i === arr_f.length - 1)
-								{
-									nPtCount = cache.getPtCount();
-									if ((nPtCount - pt_index) <= (range.r2 - range.r1 + 1))
-									{
-										for (k = range.c1; k <= range.c2; ++k)
-										{
-											for (j = range.r1; j <= range.r2; ++j)
-											{
-												oWorksheet._getCell(j, k, function (cell)
-												{
-													pt = cache.getPtByIndex(pt_index + j - range.r1);
-													if (pt)
-													{
-														fFillCell(cell, typeof pt.formatCode === "string" && pt.formatCode.length > 0 ? pt.formatCode : lit_format_code, pt.val);
-													}
-												});
-											}
-										}
-										pt_index += (range.r2 - range.r1 + 1);
-									}
-									else if ((nPtCount - pt_index) <= (range.c2 - range.c1 + 1))
-									{
-										for (k = range.r1; k <= range.r2; ++k)
-										{
-											for (j = range.c1; j <= range.c2; ++j)
-											{
-												oWorksheet._getCell(k, j, function (cell)
-												{
-													pt = cache.getPtByIndex(pt_index + j - range.c1);
-													if (pt)
-													{
-														fFillCell(cell, typeof pt.formatCode === "string" && pt.formatCode.length > 0 ? pt.formatCode : lit_format_code, pt.val);
-													}
-												});
-											}
-										}
-										pt_index += (range.c2 - range.c1 + 1);
-									}
-								}
-								else
-								{
-									if (range.r1 === range.r2)
-									{
-										for (j = range.c1; j <= range.c2; ++j)
-										{
-											oWorksheet._getCell(range.r1, j, function (cell)
-											{
-												pt = cache.getPtByIndex(pt_index);
-												if (pt)
-												{
-													fFillCell(cell, typeof pt.formatCode === "string" && pt.formatCode.length > 0 ? pt.formatCode : lit_format_code, pt.val);
-												}
-												++pt_index;
-											});
-										}
-									}
-									else
-									{
-										for (j = range.r1; j <= range.r2; ++j)
-										{
-											oWorksheet._getCell(j, range.c1, function (cell)
-											{
-												pt = cache.getPtByIndex(pt_index);
-												if (pt)
-												{
-													fFillCell(cell, typeof pt.formatCode === "string" && pt.formatCode.length > 0 ? pt.formatCode : lit_format_code, pt.val);
-												}
-												++pt_index;
-											});
-										}
-									}
-								}
-							}
-
-					}
-				}
-			}
-		}
-
-		var first_num_ref;
-		if (series[0])
-		{
-			if (series[0].val)
-				first_num_ref = series[0].val.numRef;
-			else if (series[0].yVal)
-				first_num_ref = series[0].yVal.numRef;
-		}
-		if (first_num_ref)
-		{
-			var resultRef = parserHelp.parse3DRef(first_num_ref.f);
-			if (resultRef)
-			{
-				oWorksheet.sName = resultRef.sheet;
-				var oCat, oVal;
-				for (var i = 0; i < series.length; ++i)
-				{
-					oSeries = series[i];
-					oVal = oSeries.val || oSeries.yVal;
-					if (oVal && oVal.numRef)
-					{
-						fillTableFromRef(oVal.numRef);
-					}
-					oCat = oSeries.cat || oSeries.xVal;
-					if (oCat)
-					{
-						if (oCat.numRef)
-						{
-							fillTableFromRef(oCat.numRef);
-						}
-						if (oCat.strRef)
-						{
-							fillTableFromRef(oCat.strRef);
-						}
-					}
-					if (oSeries.tx && oSeries.tx.strRef)
-					{
-						fillTableFromRef(oSeries.tx.strRef);
-					}
-				}
-			}
-		}
-		return new Asc.Range(0, 0, nMaxColumn, nMaxRow);
-	};
-
-	CChartSpace.prototype.getWorksheetsFromCache = function (oParentWb)
-	{
+		let bFirst = true;
 		const mapWorksheets = {};
 
 		function fFillCell(oCell, sNumFormat, value)
@@ -1695,9 +1511,21 @@ function(window, undefined) {
 						const sSheetName  = oParsedRef.sheet;
 						if  (!mapWorksheets[sSheetName])
 						{
+							let ws;
+							if (bInsertWorksheets) {
+								if (bFirst) {
+									bFirst = false;
+									ws = oParentWb.getWorksheet(0);
+									ws.setName(sSheetName);
+								} else {
+									ws = oParentWb.createWorksheet(oParentWb.aWorksheets.length, sSheetName);
+								}
+							} else {
+								ws = new AscCommonExcel.Worksheet(oParentWb);
+								ws.sName = sSheetName;
+							}
 							mapWorksheets[sSheetName] = {};
-							mapWorksheets[sSheetName].ws = new AscCommonExcel.Worksheet(oParentWb);
-							mapWorksheets[sSheetName].ws.sName = sSheetName;
+							mapWorksheets[sSheetName].ws = ws;
 							mapWorksheets[sSheetName].maxR = 0;
 							mapWorksheets[sSheetName].maxC = 0;
 						}

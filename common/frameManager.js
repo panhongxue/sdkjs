@@ -433,11 +433,11 @@
 	}
 	CDiagramCellFrameManager.prototype.fillWorkbookFromDiagramCache = function ()
 	{
-		const worksheet = this.api.wb.getWorksheet();
-		const model = worksheet.model;
-		const oMaxRange = this.mainDiagram.fillWorksheetFromCache(model);
-		worksheet._updateRange(oMaxRange);
-		worksheet.draw();
+		const mapWorksheets = this.mainDiagram.getWorksheetsFromCache(this.api.wbModel, true);
+		const wsView = this.api.wb.getWorksheet();
+		const oSheetData = mapWorksheets[wsView.model.sName];
+		wsView._updateRange(new Asc.Range(0, 0, oSheetData.maxC , oSheetData.maxR));
+		wsView.draw();
 	}
 	CDiagramCellFrameManager.prototype.setMainDiagram = function (oInfo)
 	{

@@ -8075,6 +8075,11 @@ background-repeat: no-repeat;\
 
 		// Меняем тип состояния (на никакое)
 		this.advancedOptionsAction = c_oAscAdvancedOptionsAction.None;
+
+		if (this.canEdit() && this.asc_getExternalReferences())
+		{
+			this.sendEvent("asc_onNeedUpdateExternalReferenceOnOpen");
+		}
 	};
 
 	asc_docs_api.prototype.UpdateInterfaceState = function()

@@ -225,6 +225,7 @@ function (window, undefined) {
 				oLogicDocument.FinalizeAction();
 				oThis.onUpdateExternalList();
 				oApi.asc_onCloseFrameEditor();
+				oLogicDocument.UpdateInterface();
 				oThis.isLocked(arrCharts);
 			};
 
@@ -256,6 +257,7 @@ function (window, undefined) {
 			oChart.setExternalReference(null);
 		}
 		this.logicDocument.FinalizeAction();
+		this.logicDocument.UpdateInterface();
 		this.onUpdateExternalList();
 	};
 
@@ -272,6 +274,7 @@ function (window, undefined) {
 		chart.setExternalReference(oNewReference);
 
 		this.logicDocument.FinalizeAction();
+		this.logicDocument.UpdateInterface();
 		this.onUpdateExternalList();
 	};
 

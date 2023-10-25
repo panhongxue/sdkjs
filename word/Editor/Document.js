@@ -6013,6 +6013,7 @@ CDocument.prototype.FinalizeEditChart = function(chartBinary)
 		{
 			this.RecalculateByChanges(arrChanges);
 		}
+		this.UpdateInterface();
 		return;
 	}
 	// Находим выделенную диаграмму и накатываем бинарник

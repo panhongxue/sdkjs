@@ -6049,6 +6049,7 @@ CPresentation.prototype.FinalizeEditChart = function (binary)
 			{
 				this.Recalculate(this.History.Get_RecalcData(null, arrChanges));
 			}
+			this.UpdateInterface();
 		}
 		else
 		{

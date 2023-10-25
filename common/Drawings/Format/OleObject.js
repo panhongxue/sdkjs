@@ -148,9 +148,7 @@ function (window, undefined) {
 	    if (this.m_aBinaryData.length)
 	    {
 				const oApi = Asc.editor || editor;
-		    const isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
-		    const isOpenOnClient = oApi["asc_isSupportFeature"]("ooxml") && !isLocalDesktop;
-		    if (isOpenOnClient && !AscCommon.checkOOXMLSignature(this.m_aBinaryData))
+		    if (oApi.isOpenOOXInBrowser && !AscCommon.checkOOXMLSignature(this.m_aBinaryData))
 		    {
 			    const base64 = oApi.frameManager.getEncodedArray(this.m_aBinaryData).toUtf8();
 					const oThis = this;

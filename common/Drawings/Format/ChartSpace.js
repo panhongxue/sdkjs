@@ -1445,9 +1445,7 @@ function(window, undefined) {
 		}
 		if (this.XLSX.length)
 		{
-			const isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
-			const isOpenOnClient = oApi["asc_isSupportFeature"]("ooxml") && !isLocalDesktop;
-			if (isOpenOnClient && !AscCommon.checkOOXMLSignature(this.XLSX))
+			if (oApi.isOpenOOXInBrowser && !AscCommon.checkOOXMLSignature(this.XLSX))
 			{
 				const base64 = oApi.frameManager.getEncodedArray(this.XLSX).toUtf8();
 				const oThis = this;

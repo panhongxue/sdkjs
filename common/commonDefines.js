@@ -624,7 +624,7 @@ window.AscCommon.g_cIsBeta = "false";
 		SkipStartEndAction: 4,
 		StartUploadImageAction: 5,
 		UpdateDiagramInGeneral: 6,
-		UpdateDiagramInFrame: 7
+		UpdateIsOpenOnClient: 7
 	};
 
 	var CellValueType = {

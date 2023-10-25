@@ -474,9 +474,7 @@ asc_CChartBinary.prototype = {
 		return oNewChart;
 	},
 		getWorkbookBinary: function() { return this["workbookBinary"]; },
-		setWorkbookBinary: function(val) { this["workbookBinary"] = val; },
-	getOpenWorkbookOnClient: function() { return this["isOpenWorkbookOnClient"]; },
-	setOpenWorkbookOnClient: function(val) { this["isOpenWorkbookOnClient"] = val; }
+		setWorkbookBinary: function(val) { this["workbookBinary"] = val; }
 };
 
 /** @constructor */

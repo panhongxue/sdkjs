@@ -814,53 +814,21 @@
 				const oBinaryData = oInformation["binary"];
 				if (oLogicDocument)
 				{
-					if (oInformation["noHistory"])
-					{
-						AscCommon.History.CreateChartPreviewPoint();
-							oLogicDocument.UpdateChart(oBinaryData);
-					}
-					else
-					{
-						const nPointType = oLogicDocument.IsDocumentEditor() ? AscDFH.historydescription_Document_EditChart : AscDFH.historydescription_Presentation_EditChart;
-						oLogicDocument.StartAction(nPointType);
-						oLogicDocument.EditChart(oBinaryData);
-						this.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Waiting);
-						this.asc_onCloseFrameEditor();
-						oLogicDocument.FinalizeAction();
-					}
+					AscCommon.History.CreateChartPreviewPoint();
+					oLogicDocument.UpdateChart(oBinaryData);
 				}
 				break;
 			}
-			case c_oAscFrameDataType.UpdateDiagramInFrame:
+			case c_oAscFrameDataType.UpdateIsOpenOnClient:
 			{
-				const base64 = oInformation["workbookBinary"];
-				const wbModel = new AscCommonExcel.Workbook(this.handlers, this);
-				const oOldWbModel = this.wbModel;
-				const bOldOpenOOXInBrowser = this.isOpenOOXInBrowser;
-				this.wbModel = wbModel;
-				this.isOpenOOXInBrowser = this["asc_isSupportFeature"]("ooxml") && AscCommon.checkOOXMLSignature(base64);
-				const isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
-				if (!isLocalDesktop && this.isOpenOOXInBrowser)
+				if (this.frameManager.isGeneralEditor())
 				{
-					this.openDocumentFromZip(wbModel, base64);
+					this.sendFromGeneralToOpenedFrameEditor(new AscCommon.CFrameUpdateIsOpenOnClient(this.isOpenOOXInBrowser));
 				}
 				else
 				{
-					const oReader = new AscCommonExcel.BinaryFileReader();
-					oReader.Read(base64, wbModel);
+					this.frameManager.isSaveOOX = oInformation["isOpenOnClient"];
 				}
-				const oChartSpaceBinary = new Asc.asc_CChartBinary();
-				oChartSpaceBinary.asc_setBinary(oInformation["binary"]);
-				const oWorksheet = wbModel.getWorksheet(0);
-				const oChartSpace = oChartSpaceBinary.getChartSpace(oWorksheet);
-				oChartSpace.setWorksheet(oWorksheet);
-				oChartSpace.convertToFrameChart();
-				oChartSpace.handleUpdateChart();
-				oChartSpace.recalculate();
-				this.wbModel = oOldWbModel;
-				this.isOpenOOXInBrowser = bOldOpenOOXInBrowser;
-				this.sendFromFrameToGeneralEditor(new AscCommon.CFrameUpdateDiagramData(oChartSpace));
-				break;
 			}
 			default:
 			{

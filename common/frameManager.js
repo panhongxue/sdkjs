@@ -151,6 +151,10 @@
 	}
 	InitClassWithoutType(CCellFrameManager, CFrameManagerBase);
 
+	CCellFrameManager.prototype.updateOpenOnClient = function ()
+	{
+		this.sendFromFrameToGeneralEditor(new CFrameUpdateIsOpenOnClient());
+	};
 	CCellFrameManager.prototype.getWorkbookBinary = function ()
 	{
 		const oThis = this;
@@ -857,46 +861,8 @@
 		}
 	}
 
-	function CDiagramUpdater(oChart)
-	{
-		this.chart = oChart;
-		this.api = Asc.editor || editor;
-		this.frameLoader = new CFrameDiagramBinaryLoader(this.chart, this.resolvePromise.bind(this));
-	}
-
-	CDiagramUpdater.prototype.update = function ()
-	{
-		this.api.asc_onOpenFrameEditor();
-		this.frameLoader.startLoadWorksheet();
-		this.frameLoader.resolve();
-	};
-
-	CDiagramUpdater.prototype.getChartBinary = function (stream)
-	{
-		const oChartBinary = new Asc.asc_CChartBinary(this.chart);
-		oChartBinary.setOpenWorkbookOnClient(this.frameLoader.isOpenOnClient);
-		oChartBinary.setWorkbookBinary(stream);
-		return oChartBinary;
-	};
-
-	CDiagramUpdater.prototype.resolvePromise = function (sStream)
-	{
-		if (sStream)
-		{
-			const oBinaryData = this.getChartBinary(sStream);
-			oBinaryData.setWorkbookBinary(sStream);
-			this.sendToFrameEditor(oBinaryData);
-		}
-		else
-		{
-			this.frameLoader.endLoadWorksheet();
-			this.api.asc_onCloseFrameEditor();
-		}
-	};
-
-	CDiagramUpdater.prototype.sendToFrameEditor = function (oBinary)
-	{
-		this.api.sendFromGeneralToChartEditor(new CGeneralUpdateDiagramData(oBinary));
+	function CFrameUpdateIsOpenOnClient(bIsOpenOnClient) {
+		return CFrameData.call(this, AscCommon.c_oAscFrameDataType.UpdateIsOpenOnClient, {"isOpenOnClient": bIsOpenOnClient});
 	}
 
 	window["AscCommon"].CDiagramCellFrameManager = CDiagramCellFrameManager;
@@ -904,7 +870,6 @@
 	window["AscCommon"].COleCellFrameManager = COleCellFrameManager;
 	window["AscCommon"].CFrameDiagramBinaryLoader = CFrameDiagramBinaryLoader;
 	window["AscCommon"].CFrameOleBinaryLoader = CFrameOleBinaryLoader;
-	window["AscCommon"].CDiagramUpdater = CDiagramUpdater;
-	window["AscCommon"].CFrameUpdateDiagramData = CFrameUpdateDiagramData;
+	window["AscCommon"].CFrameUpdateIsOpenOnClient = CFrameUpdateIsOpenOnClient;
 	window["AscCommon"].FrameEditorTypes = FrameEditorTypes;
 })(window);

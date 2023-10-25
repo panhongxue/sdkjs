@@ -50,8 +50,6 @@
 	{
 		this.api = api;
 		this.isInitFrameManager = false;
-		const isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
-		this.isOpenOnClient = this.api["asc_isSupportFeature"]("ooxml") && !isLocalDesktop;
 	}
 	CFrameManagerBase.prototype.clear = function () {};
 	CFrameManagerBase.prototype.getWorkbookBinary = function () {};
@@ -70,6 +68,7 @@
 	CFrameManagerBase.prototype.startLoadChartEditor = function () {};
 	CFrameManagerBase.prototype.sendUpdateDiagram = function () {};
 	CFrameManagerBase.prototype.endLoadChartEditor = function () {};
+	CFrameManagerBase.prototype.isSaveZip = function () {};
 
 	CFrameManagerBase.prototype.preObtain = function (oInfo) {
 		this.obtain(oInfo);
@@ -92,7 +91,7 @@
 
 	CFrameManagerBase.prototype.getDecodedArray = function (stream)
 	{
-		if (this.isOpenOnClient)
+		if (this.isSaveZip())
 		{
 			return new Uint8Array(stream);
 		}
@@ -124,6 +123,10 @@
 	{
 		return true;
 	};
+	CMainEditorFrameManager.prototype.isSaveZip = function ()
+	{
+		return this.api.isOpenOOXInBrowser;
+	};
 	CMainEditorFrameManager.prototype.startLoadOleEditor = function ()
 	{
 		this.isLoadingOleEditor = true;
@@ -148,9 +151,14 @@
 		CFrameManagerBase.call(this, api);
 		this.generalDocumentUrls = {};
 		this.isInitFrameManager = true;
+		this.isSaveZipWorkbook = false;
 	}
 	InitClassWithoutType(CCellFrameManager, CFrameManagerBase);
 
+	CCellFrameManager.prototype.isSaveZip = function ()
+	{
+		return this.isSaveZipWorkbook;
+	};
 	CCellFrameManager.prototype.updateOpenOnClient = function ()
 	{
 		this.sendFromFrameToGeneralEditor(new CFrameUpdateIsOpenOnClient());
@@ -160,7 +168,7 @@
 		const oThis = this;
 		return new Promise(function (resolve)
 		{
-			if (oThis.isOpenOnClient)
+			if (oThis.isSaveZip())
 			{
 				oThis.api.saveDocumentToZip(oThis.api.wb.model, AscCommon.c_oEditorId.Spreadsheet, function (data)
 				{
@@ -218,6 +226,7 @@
 
 	CCellFrameManager.prototype.obtain = function (oInfo)
 	{
+		this.updateOpenOnClient();
 		this.isInitFrameManager = false;
 		let sStream = oInfo["binary"];
 		if (Array.isArray(sStream))
@@ -324,6 +333,7 @@
 	}
 	COleCellFrameManager.prototype.obtain = function (oInfo)
 	{
+		this.clear();
 		if (!oInfo)
 		{
 			oInfo = {"binary": AscCommon.getEmpty()};
@@ -456,10 +466,11 @@
 	}
 	CDiagramCellFrameManager.prototype.preObtain = function (oInfo)
 	{
+		this.clear();
 		this.setAfterLoadCallback(oInfo);
 		if (oInfo["workbookBinary"])
 		{
-			this.obtain({"binary": oInfo["workbookBinary"], "documentImageUrls": oInfo["documentImageUrls"], "openOnClient": oInfo["isOpenWorkbookOnClient"]});
+			this.obtain({"binary": oInfo["workbookBinary"], "documentImageUrls": oInfo["documentImageUrls"]});
 		}
 		else
 		{
@@ -554,7 +565,7 @@
 	};
 	CDiagramCellFrameManager.prototype.sendUpdateDiagram = function ()
 	{
-		this.sendFromFrameToGeneralEditor(new CFrameUpdateDiagramData(this.mainDiagram.chart, true));
+		this.sendFromFrameToGeneralEditor(new CFrameUpdateDiagramData(this.mainDiagram.chart));
 	};
 
 	CDiagramCellFrameManager.prototype.getAscSettings = function ()
@@ -573,16 +584,11 @@
 		return oProps;
 	};
 
-	function CFrameUpdateDiagramData(oDiagram, bNoHistory)
+	function CFrameUpdateDiagramData(oDiagram)
 	{
 		const oBinary = new Asc.asc_CChartBinary(oDiagram);
-		const oData = {"binary": oBinary, "noHistory": !!bNoHistory};
+		const oData = {"binary": oBinary};
 		CFrameData.call(this, AscCommon.c_oAscFrameDataType.UpdateDiagramInGeneral, oData);
-	}
-
-	function CGeneralUpdateDiagramData(oData)
-	{
-		CFrameData.call(this, AscCommon.c_oAscFrameDataType.UpdateDiagramInFrame, oData);
 	}
 
 
@@ -785,7 +791,6 @@
 	{
 		const oBinaryChart = new Asc.asc_CChartBinary(this.chart);
 		oBinaryChart.setWorkbookBinary(this.XLSXBase64);
-		oBinaryChart.setOpenWorkbookOnClient(this.isOpenOnClient);
 		return oBinaryChart;
 	};
 

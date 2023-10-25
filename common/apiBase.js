@@ -827,7 +827,7 @@
 				}
 				else
 				{
-					this.frameManager.isSaveOOX = oInformation["isOpenOnClient"];
+					this.frameManager.isSaveZipWorkbook = oInformation["isOpenOnClient"];
 				}
 			}
 			default:

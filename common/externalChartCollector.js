@@ -188,9 +188,8 @@ function (window, undefined) {
 
 								for (let j = 0; j < arrExternalChartReferences.length; j += 1) {
 									const oExternalReference = arrExternalChartReferences[j].externalReference;
-									if (oExternalReference) {
+									if (oExternalReference && !oExternalReference.chart.bDeleted && (oExternalReference.chart.getExternalReference() === oExternalReference)) {
 										oExternalReference.updateData(wb, _arrAfterPromise[i].data);
-										oExternalReference.chart.handleUpdateChart();
 									}
 								}
 							}
@@ -204,9 +203,8 @@ function (window, undefined) {
 							if (updatedData) {
 								for (let j = 0; j < arrExternalChartReferences.length; j += 1) {
 									const oExternalReference = arrExternalChartReferences[j].externalReference;
-									if (oExternalReference) {
+									if (oExternalReference && !oExternalReference.chart.bDeleted && (oExternalReference.chart.getExternalReference() === oExternalReference)) {
 										oExternalReference.updateData(wb, _arrAfterPromise[i].data);
-										oExternalReference.chart.handleUpdateChart();
 									}
 								}
 							}
@@ -222,7 +220,7 @@ function (window, undefined) {
 				if (oLogicDocument.IsDocumentEditor()) {
 					oLogicDocument.Recalculate();
 				}
-				oLogicDocument.FinalizeAction();
+				oLogicDocument.FinalizeAction(true);
 				oThis.onUpdateExternalList();
 				oApi.asc_onCloseFrameEditor();
 				oLogicDocument.UpdateInterface();
@@ -265,17 +263,22 @@ function (window, undefined) {
 		if (!this.isInit || this.isLocked(this.getCharts([oAscExternalReference]))) {
 			return;
 		}
+		const oReference = oAscExternalReference.externalReference;
+		const oChart = oReference && oReference.chart;
+		if (oChart && !oChart.bDeleted) {
+			this.logicDocument.StartAction(AscDFH.historydescription_Document_ChangeExternalChartReference);
 
-		this.logicDocument.StartAction(AscDFH.historydescription_Document_ChangeExternalChartReference);
+			const oNewReference = new AscCommonExcel.CChartExternalReference(oChart);
+			oNewReference.initFromObj(oExternalInfo);
+			oChart.setExternalReference(oNewReference);
+			if (oChart.XlSX && oChart.XlSX.length) {
+				oChart.setXLSX(new Uint8Array(0));
+			}
 
-		const chart = oAscExternalReference.externalReference.chart;
-		const oNewReference = new AscCommonExcel.CChartExternalReference(chart);
-		oNewReference.initFromObj(oExternalInfo);
-		chart.setExternalReference(oNewReference);
-
-		this.logicDocument.FinalizeAction();
-		this.logicDocument.UpdateInterface();
-		this.onUpdateExternalList();
+			this.logicDocument.FinalizeAction();
+			this.logicDocument.UpdateInterface();
+			this.onUpdateExternalList();
+		}
 	};
 
 	AscCommon.CExternalChartCollector = CExternalChartCollector;

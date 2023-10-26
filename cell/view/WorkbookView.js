@@ -5338,7 +5338,8 @@
 							if (editor !== AscCommon.c_oEditorId.Spreadsheet) {
 								continue;
 							}
-							let updatedData = window["Asc"]["editor"].openWorkbookForExternalReferencesFromZip(wb ? wb : t.model, stream);
+							const oMockWb = wb ? wb : t.model;
+							let updatedData = oMockWb.getExternalReferenceSheetsFromZip(stream);
 							if (updatedData) {
 								eR && eR.updateData(updatedData, _arrAfterPromise[i].data);
 							}

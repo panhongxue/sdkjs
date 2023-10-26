@@ -199,7 +199,7 @@ function (window, undefined) {
 							if (nEditor !== AscCommon.c_oEditorId.Spreadsheet) {
 								continue;
 							}
-							let updatedData = oApi.openWorkbookForExternalReferencesFromZip(wb, stream);
+							let updatedData = wb.getExternalReferenceSheetsFromZip(stream);
 							wb.aWorksheets = updatedData;
 							if (updatedData) {
 								for (let j = 0; j < arrExternalChartReferences.length; j += 1) {

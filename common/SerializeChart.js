@@ -219,6 +219,7 @@ var c_oserct_chartspaceXLSX = 16;
 var c_oserct_chartspaceSTYLES = 17;
 var c_oserct_chartspaceCOLORS = 18;
 var c_oserct_chartspaceXLSXEXTERNAL = 19;
+var c_oserct_chartspaceXLSXZIP = 20;
 
 
 var c_oserct_usershapes_COUNT = 0;
@@ -1363,7 +1364,8 @@ BinaryChartWriter.prototype.WriteCT_ChartSpace = function (oVal, oCopyPaste) {
 				oThis.memory.WriteString2(AscCommonExcel.encodeXmlPath(oVal.externalReference.Id));
 			}
 			if (oVal.XLSX && oVal.XLSX.length) {
-				this.bs.WriteItem(c_oserct_chartspaceXLSX, function () {
+				const nBinaryType = AscCommon.checkOOXMLSignature(oVal.XLSX) ? c_oserct_chartspaceXLSXZIP : c_oserct_chartspaceXLSX;
+				this.bs.WriteItem(nBinaryType, function () {
 					oThis.memory.WriteBuffer(oVal.XLSX, 0, oVal.XLSX.length);
 				});
 			}
@@ -6283,7 +6285,7 @@ BinaryChartReader.prototype.ReadCT_ChartSpace = function (type, length, val, cur
         if (null != theme)
             val.setThemeOverride(theme);
     }
-    else if(c_oserct_chartspaceXLSX === type) {
+    else if(c_oserct_chartspaceXLSX === type || c_oserct_chartspaceXLSXZIP === type) {
 			const nCur = this.bcr.stream.cur;
 			const arrData = this.bcr.stream.data.slice(nCur, nCur + length);
 			val.setXLSX(arrData);

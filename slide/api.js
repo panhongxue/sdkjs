@@ -5861,10 +5861,7 @@ background-repeat: no-repeat;\
 		this.advancedOptionsAction = AscCommon.c_oAscAdvancedOptionsAction.None;
 		this.goTo();
 
-		if (this.canEdit() && this.asc_getExternalReferences())
-		{
-			this.sendEvent("asc_onNeedUpdateExternalReferenceOnOpen");
-		}
+		this.onNeedUpdateExternalReferenceOnOpen();
 	};
 	asc_docs_api.prototype.asc_IsStartDemonstartionOnOpen = function()
 	{

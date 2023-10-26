@@ -5033,6 +5033,15 @@
 	baseEditorsApi.prototype.asc_changeExternalReference = function(eR, to) {
 	};
 
+	baseEditorsApi.prototype.onNeedUpdateExternalReferenceOnOpen = function () {
+		if (this.canEdit()) {
+			const arrExternalReferences = this.asc_getExternalReferences();
+			if (arrExternalReferences && arrExternalReferences.length) {
+				this.sendEvent("asc_onNeedUpdateExternalReferenceOnOpen");
+			}
+		}
+	};
+
 	//----------------------------------------------------------export----------------------------------------------------
 	window['AscCommon']                = window['AscCommon'] || {};
 	window['AscCommon'].baseEditorsApi = baseEditorsApi;

@@ -8000,6 +8000,7 @@ background-repeat: no-repeat;\
 						if (isSendOnReady)
 						{
 							oThis.onDocumentContentReady();
+							oThis.onNeedUpdateExternalReferenceOnOpen();
 							Document.End_SilentMode(false);
 						}
 					});
@@ -8021,6 +8022,7 @@ background-repeat: no-repeat;\
 					if (isSendOnReady)
 					{
 						this.onDocumentContentReady();
+						this.onNeedUpdateExternalReferenceOnOpen();
 						Document.End_SilentMode(false);
 					}
 				}
@@ -8050,6 +8052,7 @@ background-repeat: no-repeat;\
             isSendOnReady = true;
 			this.bInit_word_control = true;
 			this.onDocumentContentReady();
+			this.onNeedUpdateExternalReferenceOnOpen();
 		}
 
 		this.WordControl.m_oLogicDocument.Document_UpdateInterfaceState();
@@ -8075,11 +8078,6 @@ background-repeat: no-repeat;\
 
 		// Меняем тип состояния (на никакое)
 		this.advancedOptionsAction = c_oAscAdvancedOptionsAction.None;
-
-		if (this.canEdit() && this.asc_getExternalReferences())
-		{
-			this.sendEvent("asc_onNeedUpdateExternalReferenceOnOpen");
-		}
 	};
 
 	asc_docs_api.prototype.UpdateInterfaceState = function()

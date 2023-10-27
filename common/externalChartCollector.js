@@ -54,7 +54,6 @@ function (window, undefined) {
 			this.isInit = true;
 		}
 	};
-
 	CExternalChartCollector.prototype.onUpdateExternalList = function () {
 		if (this.isNeedSend) {
 			this.api.sendEvent("asc_onUpdateExternalReferenceList");

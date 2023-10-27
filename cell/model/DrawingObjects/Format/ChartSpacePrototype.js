@@ -593,9 +593,8 @@ CChartSpace.prototype.Get_ColorMap = CShape.prototype.Get_ColorMap;
 		}
 		return mapProps;
 	};
-	CChartSpace.prototype.changeExternalReference = function (oExternalReferenceInfo)
-	{
-
+	CChartSpace.prototype.isWorkbookChart = function () {
+		return true;
 	};
 
 })(window);

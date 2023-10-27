@@ -2677,7 +2677,9 @@
             if(aExtDxfs.length > 0) {
                 this.bs.WriteItem(c_oSerStylesTypes.ExtDxfs, function(){oThis.WriteDxfs(aExtDxfs);});
             }
-            this.bs.WriteItem(c_oSerStylesTypes.SlicerStyles, function(){oThis.WriteSlicerStyles(slicerStyles);});
+	        if (slicerStyles) {
+		        this.bs.WriteItem(c_oSerStylesTypes.SlicerStyles, function(){oThis.WriteSlicerStyles(slicerStyles);});
+	        }
             //numfmts пишется в конце потому что они могут пополниться при записи Dxfs
             this.bs.WriteItem(c_oSerStylesTypes.NumFmts, function(){oThis.WriteNumFmts();});
         };
@@ -3952,28 +3954,31 @@
 			for (i = 0; i < ws.pivotTables.length; ++i) {
 				this.bs.WriteItem(c_oSerWorksheetsTypes.PivotTable, function(){oThis.WritePivotTable(ws.pivotTables[i], oThis.isCopyPaste)});
 			}
-            var slicers = new Asc.CT_slicers();
-            var slicerExt = new Asc.CT_slicers();
-            for (var i = 0; i < ws.aSlicers.length; ++i) {
-                if (this.isCopyPaste) {
-                    var _graphicObject = ws.workbook.getSlicerViewByName(ws.aSlicers[i].name);
-                    if (!_graphicObject || !_graphicObject.selected) {
-                        continue;
-                    }
-                }
+			if (Asc.CT_slicers) {
+				var slicers = new Asc.CT_slicers();
+				var slicerExt = new Asc.CT_slicers();
+				for (var i = 0; i < ws.aSlicers.length; ++i) {
+					if (this.isCopyPaste) {
+						var _graphicObject = ws.workbook.getSlicerViewByName(ws.aSlicers[i].name);
+						if (!_graphicObject || !_graphicObject.selected) {
+							continue;
+						}
+					}
 
-                if (ws.aSlicers[i].isExt()) {
-                    slicerExt.slicer.push(ws.aSlicers[i]);
-                } else {
-                    slicers.slicer.push(ws.aSlicers[i]);
-                }
-            }
-            if (slicers.slicer.length > 0) {
-                this.bs.WriteItem(c_oSerWorksheetsTypes.Slicers, function () {oThis.WriteSlicers(slicers);});
-            }
-            if (slicerExt.slicer.length > 0) {
-                this.bs.WriteItem(c_oSerWorksheetsTypes.SlicersExt, function () {oThis.WriteSlicers(slicerExt);});
-            }
+					if (ws.aSlicers[i].isExt()) {
+						slicerExt.slicer.push(ws.aSlicers[i]);
+					} else {
+						slicers.slicer.push(ws.aSlicers[i]);
+					}
+				}
+				if (slicers.slicer.length > 0) {
+					this.bs.WriteItem(c_oSerWorksheetsTypes.Slicers, function () {oThis.WriteSlicers(slicers);});
+				}
+				if (slicerExt.slicer.length > 0) {
+					this.bs.WriteItem(c_oSerWorksheetsTypes.SlicersExt, function () {oThis.WriteSlicers(slicerExt);});
+				}
+			}
+
             if (null !== ws.headerFooter) {
                 this.bs.WriteItem(c_oSerWorksheetsTypes.HeaderFooter, function () {oThis.WriteHeaderFooter(ws.headerFooter);});
             }
@@ -11967,7 +11972,9 @@
         this.InitDxfs(oStyleObject.aDxfs);
         this.InitDxfs(oStyleObject.aExtDxfs);
         this.InitTableStyles(wb.TableStyles.DefaultStyles, oStyleObject.oCustomTableStyles, oStyleObject.aDxfs);
-        wb.SlicerStyles.addDefaultStylesAtOpening(oStyleObject.oCustomSlicerStyles, oStyleObject.aExtDxfs);
+				if (oStyleObject.oCustomSlicerStyles) {
+					wb.SlicerStyles.addDefaultStylesAtOpening(oStyleObject.oCustomSlicerStyles, oStyleObject.aExtDxfs);
+				}
     };
     InitOpenManager.prototype.InitDxfs = function (Dxfs)
     {
@@ -12304,26 +12311,28 @@
     };
 
     InitSaveManager.prototype.PrepareSlicerStyles = function (slicerStyles, aDxfs) {
-        var styles = new Asc.CT_slicerStyles();
-        styles.defaultSlicerStyle = slicerStyles.DefaultStyle;
-        for (var name in slicerStyles.CustomStyles) {
-            if (slicerStyles.CustomStyles.hasOwnProperty(name)) {
-                var slicerStyle = new Asc.CT_slicerStyle();
-                slicerStyle.name = name;
-                var elems = slicerStyles.CustomStyles[name];
-                for (var type in elems) {
-                    if (elems.hasOwnProperty(type)) {
-                        var styleElement = new Asc.CT_slicerStyleElement();
-                        styleElement.type = parseInt(type);
-                        styleElement.dxfId = aDxfs.length;
-                        aDxfs.push(elems[type]);
-                        slicerStyle.slicerStyleElements.push(styleElement);
-                    }
-                }
-                styles.slicerStyle.push(slicerStyle);
-            }
-        }
-        return styles;
+			if (Asc.CT_slicerStyles) {
+				var styles = new Asc.CT_slicerStyles();
+				styles.defaultSlicerStyle = slicerStyles.DefaultStyle;
+				for (var name in slicerStyles.CustomStyles) {
+					if (slicerStyles.CustomStyles.hasOwnProperty(name)) {
+						var slicerStyle = new Asc.CT_slicerStyle();
+						slicerStyle.name = name;
+						var elems = slicerStyles.CustomStyles[name];
+						for (var type in elems) {
+							if (elems.hasOwnProperty(type)) {
+								var styleElement = new Asc.CT_slicerStyleElement();
+								styleElement.type = parseInt(type);
+								styleElement.dxfId = aDxfs.length;
+								aDxfs.push(elems[type]);
+								slicerStyle.slicerStyleElements.push(styleElement);
+							}
+						}
+						styles.slicerStyle.push(slicerStyle);
+					}
+				}
+				return styles;
+			}
     };
 
     InitSaveManager.prototype.writeCols = function (ws, stylesForWrite, func) {

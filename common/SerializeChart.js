@@ -1359,14 +1359,17 @@ BinaryChartWriter.prototype.WriteCT_ChartSpace = function (oVal, oCopyPaste) {
 		}
 		else
 		{
+			let XLSX = (oVal.XLSX && oVal.XLSX.length) ? oVal.XLSX : null;
 			if (oVal.externalReference && oVal.externalReference.Id) {
 				oThis.memory.WriteByte(c_oserct_chartspaceXLSXEXTERNAL);
 				oThis.memory.WriteString2(AscCommonExcel.encodeXmlPath(oVal.externalReference.Id));
+			} else if (!oVal.isWorkbookChart() && !XLSX) {
+				XLSX = oVal.getXLSXFromCache();
 			}
-			if (oVal.XLSX && oVal.XLSX.length) {
-				const nBinaryType = AscCommon.checkOOXMLSignature(oVal.XLSX) ? c_oserct_chartspaceXLSXZIP : c_oserct_chartspaceXLSX;
+			if (XLSX) {
+				const nBinaryType = AscCommon.checkOOXMLSignature(XLSX) ? c_oserct_chartspaceXLSXZIP : c_oserct_chartspaceXLSX;
 				this.bs.WriteItem(nBinaryType, function () {
-					oThis.memory.WriteBuffer(oVal.XLSX, 0, oVal.XLSX.length);
+					oThis.memory.WriteBuffer(XLSX, 0, XLSX.length);
 				});
 			}
 		}

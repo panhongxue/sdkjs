@@ -1462,7 +1462,33 @@ function(window, undefined) {
 			}
 		}
 	};
-	CChartSpace.prototype.getWorksheetsFromCache = function (oParentWb, bInsertWorksheets)
+	CChartSpace.prototype.getXLSXFromCache = function () {
+		const oApi = Asc.editor;
+		return AscFormat.ExecuteNoHistory(function () {
+			const oWorkbook = new AscCommonExcel.Workbook(undefined, oApi);
+			oWorkbook.dependencyFormulas.lockRecal();
+			oWorkbook.DrawingDocument = oApi.getDrawingDocument();
+			const oInitOpenManager = new AscCommonExcel.InitOpenManager();
+			oInitOpenManager.initSchemeAndTheme(oWorkbook);
+			oInitOpenManager.readDefStyles(oWorkbook, oWorkbook.CellStyles.DefaultStyles);
+			const mapWorksheets = this.getWorksheetsFromCache(oWorkbook, false, true);
+			for (let sSheetName in mapWorksheets) {
+				oWorkbook.aWorksheets.push(mapWorksheets[sSheetName].ws);
+			}
+			if (oApi.isOpenOOXInBrowser) {
+				let arrData;
+				oApi.saveDocumentToZip(oWorkbook, AscCommon.c_oEditorId.Spreadsheet, function (data) {
+					arrData = data;
+				});
+				return arrData;
+			} else {
+				const oBinaryFileWriter = new AscCommonExcel.BinaryFileWriter(oWorkbook);
+				oBinaryFileWriter.Write();
+				return oBinaryFileWriter.Memory.data.slice();
+			}
+		}, this, []);
+	};
+	CChartSpace.prototype.getWorksheetsFromCache = function (oParentWb, bInsertWorksheets, bCreateXLSX)
 	{
 		let bFirst = true;
 		const mapWorksheets = {};
@@ -1481,7 +1507,11 @@ function(window, undefined) {
 				oCellValue.type = AscCommon.CellValueType.String;
 			}
 			oCell.setNumFormat(sNumFormat);
-			oCell.setValueData(new AscCommonExcel.UndoRedoData_CellValueData(null, oCellValue));
+			if (bCreateXLSX) {
+					oCell._setValueData(oCellValue);
+			} else {
+				oCell.setValueData(new AscCommonExcel.UndoRedoData_CellValueData(null, oCellValue));
+			}
 		}
 
 		function fillTableFromRef(ref)
@@ -10138,6 +10168,10 @@ function(window, undefined) {
 			}
 		}
 		return  oCurCandidate;
+	};
+
+	CChartSpace.prototype.isWorkbookChart = function () {
+		return false;
 	};
 
 	function CAdditionalStyleData() {

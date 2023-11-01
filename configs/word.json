@@ -102,6 +102,7 @@
 			"common/Drawings/Format/ChartFormat.js",
 			"common/Drawings/Format/TextBody.js",
 			"common/Charts/charts.js",
+			"common/Charts/drawing-composite-input.js",
 			"common/Charts/DrawingObjects.js",
 			"common/Charts/3DTransformation.js",
 			"common/Charts/ChartsDrawer.js",

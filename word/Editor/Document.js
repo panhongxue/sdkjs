@@ -2161,7 +2161,6 @@ function CDocument(DrawingDocument, isMainLogicDocument)
     this.TableId.Add(this, this.Id);
 
 	// Объект для составного ввода текста
-	this.CompositeInput = null;
 	this.compositeInput = null;
 
 	// Нужно ли проверять тип лока у ContentControl при проверке залоченности выделенных объектов

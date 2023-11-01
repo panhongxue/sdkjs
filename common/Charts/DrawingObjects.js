@@ -1784,7 +1784,6 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
     _this.drawingArea = null;
     _this.drawingDocument = null;
     _this.asyncImageEndLoaded = null;
-    _this.CompositeInput = null;
 
     _this.lastX = 0;
     _this.lastY = 0;
@@ -1793,6 +1792,8 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
 
     _this.bUpdateMetrics = true;
     _this.shiftMap = {};
+
+		_this.compositeInput = null;
 
     // Task timer
     _this.animId = null;
@@ -4452,167 +4453,30 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
         }
     };
 
-    _this.beginCompositeInput = function(){
-
-        _this.controller.CreateDocContent();
-        _this.drawingDocument.TargetStart();
-        _this.drawingDocument.TargetShow();
-        var oContent = _this.controller.getTargetDocContent(true);
-        if (!oContent) {
-            return false;
-        }
-        var oPara = oContent.GetCurrentParagraph();
-        if (!oPara) {
-            return false;
-        }
-        if (true === oContent.IsSelectionUse())
-            oContent.Remove(1, true, false, true);
-        var oRun = oPara.Get_ElementByPos(oPara.Get_ParaContentPos(false, false));
-        if (!oRun || !(oRun instanceof ParaRun)) {
-            return false;
-        }
-
-        _this.CompositeInput = new AscWord.RunCompositeInput_Old(oRun);
-
-        oRun.Set_CompositeInput(_this.CompositeInput);
-        _this.controller.startRecalculate();
-        _this.sendGraphicObjectProps();
-    };
-
-    _this.Begin_CompositeInput = function(){
-        if(!_this.controller.canEdit()) {
-            return;
-        }
-        if(_this.controller.checkSelectedObjectsProtectionText()) {
-            return;
-        }
-        History.Create_NewPoint(AscDFH.historydescription_Document_CompositeInput);
-        _this.beginCompositeInput();
-        _this.controller.recalculateCurPos(true, true);
-    };
-
-
-    _this.addCompositeText = function(nCharCode){
-
-        if (null === _this.CompositeInput)
-            return;
-
-        var oRun = _this.CompositeInput.Run;
-        var nPos = _this.CompositeInput.Pos + _this.CompositeInput.Length;
-        var oChar;
-
-        if (para_Math_Run === oRun.Type)
-        {
-            oChar = new CMathText();
-            oChar.add(nCharCode);
-        }
-        else
-        {
-            if (32 == nCharCode || 12288 == nCharCode)
-                oChar = new AscWord.CRunSpace();
-            else
-                oChar = new AscWord.CRunText(nCharCode);
-        }
-
-        oRun.Add_ToContent(nPos, oChar, true);
-        _this.CompositeInput.Length++;
-    };
-    _this.Add_CompositeText = function(nCharCode)
-    {
-        if (null === _this.CompositeInput)
-            return;
-        History.Create_NewPoint(AscDFH.historydescription_Document_CompositeInputReplace);
-        _this.addCompositeText(nCharCode);
-        _this.checkCurrentTextObjectExtends();
-        _this.controller.recalculate();
-        _this.controller.recalculateCurPos(true, true);
-        _this.controller.updateSelectionState();
-    };
-
-    _this.removeCompositeText = function(nCount){
-        if (null === _this.CompositeInput)
-            return;
-
-        var oRun = _this.CompositeInput.Run;
-        var nPos = _this.CompositeInput.Pos + _this.CompositeInput.Length;
-
-        var nDelCount = Math.max(0, Math.min(nCount, _this.CompositeInput.Length, oRun.Content.length, nPos));
-        oRun.Remove_FromContent(nPos - nDelCount, nDelCount, true);
-        _this.CompositeInput.Length -= nDelCount;
-    };
-
-    _this.Remove_CompositeText = function(nCount){
-        _this.removeCompositeText(nCount);
-        _this.checkCurrentTextObjectExtends();
-        _this.controller.recalculate();
-        _this.controller.recalculateCurPos(true, true);
-        _this.controller.updateSelectionState();
-    };
-    _this.Replace_CompositeText = function(arrCharCodes)
-    {
-        if (null === _this.CompositeInput)
-            return;
-        History.Create_NewPoint(AscDFH.historydescription_Document_CompositeInputReplace);
-        _this.removeCompositeText(_this.CompositeInput.Length);
-        for (var nIndex = 0, nCount = arrCharCodes.length; nIndex < nCount; ++nIndex)
-        {
-            _this.addCompositeText(arrCharCodes[nIndex]);
-        }
-        _this.checkCurrentTextObjectExtends();
-		_this.controller.startRecalculate();
-        _this.controller.recalculateCurPos(true, true);
-        _this.controller.updateSelectionState();
-    };
-    _this.Set_CursorPosInCompositeText = function(nPos)
-    {
-        if (null === _this.CompositeInput)
-            return;
-        var oRun = _this.CompositeInput.Run;
-
-        var nInRunPos = Math.max(Math.min(_this.CompositeInput.Pos + nPos, _this.CompositeInput.Pos + _this.CompositeInput.Length, oRun.Content.length), _this.CompositeInput.Pos);
-        oRun.State.ContentPos = nInRunPos;
-        _this.controller.recalculateCurPos(true, true);
-        _this.controller.updateSelectionState();
-    };
-    _this.Get_CursorPosInCompositeText = function()
-    {
-        if (null === _this.CompositeInput)
-            return 0;
-
-        var oRun = _this.CompositeInput.Run;
-        var nInRunPos = oRun.State.ContentPos;
-        var nPos = Math.min(_this.CompositeInput.Length, Math.max(0, nInRunPos - _this.CompositeInput.Pos));
-        return nPos;
-    };
-    _this.End_CompositeInput = function()
-    {
-        if (null === _this.CompositeInput)
-            return;
-
-        var oRun = _this.CompositeInput.Run;
-        oRun.Set_CompositeInput(null);
-        _this.CompositeInput = null;
-        var oController = _this.controller;
-        if(oController)
-        {
-            var oTargetTextObject = AscFormat.getTargetTextObject(oController);
-            if(oTargetTextObject && oTargetTextObject.txWarpStructNoTransform)
-            {
-                oTargetTextObject.recalculateContent();
-            }
-        }
-
-        _this.controller.recalculateCurPos(true, true);
-        _this.sendGraphicObjectProps();
-        _this.showDrawingObjects();
-    };
-    _this.Get_MaxCursorPosInCompositeText = function()
-    {
-        if (null === _this.CompositeInput)
-            return 0;
-
-        return _this.CompositeInput.Length;
-    };
+	    _this.Begin_CompositeInput = function () {
+		    _this.getCompositeInput().begin();
+	    };
+	    _this.Add_CompositeText = function (nCharCode) {
+		    _this.getCompositeInput().add(nCharCode);
+	    };
+	    _this.Remove_CompositeText = function (nCount) {
+		    _this.getCompositeInput().remove(nCount);
+	    };
+	    _this.Replace_CompositeText = function (arrCharCodes) {
+		    _this.getCompositeInput().replace(arrCharCodes);
+	    };
+	    _this.Set_CursorPosInCompositeText = function (nPos) {
+		    _this.getCompositeInput().setPos(nPos);
+	    };
+	    _this.Get_CursorPosInCompositeText = function () {
+		    return _this.getCompositeInput().getPos();
+	    };
+	    _this.End_CompositeInput = function () {
+		    _this.getCompositeInput().end();
+	    };
+	    _this.Get_MaxCursorPosInCompositeText = function () {
+		    return _this.getCompositeInput().getMaxPos();
+	    };
 
 
     //-----------------------------------------------------------------------------------
@@ -4659,6 +4523,12 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
         }
         return "";
     };
+	DrawingObjects.prototype.getCompositeInput = function() {
+		if (!this.compositeInput) {
+			this.compositeInput = new AscCommon.DrawingCompositeInput(this);
+		}
+		return this.compositeInput;
+	};
 function ClickCounter() {
     this.x = 0;
     this.y = 0;

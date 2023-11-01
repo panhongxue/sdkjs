@@ -2909,8 +2909,6 @@ function CPresentation(DrawingDocument) {
 	this.LastUpdateTargetTime = 0;
 	this.NeedUpdateTargetForCollaboration = false;
 	this.oLastCheckContent = null;
-	this.CompositeInput = null;
-
 
 	this.Spelling = new AscCommonWord.CDocumentSpellChecker();
 
@@ -2957,6 +2955,8 @@ function CPresentation(DrawingDocument) {
 
 	this.cachedGridCanvas = null;
 	this.cachedGridSpacing = null;
+
+	this.compositeInput = null;
 }
 
 AscFormat.InitClass(CPresentation, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_Presentation);
@@ -4420,58 +4420,6 @@ CPresentation.prototype.Get_TargetDocContent = function () {
 	return null;
 };
 
-CPresentation.prototype.Begin_CompositeInput = function () {
-	var oCurSlide = this.Slides[this.CurPage];
-	if (!this.FocusOnNotes && oCurSlide && oCurSlide.graphicObjects.selectedObjects.length === 0) {
-		var oTitle = oCurSlide.getMatchingShape(AscFormat.phType_title, null);
-		if (oTitle) {
-			var oDocContent = oTitle.getDocContent();
-			if (oDocContent.Is_Empty()) {
-				oDocContent.Set_CurrentElement(0, false);
-			} else {
-				return;
-			}
-		} else {
-			return;
-		}
-	}
-	if (false === this.Document_Is_SelectionLocked(changestype_Drawing_Props, null, undefined, undefined, true)) {
-		this.Create_NewHistoryPoint(AscDFH.historydescription_Document_CompositeInput);
-		var oController = this.GetCurrentController();
-		if (oController) {
-			oController.CreateDocContent();
-		}
-
-
-		var oContent = this.Get_TargetDocContent();
-		if (!oContent) {
-			this.History.Remove_LastPoint();
-			return false;
-		}
-		this.DrawingDocument.TargetStart();
-		this.DrawingDocument.TargetShow();
-		var oPara = oContent.GetCurrentParagraph();
-		if (!oPara) {
-			this.History.Remove_LastPoint();
-			return false;
-		}
-		if (true === oContent.IsSelectionUse())
-			oContent.Remove(1, true, false, true);
-		var oRun = oPara.Get_ElementByPos(oPara.Get_ParaContentPos(false, false));
-		if (!oRun || !(oRun instanceof ParaRun)) {
-			this.History.Remove_LastPoint();
-			return false;
-		}
-
-		this.CompositeInput = new AscWord.RunCompositeInput_Old(oRun);
-		oRun.Set_CompositeInput(this.CompositeInput);
-
-		return true;
-	}
-
-	return false;
-};
-
 CPresentation.prototype.IsFillingFormMode = function () {
 	return false;
 };
@@ -4498,128 +4446,6 @@ CPresentation.prototype.checkCurrentTextObjectExtends = function () {
 		}
 	}
 };
-
-CPresentation.prototype.addCompositeText = function (nCharCode) {
-	// TODO: При таком вводе не меняется язык в зависимости от раскладки, не учитывается режим рецензирования.
-
-	if (null === this.CompositeInput)
-		return;
-
-	var oRun = this.CompositeInput.Run;
-	var nPos = this.CompositeInput.Pos + this.CompositeInput.Length;
-	var oChar;
-	if (para_Math_Run === oRun.Type) {
-		oChar = new CMathText();
-		oChar.add(nCharCode);
-	} else {
-		if (32 == nCharCode || 12288 == nCharCode)
-			oChar = new AscWord.CRunSpace();
-		else
-			oChar = new AscWord.CRunText(nCharCode);
-	}
-	oRun.AddToContent(nPos, oChar, true);
-	this.CompositeInput.Length++;
-};
-CPresentation.prototype.Add_CompositeText = function (nCharCode) {
-	if (null === this.CompositeInput)
-		return;
-	this.Create_NewHistoryPoint(AscDFH.historydescription_Document_CompositeInputReplace);
-	this.addCompositeText(nCharCode);
-	this.checkCurrentTextObjectExtends();
-	this.Recalculate();
-	this.RecalculateCurPos(true, true);
-	this.Document_UpdateSelectionState();
-};
-
-CPresentation.prototype.removeCompositeText = function (nCount) {
-	if (null === this.CompositeInput)
-		return;
-
-	var oRun = this.CompositeInput.Run;
-	var nPos = this.CompositeInput.Pos + this.CompositeInput.Length;
-
-	var nDelCount = Math.max(0, Math.min(nCount, this.CompositeInput.Length, oRun.Content.length, nPos));
-	oRun.Remove_FromContent(nPos - nDelCount, nDelCount, true);
-	this.CompositeInput.Length -= nDelCount;
-};
-
-CPresentation.prototype.Remove_CompositeText = function (nCount) {
-	this.removeCompositeText(nCount);
-	this.checkCurrentTextObjectExtends();
-	this.Recalculate();
-	this.RecalculateCurPos(true, true);
-	this.Document_UpdateSelectionState();
-};
-CPresentation.prototype.Replace_CompositeText = function (arrCharCodes) {
-	if (null === this.CompositeInput)
-		return;
-	this.Create_NewHistoryPoint(AscDFH.historydescription_Document_CompositeInputReplace);
-	this.removeCompositeText(this.CompositeInput.Length);
-	for (var nIndex = 0, nCount = arrCharCodes.length; nIndex < nCount; ++nIndex) {
-		this.addCompositeText(arrCharCodes[nIndex]);
-	}
-	this.checkCurrentTextObjectExtends();
-	this.Recalculate();
-	this.RecalculateCurPos(true, true);
-	this.Document_UpdateSelectionState();
-	if (!this.History.CheckUnionLastPoints())
-		this.CompositeInput.CanUndo = false;
-};
-CPresentation.prototype.Set_CursorPosInCompositeText = function (nPos) {
-	if (null === this.CompositeInput)
-		return;
-
-	var oRun = this.CompositeInput.Run;
-
-	var nInRunPos = Math.max(Math.min(this.CompositeInput.Pos + nPos, this.CompositeInput.Pos + this.CompositeInput.Length, oRun.Content.length), this.CompositeInput.Pos);
-	oRun.State.ContentPos = nInRunPos;
-	this.RecalculateCurPos(true, true);
-	this.Document_UpdateSelectionState();
-};
-CPresentation.prototype.Get_CursorPosInCompositeText = function () {
-	if (null === this.CompositeInput)
-		return 0;
-
-	var oRun = this.CompositeInput.Run;
-	var nInRunPos = oRun.State.ContentPos;
-	var nPos = Math.min(this.CompositeInput.Length, Math.max(0, nInRunPos - this.CompositeInput.Pos));
-	return nPos;
-};
-CPresentation.prototype.End_CompositeInput = function () {
-	if (null === this.CompositeInput)
-		return;
-
-	var nLen = this.CompositeInput.Length;
-
-	var oRun = this.CompositeInput.Run;
-	oRun.Set_CompositeInput(null);
-
-	if (0 === nLen && true === this.History.CanRemoveLastPoint() && true === this.CompositeInput.CanUndo) {
-		this.Document_Undo();
-		this.History.Clear_Redo();
-	}
-
-	this.CompositeInput = null;
-
-	var oController = this.GetCurrentController();
-	if (oController) {
-		var oTargetTextObject = AscFormat.getTargetTextObject(oController);
-		if (oTargetTextObject && oTargetTextObject.txWarpStructNoTransform) {
-			oTargetTextObject.recalculateContent();
-		}
-	}
-	this.Document_UpdateInterfaceState();
-
-	this.DrawingDocument.ClearCachePages();
-	this.DrawingDocument.FirePaint();
-};
-CPresentation.prototype.Get_MaxCursorPosInCompositeText = function () {
-	if (null === this.CompositeInput)
-		return 0;
-
-	return this.CompositeInput.Length;
-};
-
 
 CPresentation.prototype.setShowLoop = function (value) {
 	if (value === false) {
@@ -4848,6 +4674,15 @@ CPresentation.prototype.CancelInkDrawer = function() {
 		return true;
 	}
 	return false;
+};
+
+CPresentation.prototype.UpdateAfterUndoRedo = function (arrChanges) {
+	const oRecalcData = this.History.Get_RecalcData(null, arrChanges);
+	this.Recalculate(oRecalcData);
+
+	this.UpdateSelection();
+	this.UpdateInterface();
+	this.UpdateRulers();
 };
 
 CPresentation.prototype.Recalculate = function (RecalcData) {
@@ -12576,6 +12411,13 @@ CPresentation.prototype.createNecessaryObjectsIfNoPresent = function () {
 };
 CPresentation.prototype.getDrawingObjects = function() {
 	return null;
+};
+
+CPresentation.prototype.getCompositeInput = function () {
+	if (!this.compositeInput) {
+		this.compositeInput = new AscCommonSlide.PresentationCompositeInput(this);
+	}
+	return this.compositeInput;
 };
 
 function collectSelectedObjects(aSpTree, aCollectArray, bRecursive, oIdMap, bSourceFormatting) {

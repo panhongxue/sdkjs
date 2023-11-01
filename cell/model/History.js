@@ -597,6 +597,8 @@ CHistory.prototype.Clear_Redo = function()
 	// Удаляем ненужные точки
 	this.Points.length = this.Index + 1;
 };
+CHistory.prototype.ClearRedo = CHistory.prototype.Clear_Redo;
+
 CHistory.prototype.RedoExecute = function(Point, oRedoObjectParam)
 {
 	// Выполняем все действия в прямом порядке
@@ -965,7 +967,7 @@ CHistory.prototype.CheckUnionLastPoints = function()
 CHistory.prototype.Add_RecalcTableGrid = function()
 {};
 
-CHistory.prototype.Create_NewPoint = function()
+CHistory.prototype.Create_NewPoint = function(sDescription)
 {
 	if ( 0 !== this.TurnOffHistory || 0 !== this.Transaction )
 		return false;
@@ -996,7 +998,8 @@ CHistory.prototype.Create_NewPoint = function()
 		SelectRange : oSelectRange,
 		SelectRangeRedo : oSelectRange,
 		Time  : Time,   // Текущее время
-		SelectionState : oSelectionState
+		SelectionState : oSelectionState,
+		Description: sDescription
     };
 
     // Удаляем ненужные точки
@@ -1387,6 +1390,28 @@ CHistory.prototype.GetSerializeArray = function()
 			return true;
 
 		return false;
+	};
+	CHistory.prototype.UndoCompositeInput = function () {
+		let lastIndex = this.Index;
+		while (lastIndex >= 0) {
+			let description = this.Points[lastIndex].Description;
+
+			if (AscDFH.historydescription_Document_CompositeInput === description)
+				break;
+
+			if (AscDFH.historydescription_Document_CompositeInputReplace !== description)
+				return false;
+
+			lastIndex--;
+		}
+
+		if (lastIndex < 0)
+			return false;
+
+		for (; this.Index >= lastIndex; --this.Index) {
+			this.Get_RecalcData(this.Points[this.Index]);
+		}
+		return true;
 	};
 	//------------------------------------------------------------export--------------------------------------------------
 	window['AscCommon'] = window['AscCommon'] || {};

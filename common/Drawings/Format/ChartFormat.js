@@ -2336,6 +2336,7 @@
         }
         return null;
     };
+	CBaseChartObject.prototype.checkShapeAutoFit = function() {};
 
     function getMinMaxFromArrPoints(aPoints) {
         if(Array.isArray(aPoints) && aPoints.length > 0) {
@@ -15614,7 +15615,7 @@
         this.posY = null;
         this.axis = axis;
     }
-
+	CValAxisLabels.prototype.checkShapeAutoFit = CBaseChartObject.prototype.checkShapeAutoFit;
     CValAxisLabels.prototype.hit = function(x, y) {
         var tx, ty;
         if(this.chart && this.chart.invertTransform) {
@@ -15715,6 +15716,7 @@
     CalcLegendEntry.prototype.Get_Styles = CDLbl.prototype.Get_Styles;
     CalcLegendEntry.prototype.Get_Theme = CDLbl.prototype.Get_Theme;
     CalcLegendEntry.prototype.Get_ColorMap = CDLbl.prototype.Get_ColorMap;
+	CalcLegendEntry.prototype.checkShapeAutoFit = CBaseChartObject.prototype.checkShapeAutoFit;
     CalcLegendEntry.prototype.recalculate = function() {
     };
     CalcLegendEntry.prototype.draw = function(g) {
@@ -15794,7 +15796,7 @@
         this.pen = null;
         this.brush = null;
     }
-
+	CompiledMarker.prototype.checkShapeAutoFit = CBaseChartObject.prototype.checkShapeAutoFit;
     CompiledMarker.prototype.draw = CShape.prototype.draw;
     CompiledMarker.prototype.getGeometry = CShape.prototype.getGeometry;
     CompiledMarker.prototype.check_bounds = CShape.prototype.check_bounds;
@@ -15812,7 +15814,7 @@
         this.lineMarker = null;
         this.marker = null;
     }
-
+	CUnionMarker.prototype.checkShapeAutoFit = CBaseChartObject.prototype.checkShapeAutoFit;
     CUnionMarker.prototype.draw = function(g) {
         this.lineMarker && this.lineMarker.draw(g);
         this.marker && this.marker.draw(g);

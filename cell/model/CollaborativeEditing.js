@@ -81,6 +81,8 @@
 
 			this.m_aForeignCursorsData = {};
 
+			this.m_oLastOwnPoint = null;
+
 			this.init();
 
 			return this;
@@ -283,6 +285,7 @@
 				var changes = t.m_arrChanges.splice(0, length);
 				this.handlers.trigger("applyChanges", changes, function () {
 					t.handlers.trigger("updateAfterApplyChanges");
+					t.m_oLastOwnPoint = null;
 				});
 				oApi.sendEvent("asc_onApplyChanges");
 
@@ -373,6 +376,8 @@
 				this.m_oInsertRows = {};
 				// Очищаем свои пересчетные индексы
 				this.clearRecalcIndex();
+
+				this.m_oLastOwnPoint = AscCommon.History.Points[AscCommon.History.Index];
 
 				// Чистим Undo/Redo
 				AscCommon.History.Clear();
@@ -1015,6 +1020,12 @@
 				}
 			}
 			return res;
+		};
+		CCollaborativeEditing.prototype.checkAsYouTypeEnterText = function(run, inRunPos, codePoint) {
+			if (!this.m_oLastOwnPoint) {
+				return false;
+			}
+			return AscCommon.History.checkPointAsYouTypeEnterText(this.m_oLastOwnPoint, run, inRunPos, codePoint);
 		};
 
 		/**

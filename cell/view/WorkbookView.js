@@ -5186,6 +5186,14 @@
 			return this.EnterText(newValue);
 		}
 
+		const oWSView = this.getWorksheet();
+		if (oWSView && oWSView.isSelectOnShape) {
+			if (oWSView.objectRender) {
+				oWSView.objectRender.CorrectEnterText(oldValue, newValue);
+			}
+			return;
+		}
+
 		if (!this.isCellEditMode || !this.cellEditor) {
 			return;
 		}

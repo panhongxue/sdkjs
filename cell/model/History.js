@@ -412,6 +412,7 @@ CHistory.prototype.Is_Clear = function() {
 
     return false;
 };
+CHistory.prototype.isEmpty = CHistory.prototype.Is_Clear;
 CHistory.prototype.Clear = function()
 {
 	var _isClear = this.Is_Clear();
@@ -1412,6 +1413,56 @@ CHistory.prototype.GetSerializeArray = function()
 			this.Get_RecalcData(this.Points[this.Index]);
 		}
 		return true;
+	};
+	/**
+	 * Check that the last action is the input of a given character in the previous given position
+	 * @param oRun {AscWord.CRun}
+	 * @param nInRunPos {number}
+	 * @param nCodePoint {?number}
+	 * @returns {boolean}
+	 */
+	CHistory.prototype.checkAsYouTypeEnterText = function(oRun, nInRunPos, nCodePoint)
+	{
+		this.CheckUnionLastPoints();
+
+		if (this.Points.length <= 0 || this.Index !== this.Points.length - 1)
+			return false;
+
+		const oPoint = this.Points[this.Index];
+		return this.checkPointAsYouTypeEnterText(oPoint, oRun, nInRunPos, nCodePoint);
+	};
+
+	/**
+	 * Check that the point is the input of a given character in the previous given position
+	 * @param oPoint {{}}
+	 * @param oRun {AscWord.CRun}
+	 * @param nInRunPos {number}
+	 * @param nCodePoint {?number}
+	 * @returns {boolean}
+	 */
+	CHistory.prototype.checkPointAsYouTypeEnterText = function(oPoint, oRun, nInRunPos, nCodePoint)
+	{
+		const nDescription = oPoint.Description;
+		if (AscDFH.historydescription_Document_AddLetter !== nDescription
+			&& AscDFH.historydescription_Document_AddLetterUnion !== nDescription
+			&& AscDFH.historydescription_Document_SpaceButton !== nDescription
+			&& AscDFH.historydescription_Document_CorrectEnterText !== nDescription
+			&& AscDFH.historydescription_Document_CompositeInput !== nDescription
+			&& AscDFH.historydescription_Document_CompositeInputReplace !== nDescription
+			&& AscDFH.historydescription_Spreadsheet_ParagraphAdd !== nDescription
+			&& AscDFH.historydescription_Presentation_ParagraphAdd !== nDescription)
+			return false;
+
+		const arrChanges = oPoint.Items;
+		if (!arrChanges.length)
+			return false;
+
+		const oLastChange = arrChanges[arrChanges.length - 1].Class;
+		return (AscDFH.historyitem_ParaRun_AddItem === oLastChange.Type
+			&& oLastChange.Class === oRun
+			&& oLastChange.Pos === nInRunPos - 1
+			&& oLastChange.Items.length
+			&& (undefined === nCodePoint || oLastChange.Items[0].GetCodePoint() === nCodePoint));
 	};
 	//------------------------------------------------------------export--------------------------------------------------
 	window['AscCommon'] = window['AscCommon'] || {};

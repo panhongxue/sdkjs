@@ -4529,6 +4529,97 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
 		}
 		return this.compositeInput;
 	};
+
+	DrawingObjects.prototype.CorrectEnterText = function (oldValue, newValue) {
+		if (undefined === oldValue
+			|| null === oldValue
+			|| (Array.isArray(oldValue) && !oldValue.length))
+			return this.controller.enterText(newValue);
+
+
+		const oDocContent = this.controller.getTargetDocContent(false, false);
+		if (!oDocContent) {
+			return false;
+		}
+		if (oDocContent.IsSelectionUse())
+			return false;
+
+		let arrNewCodePoints = typeof (newValue) === "string" ? newValue.codePointsArray() : newValue;
+		let arrOldCodePoints = typeof (oldValue) === "string" ? oldValue.codePointsArray() : oldValue;
+
+
+		if (!Array.isArray(arrOldCodePoints))
+			arrOldCodePoints = [arrOldCodePoints];
+
+		const oParagraph = oDocContent.GetCurrentParagraph();
+		if (!oParagraph)
+			return false;
+
+		const oContentPos = oParagraph.GetContentPosition(false, false);
+		let oRun, nInRunPos;
+		for (let i = oContentPos.length - 1; i >= 0; --i) {
+			if (oContentPos[i].Class instanceof AscWord.CRun) {
+				oRun = oContentPos[i].Class;
+				nInRunPos = oContentPos[i].Position;
+				break;
+			}
+		}
+
+		if (!oRun)
+			return false;
+
+		if (!AscWord.checkAsYouTypeEnterText(oRun, nInRunPos, arrOldCodePoints[arrOldCodePoints.length - 1]))
+			return false;
+
+		if (undefined === arrNewCodePoints || null === arrNewCodePoints)
+			arrNewCodePoints = [];
+		else if (!Array.isArray(arrNewCodePoints))
+			arrNewCodePoints = [arrNewCodePoints];
+
+		let sOldText = "";
+		for (let i = 0, count = arrOldCodePoints.length; i < count; ++i) {
+			sOldText += String.fromCodePoint(arrOldCodePoints[i]);
+		}
+
+
+		const oState = {};
+		this.controller.Save_DocumentStateBeforeLoadChanges(oState);
+
+		let nMaxShifts = arrOldCodePoints.length;
+		let sSelectedText;
+		while (nMaxShifts >= 0) {
+			this.controller.cursorMoveLeft(true, false);
+			sSelectedText = this.controller.GetSelectedText(true);
+
+			if (!sSelectedText || sSelectedText === sOldText)
+				break;
+
+			nMaxShifts--;
+		}
+
+		if (sSelectedText !== sOldText || this.controller.checkSelectedObjectsProtectionText()) {
+			const nCurPage = this.getWorksheetModel().index;
+			this.controller.resetSelection();
+			this.controller.loadDocumentStateAfterLoadChanges(oState, nCurPage);
+			return false;
+		}
+
+		AscCommon.History.Create_NewPoint(AscDFH.historydescription_Document_CorrectEnterText);
+
+		this.drawingDocument.TargetStart();
+		this.drawingDocument.TargetShow();
+
+		oDocContent.Remove(1, true, false, true);
+
+		for (let i = 0, count = arrNewCodePoints.length; i < count; ++i) {
+			const nCodePoint = arrNewCodePoints[i];
+			this.controller.paragraphAdd(AscCommon.IsSpace(nCodePoint) ? new AscWord.CRunSpace(nCodePoint) : new AscWord.CRunText(nCodePoint));
+		}
+
+		this.controller.updateSelectionState();
+		this.controller.startRecalculate();
+		return true;
+	};
 function ClickCounter() {
     this.x = 0;
     this.y = 0;

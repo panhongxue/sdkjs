@@ -287,6 +287,10 @@
 	{
 		return this.CoHistory;
 	};
+	CCollaborativeEditingBase.prototype.checkAsYouTypeEnterText = function(run, inRunPos, codePoint)
+	{
+		return this.getCoHistory().checkAsYouTypeEnterText(run, inRunPos, codePoint);
+	};
     CCollaborativeEditingBase.prototype.getCollaborativeEditing = function()
     {
         return !this.Is_SingleUser();

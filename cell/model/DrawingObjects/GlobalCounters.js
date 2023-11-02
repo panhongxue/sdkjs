@@ -355,6 +355,16 @@
         }
         oWB.Update_ForeignCursor(CursorInfo, UserId, Show, UserShortId);
     };
+	CCollaborativeEditing.prototype.checkAsYouTypeEnterText = function(oRun, nInRunPos, nCodePoint)
+	{
+		const oApi = this.GetEditorApi();
+		const oCollaborativeEditing = oApi && oApi.collaborativeEditing;
+		if(!oCollaborativeEditing)
+		{
+			return false;
+		}
+		return oCollaborativeEditing.checkAsYouTypeEnterText(oRun, nInRunPos, nCodePoint);
+	};
     //--------------------------------------------------------export----------------------------------------------------
     window['AscCommon'] = window['AscCommon'] || {};
     window['AscCommon'].CollaborativeEditing = new CCollaborativeEditing();

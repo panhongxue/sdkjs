@@ -635,7 +635,7 @@ window['AscCommonWord'].CTextToTableEngine = CTextToTableEngine;
 		if (!localHistory.isEmpty())
 			return AscCommon.History.checkAsYouTypeEnterText(run, inRunPos, codePoint);
 		else (AscCommon.CollaborativeEditing.Is_Fast() && !AscCommon.CollaborativeEditing.Is_SingleUser())
-			return AscCommon.CollaborativeEditing.getCoHistory().checkAsYouTypeEnterText(run, inRunPos, codePoint);
+			return AscCommon.CollaborativeEditing.checkAsYouTypeEnterText(run, inRunPos, codePoint);
 		
 		return false;
 	}

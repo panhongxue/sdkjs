@@ -4695,6 +4695,9 @@
 					if (this.isObjectInSmartArt()) {
 						this.copyTextInfoFromShapeToPoint();
 						this.setTruthFontSizeInSmartArt();
+						if (bForce) {
+							this.recalculateContentWitCompiledPr();
+						}
 					}
 				}
 			}

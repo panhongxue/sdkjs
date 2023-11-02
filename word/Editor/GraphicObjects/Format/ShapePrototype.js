@@ -1229,6 +1229,12 @@ CShape.prototype.getStyles = function(level)
 {
     return this.Get_Styles(level);
 };
+CShape.prototype.checkShapeAutoFit = function () {
+	const oLogicDocument = this.getLogicDocument();
+	if (oLogicDocument) {
+		oLogicDocument.CheckShapeAutoFit(this);
+	}
+};
 
 
 CShape.prototype.getDrawingObjectsController = function()

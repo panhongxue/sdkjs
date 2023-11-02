@@ -2475,11 +2475,9 @@ CDocumentContentBase.prototype.OnContentChange = function()
 		this.Parent.OnContentChange();
 	
 	let shape = this.Is_DrawingShape(true);
-	if (shape
-		&& this.GetLogicDocument()
-		&& this.GetLogicDocument().IsDocumentEditor())
+	if (shape)
 	{
-		this.GetLogicDocument().CheckShapeAutoFit(shape);
+		shape.checkShapeAutoFit();
 	}
 };
 

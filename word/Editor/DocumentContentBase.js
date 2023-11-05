@@ -2790,3 +2790,12 @@ CDocumentContentBase.prototype.getDocumentContentPosition = function(isSelection
 {
 	return this.GetContentPosition(isSelection, isStart);
 };
+
+CDocumentContentBase.prototype.RecalcSmartArtPointsInfo = function()
+{
+	let shape = this.Is_DrawingShape(true);
+	if (shape && shape.addToCopyOnWriteSmartArt)
+	{
+		shape.addToCopyOnWriteSmartArt();
+	}
+};

@@ -1234,6 +1234,7 @@ CShape.prototype.checkShapeAutoFit = function () {
 	if (oLogicDocument) {
 		oLogicDocument.CheckShapeAutoFit(this);
 	}
+	this.addToCopyOnWriteSmartArt();
 };
 
 

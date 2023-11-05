@@ -3850,6 +3850,7 @@
 	AscDFH.historyitem_ShapeSmartArtInfoShapePoint            = AscDFH.historyitem_type_ShapeSmartArtInfo | 2;
 	AscDFH.historyitem_ShapeSmartArtInfoAddLstContentPoint    = AscDFH.historyitem_type_ShapeSmartArtInfo | 3;
 	AscDFH.historyitem_ShapeSmartArtInfoRemoveLstContentPoint = AscDFH.historyitem_type_ShapeSmartArtInfo | 4;
+	AscDFH.historyitem_ShapeSmartArtInfoSetPaddings           = AscDFH.historyitem_type_ShapeSmartArtInfo | 5;
 
 	AscDFH.historyitem_SmartArtTreeRoot = AscDFH.historyitem_type_SmartArtTree | 1;
 

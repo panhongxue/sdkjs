@@ -1627,6 +1627,8 @@ Because of this, the display is sometimes not correct.
 
     Point.prototype.getDrawingDocument = function () {
     }
+	  Point.prototype.checkShapeAutoFit = function () {
+	  };
 
     Point.prototype.isForm = function () {
       return false;
@@ -1655,28 +1657,6 @@ Because of this, the display is sometimes not correct.
       if (this.parent && this.parent.parent instanceof AscFormat.CShape) {
         return this.parent.parent;
       }
-    }
-
-    Point.prototype.isRecalculateInsets = function () {
-      const insets = {Top: true, Bottom: true, Left: true, Right: true};
-      if (this.t) {
-        var bodyPr = this.t.bodyPr;
-        if (bodyPr) {
-          if (AscFormat.isRealNumber(bodyPr.tIns)) {
-            insets.Top = false;
-          }
-          if (AscFormat.isRealNumber(bodyPr.bIns)) {
-            insets.Bottom = false;
-          }
-          if (AscFormat.isRealNumber(bodyPr.lIns)) {
-            insets.Left = false;
-          }
-          if (AscFormat.isRealNumber(bodyPr.rIns)) {
-            insets.Right = false;
-          }
-        }
-      }
-      return insets;
     }
 
     Point.prototype.setType = function (pr) {
@@ -10055,11 +10035,61 @@ Because of this, the display is sometimes not correct.
       }
     }
 
+		function CPointPaddings() {
+			this.lIns = null;
+			this.rIns = null;
+			this.tIns = null;
+			this.bIns = null;
+		}
+		CPointPaddings.prototype.mergeFromObj = function (paddings) {
+			if (typeof paddings.Left === 'number') {
+				this.lIns = paddings.Left;
+			}
+			if (typeof paddings.Right === 'number') {
+				this.rIns = paddings.Right;
+			}
+			if (typeof paddings.Bottom === 'number') {
+				this.bIns = paddings.Bottom;
+			}
+			if (typeof paddings.Top === 'number') {
+				this.tIns = paddings.Top;
+			}
+		};
+	  CPointPaddings.prototype.getOptions = function (oOptions) {
+			const oRes = oOptions || {};
+			oRes.lIns = AscFormat.isRealNumber(this.lIns);
+			oRes.rIns = AscFormat.isRealNumber(this.rIns);
+			oRes.tIns = AscFormat.isRealNumber(this.tIns);
+			oRes.bIns = AscFormat.isRealNumber(this.bIns);
+			return oRes;
+	  };
+	  CPointPaddings.prototype.Write_ToBinary = function (w) {
+			AscFormat.writeLong(w, this.lIns);
+			AscFormat.writeLong(w, this.rIns);
+			AscFormat.writeLong(w, this.tIns);
+			AscFormat.writeLong(w, this.bIns);
+	  };
+	  CPointPaddings.prototype.Read_FromBinary = function (r) {
+		  this.lIns = AscFormat.readLong(r);
+		  this.rIns = AscFormat.readLong(r);
+		  this.tIns = AscFormat.readLong(r);
+		  this.bIns = AscFormat.readLong(r);
+	  };
+	  CPointPaddings.prototype.createDuplicate = function () {
+			const oCopy = new CPointPaddings();
+		  oCopy.lIns = this.lIns;
+		  oCopy.rIns = this.rIns;
+		  oCopy.tIns = this.tIns;
+		  oCopy.bIns = this.bIns;
+			return oCopy;
+	  };
 
     changesFactory[AscDFH.historyitem_ShapeSmartArtInfoSpPrPoint] = CChangeObject;
     changesFactory[AscDFH.historyitem_ShapeSmartArtInfoShapePoint] = CChangeObject;
     changesFactory[AscDFH.historyitem_ShapeSmartArtInfoAddLstContentPoint] = CChangeContent;
     changesFactory[AscDFH.historyitem_ShapeSmartArtInfoRemoveLstContentPoint] = CChangeContent;
+    changesFactory[AscDFH.historyitem_ShapeSmartArtInfoSetPaddings] = CChangeObjectNoId;
+	  drawingConstructorsMap[AscDFH.historyitem_ShapeSmartArtInfoSetPaddings] = CPointPaddings;
     drawingsChangesMap[AscDFH.historyitem_ShapeSmartArtInfoSpPrPoint] = function (oClass, value) {
       oClass.spPrPoint = value;
     };
@@ -10072,12 +10102,15 @@ Because of this, the display is sometimes not correct.
     drawingContentChanges[AscDFH.historyitem_ShapeSmartArtInfoRemoveLstContentPoint] = function (oClass) {
       return oClass.contentPoint;
     };
-
+	  drawingsChangesMap[AscDFH.historyitem_ShapeSmartArtInfoSetPaddings] = function (oClass, value) {
+		  oClass.paddings = value;
+	  };
     function ShapeSmartArtInfo() {
       CBaseFormatObject.call(this);
       this.shapePoint = null;
       this.contentPoint = [];
       this.maxFontSize = null;
+			this.paddings = null;
     }
     InitClass(ShapeSmartArtInfo, CBaseFormatObject, AscDFH.historyitem_type_ShapeSmartArtInfo);
 
@@ -10104,6 +10137,19 @@ Because of this, the display is sometimes not correct.
     ShapeSmartArtInfo.prototype.setMaxFontSize = function (oPr) {
       this.maxFontSize = oPr;
     }
+	  ShapeSmartArtInfo.prototype.setPaddings = function (paddings) {
+			let oPr = null;
+			if (paddings) {
+				if (this.paddings) {
+					oPr = this.paddings.createDuplicate();
+				} else {
+					oPr = new CPointPaddings();
+				}
+				oPr.mergeFromObj(paddings);
+			}
+		  oHistory.CanAddChanges() && oHistory.Add(new CChangeObjectNoId(this, AscDFH.historyitem_ShapeSmartArtInfoSetPaddings, this.paddings, oPr));
+		  this.paddings = oPr;
+	  }
 
     changesFactory[AscDFH.historyitem_SmartArtColorsDef] = CChangeObject;
     changesFactory[AscDFH.historyitem_SmartArtDrawing] = CChangeObject;
@@ -10148,9 +10194,50 @@ Because of this, the display is sometimes not correct.
 
       this.calcGeometry = null;
       this.bFirstRecalculate = true;
+			this.isCheckCopyPoints = true;
     }
 
     InitClass(SmartArt, CGroupShape, AscDFH.historyitem_type_SmartArt);
+
+		SmartArt.prototype.updateDataForWriting = function () {
+			this.isCheckCopyPoints = false;
+			AscFormat.ExecuteNoHistory(function () {
+				const oShapesMap = {};
+				const spTree = this.getDrawing().spTree;
+
+				for (let i = 0; i < spTree.length; i += 1) {
+					const oShape = spTree[i];
+					if (oShape.copySmartInfoToPoints) {
+						oShape.copySmartInfoToPoints = false;
+						oShapesMap[oShape.GetId()] = oShape;
+					}
+				}
+				for (let sId in oShapesMap) {
+					const oShape = oShapesMap[sId];
+					var txBody = oShape.txBody;
+					var pointContent = oShape.getSmartArtPointContent();
+					if (txBody && pointContent && pointContent.length !== 0) {
+						const options = {};
+						const oSmartArtInfo = oShape.getSmartArtInfo();
+						if (oSmartArtInfo && oSmartArtInfo.paddings) {
+							oSmartArtInfo.paddings.getOptions(options);
+						}
+						options.pointContentLength = pointContent.length;
+						for (var j = 0; j < pointContent.length; j += 1) {
+							var point = pointContent[j];
+							if (point.prSet && point.prSet.custT) {
+								options.custT = true;
+							}
+						}
+						const pointsCopy = txBody.createDuplicateForSmartArt(options);
+						pointContent.forEach(function (point, idx) {
+							point.setT(pointsCopy[idx])
+						});
+					}
+				}
+			}, this, []);
+			this.isCheckCopyPoints = true;
+		};
 
     SmartArt.prototype.getObjectType = function() {
       return AscDFH.historyitem_type_SmartArt;
@@ -11533,6 +11620,7 @@ Because of this, the display is sometimes not correct.
       pWriter.WriteGroupShape(this.drawing);
       pWriter.EndRecord();
       pWriter.EndRecord();
+	    this.updateDataForWriting();
       this.writeRecord2(pWriter, 1, this.dataModel);
       this.writeRecord2(pWriter, 2, this.colorsDef);
       this.writeRecord2(pWriter, 3, this.layoutDef);
@@ -11845,7 +11933,7 @@ Because of this, the display is sometimes not correct.
         for (var i = 0; i < drawing.spTree.length; i += 1) {
           var obj = drawing.spTree[i];
           if (obj.getObjectType() === AscDFH.historyitem_type_Shape) {
-            obj.copyTextInfoFromShapeToPoint();
+            obj.addToCopyOnWriteSmartArt();
           }
         }
       }

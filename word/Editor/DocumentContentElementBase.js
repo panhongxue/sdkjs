@@ -1258,6 +1258,14 @@ CDocumentContentElementBase.prototype.OnContentChange = function()
 	if (this.Parent && this.Parent.OnContentChange)
 		this.Parent.OnContentChange();
 };
+/**
+ * Raise event about updating smartArt data to the top
+ */
+CDocumentContentElementBase.prototype.RecalcSmartArtPointsInfo = function()
+{
+	if (this.Parent && this.Parent.RecalcSmartArtPointsInfo)
+		this.Parent.RecalcSmartArtPointsInfo();
+};
 
 //--------------------------------------------------------export--------------------------------------------------------
 window['AscCommonWord'] = window['AscCommonWord'] || {};

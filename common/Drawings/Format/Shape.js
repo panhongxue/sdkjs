@@ -826,6 +826,7 @@
 		};
 		AscDFH.drawingsChangesMap[AscDFH.historyitem_ShapeSetTxBody] = function (oClass, value) {
 			oClass.txBody = value;
+			oClass.addToCopyOnWriteSmartArt();
 		};
 		AscDFH.drawingsChangesMap[AscDFH.historyitem_ShapeSetTextBoxContent] = function (oClass, value) {
 			oClass.textBoxContent = value;
@@ -950,6 +951,7 @@
 			this.tmpFontScale = undefined;
 			this.tmpLnSpcReduction = undefined;
 			this.shapeSmartArtInfo = null;
+			this.copySmartInfoToPoints = false;
 		}
 
 		AscFormat.InitClass(CShape, AscFormat.CGraphicObjectBase, AscDFH.historyitem_type_Shape);
@@ -1313,57 +1315,6 @@
 					this.setCustT(true);
 				}
 				this.checkExtentsByDocContent();
-			}
-		};
-
-		CShape.prototype.copyTextInfoFromShapeToPoint = function (paddings) {
-			var txBody = this.txBody;
-			var pointContent = this.getSmartArtPointContent();
-			var options = {};
-			if (txBody && pointContent && pointContent.length !== 0) {
-				options.pointContentLength = pointContent.length;
-				var pointsCopy;
-
-				for (var i = 0; i < pointContent.length; i += 1) {
-					var point = pointContent[i];
-
-					if (point.prSet && point.prSet.custT) {
-						options.custT = true;
-					}
-					var bodyPr = point.t && point.t.bodyPr;
-					if (bodyPr) {
-						if (typeof bodyPr.lIns === 'number') {
-							options.lIns = true;
-						}
-						if (typeof bodyPr.rIns === 'number') {
-							options.rIns = true;
-						}
-						if (typeof bodyPr.bIns === 'number') {
-							options.bIns = true;
-						}
-						if (typeof bodyPr.tIns === 'number') {
-							options.tIns = true;
-						}
-					}
-				}
-				if (paddings) {
-					if (typeof paddings.Left === 'number') {
-						options.lIns = true;
-					}
-					if (typeof paddings.Right === 'number') {
-						options.rIns = true;
-					}
-					if (typeof paddings.Bottom === 'number') {
-						options.bIns = true;
-					}
-					if (typeof paddings.Top === 'number') {
-						options.tIns = true;
-					}
-				}
-				pointsCopy = txBody.createDuplicateForSmartArt(options);
-				pointContent.forEach(function (point, idx) {
-					point.setT(pointsCopy[idx])
-				});
 			}
 		};
 
@@ -1851,9 +1802,7 @@
 						this.txBody.setBodyPr(new_body_pr);
 					}
 				}
-				if (this.isObjectInSmartArt()) {
-					this.copyTextInfoFromShapeToPoint();
-				}
+					this.addToCopyOnWriteSmartArt();
 			}
 		};
 		CShape.prototype.setVert = function (vert) {
@@ -1953,7 +1902,10 @@
 						}
 					}
 					if (this.isObjectInSmartArt() && !props.bNotCopyToPoints) {
-						this.copyTextInfoFromShapeToPoint(paddings);
+						const smartArtShapeInfo = this.getSmartArtInfo();
+						if (smartArtShapeInfo) {
+							smartArtShapeInfo.setPaddings(paddings);
+						}
 					}
 				}
 			}
@@ -4162,23 +4114,25 @@
 				const oBodyPr = this.txBody.getBodyPr();
 				if (oBodyPr) {
 					const paddings = {};
-					const pointContent = this.getSmartArtPointContent();
-					const point = pointContent && pointContent[0];
-					if (point) {
-						const isRecalculateInsets = point.isRecalculateInsets();
-						if (isRecalculateInsets.Top) {
+					const oShapeSmartArtInfo = this.getSmartArtInfo();
+					if (oShapeSmartArtInfo) {
+						const oPaddingOptions = {};
+						if (oShapeSmartArtInfo.paddings) {
+							oShapeSmartArtInfo.paddings.getOptions(oPaddingOptions);
+						}
+						if (!oPaddingOptions.tIns) {
 							const tInsetPerPt = oBodyPr.tIns / currentFontSize;
 							paddings.Top = tInsetPerPt * fontSize;
 						}
-						if (isRecalculateInsets.Bottom) {
+						if (!oPaddingOptions.bIns) {
 							const bInsetPerPt = oBodyPr.bIns / currentFontSize;
 							paddings.Bottom = bInsetPerPt * fontSize;
 						}
-						if (isRecalculateInsets.Left) {
+						if (!oPaddingOptions.lIns) {
 							const lInsetPerPt = oBodyPr.lIns / currentFontSize;
 							paddings.Left = lInsetPerPt * fontSize;
 						}
-						if (isRecalculateInsets.Right) {
+						if (!oPaddingOptions.rIns) {
 							const rInsetPerPt = oBodyPr.rIns / currentFontSize;
 							paddings.Right = rInsetPerPt * fontSize;
 						}
@@ -4693,7 +4647,7 @@
 						}
 					}
 					if (this.isObjectInSmartArt()) {
-						this.copyTextInfoFromShapeToPoint();
+						this.addToCopyOnWriteSmartArt();
 						this.setTruthFontSizeInSmartArt();
 						if (bForce) {
 							this.recalculateContentWitCompiledPr();
@@ -6854,6 +6808,19 @@
 				}
 			}
 			return  oCurCandidate;
+		};
+		CShape.prototype.checkShapeAutoFit = function () {
+			this.addToCopyOnWriteSmartArt();
+		};
+		CShape.prototype.addToCopyOnWriteSmartArt = function () {
+			let bCopy = true;
+			if (this.isObjectInSmartArt()) {
+				const oSmartArt = this.group.group;
+				if (!oSmartArt.isCheckCopyPoints) {
+					bCopy = this.copySmartInfoToPoints;
+				}
+			}
+			this.copySmartInfoToPoints = bCopy;
 		};
 
 		function CreateBinaryReader(szSrc, offset, srcLen) {

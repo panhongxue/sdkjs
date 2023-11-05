@@ -8755,6 +8755,8 @@ ParaRun.prototype.Recalc_CompiledPr = function(RecalcMeasure)
 
     // Если мы в формуле, тогда ее надо пересчитывать
     this.private_RecalcCtrPrp();
+
+		this.RecalcSmartArtPointsInfo();
 };
 ParaRun.prototype.RecalcMeasure = function()
 {

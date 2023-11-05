@@ -59,6 +59,9 @@
                 oClass.parent.recalcInfo.recalculateContent2 = true;
                 oClass.parent.recalcInfo.recalculateTransformText = true;
             }
+	    if (oClass.parent && oClass.parent.addToCopyOnWriteSmartArt) {
+		    oClass.parent.addToCopyOnWriteSmartArt();
+	    }
         if(oClass.content) {
             oClass.content.Recalc_AllParagraphs_CompiledPr();
         }
@@ -187,6 +190,9 @@
             if(oParent.onChartInternalUpdate) {
                 oParent.onChartInternalUpdate();
             }
+						if (oParent.addToCopyOnWriteSmartArt) {
+							oParent.addToCopyOnWriteSmartArt();
+						}
         }
     };
     CTextBody.prototype.setContent = function(pr) {

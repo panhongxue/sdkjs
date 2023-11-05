@@ -2593,6 +2593,9 @@
 												f.apply(content, args);
 												content.SetApplyToAll(false);
 												ret = true;
+												if (isIncreaseDecreaseFunction && arr[i].isObjectInSmartArt()) {
+													arr[i].setCustT(true);
+												}
 											}
 										}
 									}

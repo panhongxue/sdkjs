@@ -1261,6 +1261,21 @@ CParagraphContentWithContentBase.prototype.OnContentChange = function()
 	}
 };
 
+CParagraphContentWithContentBase.prototype.RecalcSmartArtPointsInfo = function()
+{
+	let oParent = this.GetParent();
+	if (oParent && oParent.RecalcSmartArtPointsInfo)
+	{
+		oParent.RecalcSmartArtPointsInfo();
+	}
+	else
+	{
+		let oParagraph = this.GetParagraph();
+		if (oParagraph)
+			oParagraph.RecalcSmartArtPointsInfo();
+	}
+};
+
 /**
  * Это базовый класс для элементов параграфа, которые сами по себе могут содержать элементы параграфа.
  * @constructor

@@ -1906,6 +1906,7 @@
 						if (smartArtShapeInfo) {
 							smartArtShapeInfo.setPaddings(paddings);
 						}
+						this.checkExtentsByDocContent(true, true);
 					}
 				}
 			}

@@ -225,13 +225,23 @@
 		let lastOwnRange = this.OwnRanges[this.OwnRanges.length - 1];
 		if (this.Changes.length !== lastOwnRange.Position + lastOwnRange.Length)
 			return false;
-		
-		let lastChange = this.Changes[this.Changes.length - 1];
-		return (AscDFH.historyitem_ParaRun_AddItem === lastChange.Type
-			&& lastChange.Class === run
-			&& lastChange.Pos === inRunPos - 1
-			&& lastChange.Items.length
-			&& (undefined === codePoint || lastChange.Items[0].GetCodePoint() === codePoint));
+
+		const description = this.Changes[lastOwnRange.Position].Description;
+		if (!AscWord.isEnterTextDescription(description))
+			return false;
+
+		for (let i = this.Changes.length - 1; i >= lastOwnRange.Position; i -= 1)
+		{
+			const change = this.Changes[i];
+			if (AscDFH.historyitem_ParaRun_AddItem === change.Type)
+			{
+				return (change.Class === run
+					&& change.Pos === inRunPos - 1
+					&& change.Items.length
+					&& (undefined === codePoint || change.Items[0].GetCodePoint() === codePoint));
+			}
+		}
+		return false;
 	};
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Private area

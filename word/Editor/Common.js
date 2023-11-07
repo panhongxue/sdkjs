@@ -639,6 +639,17 @@ window['AscCommonWord'].CTextToTableEngine = CTextToTableEngine;
 		
 		return false;
 	}
+	function isEnterTextDescription(description)
+	{
+		return (AscDFH.historydescription_Document_AddLetter === description
+			|| AscDFH.historydescription_Document_AddLetterUnion === description
+			|| AscDFH.historydescription_Document_SpaceButton === description
+			|| AscDFH.historydescription_Document_CorrectEnterText === description
+			|| AscDFH.historydescription_Document_CompositeInput === description
+			|| AscDFH.historydescription_Document_CompositeInputReplace === description
+			|| AscDFH.historydescription_Spreadsheet_ParagraphAdd === description
+			|| AscDFH.historydescription_Presentation_ParagraphAdd === description);
+	}
 	//--------------------------------------------------------export----------------------------------------------------
 	window['AscWord'] = window['AscWord'] || {};
 	window['AscWord'].CompareDocumentPositions = CompareDocumentPositions;
@@ -648,5 +659,6 @@ window['AscCommonWord'].CTextToTableEngine = CTextToTableEngine;
 	window['AscWord'].codePointToRunElement    = codePointToRunElement;
 	window['AscWord'].sortByDocumentPosition   = sortByDocumentPosition;
 	window['AscWord'].checkAsYouTypeEnterText  = checkAsYouTypeEnterText;
+	window['AscWord'].isEnterTextDescription  = isEnterTextDescription;
 
 })(window);

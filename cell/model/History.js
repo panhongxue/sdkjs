@@ -1443,26 +1443,20 @@ CHistory.prototype.GetSerializeArray = function()
 	CHistory.prototype.checkPointAsYouTypeEnterText = function(oPoint, oRun, nInRunPos, nCodePoint)
 	{
 		const nDescription = oPoint.Description;
-		if (AscDFH.historydescription_Document_AddLetter !== nDescription
-			&& AscDFH.historydescription_Document_AddLetterUnion !== nDescription
-			&& AscDFH.historydescription_Document_SpaceButton !== nDescription
-			&& AscDFH.historydescription_Document_CorrectEnterText !== nDescription
-			&& AscDFH.historydescription_Document_CompositeInput !== nDescription
-			&& AscDFH.historydescription_Document_CompositeInputReplace !== nDescription
-			&& AscDFH.historydescription_Spreadsheet_ParagraphAdd !== nDescription
-			&& AscDFH.historydescription_Presentation_ParagraphAdd !== nDescription)
+		if (!AscWord.isEnterTextDescription(nDescription))
 			return false;
 
 		const arrChanges = oPoint.Items;
-		if (!arrChanges.length)
-			return false;
-
-		const oLastChange = arrChanges[arrChanges.length - 1].Class;
-		return (AscDFH.historyitem_ParaRun_AddItem === oLastChange.Type
-			&& oLastChange.Class === oRun
-			&& oLastChange.Pos === nInRunPos - 1
-			&& oLastChange.Items.length
-			&& (undefined === nCodePoint || oLastChange.Items[0].GetCodePoint() === nCodePoint));
+		for (let i = arrChanges.length - 1; i >= 0; i -= 1) {
+			const oChange = arrChanges[i].Class;
+			if (AscDFH.historyitem_ParaRun_AddItem === oChange.Type) {
+				return (oChange.Class === oRun
+					&& oChange.Pos === nInRunPos - 1
+					&& oChange.Items.length
+					&& (undefined === nCodePoint || oChange.Items[0].GetCodePoint() === nCodePoint));
+			}
+		}
+		return false;
 	};
 	//------------------------------------------------------------export--------------------------------------------------
 	window['AscCommon'] = window['AscCommon'] || {};

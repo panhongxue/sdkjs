@@ -1600,25 +1600,22 @@ CHistory.prototype.private_PostProcessingRecalcData = function()
 
 		let point = this.Points[this.Index];
 		let description = point.Description;
-		if (AscDFH.historydescription_Document_AddLetter !== description
-			&& AscDFH.historydescription_Document_AddLetterUnion !== description
-			&& AscDFH.historydescription_Document_SpaceButton !== description
-			&& AscDFH.historydescription_Document_CorrectEnterText !== description
-			&& AscDFH.historydescription_Document_CompositeInput !== description
-			&& AscDFH.historydescription_Document_CompositeInputReplace !== description
-			&& AscDFH.historydescription_Presentation_ParagraphAdd !== description)
+		if (!AscWord.isEnterTextDescription(description))
 			return false;
 
 		let changes = point.Items;
-		if (!changes.length)
-			return false;
-
-		let lastChange = changes[changes.length - 1].Data;
-		return (AscDFH.historyitem_ParaRun_AddItem === lastChange.Type
-			&& lastChange.Class === run
-			&& lastChange.Pos === inRunPos - 1
-			&& lastChange.Items.length
-			&& (undefined === codePoint || lastChange.Items[0].GetCodePoint() === codePoint));
+		for (let i = changes.length - 1; i >= 0; i -= 1)
+		{
+			let change = changes[i].Data;
+			if (AscDFH.historyitem_ParaRun_AddItem === change.Type)
+			{
+				return (change.Class === run
+					&& change.Pos === inRunPos - 1
+					&& change.Items.length
+					&& (undefined === codePoint || change.Items[0].GetCodePoint() === codePoint));
+			}
+		}
+		return false;
 	};
 	/**
 	 * Специальная функция отмена ввода в форму

@@ -64,13 +64,10 @@
 		else
 			this.SyncIndex = this.Changes.length;
 
-		// TODO: Пока мы делаем это как одну точку, которую надо откатить. Надо пробежаться по массиву и разбить его
-		//       по отдельным действиям. В принципе, данная схема срабатывает в быстром совместном редактировании,
-		//       так что как правило две точки не успевают попасть в одно сохранение.
-		if (ownChanges.length > 0)
-		{
-			this.OwnRanges.push(new COwnRange(this.Changes.length, ownChanges.length));
-			this.Changes = this.Changes.concat(ownChanges);
+		for (let i = 0; i < ownChanges.length; i += 1) {
+			const aChanges = ownChanges[i];
+			this.OwnRanges.push(new COwnRange(this.Changes.length, aChanges.length));
+			this.Changes = this.Changes.concat(aChanges);
 		}
 	};
 	CCollaborativeHistory.prototype.GetAllChanges = function()

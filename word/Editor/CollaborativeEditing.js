@@ -101,17 +101,19 @@ CWordCollaborativeEditing.prototype.Send_Changes = function(IsUserSave, Addition
     {
         var Point = AscCommon.History.Points[PointIndex];
         AscCommon.History.Update_PointInfoItem(PointIndex, StartPoint, LastPoint, SumIndex, deleteIndex);
-
+				const aPointChanges = [];
         for (var Index = 0; Index < Point.Items.length; Index++)
         {
             var Item = Point.Items[Index];
             var oChanges = new AscCommon.CCollaborativeChanges();
             oChanges.Set_FromUndoRedo(Item.Class, Item.Data, Item.Binary);
-
-            aChanges2.push(Item.Data);
-
+	        aPointChanges.push(Item.Data);
             aChanges.push(oChanges.m_pData);
         }
+				if (aPointChanges.length)
+				{
+					aChanges2.push(aPointChanges);
+				}
     }
 
     var UnlockCount = 0;

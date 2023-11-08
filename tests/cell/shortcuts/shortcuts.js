@@ -37,6 +37,7 @@ QUnit.config.autostart = false;
 {
 	const {
 		SelectRange,
+		EnterText,
 		GetRange,
 		GetCellEditorText,
 		OpenCellEditor,
@@ -69,12 +70,6 @@ QUnit.config.autostart = false;
 		cellEditor = wbView.cellEditor;
 		QUnit.start();
 	});
-
-	function EnterText(text)
-	{
-		const codePoints = text.split('').map((e) => e.charCodeAt());
-		wbView.EnterText(codePoints);
-	}
 
 	function AddChart()
 	{

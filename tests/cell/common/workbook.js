@@ -248,6 +248,36 @@
 		return new Asc.Range(c1, r1, c2, r2);
 	}
 
+	function EnterText(sText) {
+		wbView.EnterText(sText.codePointsArray());
+	}
+
+	function CorrectEnterText(sOld, sNew) {
+		wbView.CorrectEnterText(sOld.codePointsArray(), sNew.codePointsArray());
+	}
+
+	function BeginCompositeInput() {
+		editor.Begin_CompositeInput();
+	}
+
+	function ReplaceCompositeInput(sText) {
+		editor.Replace_CompositeText(sText.codePointsArray());
+	}
+
+	function EndCompositeInput() {
+		editor.End_CompositeInput();
+	}
+
+	function EnterTextCompositeInput(sText) {
+		BeginCompositeInput();
+		ReplaceCompositeInput(sText);
+		EndCompositeInput();
+	}
+
+	function AddTextWithPr(sText) {
+		editor.AddTextWithPr("Arial", sText.codePointsArray());
+	}
+
 
 	window.AscTest = window.AscTest || {};
 	AscTest.InitEditor = InitEditor;
@@ -264,4 +294,11 @@
 	AscTest.GetSelectedCellEditorText = GetSelectedCellEditorText;
 	AscTest.SelectRange = SelectRange;
 	AscTest.GetRange = GetRange;
+	AscTest.EnterText = EnterText;
+	AscTest.CorrectEnterText = CorrectEnterText;
+	AscTest.BeginCompositeInput = BeginCompositeInput;
+	AscTest.ReplaceCompositeInput = ReplaceCompositeInput;
+	AscTest.EndCompositeInput = EndCompositeInput;
+	AscTest.EnterTextCompositeInput = EnterTextCompositeInput;
+	AscTest.AddTextWithPr = AddTextWithPr;
 })(window);

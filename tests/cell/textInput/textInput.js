@@ -29,7 +29,7 @@
  * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
  */
-
+QUnit.config.autostart = false;
 $(function () {
 
 	const {
@@ -52,7 +52,6 @@ $(function () {
 		GetSelectedCellEditorText
 	} = AscTest;
 
-	QUnit.config.autostart = false;
 	let editor;
 	let wb;
 	let wbView;

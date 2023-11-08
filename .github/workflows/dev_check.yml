@@ -64,6 +64,8 @@ jobs:
           node-qunit-puppeteer tests/word/merge-documents/mergeDocuments.html
           node-qunit-puppeteer tests/word/shortcuts/shortcuts.html
           node-qunit-puppeteer tests/slide/shortcuts/shortcuts.html
+          node-qunit-puppeteer tests/cell/textInput/textInput.html
+          node-qunit-puppeteer tests/slide/api/textInput.html
   builder-tests:
     runs-on: ubuntu-latest
     steps:

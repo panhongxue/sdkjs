@@ -63,6 +63,9 @@ const allTests = [
 	'slide/shortcuts/shortcuts.html',
 	'word/shortcuts/shortcuts.html',
 
+	'slide/api/textInput.html',
+	'cell/textInput/textInput.html',
+
 	'oform/xml/oformXml.html'
 ];
 

@@ -32,17 +32,15 @@
 
 "use strict";
 
-(function (window)
-{
-const charCellEditorWidth = 5;
-const cellEditorWidth = 100;
+(function (window) {
+	const charCellEditorWidth = 5;
+	const cellEditorWidth = 100;
 
 	AscCommonExcel.WorkbookView.prototype._onUpdateCursor = function () {};
 	AscCommonExcel.WorkbookView.prototype._canResize = function () {};
 	AscCommonExcel.WorkbookView.prototype._onWSSelectionChanged = function () {};
 	AscCommonExcel.WorkbookView.prototype.sendCursor = function () {};
-	AscCommonExcel.WorkbookView.prototype.showWorksheet = function (index, bLockDraw)
-	{
+	AscCommonExcel.WorkbookView.prototype.showWorksheet = function (index, bLockDraw) {
 		index = AscFormat.isRealNumber(index) ? index : this.model.getActive();
 		this.model.setActive(index);
 		this.wsActive = index;
@@ -63,8 +61,7 @@ const cellEditorWidth = 100;
 	AscCommonExcel.WorksheetView.prototype._fixVisibleRange = function () {};
 	AscCommonExcel.WorksheetView.prototype.getCursorTypeFromXY = function () {return {};};
 	AscCommonExcel.WorksheetView.prototype._calcActiveCellOffset = function () {return {};};
-	AscCommonExcel.WorksheetView.prototype._prepareDrawingObjects = function ()
-	{
+	AscCommonExcel.WorksheetView.prototype._prepareDrawingObjects = function () {
 		this.objectRender = new AscFormat.DrawingObjects();
 		this.objectRender.init(this);
 		this.objectRender.showDrawingObjects = function () {};
@@ -76,8 +73,7 @@ const cellEditorWidth = 100;
 
 	AscCommonExcel.asc_CEventsController.prototype._createScrollBars = function () {};
 	const OldEventControllerInit = AscCommonExcel.asc_CEventsController.prototype.init;
-	AscCommonExcel.asc_CEventsController.prototype.init = function (view, widgetElem, canvasElem, handlers)
-	{
+	AscCommonExcel.asc_CEventsController.prototype.init = function (view, widgetElem, canvasElem, handlers) {
 		return OldEventControllerInit.call(this, view, document.createElement('div'), document.createElement('canvas'), handlers);
 	};
 
@@ -86,22 +82,18 @@ const cellEditorWidth = 100;
 	Asc.DrawingContext.prototype.setFont = function () {};
 	Asc.DrawingContext.prototype.setFont = function () {};
 	Asc.DrawingContext.prototype.fillText = function () {};
-	Asc.DrawingContext.prototype.getFontMetrics = function ()
-	{
+	Asc.DrawingContext.prototype.getFontMetrics = function () {
 		return {ascender: 15, descender: 4, lineGap: 1, nat_scale: 1000, nat_y1: 1000, nat_y2: -1000};
 	};
-	Asc.DrawingContext.prototype.measureChar = function ()
-	{
+	Asc.DrawingContext.prototype.measureChar = function () {
 		return Asc.TextMetrics(charCellEditorWidth, 9, 10, 1, 1, 10, charCellEditorWidth);
 	}
 
-	AscFonts.CFontManager.prototype.MeasureChar = function ()
-	{
+	AscFonts.CFontManager.prototype.MeasureChar = function () {
 		return {fAdvanceX: charCellEditorWidth, oBBox: {fMaxX: 0, fMinX: 0}};
 	};
 
-	AscCommonExcel.CellEditor.prototype._init = function ()
-	{
+	AscCommonExcel.CellEditor.prototype._init = function () {
 		this.drawingCtx = new Asc.DrawingContext({
 			canvas: document.createElement('canvas'), units: 0/*px*/, fmgrGraphics: this.fmgrGraphics, font: this.m_oFont
 		});
@@ -121,10 +113,8 @@ const cellEditorWidth = 100;
 	AscCommonExcel.CellEditor.prototype._updateCursor = function () {};
 	AscCommonExcel.CellEditor.prototype._hideCanvas = function () {};
 	const OldCellEditorOpen = AscCommonExcel.CellEditor.prototype.open;
-	AscCommonExcel.CellEditor.prototype.open = function (options)
-	{
-		options.getSides = function ()
-		{
+	AscCommonExcel.CellEditor.prototype.open = function (options) {
+		options.getSides = function () {
 			return {l: [0], r: [cellEditorWidth], b: [10], cellX: 0, cellY: 0, ri: 0, bi: 0};
 		}
 		OldCellEditorOpen.call(this, options);
@@ -136,16 +126,16 @@ const cellEditorWidth = 100;
 	AscCommon.baseEditorsApi.prototype._onEndLoadSdk = function () {this.ImageLoader = AscCommon.g_image_loader;};
 
 	let editor;
-	function InitEditor(Callback)
-	{
+	let wb, wsView, ws, wbView, cellEditor;
+
+	function InitEditor(Callback) {
 		editor = new Asc.spreadsheet_api({
 			'id-view': 'editor_sdk'
 		});
 		editor.HtmlElement = document.createElement('div');
 		editor.topLineEditorElement = document.createElement('input');
 		editor.FontLoader = {
-			LoadDocumentFonts: function ()
-			{
+			LoadDocumentFonts: function () {
 				setTimeout(Callback, 0)
 			}
 		};
@@ -153,8 +143,7 @@ const cellEditorWidth = 100;
 		window["Asc"]["editor"] = editor;
 	}
 
-	function OpenDocument()
-	{
+	function OpenDocument() {
 		AscCommon.g_oTableId.init();
 		AscCommon.g_clipboardBase.Init(editor);
 		editor._onEndLoadSdk();
@@ -165,10 +154,12 @@ const cellEditorWidth = 100;
 		editor.collaborativeEditing = new AscCommonExcel.CCollaborativeEditing({});
 		editor.wb = new AscCommonExcel.WorkbookView(editor.wbModel, editor.controller, editor.handlers, editor.HtmlElement,
 			editor.topLineEditorElement, editor, editor.collaborativeEditing, editor.fontRenderingMode);
-		const wb = editor.wbModel;
-
-		const wsView = editor.wb.getWorksheet(0);
+		wb = editor.wbModel;
+		wbView = editor.wb;
+		cellEditor = wbView.cellEditor;
+		wsView = editor.wb.getWorksheet(0);
 		wsView.handlers = editor.handlers;
+		ws = wsView.model;
 		wb.DrawingDocument.SelectEnabled = function () {};
 		wb.DrawingDocument.UpdateTarget = function () {};
 		wb.DrawingDocument.CheckTargetShow = function () {};
@@ -178,5 +169,99 @@ const cellEditorWidth = 100;
 		editor.wb.wsActive = 0;
 	}
 
-	AscTestShortcut.InitEditor = InitEditor;
+	function ClearShapeAndAddParagraph(sText) {
+		const textShape = AddShape(0, 0, 100, 100);
+		const txBody = AscFormat.CreateTextBodyFromString(sText, wb.DrawingDocument, textShape);
+		textShape.setTxBody(txBody);
+		textShape.setPaddings({Left: 0, Top: 0, Right: 0, Bottom: 0});
+		const paragraph = txBody.content.Content[0];
+		paragraph.SetThisElementCurrent();
+		paragraph.MoveCursorToStartPos();
+		textShape.recalculate();
+		return {shape: textShape, paragraph: paragraph};
+	}
+
+	function AddShape(x, y, height, width) {
+		const shapeTrack = new AscFormat.NewShapeTrack('rect', x, y, wb.theme, null, null, null, 0);
+		shapeTrack.track({}, x + width, y + height);
+		const shape = shapeTrack.getShape(false, wb.DrawingDocument, null);
+		shape.setBDeleted(false);
+		shape.setWorksheet(ws);
+		shape.setParent(GetDrawingObjects().drawingObjects);
+		shape.addToDrawingObjects(undefined, AscCommon.c_oAscCellAnchorType.cellanchorTwoCell);
+		shape.checkDrawingBaseCoords();
+
+		shape.select(GetDrawingObjects(), 0);
+		return shape;
+	}
+
+	function GetDrawingObjects() {
+		return editor.getGraphicController();
+	}
+
+	function GetParagraphText(paragraph) {
+		return paragraph.GetText({ParaEndToSpace: false});
+	}
+
+	function StartCollaboration(bFast) {
+		editor.asc_SetFastCollaborative(bFast);
+		editor.collaborativeEditing.startCollaborationEditing();
+	}
+
+	function SyncCollaboration() {
+		editor.collaborativeEditing.sendChanges();
+	}
+
+	function EndCollaboration() {
+		editor.collaborativeEditing.endCollaborationEditing();
+	}
+
+	function GetCellEditorText() {
+		return AscCommonExcel.getFragmentsText(cellEditor.options.fragments);
+	}
+
+	function OpenCellEditor() {
+		const enterOptions = new AscCommonExcel.CEditorEnterOptions();
+		enterOptions.newText = '';
+		enterOptions.quickInput = true;
+		enterOptions.focus = true;
+		wbView._onEditCell(enterOptions);
+	}
+
+	function CloseCellEditor(save) {
+		wbView.closeCellEditor(!save);
+	}
+
+	function GetSelectedCellEditorText() {
+		const fragments = cellEditor.copySelection() || [];
+		return AscCommonExcel.getFragmentsText(fragments)
+	}
+
+	function SelectRange(activeR, activeC, r1, c1, r2, c2) {
+		CloseCellEditor(true);
+		ws.selectionRange.ranges = [GetRange(c1, r1, c2, r2)];
+		ws.selectionRange.activeCell = new AscCommon.CellBase(activeR, activeC);
+		wbView._updateSelectionInfo();
+	}
+
+	function GetRange(c1, r1, c2, r2) {
+		return new Asc.Range(c1, r1, c2, r2);
+	}
+
+
+	window.AscTest = window.AscTest || {};
+	AscTest.InitEditor = InitEditor;
+	AscTest.AddShape = AddShape;
+	AscTest.ClearShapeAndAddParagraph = ClearShapeAndAddParagraph;
+	AscTest.GetDrawingObjects = GetDrawingObjects;
+	AscTest.GetParagraphText = GetParagraphText;
+	AscTest.StartCollaboration = StartCollaboration;
+	AscTest.SyncCollaboration = SyncCollaboration;
+	AscTest.EndCollaboration = EndCollaboration;
+	AscTest.GetCellEditorText = GetCellEditorText;
+	AscTest.OpenCellEditor = OpenCellEditor;
+	AscTest.CloseCellEditor = CloseCellEditor;
+	AscTest.GetSelectedCellEditorText = GetSelectedCellEditorText;
+	AscTest.SelectRange = SelectRange;
+	AscTest.GetRange = GetRange;
 })(window);

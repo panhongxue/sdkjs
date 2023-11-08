@@ -977,14 +977,14 @@
 		return e.isDefaultPrevented;
 	}
 
-	window.AscTestShortcut = {};
-	AscTestShortcut.tableHotkeyTypes = tableHotkeyTypes;
-	AscTestShortcut.cellEditorHotkeyTypes = cellEditorHotkeyTypes;
-	AscTestShortcut.graphicHotkeyTypes = graphicHotkeyTypes;
-	AscTestShortcut.graphicEvents = graphicEvents;
-	AscTestShortcut.tableEvents = tableEvents;
-	AscTestShortcut.ExecuteCellEditorHotkey = ExecuteCellEditorHotkey;
-	AscTestShortcut.ExecuteTableHotkey = ExecuteTableHotkey;
-	AscTestShortcut.ExecuteGraphicHotkey = ExecuteGraphicHotkey;
-	AscTestShortcut.ExecuteShortcut = ExecuteShortcut;
+	window.AscTest = window.AscTest || {};
+	AscTest.tableHotkeyTypes = tableHotkeyTypes;
+	AscTest.cellEditorHotkeyTypes = cellEditorHotkeyTypes;
+	AscTest.graphicHotkeyTypes = graphicHotkeyTypes;
+	AscTest.graphicEvents = graphicEvents;
+	AscTest.tableEvents = tableEvents;
+	AscTest.ExecuteCellEditorHotkey = ExecuteCellEditorHotkey;
+	AscTest.ExecuteTableHotkey = ExecuteTableHotkey;
+	AscTest.ExecuteGraphicHotkey = ExecuteGraphicHotkey;
+	AscTest.ExecuteShortcut = ExecuteShortcut;
 })(window);

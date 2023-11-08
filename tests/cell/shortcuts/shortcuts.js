@@ -36,6 +36,16 @@ QUnit.config.autostart = false;
 (function (window)
 {
 	const {
+		SelectRange,
+		GetRange,
+		GetCellEditorText,
+		OpenCellEditor,
+		CloseCellEditor,
+		GetSelectedCellEditorText,
+		GetDrawingObjects,
+		AddShape,
+		ClearShapeAndAddParagraph,
+		GetParagraphText,
 		tableHotkeyTypes,
 		cellEditorHotkeyTypes,
 		graphicHotkeyTypes,
@@ -46,7 +56,7 @@ QUnit.config.autostart = false;
 		ExecuteGraphicHotkey,
 		ExecuteShortcut,
 		InitEditor
-	} = AscTestShortcut;
+	} = AscTest;
 
 	let editor, wb, wbView, ws, wsView, cellEditor;
 	InitEditor(function ()
@@ -59,39 +69,6 @@ QUnit.config.autostart = false;
 		cellEditor = wbView.cellEditor;
 		QUnit.start();
 	});
-
-	function GetParagraphText(paragraph)
-	{
-		return paragraph.GetText({ParaEndToSpace: false});
-	}
-
-	function ClearShapeAndAddParagraph(sText)
-	{
-		const textShape = AddShape(0, 0, 100, 100);
-		const txBody = AscFormat.CreateTextBodyFromString(sText, wb.DrawingDocument, textShape);
-		textShape.setTxBody(txBody);
-		textShape.setPaddings({Left: 0, Top: 0, Right: 0, Bottom: 0});
-		const paragraph = txBody.content.Content[0];
-		paragraph.SetThisElementCurrent();
-		paragraph.MoveCursorToStartPos();
-		textShape.recalculate();
-		return {shape: textShape, paragraph: paragraph};
-	}
-
-	function AddShape(x, y, height, width)
-	{
-		const shapeTrack = new AscFormat.NewShapeTrack('rect', x, y, wb.theme, null, null, null, 0);
-		shapeTrack.track({}, x + width, y + height);
-		const shape = shapeTrack.getShape(false, wb.DrawingDocument, null);
-		shape.setBDeleted(false);
-		shape.setWorksheet(ws);
-		shape.setParent(GetDrawingObjects().drawingObjects);
-		shape.addToDrawingObjects(undefined, AscCommon.c_oAscCellAnchorType.cellanchorTwoCell);
-		shape.checkDrawingBaseCoords();
-
-		shape.select(GetDrawingObjects(), 0);
-		return shape;
-	}
 
 	function EnterText(text)
 	{
@@ -148,11 +125,6 @@ QUnit.config.autostart = false;
 		}
 	}
 
-	function GetDrawingObjects()
-	{
-		return editor.getGraphicController();
-	}
-
 	function FillActiveCell(text)
 	{
 		const activeCell = ws.selectionRange.activeCell;
@@ -175,20 +147,7 @@ QUnit.config.autostart = false;
 			['1', '2', '3']
 		]);
 
-		Select(0, 0, 0, 0, 2, 2);
-	}
-
-	function GetRange(c1, r1, c2, r2)
-	{
-		return new Asc.Range(c1, r1, c2, r2);
-	}
-
-	function Select(activeR, activeC, r1, c1, r2, c2)
-	{
-		CloseCellEditor(true);
-		ws.selectionRange.ranges = [GetRange(c1, r1, c2, r2)];
-		ws.selectionRange.activeCell = new AscCommon.CellBase(activeR, activeC);
-		wbView._updateSelectionInfo();
+		SelectRange(0, 0, 0, 0, 2, 2);
 	}
 
 	function ResetData(r1, c1, r2, c2)
@@ -205,11 +164,6 @@ QUnit.config.autostart = false;
 	function GetCellText(row, column)
 	{
 		return ws.getRange4(row, column).getValueWithFormat();
-	}
-
-	function CloseCellEditor(save)
-	{
-		wbView.closeCellEditor(!save);
 	}
 
 	function CreateTable()
@@ -232,26 +186,6 @@ QUnit.config.autostart = false;
 		GetDrawingObjects().remove();
 	}
 
-	function GetCellEditorText()
-	{
-		return AscCommonExcel.getFragmentsText(cellEditor.options.fragments);
-	}
-
-	function OpenCellEditor()
-	{
-		const enterOptions = new AscCommonExcel.CEditorEnterOptions();
-		enterOptions.newText = '';
-		enterOptions.quickInput = true;
-		enterOptions.focus = true;
-		wbView._onEditCell(enterOptions);
-	}
-
-	function GetSelectedCellEditorText()
-	{
-		const fragments = cellEditor.copySelection() || [];
-		return AscCommonExcel.getFragmentsText(fragments)
-	}
-
 	function CreateWorksheets(names)
 	{
 		editor.asc_insertWorksheet(names);
@@ -270,7 +204,7 @@ QUnit.config.autostart = false;
 	});
 	QUnit.test('Check actions with text movements', (assert) =>
 	{
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		OpenCellEditor();
 		EnterText('Hello World Hello ' +
 			'World Hello World ' +
@@ -431,7 +365,7 @@ QUnit.config.autostart = false;
 
 	QUnit.test('Check remove parts of text', (assert) =>
 	{
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		OpenCellEditor();
 		EnterText('Hello Hello Hello Hello Hello Hello Hello');
 		cellEditor._moveCursor(AscCommonExcel.cellEditorMoveTypes.kEndOfText);
@@ -465,27 +399,27 @@ QUnit.config.autostart = false;
 			assert.strictEqual(GetCellText(5, 5), text, 'Check initial text');
 		}
 
-		Select(5, 5, 5, 5, 5, 5);
+		SelectRange(5, 5, 5, 5, 5, 5);
 		EnterText('Hello1');
 		ExecuteCellEditorHotkey(cellEditorHotkeyTypes.saveAndMoveDown);
 		CheckSaveAndMoving(6, 5, 'Hello1');
 
-		Select(5, 5, 5, 5, 5, 5);
+		SelectRange(5, 5, 5, 5, 5, 5);
 		EnterText('Hello2');
 		ExecuteCellEditorHotkey(cellEditorHotkeyTypes.saveAndMoveUp);
 		CheckSaveAndMoving(4, 5, 'Hello2');
 
-		Select(5, 5, 5, 5, 5, 5);
+		SelectRange(5, 5, 5, 5, 5, 5);
 		EnterText('Hello3');
 		ExecuteCellEditorHotkey(cellEditorHotkeyTypes.saveAndMoveRight);
 		CheckSaveAndMoving(5, 6, 'Hello3');
 
-		Select(5, 5, 5, 5, 5, 5);
+		SelectRange(5, 5, 5, 5, 5, 5);
 		EnterText('Hello4');
 		ExecuteCellEditorHotkey(cellEditorHotkeyTypes.saveAndMoveLeft);
 		CheckSaveAndMoving(5, 4, 'Hello4');
 
-		Select(5, 5, 5, 5, 5, 5);
+		SelectRange(5, 5, 5, 5, 5, 5);
 		EnterText('Hello5');
 		ExecuteCellEditorHotkey(cellEditorHotkeyTypes.closeWithoutSave);
 		CheckSaveAndMoving(5, 5, 'Hello4');
@@ -493,7 +427,7 @@ QUnit.config.autostart = false;
 
 	QUnit.test('Check change text formatting', (assert) =>
 	{
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		EnterText('Hello Hello');
 		cellEditor.selectAll();
 
@@ -520,7 +454,7 @@ QUnit.config.autostart = false;
 
 	QUnit.test('Check enter text in cell editor', (assert) =>
 	{
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		OpenCellEditor();
 
 		ExecuteCellEditorHotkey(cellEditorHotkeyTypes.addTime);
@@ -567,7 +501,7 @@ QUnit.config.autostart = false;
 
 	QUnit.test('Check select all', (assert) =>
 	{
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		EnterText('Hello');
 		ExecuteCellEditorHotkey(cellEditorHotkeyTypes.selectAll)
 		assert.strictEqual(GetSelectedCellEditorText(), 'Hello', 'Check select all');
@@ -575,7 +509,7 @@ QUnit.config.autostart = false;
 
 	QUnit.test('Check undo/redo in cell editor', (assert) =>
 	{
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		EnterText('H');
 		EnterText('e');
 		EnterText('l');
@@ -595,7 +529,7 @@ QUnit.config.autostart = false;
 	});
 	QUnit.test('Check switch reference of formula', (assert) =>
 	{
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		EnterText('=F4');
 
 		ExecuteCellEditorHotkey(cellEditorHotkeyTypes.switchReference);
@@ -1189,7 +1123,7 @@ QUnit.config.autostart = false;
 		let check = false;
 		const ShowAutoComplete = function () {check = true;};
 		wbView.handlers.add("asc_onEntriesListMenu", ShowAutoComplete);
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.showAutoComplete);
 		assert.true(check);
 		wbView.handlers.remove("asc_onEntriesListMenu", ShowAutoComplete);
@@ -1201,7 +1135,7 @@ QUnit.config.autostart = false;
 		ws.setDataValidationProps(props);
 		const ShowDataValidations = function () {check = true;};
 		wbView.handlers.add("asc_onValidationListMenu", ShowDataValidations);
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.showDataValidation);
 		assert.true(check);
 		ws.deleteDataValidationById(props.Get_Id());
@@ -1211,7 +1145,7 @@ QUnit.config.autostart = false;
 		const SetAutoFiltersDialog = function () {check = true;};
 		wbView.handlers.add("setAutoFiltersDialog", SetAutoFiltersDialog);
 		CreateTable();
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.showFilterOptions);
 		assert.true(check);
 		wbView.handlers.remove("setAutoFiltersDialog", SetAutoFiltersDialog);
@@ -1230,19 +1164,19 @@ QUnit.config.autostart = false;
 		}
 
 
-		Select(0, 15, 0, 15, 0, 15);
+		SelectRange(0, 15, 0, 15, 0, 15);
 		FillActiveCell('Hello');
-		Select(25, 0, 25, 0, 25, 0);
+		SelectRange(25, 0, 25, 0, 25, 0);
 		FillActiveCell('Hello');
-		Select(27, 0, 27, 0, 27, 0);
-		FillActiveCell('Hello');
-
-		Select(5, 5, 5, 5, 5, 5);
-		FillActiveCell('Hello');
-		Select(4, 8, 4, 8, 4, 8);
+		SelectRange(27, 0, 27, 0, 27, 0);
 		FillActiveCell('Hello');
 
-		Select(35, 0, 35, 0, 35, 0);
+		SelectRange(5, 5, 5, 5, 5, 5);
+		FillActiveCell('Hello');
+		SelectRange(4, 8, 4, 8, 4, 8);
+		FillActiveCell('Hello');
+
+		SelectRange(35, 0, 35, 0, 35, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.moveToTopCell);
 		CheckActiveCell(27, 0, 'Check move to top cell');
 		ExecuteTableHotkey(tableHotkeyTypes.moveToTopCell);
@@ -1251,25 +1185,25 @@ QUnit.config.autostart = false;
 		CheckActiveCell(0, 0, 'Check move to top cell');
 
 
-		Select(0, 39, 0, 39, 0, 39);
+		SelectRange(0, 39, 0, 39, 0, 39);
 		ExecuteTableHotkey(tableHotkeyTypes.moveToLeftEdgeCell);
 		CheckActiveCell(0, 15, 'Check move to left edge cell');
 		ExecuteTableHotkey(tableHotkeyTypes.moveToLeftEdgeCell);
 		CheckActiveCell(0, 0, 'Check move to left edge cell');
 
-		Select(0, 2, 0, 2, 0, 2);
+		SelectRange(0, 2, 0, 2, 0, 2);
 		ExecuteTableHotkey(tableHotkeyTypes.moveToLeftCell);
 		CheckActiveCell(0, 1, 'Check move to left cell');
 
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.moveToRightEdgeCell);
 		CheckActiveCell(0, 15, 'Check move to right edge cell');
 
-		Select(4, 0, 4, 0, 4, 0);
+		SelectRange(4, 0, 4, 0, 4, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.moveToRightEdgeCell, 1);
 		CheckActiveCell(4, 8, 'Check move to right edge cell');
 
-		Select(5, 0, 5, 0, 5, 0);
+		SelectRange(5, 0, 5, 0, 5, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.moveToRightEdgeCell);
 		CheckActiveCell(5, 5, 'Check move to right edge cell');
 
@@ -1288,17 +1222,17 @@ QUnit.config.autostart = false;
 		ExecuteTableHotkey(tableHotkeyTypes.moveToUpCell);
 		CheckActiveCell(5, 7, 'Check move to up cell');
 
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.moveToBottomCell);
 		CheckActiveCell(25, 0, 'Check move to bottom cell');
 		ExecuteTableHotkey(tableHotkeyTypes.moveToBottomCell);
 		CheckActiveCell(27, 0, 'Check move to bottom cell');
 
-		Select(5, 25, 5, 25, 5, 25);
+		SelectRange(5, 25, 5, 25, 5, 25);
 		ExecuteTableHotkey(tableHotkeyTypes.moveToFirstColumn);
 		CheckActiveCell(5, 0, 'Check move to first column');
 
-		Select(5, 25, 5, 25, 5, 25);
+		SelectRange(5, 25, 5, 25, 5, 25);
 		ExecuteTableHotkey(tableHotkeyTypes.moveToLeftEdgeTop);
 		CheckActiveCell(0, 0, 'Check move to left-top edge cell');
 
@@ -1310,7 +1244,7 @@ QUnit.config.autostart = false;
 		ExecuteTableHotkey(tableHotkeyTypes.moveToUpperCell);
 		CheckActiveCell(27, 15, 'Check move to upper cell');
 
-		Select(35, 0, 35, 0, 35, 0);
+		SelectRange(35, 0, 35, 0, 35, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.selectToTopCell);
 		CheckActiveRange(27, 0, 35, 0, 'Check select to top cell');
 		ExecuteTableHotkey(tableHotkeyTypes.selectToTopCell);
@@ -1318,25 +1252,25 @@ QUnit.config.autostart = false;
 		ExecuteTableHotkey(tableHotkeyTypes.selectToTopCell);
 		CheckActiveRange(0, 0, 35, 0, 'Check select to top cell');
 
-		Select(0, 39, 0, 39, 0, 39);
+		SelectRange(0, 39, 0, 39, 0, 39);
 		ExecuteTableHotkey(tableHotkeyTypes.selectToLeftEdgeCell);
 		CheckActiveRange(0, 15, 0, 39, 'Check select to left edge cell');
 		ExecuteTableHotkey(tableHotkeyTypes.selectToLeftEdgeCell);
 		CheckActiveRange(0, 0, 0, 39, 'Check select to left edge cell');
 
-		Select(0, 2, 0, 2, 0, 2);
+		SelectRange(0, 2, 0, 2, 0, 2);
 		ExecuteTableHotkey(tableHotkeyTypes.selectToLeftCell);
 		CheckActiveRange(0, 1, 0, 2, 'Check select to left cell');
 
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.selectToRightEdgeCell);
 		CheckActiveRange(0, 0, 0, 15, 'Check select to right edge cell');
 
-		Select(4, 0, 4, 0, 4, 0);
+		SelectRange(4, 0, 4, 0, 4, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.selectToRightEdgeCell, 1);
 		CheckActiveRange(4, 0, 4, 8, 'Check select to right edge cell');
 
-		Select(5, 0, 5, 0, 5, 0);
+		SelectRange(5, 0, 5, 0, 5, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.selectToRightEdgeCell);
 		CheckActiveRange(5, 0, 5, 5, 'Check select to right edge cell');
 
@@ -1355,17 +1289,17 @@ QUnit.config.autostart = false;
 		ExecuteTableHotkey(tableHotkeyTypes.selectToUpCell);
 		CheckActiveRange(5, 0, 5, 7, 'Check select to up cell');
 
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.selectToBottomCell);
 		CheckActiveRange(0, 0, 25, 0, 'Check select to bottom cell');
 		ExecuteTableHotkey(tableHotkeyTypes.selectToBottomCell);
 		CheckActiveRange(0, 0, 27, 0, 'Check select to bottom cell');
 
-		Select(5, 25, 5, 25, 5, 25);
+		SelectRange(5, 25, 5, 25, 5, 25);
 		ExecuteTableHotkey(tableHotkeyTypes.selectToFirstColumn);
 		CheckActiveRange(5, 0, 5, 25, 'Check select to first column');
 
-		Select(5, 25, 5, 25, 5, 25);
+		SelectRange(5, 25, 5, 25, 5, 25);
 		ExecuteTableHotkey(tableHotkeyTypes.selectToLeftEdgeTop);
 		CheckActiveRange(0, 0, 5, 25, 'Check select to left-top edge cell');
 
@@ -1378,7 +1312,7 @@ QUnit.config.autostart = false;
 		ExecuteTableHotkey(tableHotkeyTypes.selectToUpperCell);
 		CheckActiveRange(5, 15, 27, 25, 'Check select to upper cell');
 
-		Select(0, 0, 0, 0, 3, 3);
+		SelectRange(0, 0, 0, 0, 3, 3);
 
 		ExecuteTableHotkey(tableHotkeyTypes.moveActiveCellToRight);
 		CheckActiveCell(0, 1, 'Check move active cell to right');
@@ -1416,19 +1350,19 @@ QUnit.config.autostart = false;
 		ExecuteTableHotkey(tableHotkeyTypes.moveActiveCellToUp);
 		CheckActiveCell(0, 0, 'Check move active cell to up');
 
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.selectRow);
 		CheckActiveRange(0, 0, AscCommon.gc_nMaxRow0, 0, 'Check select row');
 
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.selectColumn);
 		CheckActiveRange(0, 0, 0, AscCommon.gc_nMaxCol0, 'Check select column');
 
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.selectSheet);
 		CheckActiveRange(0, 0, AscCommon.gc_nMaxRow0, AscCommon.gc_nMaxCol0, 'Check select sheet');
 
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.selectSheet, 1);
 		CheckActiveRange(0, 0, AscCommon.gc_nMaxRow0, AscCommon.gc_nMaxCol0, 'Check select sheet');
 	});
@@ -1438,12 +1372,12 @@ QUnit.config.autostart = false;
 		editor.asc_startAddShape('rect');
 		ExecuteTableHotkey(tableHotkeyTypes.reset);
 		assert.strictEqual(GetDrawingObjects().checkEndAddShape(), false, 'Check resetting add shape');
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		editor.asc_SelectionCut();
 		ExecuteTableHotkey(tableHotkeyTypes.reset);
 		assert.strictEqual(wsView.copyCutRange, null, 'Check resetting cut range');
 
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		editor.asc_Copy();
 		ExecuteTableHotkey(tableHotkeyTypes.reset);
 		assert.strictEqual(wsView.copyCutRange, null, 'Check resetting copy range');
@@ -1452,14 +1386,14 @@ QUnit.config.autostart = false;
 
 	QUnit.test('Check actions with removing', (assert) =>
 	{
-		Select(0, 15, 0, 15, 0, 15);
+		SelectRange(0, 15, 0, 15, 0, 15);
 		FillActiveCell('Hello');
-		Select(25, 0, 25, 0, 25, 0);
+		SelectRange(25, 0, 25, 0, 25, 0);
 		FillActiveCell('Hello');
-		Select(27, 0, 27, 0, 27, 0);
+		SelectRange(27, 0, 27, 0, 27, 0);
 		FillActiveCell('Hello');
 
-		Select(0, 15, 0, 0, 30, 30);
+		SelectRange(0, 15, 0, 0, 30, 30);
 		ExecuteTableHotkey(tableHotkeyTypes.removeActiveCell);
 		CloseCellEditor(true);
 
@@ -1475,7 +1409,7 @@ QUnit.config.autostart = false;
 
 	QUnit.test('Check actions with filling cell', (assert) =>
 	{
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.addDate);
 		CloseCellEditor(true);
 		assert.strictEqual(GetCellText(0, 0), (new Asc.cDate()).getDateString(editor), 'Check add date');
@@ -1499,7 +1433,7 @@ QUnit.config.autostart = false;
 
 	QUnit.test('Check actions with formatting cell', (assert) =>
 	{
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		FillActiveCell('0.1');
 		ExecuteTableHotkey(tableHotkeyTypes.setExponentialFormat);
 		assert.strictEqual(GetCellText(0, 0), '1.00E-01', 'set exponential format');
@@ -1546,7 +1480,7 @@ QUnit.config.autostart = false;
 
 	QUnit.test('Check undo/redo', (assert) =>
 	{
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		EnterText('0.1');
 		CloseCellEditor(true);
 
@@ -1559,14 +1493,14 @@ QUnit.config.autostart = false;
 
 	QUnit.test('Check focus on cell editor', (assert) =>
 	{
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.focusOnCellEditor);
 		assert.true(wsView.getCellEditMode(), 'Check open cell editor');
 	});
 
 	QUnit.test('Check prevent default in Opera', (assert) =>
 	{
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		let isPreventDefaulted = ExecuteTableHotkey(tableHotkeyTypes.disableNumLock);
 		assert.true(isPreventDefaulted);
 
@@ -1576,30 +1510,30 @@ QUnit.config.autostart = false;
 
 	QUnit.test('Check add sum formula', (assert) =>
 	{
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		EnterText('1');
-		Select(0, 1, 0, 1, 0, 1);
+		SelectRange(0, 1, 0, 1, 0, 1);
 		EnterText('2');
 		
-		Select(7, 7, 7, 7, 7, 7);
+		SelectRange(7, 7, 7, 7, 7, 7);
 		ExecuteTableHotkey(tableHotkeyTypes.addSum);
 		EnterText('A1,B1');
 		CloseCellEditor(true);
 		assert.strictEqual(GetCellText(7, 7), "3", 'Check sum result');
 
-		Select(8, 8, 8, 8, 8, 8);
+		SelectRange(8, 8, 8, 8, 8, 8);
 		ExecuteTableHotkey(tableHotkeyTypes.addSum, 1);
 		EnterText('A1,B1');
 		CloseCellEditor(true);
 		assert.strictEqual(GetCellText(8, 8), "3", 'Check sum result');
 
-		Select(9, 9, 9, 9, 9, 9);
+		SelectRange(9, 9, 9, 9, 9, 9);
 		ExecuteTableHotkey(tableHotkeyTypes.addSum, 2);
 		EnterText('A1,B1');
 		CloseCellEditor(true);
 		assert.strictEqual(GetCellText(9, 9), "3", 'Check sum result');
 
-		Select(10, 10, 10, 10, 10, 10);
+		SelectRange(10, 10, 10, 10, 10, 10);
 		ExecuteTableHotkey(tableHotkeyTypes.addSum, 3);
 		EnterText('A1,B1');
 		CloseCellEditor(true);
@@ -1633,55 +1567,55 @@ QUnit.config.autostart = false;
 
 	QUnit.test('Check refresh connections', (assert) =>
 	{
-		Select(0, 0, 0, 0, 0, 0);
+		SelectRange(0, 0, 0, 0, 0, 0);
 		EnterText('ad');
-		Select(1, 0, 1, 0, 1, 0);
+		SelectRange(1, 0, 1, 0, 1, 0);
 		EnterText('1');
-		Select(2, 0, 2, 0, 2, 0);
+		SelectRange(2, 0, 2, 0, 2, 0);
 		EnterText('2');
 		CloseCellEditor(true);
 		editor.asc_insertPivotExistingWorksheet("Sheet1!$A$1:$A$3", "Sheet1!$C$1");
 		const pivotTable1 = ws.getPivotTable(2, 1);
 		pivotTable1.asc_addField(editor, 0);
 
-		Select(0, 1, 0, 1, 0, 1);
+		SelectRange(0, 1, 0, 1, 0, 1);
 		EnterText('ap');
-		Select(1, 1, 1, 1, 1, 1);
+		SelectRange(1, 1, 1, 1, 1, 1);
 		EnterText('2');
-		Select(2, 1, 2, 1, 2, 1);
+		SelectRange(2, 1, 2, 1, 2, 1);
 		EnterText('3');
 		CloseCellEditor(true);
 		editor.asc_insertPivotExistingWorksheet("Sheet1!$B$1:$B$3", "Sheet1!$D$1");
 		const pivotTable2 = ws.getPivotTable(3, 1);
 		pivotTable2.asc_addField(editor, 0);
 
-		Select(2, 0, 2, 0, 2, 0);
+		SelectRange(2, 0, 2, 0, 2, 0);
 		EnterText('4');
-		Select(2, 1, 2, 1, 2, 1);
+		SelectRange(2, 1, 2, 1, 2, 1);
 		EnterText('4');
 
-		Select(1, 2, 1, 2, 1, 2);
+		SelectRange(1, 2, 1, 2, 1, 2);
 		ExecuteTableHotkey(tableHotkeyTypes.refreshSelectedConnections);
 		assert.strictEqual(GetCellText(1, 2), '5', 'Check refresh selected connections');
 
-		Select(1, 3, 1, 3, 1, 3);
+		SelectRange(1, 3, 1, 3, 1, 3);
 		assert.strictEqual(GetCellText(1, 3), '5', 'Check refresh selected connections');
 
-		Select(2, 0, 2, 0, 2, 0);
+		SelectRange(2, 0, 2, 0, 2, 0);
 		EnterText('5');
 
-		Select(1, 2, 1, 2, 1, 2);
+		SelectRange(1, 2, 1, 2, 1, 2);
 		ExecuteTableHotkey(tableHotkeyTypes.refreshAllConnections);
 		assert.strictEqual(GetCellText(1, 2), '6', 'Check refresh all connections');
 
-		Select(1, 3, 1, 3, 1, 3);
+		SelectRange(1, 3, 1, 3, 1, 3);
 		assert.strictEqual(GetCellText(1, 3), '6', 'Check refresh all connections');
 
 	});
 	QUnit.test('Change format table info', (assert) =>
 	{
 		CreateTable();
-		Select(1, 0, 1, 0, 1, 0);
+		SelectRange(1, 0, 1, 0, 1, 0);
 		ExecuteTableHotkey(tableHotkeyTypes.changeFormatTableInfo);
 		assert.strictEqual(GetCellText(3, 2), '6', 'Check change format table info');
 		ExecuteTableHotkey(tableHotkeyTypes.changeFormatTableInfo);

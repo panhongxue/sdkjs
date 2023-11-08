@@ -35,6 +35,10 @@
 (function (window)
 {
 	const {
+		AddShape,
+		SelectDrawings,
+		GetDrawingObjects,
+		ClearShapeAndAddParagraph,
 		mainShortcutTypes,
 		thumbnailsTypes,
 		demonstrationTypes,
@@ -95,19 +99,6 @@
 		logicDocument.deleteSlides(logicDocument.GetSelectedSlides());
 	}
 
-	function AddShape(x, y, height, width)
-	{
-		AscCommon.History.Create_NewPoint();
-		const shapeTrack = new AscFormat.NewShapeTrack('rect', x, y, AscFormat.GetDefaultTheme(), null, null, null, 0);
-		shapeTrack.track({}, x+ width, y + height);
-		const shape = shapeTrack.getShape(false, AscTest.DrawingDocument, null);
-		shape.setBDeleted(false);
-		shape.setParent(logicDocument.Slides[0]);
-		shape.addToDrawingObjects();
-		shape.select(GetDrawingObjects(), 0);
-		return shape;
-	}
-
 	function AddChart()
 	{
 		const chart = editor.asc_getChartObject(Asc.c_oAscChartTypeSettings.lineNormal);
@@ -153,19 +144,6 @@
 		return controller.createGroup();
 	}
 
-	function ClearShapeAndAddParagraph(sText)
-	{
-		const textShape = AddShape(0, 0, 100, 100);
-		const txBody = AscFormat.CreateTextBodyFromString(sText, editor.WordControl.m_oDrawingDocument, textShape)
-		textShape.setTxBody(txBody);
-		textShape.setPaddings({Left: 0, Top: 0, Right: 0, Bottom: 0});
-		const content = txBody.content;
-		content.SetThisElementCurrent();
-		content.MoveCursorToStartPos();
-		textShape.recalculate();
-		return {shape: textShape, paragraph: content.Content[0]};
-	}
-
 	function GetDirectTextPr()
 	{
 		return logicDocument.GetDirectTextPr();
@@ -180,21 +158,6 @@
 	{
 		const power = Math.pow(10, amount);
 		return Math.round(number * power) / power;
-	}
-
-	function SelectDrawings(arrDrawings)
-	{
-		const drawingController = GetDrawingObjects();
-		drawingController.resetSelection()
-		for (let i = 0; i < arrDrawings.length; i += 1)
-		{
-			arrDrawings[i].select(drawingController, 0);
-		}
-	}
-
-	function GetDrawingObjects()
-	{
-		return editor.getGraphicController();
 	}
 
 	QUnit.module("Test shortcuts",

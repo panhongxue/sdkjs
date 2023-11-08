@@ -12043,6 +12043,7 @@ CPresentation.prototype.AddTextArt = function (nStyle) {
 		}
 		this.Recalculate();
 		this.Document_UpdateInterfaceState();
+		return oTextArt;
 	}
 };
 

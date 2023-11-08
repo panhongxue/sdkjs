@@ -1185,7 +1185,7 @@
 	baseEditorsApi.prototype._createSmartArt = function () {};
 	baseEditorsApi.prototype.asc_createSmartArt = function (nSmartArtType, oPlaceholderObject) {
 		const oThis = this;
-		AscCommon.g_oBinarySmartArts.checkLoadDrawing().then(function()
+		return AscCommon.g_oBinarySmartArts.checkLoadDrawing().then(function()
 		{
 			return AscCommon.g_oBinarySmartArts.checkLoadData(nSmartArtType);
 		}).then(function()

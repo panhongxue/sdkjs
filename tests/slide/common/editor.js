@@ -73,7 +73,8 @@
 		GetDotsPerMM : function(value) {return 72;},
 		GetMMPerDot : function(value){return value / this.GetDotsPerMM(1);},
 		m_oNotesApi: {},
-		clear: function () {}
+		clear: function () {},
+		UnLockSlide: function () {},
 	};
 
 	drawingDocument.CanvasHit = document.createElement('canvas');
@@ -117,6 +118,10 @@
 	editor.DemonstrationReporterEnd = function () {};
 	editor.private_GetLogicDocument = function(){return this.WordControl.m_oLogicDocument;};
 	editor.asc_getKeyboardLanguage = function(){return -1;};
+	editor.getGraphicController = Asc.asc_docs_api.prototype.getGraphicController.bind(editor);
+	editor.getLogicDocument = Asc.asc_docs_api.prototype.getLogicDocument.bind(editor);
+	editor.getDrawingObjects = Asc.asc_docs_api.prototype.getDrawingObjects.bind(editor);
+	editor.getDrawingDocument = Asc.asc_docs_api.prototype.getDrawingDocument.bind(editor);
 	//--------------------------------------------------------export----------------------------------------------------
 	AscTest.DrawingDocument = editor.WordControl.m_oDrawingDocument;
 	AscTest.Editor = editor;

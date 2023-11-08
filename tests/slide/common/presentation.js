@@ -54,14 +54,6 @@
     return paragraph.GetText({ParaEndToSpace : false});
   }
 
-	function EnterText(text)
-	{
-		if (!logicDocument)
-			return;
-
-		logicDocument.EnterText(text);
-	}
-
 	function TurnOnRecalculate()
 	{
 		logicDocument.Recalculate = AscCommonSlide.CPresentation.prototype.Recalculate.bind(logicDocument);
@@ -74,12 +66,134 @@
 		logicDocument.Recalculate2 = function () {};
 	}
 
+	function AddShape(x, y, height, width)
+	{
+		AscCommon.History.Create_NewPoint();
+		const shapeTrack = new AscFormat.NewShapeTrack('rect', x, y, AscFormat.GetDefaultTheme(), null, null, null, 0);
+		shapeTrack.track({}, x+ width, y + height);
+		const shape = shapeTrack.getShape(false, AscTest.DrawingDocument, null);
+		shape.setBDeleted(false);
+		shape.setParent(logicDocument.Slides[0]);
+		shape.addToDrawingObjects();
+		shape.select(GetDrawingObjects(), 0);
+		return shape;
+	}
+
+	function ClearShapeAndAddParagraph(sText)
+	{
+		const textShape = AddShape(0, 0, 100, 100);
+		const txBody = AscFormat.CreateTextBodyFromString(sText, editor.WordControl.m_oDrawingDocument, textShape)
+		textShape.setTxBody(txBody);
+		textShape.setPaddings({Left: 0, Top: 0, Right: 0, Bottom: 0});
+		const content = txBody.content;
+		content.SetThisElementCurrent();
+		content.MoveCursorToStartPos();
+		textShape.recalculate();
+		return {shape: textShape, paragraph: content.Content[0]};
+	}
+
+	function AddTextArt()
+	{
+		const textArt = logicDocument.AddTextArt(0);
+		const paragraph = textArt.txBody.content.GetAllParagraphs()[0];
+		return {textArt, paragraph};
+	}
+
+	function EnterText(text)
+	{
+		if (!logicDocument)
+			return;
+
+		logicDocument.EnterText(text);
+	}
+
+	function CorrectEnterText(oldText, newText)
+	{
+		if (!logicDocument)
+			return;
+
+		logicDocument.CorrectEnterText(oldText, newText);
+	}
+	function BeginCompositeInput()
+	{
+		if (!logicDocument)
+			return;
+
+		logicDocument.getCompositeInput().begin();
+	}
+	function ReplaceCompositeInput(text)
+	{
+		if (!logicDocument)
+			return;
+
+		logicDocument.getCompositeInput().replace(text);
+	}
+	function EndCompositeInput()
+	{
+		if (!logicDocument)
+			return;
+
+		logicDocument.getCompositeInput().end();
+	}
+
+	function EnterTextCompositeInput(text)
+	{
+		BeginCompositeInput();
+		ReplaceCompositeInput(text);
+		EndCompositeInput();
+	}
+
+	function StartCollaboration(bFast)
+	{
+		logicDocument.Set_FastCollaborativeEditing(bFast);
+		AscCommon.CollaborativeEditing.Start_CollaborationEditing();
+		SyncCollaboration();
+	}
+	function SyncCollaboration()
+	{
+		AscCommon.CollaborativeEditing.Send_Changes();
+
+	}
+	function EndCollaboration()
+	{
+		AscCommon.CollaborativeEditing.End_CollaborationEditing();
+	}
+
+	function GetDrawingObjects()
+	{
+		return editor.getGraphicController();
+	}
+
+	function SelectDrawings(arrDrawings)
+	{
+		const drawingController = GetDrawingObjects();
+		drawingController.resetSelection()
+		for (let i = 0; i < arrDrawings.length; i += 1)
+		{
+			arrDrawings[i].select(drawingController, 0);
+		}
+	}
+
+
   //--------------------------------------------------------export----------------------------------------------------
-  AscTest.CreateLogicDocument      = CreateLogicDocument;
-  AscTest.GetParagraphText         = GetParagraphText;
-  AscTest.EnterText                = EnterText;
-  AscTest.TurnOnRecalculate        = TurnOnRecalculate;
-  AscTest.TurnOffRecalculate       = TurnOffRecalculate;
+  AscTest.CreateLogicDocument       = CreateLogicDocument;
+  AscTest.GetParagraphText          = GetParagraphText;
+  AscTest.EnterText                 = EnterText;
+  AscTest.CorrectEnterText          = CorrectEnterText;
+  AscTest.BeginCompositeInput       = BeginCompositeInput;
+  AscTest.ReplaceCompositeInput     = ReplaceCompositeInput;
+  AscTest.EndCompositeInput         = EndCompositeInput;
+  AscTest.EnterTextCompositeInput   = EnterTextCompositeInput;
+  AscTest.TurnOnRecalculate         = TurnOnRecalculate;
+  AscTest.TurnOffRecalculate        = TurnOffRecalculate;
+  AscTest.AddShape                  = AddShape;
+  AscTest.ClearShapeAndAddParagraph = ClearShapeAndAddParagraph;
+  AscTest.StartCollaboration        = StartCollaboration;
+  AscTest.SyncCollaboration         = SyncCollaboration;
+  AscTest.EndCollaboration          = EndCollaboration;
+  AscTest.GetDrawingObjects         = GetDrawingObjects;
+  AscTest.AddTextArt                = AddTextArt;
+  AscTest.SelectDrawings            = SelectDrawings;
 
 
 })(window);

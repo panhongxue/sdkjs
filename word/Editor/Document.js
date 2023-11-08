@@ -2774,13 +2774,15 @@ CDocument.prototype.FinalizeAction = function(isCheckEmptyAction)
 	{
 		if (this.Action.Recalculate)
 		{
+
+            if (this.Action.Additional.ShapeAutoFit)
+                this.private_FinalizeShapeAutoFit();
+
 			var nRecalcResult = this.private_Recalculate();
 
 			if (this.Action.Additional.FormAutoFit)
 				this.private_FinalizeFormAutoFit(nRecalcResult & document_recalcresult_FastFlag);
-			
-			if (this.Action.Additional.ShapeAutoFit)
-				this.private_FinalizeShapeAutoFit();
+
 		}
 		else if (undefined !== this.Action.Redraw.Start && undefined !== this.Action.Redraw.End)
 		{
@@ -8068,11 +8070,7 @@ CDocument.prototype.SelectRange = function(nStartPos, nEndPos)
 };
 CDocument.prototype.OnEndTextDrag = function(NearPos, bCopy)
 {
-    if (true === this.Comments.Is_Use())
-    {
-        this.SelectComment(null, false);
-	    this.Api.sync_HideComment();
-    }
+	this.HideCurrentComment();
 
     // Сначала нам надо проверить попадаем ли мы обратно в выделенный текст, если да, тогда ничего не делаем,
     // а если нет, тогда удаляем выделенный текст и вставляем его в заданное место.
@@ -8360,8 +8358,7 @@ CDocument.prototype.CloseAllWindowsPopups = function()
 	this.TrackRevisionsManager.EndCollectChanges();
 
 	// Закрываем балун с комментариями
-	this.SelectComment(null, false);
-	this.Api.sync_HideComment();
+	this.HideCurrentComment();
 };
 /**
  * Проверяем попадание в границу таблицы.
@@ -10356,14 +10353,9 @@ CDocument.prototype.OnMouseUp = function(e, X, Y, PageIndex)
 			}
 
 			if (null !== CommentsX && null !== CommentsY && arrCommentsId.length > 0)
-			{
 				this.Api.sync_ShowComment(arrCommentsId, CommentsX, CommentsY);
-			}
 			else
-			{
-				this.SelectComment(null, false);
-				this.Api.sync_HideComment();
-			}
+				this.HideCurrentComment();
 		}
 	}
 
@@ -13532,6 +13524,14 @@ CDocument.prototype.HideComments = function()
 	this.Comments.Set_Current(null);
 	this.DrawingDocument.ClearCachePages();
 	this.DrawingDocument.FirePaint();
+};
+CDocument.prototype.HideCurrentComment = function()
+{
+	if (!this.Comments.Is_Use() || !this.Comments.Get_CurrentId())
+		return;
+	
+	this.SelectComment(null, false);
+	this.Api.sync_HideComment();
 };
 CDocument.prototype.private_GetCommentWorldAnchorPoint = function(oComment)
 {
@@ -17228,6 +17228,8 @@ CDocument.prototype.GetNextRevisionChange = function()
 		this.private_SelectRevisionChange(oChange);
 		this.UpdateSelection(false);
 		this.UpdateInterface(true);
+		// TODO: Temporary. Remove it when comments will be reworked
+		this.HideCurrentComment();
 	}
 };
 CDocument.prototype.GetPrevRevisionChange = function()
@@ -17240,6 +17242,8 @@ CDocument.prototype.GetPrevRevisionChange = function()
 		this.private_SelectRevisionChange(oChange);
 		this.UpdateSelection(false);
 		this.UpdateInterface(true);
+		// TODO: Temporary. Remove it when comments will be reworked
+		this.HideCurrentComment();
 	}
 };
 CDocument.prototype.GetRevisionsChangeElement = function(nDirection, oCurrentElement)

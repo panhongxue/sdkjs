@@ -35,11 +35,16 @@
 
 (function (window)
 {
-	const testHotkeyEvents = AscTestShortcut.testHotkeyEvents;
-	const testHotkeyActions = AscTestShortcut.testHotkeyActions;
-	const ExecuteShortcut = AscTestShortcut.ExecuteShortcut;
-	const ExecuteHotkey = AscTestShortcut.ExecuteHotkey;
-	let logicDocument = AscTest.CreateLogicDocument();
+	const {
+		SelectDrawings,
+		CreateLogicDocument,
+		testHotkeyEvents,
+		testHotkeyActions,
+		ExecuteShortcut,
+		ExecuteHotkey,
+		AddShape
+	} = AscTest;
+	let logicDocument = CreateLogicDocument();
 
 	const pageWidth = 100;
 	const pageHeight = 100;
@@ -218,28 +223,6 @@
 	function GetDirectParaPr()
 	{
 		return logicDocument.GetDirectParaPr();
-	}
-
-	function AddShape(x, y, h, w)
-	{
-		const drawing = new ParaDrawing(w, h, null, logicDocument.GetDrawingDocument(), logicDocument, null);
-		const shapeTrack = new AscFormat.NewShapeTrack('rect', x, y, logicDocument.theme, null, null, null, 0);
-		shapeTrack.track({}, x+ w, y + h);
-		const shape = shapeTrack.getShape(true, logicDocument.GetDrawingDocument(), null);
-		shape.setBDeleted(false);
-
-		shape.setParent(drawing);
-		drawing.Set_GraphicObject(shape);
-		drawing.Set_DrawingType(drawing_Anchor);
-		drawing.Set_WrappingType(WRAPPING_TYPE_NONE);
-		drawing.Set_Distance(0, 0, 0, 0);
-		logicDocument.AddToParagraph(drawing);
-		return drawing;
-	}
-
-	function SelectDrawings(drawings)
-	{
-		logicDocument.SelectDrawings(drawings, logicDocument);
 	}
 
 	function GetDrawingObjects()

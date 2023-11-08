@@ -392,6 +392,42 @@
 	{
 		AscCommon.CollaborativeEditing.End_CollaborationEditing();
 	}
+
+	function AddShape(x, y, h, w)
+	{
+		const drawing = new ParaDrawing(w, h, null, logicDocument.GetDrawingDocument(), logicDocument, null);
+		const shapeTrack = new AscFormat.NewShapeTrack('rect', x, y, logicDocument.theme, null, null, null, 0);
+		shapeTrack.track({}, x+ w, y + h);
+		const shape = shapeTrack.getShape(true, logicDocument.GetDrawingDocument(), null);
+		shape.setBDeleted(false);
+
+		shape.setParent(drawing);
+		drawing.Set_GraphicObject(shape);
+		drawing.Set_DrawingType(drawing_Anchor);
+		drawing.Set_WrappingType(WRAPPING_TYPE_NONE);
+		drawing.Set_Distance(0, 0, 0, 0);
+		logicDocument.AddToParagraph(drawing);
+		return drawing;
+	}
+
+	function ClearShapeAndAddParagraph(text)
+	{
+		const drawing = AddShape(0, 0, 100, 100);
+		const textShape = drawing.GraphicObj;
+		textShape.createTextBoxContent();
+		const content = textShape.textBoxContent;
+		AscFormat.AddToContentFromString(content, text);
+		textShape.setPaddings({Left: 0, Top: 0, Right: 0, Bottom: 0});
+		content.SetThisElementCurrent();
+		content.MoveCursorToStartPos();
+		textShape.recalculate();
+		return {drawing: drawing, paragraph: content.Content[0]};
+	}
+
+	function SelectDrawings(drawings)
+	{
+		logicDocument.SelectDrawings(drawings, logicDocument);
+	}
 	
 	
 	//--------------------------------------------------------export----------------------------------------------------
@@ -431,6 +467,9 @@
 	AscTest.StartCollaboration       = StartCollaboration;
 	AscTest.SyncCollaboration        = SyncCollaboration;
 	AscTest.EndCollaboration         = EndCollaboration;
+	AscTest.ClearShapeAndAddParagraph= ClearShapeAndAddParagraph;
+	AscTest.AddShape                 = AddShape;
+	AscTest.SelectDrawings           = SelectDrawings;
 
 })(window);
 

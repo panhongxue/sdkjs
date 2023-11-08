@@ -32,7 +32,6 @@
 
 (function (window)
 {
-	window.AscTestShortcut = {};
 	const testFlags = {
 		nothing: 0x0000,
 		macOs: 0x0001
@@ -295,8 +294,8 @@ function CreateTestEvent(nKeyCode, bIsCtrl, bIsShift, bIsAlt, bIsMetaKey, flags)
 		return ExecuteShortcut(event);
 	}
 
-	AscTestShortcut.testHotkeyActions = testHotkeyActions;
-	AscTestShortcut.testHotkeyEvents = testHotkeyEvents;
-	AscTestShortcut.ExecuteShortcut = ExecuteShortcut;
-	AscTestShortcut.ExecuteHotkey = ExecuteHotkey;
+	AscTest.testHotkeyActions = testHotkeyActions;
+	AscTest.testHotkeyEvents = testHotkeyEvents;
+	AscTest.ExecuteShortcut = ExecuteShortcut;
+	AscTest.ExecuteHotkey = ExecuteHotkey;
 })(window);

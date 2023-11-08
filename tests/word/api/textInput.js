@@ -92,27 +92,35 @@ $(function () {
 	});
 	QUnit.test("EnterText/CorrectEnterText/CompositeInput in collaboration", function (assert)
 	{
+		function CheckCollaborationEnterText(paragraph, description)
+		{
+			AscTest.EnterText("ABC");
+			assert.strictEqual(GetParagraphText(paragraph), "ABC", "Add text 'ABC' in collaboration " + description);
+
+			AscTest.MoveCursorLeft();
+			AscTest.EnterText("111");
+			AscTest.SyncCollaboration();
+			AscTest.CorrectEnterText("11", "23");
+			AscTest.SyncCollaboration();
+			assert.strictEqual(GetParagraphText(paragraph), "AB123C", "Add text '111' and correct it with '123' in collaboration (sync between actions) " + description);
+
+			AscTest.EnterText("QQQ");
+			AscTest.CorrectEnterText("QQ", "RS");
+			AscTest.SyncCollaboration();
+			assert.strictEqual(GetParagraphText(paragraph), "AB123QRSC", "Add text '111' and correct it with '123' in collaboration (no sync between actions) " + description);
+		}
+
 		AscTest.StartCollaboration();
-		
+
 		AscTest.ClearDocument();
 		let p = new AscWord.CParagraph(AscTest.DrawingDocument);
 		logicDocument.AddToContent(0, p);
-		
-		AscTest.EnterText("ABC");
-		assert.strictEqual(GetParagraphText(p), "ABC", "Add text 'ABC' in collaboration");
-		
-		AscTest.MoveCursorLeft();
-		AscTest.EnterText("111");
-		AscTest.SyncCollaboration();
-		AscTest.CorrectEnterText("11", "23");
-		AscTest.SyncCollaboration();
-		assert.strictEqual(GetParagraphText(p), "AB123C", "Add text '111' and correct it with '123' in collaboration (sync between actions)");
-		
-		AscTest.EnterText("QQQ");
-		AscTest.CorrectEnterText("QQ", "RS");
-		AscTest.SyncCollaboration();
-		assert.strictEqual(GetParagraphText(p), "AB123QRSC", "Add text '111' and correct it with '123' in collaboration (no sync between actions)");
-		
+		CheckCollaborationEnterText(p, "(Check document paragraph)");
+
+		p = AscTest.ClearShapeAndAddParagraph("").paragraph;
+		CheckCollaborationEnterText(p, "(Check shape paragraph)");
+		logicDocument.MoveCursorToStartPos();
+
 		AscTest.EndCollaboration();
 	});
 	QUnit.test("Test 'complex script' property on input", function (assert)

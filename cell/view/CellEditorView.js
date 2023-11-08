@@ -59,31 +59,20 @@
 	var asc_HL = AscCommonExcel.HandlersList;
 	var asc_incDecFonSize = asc.incDecFonSize;
 
-
-	/** @const */
-	var kBeginOfLine = -1;
-	/** @const */
-	var kBeginOfText = -2;
-	/** @const */
-	var kEndOfLine = -3;
-	/** @const */
-	var kEndOfText = -4;
-	/** @const */
-	var kNextChar = -5;
-	/** @const */
-	var kNextWord = -6;
-	/** @const */
-	var kNextLine = -7;
-	/** @const */
-	var kPrevChar = -8;
-	/** @const */
-	var kPrevWord = -9;
-	/** @const */
-	var kPrevLine = -10;
-	/** @const */
-	var kPosition = -11;
-	/** @const */
-	var kPositionLength = -12;
+	const cellEditorMoveTypes = {
+		kBeginOfLine: -1,
+		kBeginOfText: -2,
+		kEndOfLine: -3,
+		kEndOfText: -4,
+		kNextChar: -5,
+		kNextWord: -6,
+		kNextLine: -7,
+		kPrevChar: -8,
+		kPrevWord: -9,
+		kPrevLine: -10,
+		kPosition: -11,
+		kPositionLength: -12
+	};
 
 	/** @const */
 	var codeNewLine = 0x00A;
@@ -335,21 +324,21 @@
 		this._draw();
 
 		if (null !== options.enterOptions.newText) {
-			this._selectChars(kEndOfText);
+			this._selectChars(cellEditorMoveTypes.kEndOfText);
 			this._addChars(options.enterOptions.newText);
 		}
 
 		if (this.isTopLineActive && typeof b !== "undefined") {
 			if (this.cursorPos !== b) {
-				this._moveCursor(kPosition, b);
+				this._moveCursor(cellEditorMoveTypes.kPosition, b);
 			}
 		} else if (options.enterOptions.cursorPos){
-			this._moveCursor(kPosition, options.enterOptions.cursorPos);
+			this._moveCursor(cellEditorMoveTypes.kPosition, options.enterOptions.cursorPos);
 		} else if (options.enterOptions.eventPos) {
 			this._onMouseDown(options.enterOptions.eventPos);
 			this._onMouseUp(options.enterOptions.eventPos);
 		} else {
-			this._moveCursor(kEndOfText);
+			this._moveCursor(cellEditorMoveTypes.kEndOfText);
 		}
 
 		/*
@@ -640,20 +629,20 @@
 
 	CellEditor.prototype.changeCellRange = function (range, moveEndOfText) {
 		this.skipTLUpdate = false;
-		this._moveCursor(kPosition, range.cursorePos);
-		this._selectChars(kPositionLength, range.formulaRangeLength);
+		this._moveCursor(cellEditorMoveTypes.kPosition, range.cursorePos);
+		this._selectChars(cellEditorMoveTypes.kPositionLength, range.formulaRangeLength);
 		this._addChars(range.getName(), undefined, /*isRange*/true);
 		if (moveEndOfText) {
-			this._moveCursor(kEndOfText);
+			this._moveCursor(cellEditorMoveTypes.kEndOfText);
 		}
 		this.skipTLUpdate = true;
 	};
 
 	CellEditor.prototype.changeCellText = function (str) {
 		this.skipTLUpdate = false;
-		this._moveCursor(kPosition, this.lastRangePos);
+		this._moveCursor(cellEditorMoveTypes.kPosition, this.lastRangePos);
 		if (this.lastRangeLength) {
-			this._selectChars(kPositionLength, this.lastRangeLength);
+			this._selectChars(cellEditorMoveTypes.kPositionLength, this.lastRangeLength);
 		}
 		this._addChars(str, undefined, /*isRange*/true);
 		this.lastRangeLength = str.length;
@@ -686,7 +675,7 @@
 		if (addText) {
 			this._addChars(addText);
 			if (functionName && !isDefName) {
-				this._moveCursor(kPosition, this.cursorPos - 1);
+				this._moveCursor(cellEditorMoveTypes.kPosition, this.cursorPos - 1);
 
 				// ToDo move this code to moveCursor
 				this.lastRangePos = this.cursorPos;
@@ -820,7 +809,7 @@
 
 		// Сделано только для вставки формулы в ячейку (когда не открыт редактор)
 		if (undefined !== cursorPos) {
-			this._moveCursor(kPosition, cursorPos);
+			this._moveCursor(cellEditorMoveTypes.kPosition, cursorPos);
 		}
 		this.endAction();
 	};
@@ -848,8 +837,8 @@
 	};
 
 	CellEditor.prototype.replaceText = function (pos, len, newText) {
-		this._moveCursor(kPosition, pos);
-		this._selectChars(kPosition, pos + len);
+		this._moveCursor(cellEditorMoveTypes.kPosition, pos);
+		this._selectChars(cellEditorMoveTypes.kPosition, pos + len);
 		return this._addChars(newText);
 	};
 
@@ -1712,40 +1701,40 @@
 		var t = this;
 		this.sAutoComplete = null;
 		switch (kind) {
-			case kPrevChar:
+			case cellEditorMoveTypes.kPrevChar:
 				t.cursorPos = t.textRender.getPrevChar(t.cursorPos);
 				break;
-			case kNextChar:
+			case cellEditorMoveTypes.kNextChar:
 				t.cursorPos = t.textRender.getNextChar(t.cursorPos);
 				break;
-			case kPrevWord:
+			case cellEditorMoveTypes.kPrevWord:
 				t.cursorPos = t.textRender.getPrevWord(t.cursorPos);
 				break;
-			case kNextWord:
+			case cellEditorMoveTypes.kNextWord:
 				t.cursorPos = t.textRender.getNextWord(t.cursorPos);
 				break;
-			case kBeginOfLine:
+			case cellEditorMoveTypes.kBeginOfLine:
 				t.cursorPos = t.textRender.getBeginOfLine(t.cursorPos);
 				break;
-			case kEndOfLine:
+			case cellEditorMoveTypes.kEndOfLine:
 				t.cursorPos = t.textRender.getEndOfLine(t.cursorPos);
 				break;
-			case kBeginOfText:
+			case cellEditorMoveTypes.kBeginOfText:
 				t.cursorPos = t.textRender.getBeginOfText(t.cursorPos);
 				break;
-			case kEndOfText:
+			case cellEditorMoveTypes.kEndOfText:
 				t.cursorPos = t.textRender.getEndOfText(t.cursorPos);
 				break;
-			case kPrevLine:
+			case cellEditorMoveTypes.kPrevLine:
 				t.cursorPos = t.textRender.getPrevLine(t.cursorPos);
 				break;
-			case kNextLine:
+			case cellEditorMoveTypes.kNextLine:
 				t.cursorPos = t.textRender.getNextLine(t.cursorPos);
 				break;
-			case kPosition:
+			case cellEditorMoveTypes.kPosition:
 				t.cursorPos = pos;
 				break;
-			case kPositionLength:
+			case cellEditorMoveTypes.kPositionLength:
 				t.cursorPos += pos;
 				break;
 			default:
@@ -1771,14 +1760,14 @@
 				for ( w = li.startX, i = li.beg; i <= li.end; ++i ) {
 					chw = t.textRender.getCharWidth( i );
 					if ( coord.x <= w + chw ) {
-						return coord.x <= w + chw / 2 ? i : i + 1 > li.end ? kEndOfLine : i + 1;
+						return coord.x <= w + chw / 2 ? i : i + 1 > li.end ? cellEditorMoveTypes.kEndOfLine : i + 1;
 					}
 					w += chw;
 				}
-				return i < t.textRender.getCharsCount() ? i - 1 : kEndOfText;
+				return i < t.textRender.getCharsCount() ? i - 1 : cellEditorMoveTypes.kEndOfText;
 			}
 		}
-		return kNextLine;
+		return cellEditorMoveTypes.kNextLine;
 	};
 
 	CellEditor.prototype._updateTopLineCurPos = function () {
@@ -1824,10 +1813,10 @@
 		}
 		if (typeof b !== "undefined") {
 			if (this.cursorPos !== b || this.selectionBegin !== this.selectionEnd) {
-				this._moveCursor(kPosition, b);
+				this._moveCursor(cellEditorMoveTypes.kPosition, b);
 			}
 			if (b !== e) {
-				this._selectChars(kPosition, e);
+				this._selectChars(cellEditorMoveTypes.kPosition, e);
 			}
 
 			//onSelectionEnd - используется в плагинах. нужен он для отслеживания смены селекта.
@@ -1995,19 +1984,19 @@
 			t._cleanSelection();
 		} else if (length === undefined) {
 			switch (pos) {
-				case kPrevChar:
+				case cellEditorMoveTypes.kPrevChar:
 					b = t.textRender.getPrevChar(t.cursorPos);
 					e = t.cursorPos;
 					break;
-				case kNextChar:
+				case cellEditorMoveTypes.kNextChar:
 					b = t.cursorPos;
 					e = t.textRender.getNextChar(t.cursorPos);
 					break;
-				case kPrevWord:
+				case cellEditorMoveTypes.kPrevWord:
 					b = t.textRender.getPrevWord(t.cursorPos);
 					e = t.cursorPos;
 					break;
-				case kNextWord:
+				case cellEditorMoveTypes.kNextWord:
 					b = t.cursorPos;
 					e = t.textRender.getNextWord(t.cursorPos);
 					break;
@@ -2090,7 +2079,7 @@
 			}
 			var pos = t._findCursorPosition(coordTmp);
 			if (pos !== undefined) {
-				pos >= 0 ? t._selectChars(kPosition, pos) : t._selectChars(pos);
+				pos >= 0 ? t._selectChars(cellEditorMoveTypes.kPosition, pos) : t._selectChars(pos);
 			}
 		}
 
@@ -2510,7 +2499,7 @@
 						t._syncEditors();
 					}
 				}
-				t._removeChars(bIsWordRemove ? kPrevWord : kPrevChar);
+				t._removeChars(bIsWordRemove ? cellEditorMoveTypes.kPrevWord : cellEditorMoveTypes.kPrevChar);
 				return false;
 
 			case 32:  // "space"
@@ -2536,7 +2525,7 @@
 				if (hieroglyph) {
 					t._syncEditors();
 				}
-				kind = ctrlKey ? kEndOfText : kEndOfLine;
+				kind = ctrlKey ? cellEditorMoveTypes.kEndOfText : cellEditorMoveTypes.kEndOfLine;
 				event.shiftKey ? t._selectChars(kind) : t._moveCursor(kind);
 				return false;
 
@@ -2554,7 +2543,7 @@
 				if (hieroglyph) {
 					t._syncEditors();
 				}
-				kind = ctrlKey ? kBeginOfText : kBeginOfLine;
+				kind = ctrlKey ? cellEditorMoveTypes.kBeginOfText : cellEditorMoveTypes.kBeginOfLine;
 				event.shiftKey ? t._selectChars(kind) : t._moveCursor(kind);
 				return false;
 
@@ -2574,12 +2563,12 @@
 				}
 				if (bIsMacOs && ctrlKey)
 				{
-					event.shiftKey ? t._selectChars(kBeginOfLine) : t._moveCursor(kBeginOfLine);
+					event.shiftKey ? t._selectChars(cellEditorMoveTypes.kBeginOfLine) : t._moveCursor(cellEditorMoveTypes.kBeginOfLine);
 				}
 				else
 				{
 					const bWord = bIsMacOs ? event.altKey : ctrlKey;
-					kind = bWord ? kPrevWord : kPrevChar;
+					kind = bWord ? cellEditorMoveTypes.kPrevWord : cellEditorMoveTypes.kPrevChar;
 					event.shiftKey ? t._selectChars(kind) : t._moveCursor(kind);
 				}
 
@@ -2599,7 +2588,7 @@
 				if (hieroglyph) {
 					t._syncEditors();
 				}
-				event.shiftKey ? t._selectChars(kPrevLine) : t._moveCursor(kPrevLine);
+				event.shiftKey ? t._selectChars(cellEditorMoveTypes.kPrevLine) : t._moveCursor(cellEditorMoveTypes.kPrevLine);
 				return false;
 
 			case 39:  // "right"
@@ -2618,12 +2607,12 @@
 				}
 				if (bIsMacOs && ctrlKey)
 				{
-					event.shiftKey ? t._selectChars(kEndOfLine) : t._moveCursor(kEndOfLine);
+					event.shiftKey ? t._selectChars(cellEditorMoveTypes.kEndOfLine) : t._moveCursor(cellEditorMoveTypes.kEndOfLine);
 				}
 				else
 				{
 					const bWord = bIsMacOs ? event.altKey : ctrlKey;
-					kind = bWord ? kNextWord : kNextChar;
+					kind = bWord ? cellEditorMoveTypes.kNextWord : cellEditorMoveTypes.kNextChar;
 					event.shiftKey ? t._selectChars(kind) : t._moveCursor(kind);
 				}
 				return false;
@@ -2642,7 +2631,7 @@
 				if (hieroglyph) {
 					t._syncEditors();
 				}
-				event.shiftKey ? t._selectChars(kNextLine) : t._moveCursor(kNextLine);
+				event.shiftKey ? t._selectChars(cellEditorMoveTypes.kNextLine) : t._moveCursor(cellEditorMoveTypes.kNextLine);
 				return false;
 
 			case 46:  // "del"
@@ -2655,7 +2644,7 @@
 				}
 				event.stopPropagation();
 				event.preventDefault();
-				t._removeChars(bIsWordRemove ? kNextWord : kNextChar);
+				t._removeChars(bIsWordRemove ? cellEditorMoveTypes.kNextWord : cellEditorMoveTypes.kNextChar);
 				return true;
 
 			case 53: // 5
@@ -2681,8 +2670,8 @@
 						event.stopPropagation();
 						event.preventDefault();
 					}
-					t._moveCursor(kBeginOfText);
-					t._selectChars(kEndOfText);
+					t._moveCursor(cellEditorMoveTypes.kBeginOfText);
+					t._selectChars(cellEditorMoveTypes.kEndOfText);
 					return true;
 				}
 				break;
@@ -2876,7 +2865,7 @@
 					tmpCursorPos = t.cursorPos;
 					t._addChars(newValue.substring(lengthInput));
 					t.selectionBegin = tmpCursorPos;
-					t._selectChars(kEndOfText);
+					t._selectChars(cellEditorMoveTypes.kEndOfText);
 					this.sAutoComplete = newValue;
 				}
 			}
@@ -2946,7 +2935,7 @@
 					this._updateCursor();
 					pos = this._findCursorPosition(coord);
 					if (pos !== undefined) {
-						pos >= 0 ? this._moveCursor(kPosition, pos) : this._moveCursor(pos);
+						pos >= 0 ? this._moveCursor(cellEditorMoveTypes.kPosition, pos) : this._moveCursor(pos);
 					}
 				} else {
 					this._changeSelection(coord);
@@ -2959,8 +2948,8 @@
 				// Начало слова (ищем по окончанию, т.к. могли попасть в пробел)
 				var startWord = this.textRender.getPrevWord(endWord);
 
-				this._moveCursor(kPosition, startWord);
-				this._selectChars(kPosition, endWord);
+				this._moveCursor(cellEditorMoveTypes.kPosition, startWord);
+				this._selectChars(cellEditorMoveTypes.kPosition, endWord);
 			}
 		} else if (2 === button) {
 			this.handlers.trigger('onContextMenu', event);
@@ -3115,7 +3104,7 @@
 	CellEditor.prototype.Set_CursorPosInCompositeText = function (nPos) {
 		if (-1 !== this.beginCompositePos) {
 			nPos = Math.min(nPos, this.compositeLength);
-			this._moveCursor(kPosition, this.beginCompositePos + nPos);
+			this._moveCursor(cellEditorMoveTypes.kPosition, this.beginCompositePos + nPos);
 		}
 	};
 	CellEditor.prototype.Get_CursorPosInCompositeText = function () {
@@ -3131,8 +3120,8 @@
 		//t.skipKeyPress
 		var tmp = this.skipTLUpdate;
 		this.skipTLUpdate = false;
-		this._moveCursor(kBeginOfText);
-		this._selectChars(kEndOfText);
+		this._moveCursor(cellEditorMoveTypes.kBeginOfText);
+		this._selectChars(cellEditorMoveTypes.kEndOfText);
 		this.skipTLUpdate = tmp;
 	};
 	CellEditor.prototype._setSkipKeyPress = function (val) {
@@ -3238,42 +3227,42 @@
 			switch (event.keyCode) {
 				case 8:   // "backspace"
 					/*const bIsWord = bIsMacOs ? event.altKey : ctrlKey;
-					t._removeChars(bIsWord ? kPrevWord : kPrevChar);*/
+					t._removeChars(bIsWord ? cellEditorMoveTypes.kPrevWord : cellEditorMoveTypes.kPrevChar);*/
 					break;
 				case 35:  // "end"
-					/*kind = ctrlKey ? kEndOfText : kEndOfLine;
+					/*kind = ctrlKey ? cellEditorMoveTypes.kEndOfText : cellEditorMoveTypes.kEndOfLine;
 					event.shiftKey ? t._selectChars(kind) : t._moveCursor(kind);
 					return false;*/
 					break;
 				case 36:  // "home"
-					/*kind = ctrlKey ? kBeginOfText : kBeginOfLine;
+					/*kind = ctrlKey ? cellEditorMoveTypes.kBeginOfText : cellEditorMoveTypes.kBeginOfLine;
 					event.shiftKey ? t._selectChars(kind) : t._moveCursor(kind);*/
 					break;
 				case 37:  // "left"
 					if (bIsMacOs && ctrlKey) {
-						//event.shiftKey ? t._selectChars(kBeginOfLine) : t._moveCursor(kBeginOfLine);
+						//event.shiftKey ? t._selectChars(cellEditorMoveTypes.kBeginOfLine) : t._moveCursor(cellEditorMoveTypes.kBeginOfLine);
 					} else {
 						bWord = bIsMacOs ? event.altKey : ctrlKey;
-						/*kind = bWord ? kPrevWord : kPrevChar;
+						/*kind = bWord ? cellEditorMoveTypes.kPrevWord : cellEditorMoveTypes.kPrevChar;
 						event.shiftKey ? t._selectChars(kind) : t._moveCursor(kind);*/
 					}
 
 					break;
 				case 38:  // "up"
-					//event.shiftKey ? t._selectChars(kPrevLine) : t._moveCursor(kPrevLine);
+					//event.shiftKey ? t._selectChars(cellEditorMoveTypes.kPrevLine) : t._moveCursor(cellEditorMoveTypes.kPrevLine);
 					break;
 				case 39:  // "right"
 					if (bIsMacOs && ctrlKey) {
-						//event.shiftKey ? t._selectChars(kEndOfLine) : t._moveCursor(kEndOfLine);
+						//event.shiftKey ? t._selectChars(cellEditorMoveTypes.kEndOfLine) : t._moveCursor(cellEditorMoveTypes.kEndOfLine);
 					} else {
 						bWord = bIsMacOs ? event.altKey : ctrlKey;
-						/*kind = bWord ? kNextWord : kNextChar;
+						/*kind = bWord ? cellEditorMoveTypes.kNextWord : cellEditorMoveTypes.kNextChar;
 						event.shiftKey ? t._selectChars(kind) : t._moveCursor(kind);*/
 					}
 					break;
 
 				case 40:  // "down"
-					//event.shiftKey ? t._selectChars(kNextLine) : t._moveCursor(kNextLine);
+					//event.shiftKey ? t._selectChars(cellEditorMoveTypes.kNextLine) : t._moveCursor(cellEditorMoveTypes.kNextLine);
 					break;
 			}
 
@@ -3309,4 +3298,5 @@
 	//------------------------------------------------------------export---------------------------------------------------
 	window['AscCommonExcel'] = window['AscCommonExcel'] || {};
 	window["AscCommonExcel"].CellEditor = CellEditor;
+	window["AscCommonExcel"].cellEditorMoveTypes = cellEditorMoveTypes;
 })(window);

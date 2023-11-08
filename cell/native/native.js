@@ -1020,18 +1020,6 @@ PageLeftType: 2,
 PageCornerType: 3
 };
 
-var kBeginOfLine = -1;
-var kBeginOfText = -2;
-var kEndOfLine = -3;
-var kEndOfText = -4;
-var kNextChar = -5;
-var kNextWord = -6;
-var kNextLine = -7;
-var kPrevChar = -8;
-var kPrevWord = -9;
-var kPrevLine = -10;
-var kPosition = -11;
-var kPositionLength = -12;
 
 var deviceScale = 1;
 
@@ -3239,7 +3227,7 @@ window["native"]["offline_cell_editor_process_input_commands"] = function(sendAr
                 if (position < 0) {
                     cellEditor._moveCursor(position);
                 } else {
-                    cellEditor._moveCursor(kPosition, position);
+                    cellEditor._moveCursor(AscCommonExcel.cellEditorMoveTypes.kPosition, position);
                 }
                 break;
             }
@@ -3267,8 +3255,8 @@ window["native"]["offline_cell_editor_process_input_commands"] = function(sendAr
                 
                 // SELECT_ALL
             case 6: {
-                cellEditor._moveCursor(kBeginOfText);
-                cellEditor._selectChars(kEndOfText);
+                cellEditor._moveCursor(AscCommonExcel.cellEditorMoveTypes.kBeginOfText);
+                cellEditor._selectChars(AscCommonExcel.cellEditorMoveTypes.kEndOfText);
                 break;
             }
                 
@@ -3281,15 +3269,15 @@ window["native"]["offline_cell_editor_process_input_commands"] = function(sendAr
                 // Начало слова (ищем по окончанию, т.к. могли попасть в пробел)
                 var startWord = cellEditor.textRender.getPrevWord(endWord);
                 
-                cellEditor._moveCursor(kPosition, startWord);
-                cellEditor._selectChars(kPosition, endWord);
+                cellEditor._moveCursor(AscCommonExcel.cellEditorMoveTypes.kPosition, startWord);
+                cellEditor._selectChars(AscCommonExcel.cellEditorMoveTypes.kPosition, endWord);
                 
                 break;
             }
                 
                 // DELETE_TEXT
             case 8: {
-                cellEditor._removeChars(kPrevChar);
+                cellEditor._removeChars(AscCommonExcel.cellEditorMoveTypes.kPrevChar);
                 break;
             }
         }
@@ -3418,7 +3406,7 @@ window["native"]["offline_cell_editor_close"] = function(x, y, width, height, ra
     return {'undo': length};
 }
 window["native"]["offline_cell_editor_selection"] = function() {return _api.wb.cellEditor._drawSelection();}
-window["native"]["offline_cell_editor_move_select"] = function(position) {_api.wb.cellEditor._moveCursor(kPosition, Math.min(position,cellEditor.textRender.chars.length));}
+window["native"]["offline_cell_editor_move_select"] = function(position) {_api.wb.cellEditor._moveCursor(AscCommonExcel.cellEditorMoveTypes.kPosition, Math.min(position,cellEditor.textRender.chars.length));}
 window["native"]["offline_cell_editor_select_range"] = function(from, to) {
     var cellEditor = _api.wb.cellEditor;
     

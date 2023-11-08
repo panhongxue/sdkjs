@@ -282,7 +282,7 @@ QUnit.config.autostart = false;
 			'Hello World Hello ' +
 			'World Hello World');
 
-		cellEditor._moveCursor(-2);
+		cellEditor._moveCursor(AscCommonExcel.cellEditorMoveTypes.kBeginOfText);
 
 		function CheckCursorPosition(expected, description)
 		{
@@ -402,7 +402,7 @@ QUnit.config.autostart = false;
 		ExecuteCellEditorHotkey(cellEditorHotkeyTypes.selectToUpLine);
 		CheckSelectedText('Hello World Hello ', 'Select up');*/
 
-		cellEditor._moveCursor(-4);
+		cellEditor._moveCursor(AscCommonExcel.cellEditorMoveTypes.kEndOfText);
 		ExecuteCellEditorHotkey(cellEditorHotkeyTypes.selectLeftChar);
 		CheckSelectedText('d', 'Select to left char');
 
@@ -415,11 +415,11 @@ QUnit.config.autostart = false;
 		ExecuteCellEditorHotkey(cellEditorHotkeyTypes.selectToEndDocument);
 		CheckSelectedText('', 'Select to end content');
 
-		cellEditor._moveCursor(-2);
+		cellEditor._moveCursor(AscCommonExcel.cellEditorMoveTypes.kBeginOfText);
 
 		ExecuteCellEditorHotkey(cellEditorHotkeyTypes.selectToEndDocument);
 		CheckSelectedText('Hello World Hello World Hello World Hello World Hello World Hello World Hello World Hello Hello World Hello Hello World Hello Hello World Hello World Hello World', 'Select to end content');
-		cellEditor._moveCursor(-4);
+		cellEditor._moveCursor(AscCommonExcel.cellEditorMoveTypes.kEndOfText);
 
 		ExecuteCellEditorHotkey(cellEditorHotkeyTypes.moveToStartLine);
 		CheckCursorPosition(144, 'Check move to start line');
@@ -434,7 +434,7 @@ QUnit.config.autostart = false;
 		Select(0, 0, 0, 0, 0, 0);
 		OpenCellEditor();
 		EnterText('Hello Hello Hello Hello Hello Hello Hello');
-		cellEditor._moveCursor(-4);
+		cellEditor._moveCursor(AscCommonExcel.cellEditorMoveTypes.kEndOfText);
 
 		ExecuteCellEditorHotkey(cellEditorHotkeyTypes.removeCharBack);
 		assert.strictEqual(GetCellEditorText(), 'Hello Hello Hello Hello Hello Hello Hell', 'Check removing back symbol');
@@ -445,7 +445,7 @@ QUnit.config.autostart = false;
 		ExecuteCellEditorHotkey(cellEditorHotkeyTypes.removeWordBack, 1);
 		assert.strictEqual(GetCellEditorText(), 'Hello Hello Hello Hello Hello ', 'Check removing back word');
 
-		cellEditor._moveCursor(-2);
+		cellEditor._moveCursor(AscCommonExcel.cellEditorMoveTypes.kBeginOfText);
 		ExecuteCellEditorHotkey(cellEditorHotkeyTypes.deleteFrontChar);
 		assert.strictEqual(GetCellEditorText(), 'ello Hello Hello Hello Hello ', 'Check removing front symbol');
 		ExecuteCellEditorHotkey(cellEditorHotkeyTypes.deleteFrontWord);

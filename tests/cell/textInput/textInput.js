@@ -136,6 +136,7 @@ $(function () {
 		CorrectEnterText("QQ", "RS");
 		SyncCollaboration();
 		assert.strictEqual(GetParagraphText(paragraph), "AB123QRSC", "Add text '111' and correct it with '123' in collaboration (no sync between actions)");
+		EndCollaboration();
 		wsView.isSelectOnShape = false;
 		controller.resetSelection();
 	});

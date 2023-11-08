@@ -114,6 +114,7 @@
 		this.compositeInput.end();
 
 		this.presentation.UpdateInterface();
+		this.presentation.RecalculateCurPos(true, true);
 		this.presentation.private_UpdateCursorXY(true, true);
 		this.presentation.DrawingDocument.ClearCachePages();
 		this.presentation.DrawingDocument.FirePaint();
@@ -184,7 +185,8 @@
 		presentation.UpdateUndoRedo();
 		presentation.FinalizeAction(false);
 
-		presentation.private_UpdateCursorXY(true, true);
+		this.presentation.RecalculateCurPos(true, true);
+		this.presentation.private_UpdateCursorXY(true, true);
 	};
 	//--------------------------------------------------------export----------------------------------------------------
 	AscCommonSlide.PresentationCompositeInput = PresentationCompositeInput;

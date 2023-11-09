@@ -98,6 +98,7 @@
 
 		this.controller.recalculateCurPos(true, true);
 		this.drawingObjects.sendGraphicObjectProps();
+		this.controller.updateDrawingTextCache();
 		this.drawingObjects.showDrawingObjects();
 
 		this.inUse = false;

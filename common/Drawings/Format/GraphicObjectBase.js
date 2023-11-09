@@ -3503,6 +3503,7 @@
 		return sResult;
 	};
 	CGraphicObjectBase.prototype.checkShapeAutoFit = function () {};
+	CGraphicObjectBase.prototype.updateDrawingTextCache = function () {};
 
 	var ANIM_LABEL_WIDTH_PIX = 22;
 	var ANIM_LABEL_HEIGHT_PIX = 17;

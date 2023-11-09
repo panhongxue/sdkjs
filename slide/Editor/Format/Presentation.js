@@ -12421,6 +12421,13 @@ CPresentation.prototype.getCompositeInput = function () {
 	return this.compositeInput;
 };
 
+CPresentation.prototype.UpdateDrawingTextCache = function () {
+	const oController = this.GetCurrentController();
+	if (oController) {
+		oController.updateDrawingTextCache();
+	}
+};
+
 function collectSelectedObjects(aSpTree, aCollectArray, bRecursive, oIdMap, bSourceFormatting) {
 	var oSp;
 	var oPr = new AscFormat.CCopyObjectProperties();

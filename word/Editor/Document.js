@@ -27088,6 +27088,14 @@ CDocument.prototype.IsCheckFormPlaceholder = function()
 	return this.CheckFormPlaceHolder;
 };
 
+CDocument.prototype.UpdateDrawingTextCache = function()
+{
+	if (docpostype_DrawingObjects === this.CurPos.Type)
+	{
+		this.DrawingObjects.updateDrawingTextCache();
+	}
+};
+
 function CDocumentSelectionState()
 {
     this.Id        = null;

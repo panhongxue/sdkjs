@@ -1248,6 +1248,15 @@ CShape.prototype.getDrawingObjectsController = function()
     return null;
 };
 
+CShape.prototype.updateDrawingTextCache = function()
+{
+	if (this.txWarpStructNoTransform)
+	{
+		this.recalcInfo.recalculateTxBoxContent = true;
+		this.recalculateText();
+	}
+};
+
 
 AscFormat.CTextBody.prototype.checkCurrentPlaceholder = function()
 {

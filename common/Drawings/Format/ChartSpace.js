@@ -9402,6 +9402,12 @@ function(window, undefined) {
 		}
 		return  oCurCandidate;
 	};
+	CChartSpace.prototype.updateDrawingTextCache = function () {
+		if (this.selection.title) {
+			this.recalcInfo.recalcTitle = this.selection.title;
+			this.recalculate();
+		}
+	};
 
 	function CAdditionalStyleData() {
 		this.dLbls = null;

@@ -116,6 +116,8 @@
 		this.presentation.UpdateInterface();
 		this.presentation.RecalculateCurPos(true, true);
 		this.presentation.private_UpdateCursorXY(true, true);
+
+		this.presentation.UpdateDrawingTextCache();
 		this.presentation.DrawingDocument.ClearCachePages();
 		this.presentation.DrawingDocument.FirePaint();
 

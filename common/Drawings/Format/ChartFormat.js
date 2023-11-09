@@ -2337,6 +2337,7 @@
         return null;
     };
 	CBaseChartObject.prototype.checkShapeAutoFit = function() {};
+	CBaseChartObject.prototype.updateDrawingTextCache = function() {};
 
     function getMinMaxFromArrPoints(aPoints) {
         if(Array.isArray(aPoints) && aPoints.length > 0) {

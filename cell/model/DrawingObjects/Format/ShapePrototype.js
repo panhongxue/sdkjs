@@ -832,6 +832,14 @@ CShape.prototype.Get_Worksheet = function()
         }
     };
 
+	CShape.prototype.updateDrawingTextCache = function()
+	{
+		if (this.txWarpStructNoTransform)
+		{
+			this.recalculateContent();
+		}
+	};
+
 AscFormat.CTextBody.prototype.Get_Worksheet = function()
 {
     return this.parent && this.parent.Get_Worksheet && this.parent.Get_Worksheet();

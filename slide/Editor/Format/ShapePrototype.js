@@ -677,6 +677,14 @@ CShape.prototype.OnContentReDraw = function(){
         return false;
     };
 
+	CShape.prototype.updateDrawingTextCache = function()
+	{
+		if (this.txWarpStructNoTransform)
+		{
+			this.recalculateContent();
+		}
+	};
+
     //--------------------------------------------------------export----------------------------------------------------
     window['AscFormat'] = window['AscFormat'] || {};
     window['AscFormat'].editorDeleteDrawingBase = editorDeleteDrawingBase;

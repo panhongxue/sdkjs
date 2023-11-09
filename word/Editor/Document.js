@@ -5939,7 +5939,7 @@ CDocument.prototype.Extend_ToPos = function(X, Y)
         }))
     {
         // Теперь нам нужно вставить таб по X
-        LastPara.Extend_ToPos(X);
+        LastPara.extendLastLineToPos(X);
     }
 
     LastPara.MoveCursorToEndPos();
@@ -10027,13 +10027,27 @@ CDocument.prototype.CorrectEnterText = function(oldValue, newValue)
 		oldText += String.fromCodePoint(oldCodePoints[index]);
 	}
 
-	let state     = this.SaveDocumentState(false);
+	let state    = this.SaveDocumentState(false);
+	let startPos = paragraph.getCurrentPos();
+	let endPos   = startPos;
+
+	let paraSearchPos = new CParagraphSearchPos();
+
 	let maxShifts = oldCodePoints.length;
 	let selectedText;
+	this.StartSelectionFromCurPos();
 	while (maxShifts >= 0)
 	{
-		this.MoveCursorLeft(true, false);
-		selectedText = this.GetSelectedText(true);
+		paraSearchPos.Reset();
+		paragraph.Get_LeftPos(paraSearchPos, endPos);
+
+		if (!paraSearchPos.IsFound())
+			break;
+
+		endPos = paraSearchPos.GetPos().Copy();
+
+		paragraph.SetSelectionContentPos(startPos, endPos, false);
+		selectedText = paragraph.GetSelectedText(true);
 
 		if (!selectedText || selectedText === oldText)
 			break;
@@ -10046,6 +10060,7 @@ CDocument.prototype.CorrectEnterText = function(oldValue, newValue)
 		this.LoadDocumentState(state);
 		return false;
 	}
+
 
 	this.StartAction(AscDFH.historydescription_Document_CorrectEnterText);
 

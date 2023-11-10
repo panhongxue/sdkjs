@@ -9365,6 +9365,13 @@
 						const oGraphicObject = this.selectedObjects[i];
 						oGraphicObject.updateDrawingTextCache();
 					}
+				},
+
+				startSelectionFromCurPos: function() {
+					const oContent = this.getTargetDocContent();
+					if(oContent) {
+						oContent.StartSelectionFromCurPos();
+					}
 				}
 			};
 

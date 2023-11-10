@@ -4585,11 +4585,25 @@ CSparklineView.prototype.setMinMaxValAx = function(minVal, maxVal, oSparklineGro
 		const oState = {};
 		this.controller.Save_DocumentStateBeforeLoadChanges(oState);
 
+		let oStartPos = oParagraph.getCurrentPos();
+		let oEndPos   = oStartPos;
+
+		let oParaSearchPos = new CParagraphSearchPos();
+
 		let nMaxShifts = arrOldCodePoints.length;
 		let sSelectedText;
+		this.controller.startSelectionFromCurPos();
 		while (nMaxShifts >= 0) {
-			this.controller.cursorMoveLeft(true, false);
-			sSelectedText = this.controller.GetSelectedText(true);
+			oParaSearchPos.Reset();
+			oParagraph.Get_LeftPos(oParaSearchPos, oEndPos);
+
+			if (!oParaSearchPos.IsFound())
+				break;
+
+			oEndPos = oParaSearchPos.GetPos().Copy();
+
+			oParagraph.SetSelectionContentPos(oStartPos, oEndPos, false);
+			sSelectedText = oParagraph.GetSelectedText(true);
 
 			if (!sSelectedText || sSelectedText === sOldText)
 				break;

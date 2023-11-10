@@ -7735,15 +7735,15 @@ CPresentation.prototype.CorrectEnterText = function (oldValue, newValue) {
 		return this.EnterText(newValue);
 
 
-	let oController = this.GetCurrentController();
-	if (!oController) {
+	let controller = this.GetCurrentController();
+	if (!controller) {
 		return false;
 	}
-	let oDocContent = oController.getTargetDocContent(false, false);
-	if (!oDocContent) {
+	let docContent = controller.getTargetDocContent(false, false);
+	if (!docContent) {
 		return false;
 	}
-	if (oDocContent.IsSelectionUse())
+	if (docContent.IsSelectionUse())
 		return false;
 
 	let newCodePoints = typeof (newValue) === "string" ? newValue.codePointsArray() : newValue;
@@ -7753,7 +7753,7 @@ CPresentation.prototype.CorrectEnterText = function (oldValue, newValue) {
 	if (!Array.isArray(oldCodePoints))
 		oldCodePoints = [oldCodePoints];
 
-	let paragraph = oDocContent.GetCurrentParagraph();
+	let paragraph = docContent.GetCurrentParagraph();
 	if (!paragraph)
 		return false;
 
@@ -7785,13 +7785,28 @@ CPresentation.prototype.CorrectEnterText = function (oldValue, newValue) {
 
 
 	let state = {};
-	oController.Save_DocumentStateBeforeLoadChanges(state);
+	controller.Save_DocumentStateBeforeLoadChanges(state);
+
+	let startPos = paragraph.getCurrentPos();
+	let endPos   = startPos;
+
+	let paraSearchPos = new CParagraphSearchPos();
+
 
 	let maxShifts = oldCodePoints.length;
 	let selectedText;
+	this.StartSelectionFromCurPos();
 	while (maxShifts >= 0) {
-		this.MoveCursorLeft(true, false);
-		selectedText = this.GetSelectedText(true);
+		paraSearchPos.Reset();
+		paragraph.Get_LeftPos(paraSearchPos, endPos);
+
+		if (!paraSearchPos.IsFound())
+			break;
+
+		endPos = paraSearchPos.GetPos().Copy();
+
+		paragraph.SetSelectionContentPos(startPos, endPos, false);
+		selectedText = paragraph.GetSelectedText(true);
 
 		if (!selectedText || selectedText === oldText)
 			break;
@@ -7801,8 +7816,8 @@ CPresentation.prototype.CorrectEnterText = function (oldValue, newValue) {
 
 	if (selectedText !== oldText || this.IsSelectionLocked(AscCommon.changestype_Drawing_Props, null, true)) {
 
-		oController.resetSelection()
-		oController.loadDocumentStateAfterLoadChanges(state, this.CurPage);
+		controller.resetSelection()
+		controller.loadDocumentStateAfterLoadChanges(state, this.CurPage);
 		return false;
 	}
 
@@ -7811,7 +7826,7 @@ CPresentation.prototype.CorrectEnterText = function (oldValue, newValue) {
 	this.DrawingDocument.TargetStart();
 	this.DrawingDocument.TargetShow();
 
-	oDocContent.Remove(1, true, false, true);
+	docContent.Remove(1, true, false, true);
 
 	for (let index = 0, count = newCodePoints.length; index < count; ++index) {
 		let codePoint = newCodePoints[index];
@@ -12425,6 +12440,12 @@ CPresentation.prototype.UpdateDrawingTextCache = function () {
 	const oController = this.GetCurrentController();
 	if (oController) {
 		oController.updateDrawingTextCache();
+	}
+};
+CPresentation.prototype.StartSelectionFromCurPos = function () {
+	const oController = this.GetCurrentController();
+	if (oController) {
+		oController.startSelectionFromCurPos();
 	}
 };
 

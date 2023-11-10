@@ -174,6 +174,13 @@
 		}
 	}
 
+	function ClearParagraph(p) {
+		if (!p)
+			return;
+
+		p.RemoveFromContent(0, p.GetElementsCount());
+	}
+
 
   //--------------------------------------------------------export----------------------------------------------------
   AscTest.CreateLogicDocument       = CreateLogicDocument;
@@ -194,6 +201,7 @@
   AscTest.GetDrawingObjects         = GetDrawingObjects;
   AscTest.AddTextArt                = AddTextArt;
   AscTest.SelectDrawings            = SelectDrawings;
+  AscTest.ClearParagraph            = ClearParagraph;
 
 
 })(window);

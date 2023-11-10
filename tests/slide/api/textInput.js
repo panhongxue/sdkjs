@@ -122,6 +122,12 @@ $(function () {
 			EnterTextCompositeInput("Zzz");
 			CorrectEnterText("3Zzz", "$");
 			assert.strictEqual(GetParagraphText(paragraph), "He123ABCDDllo World!?12$", "Add text 'Zzz' with composite input and correct it from '3Zzz' to '$'");
+
+			AscTest.ClearParagraph(paragraph);
+			EnterTextCompositeInput("x");
+			EnterTextCompositeInput("yz");
+			CorrectEnterText("yz", "x");
+			assert.strictEqual(GetParagraphText(paragraph), "xx", "Test special case, when added symbols collect to a single grapheme with previous symbols");
 		};
 
 		const done = assert.async();

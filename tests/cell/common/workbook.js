@@ -61,6 +61,7 @@
 	AscCommonExcel.WorksheetView.prototype._fixVisibleRange = function () {};
 	AscCommonExcel.WorksheetView.prototype.getCursorTypeFromXY = function () {return {};};
 	AscCommonExcel.WorksheetView.prototype._calcActiveCellOffset = function () {return {};};
+	AscCommonExcel.WorksheetView.prototype._drawFrozenPaneLines = function () {};
 	AscCommonExcel.WorksheetView.prototype._prepareDrawingObjects = function () {
 		this.objectRender = new AscFormat.DrawingObjects();
 		this.objectRender.init(this);
@@ -216,6 +217,10 @@
 		editor.collaborativeEditing.endCollaborationEditing();
 	}
 
+	function InitCoAuthoring() {
+		editor._coAuthoringInitEnd();
+	}
+
 	function GetCellEditorText() {
 		return AscCommonExcel.getFragmentsText(cellEditor.options.fragments);
 	}
@@ -278,6 +283,13 @@
 		editor.AddTextWithPr("Arial", sText.codePointsArray());
 	}
 
+	function ClearParagraph(p) {
+		if (!p)
+			return;
+
+		p.RemoveFromContent(0, p.GetElementsCount());
+	}
+
 
 	window.AscTest = window.AscTest || {};
 	AscTest.InitEditor = InitEditor;
@@ -301,4 +313,6 @@
 	AscTest.EndCompositeInput = EndCompositeInput;
 	AscTest.EnterTextCompositeInput = EnterTextCompositeInput;
 	AscTest.AddTextWithPr = AddTextWithPr;
+	AscTest.ClearParagraph = ClearParagraph;
+	AscTest.InitCoAuthoring = InitCoAuthoring;
 })(window);

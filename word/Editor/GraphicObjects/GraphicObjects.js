@@ -127,6 +127,7 @@ CGraphicObjects.prototype =
     startEditGeometry: DrawingObjectsController.prototype.startEditGeometry,
     haveTrackedObjects: DrawingObjectsController.prototype.haveTrackedObjects,
     updateDrawingTextCache: DrawingObjectsController.prototype.updateDrawingTextCache,
+	startSelectionFromCurPos: DrawingObjectsController.prototype.startSelectionFromCurPos,
 
     checkSelectedObjectsAndCallback: function(callback, args, bNoSendProps, nHistoryPointType, aAdditionaObjects, bNoCheckLock)
     {
@@ -2862,16 +2863,6 @@ CGraphicObjects.prototype =
     getArrayForGrouping: function()
     {
         return this.canGroup(true);
-    },
-
-
-    startSelectionFromCurPos: function()
-    {
-        var content = this.getTargetDocContent();
-        if(content)
-        {
-            content.StartSelectionFromCurPos();
-        }
     },
 
 

@@ -744,7 +744,7 @@
         var res = 0; var oWSView = self.getWorksheet();
         if(oWSView && oWSView.isSelectOnShape){
           if(oWSView.objectRender){
-            res = oWSView.objectRender.Get_CursorPosInCompositeText();
+            res = oWSView.objectRender.Get_MaxCursorPosInCompositeText();
           }
         }
         else if (self.isCellEditMode) {

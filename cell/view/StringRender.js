@@ -209,20 +209,12 @@
 
 
 			// For replacing invisible chars while rendering
-			/** @type RegExp */
+			/** @type {RegExp} */
 			this.reNL =  /[\r\n]/;
-			/** @type RegExp */
+			/** @type {RegExp} */
 			//this.reSpace = /[\n\r\u2028\u2029\t\v\f\u0020\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2008\u2009\u200A\u200B\u205F\u3000]/;
-			/** @type RegExp */
-			this.reReplaceNL =  /\r?\n|\r/g;
-
-				// For hyphenation
-			/** @type RegExp */
-			//this.reHypNL =  /[\n\r\u2028\u2029]/;
-			/** @type RegExp */
-			//this.reHypSp =  /[\t\v\f\u0020\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2008\u2009\u200A\u200B\u205F\u3000]/;
-			/** @type RegExp */
-			//this.reHyphen = /[\u002D\u00AD\u2010\u2012\u2013\u2014]/;
+			/** @type {RegExp} */
+			this.reReplaceNL = /\r?\n|\r/g;
 
 			return this;
 		}

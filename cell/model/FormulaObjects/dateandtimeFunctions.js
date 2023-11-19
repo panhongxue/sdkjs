@@ -2252,7 +2252,13 @@
 						}
 					}
 				}
-				!isEndOfCycle ? (dif >= 0 ? dif1++ : dif1--) : null;
+				if (!isEndOfCycle) {
+					if (dif >= 0) {
+						dif1++;
+					} else {
+						dif1--;
+					}
+				}
 			}
 			date = new cDate(val0.getTime() + dif1 * c_msPerDay);
 			val = date.getExcelDate();

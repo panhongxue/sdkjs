@@ -98,6 +98,9 @@
 
     
     // main class (this) in JS PDF scripts
+    /**
+     * @class
+     */
     function ApiDocument(oDoc) {
         this.doc = oDoc;
     };

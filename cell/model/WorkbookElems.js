@@ -147,7 +147,7 @@ function RgbColor(rgb)
 {
 	this.rgb = rgb;
 
-	this._hash = null;
+	this._hash = void 0;
 }
 RgbColor.prototype =
 {
@@ -235,7 +235,7 @@ function ThemeColor()
 	this.theme = null;
 	this.tint = null;
 
-	this._hash = null;
+	this._hash = void 0;
 }
 ThemeColor.prototype =
 {
@@ -626,8 +626,8 @@ var g_oFontProperties = {
 		this.skip = null;
 		this.repeat = null;
 
-		this._hash = null;
-		this._index = null;
+		this._hash = void 0;
+		this._index = void 0;
 	}
 	Font.prototype.Properties = g_oFontProperties;
 	Font.prototype.getHash = function() {
@@ -3149,7 +3149,7 @@ var g_oFontProperties = {
 		//Members
 		this.stop = [];
 
-		this._hash = null;
+		this._hash = void 0;
 	}
 	GradientFill.prototype.Properties = {
 		type: 0,
@@ -3345,7 +3345,7 @@ var g_oFontProperties = {
 		//Members
 		this.color = null;
 
-		this._hash = null;
+		this._hash = void 0;
 	}
 	GradientStop.prototype.Properties = {
 		position: 0,
@@ -3432,7 +3432,7 @@ var g_oFontProperties = {
 		this.fgColor = null;
 		this.bgColor = null;
 
-		this._hash = null;
+		this._hash = void 0;
 	}
 	PatternFill.prototype.Properties = {
 		patternType: 0,
@@ -3621,8 +3621,8 @@ var g_oFontProperties = {
 		this.patternFill = null;
 		this.gradientFill = null;
 
-		this._hash = null;
-		this._index = null;
+		this._hash = void 0;
+		this._index = void 0;
 	}
 
 	Fill.prototype.Properties = {
@@ -4018,8 +4018,8 @@ var g_oFontProperties = {
 		this.dd = false;
 		this.du = false;
 
-		this._hash = null;
-		this._index = null;
+		this._hash = void 0;
+		this._index = void 0;
 	}
 
 	Border.prototype.Properties = {
@@ -4391,8 +4391,8 @@ var g_oFontProperties = {
 		this.f = val.f;
 		this.id = val.id;
 
-		this._hash = null;
-		this._index = null;
+		this._hash = void 0;
+		this._index = void 0;
 	}
 
 	Num.prototype.Properties = g_oNumProperties;
@@ -4544,8 +4544,8 @@ var g_oFontProperties = {
         this.hidden = null;
 
         //inner
-        this._hash = null;
-        this._index = null;
+        this._hash = void 0;
+        this._index = void 0;
         this.operationCache = {};
     }
 
@@ -5094,8 +5094,8 @@ var g_oFontProperties = {
 		this.ver = val.ver;
 		this.wrap = val.wrap;
 
-		this._hash = null;
-		this._index = null;
+		this._hash = void 0;
+		this._index = void 0;
 	}
 
 	Align.prototype.Properties = g_oAlignProperties;

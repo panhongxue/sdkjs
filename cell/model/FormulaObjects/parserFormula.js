@@ -3020,7 +3020,7 @@ parserHelp.setDigitSeparator(AscCommon.g_oDefaultCultureInfo.NumberDecimalSepara
 						var elem2 = matrix2 ? matrix2.getElementRowCol(dimension2.row === 1 ? 0 : iRow, dimension2.col === 1 ? 0 : iCol) : operand2;
 						res.addElement(func(elem1, elem2));
 					}
-					if (iRow < rowCount) {
+					if (iRow + 1 < rowCount) {
 						res.addRow();
 					}
 				}
@@ -5117,7 +5117,7 @@ _func[cElementType.array][cElementType.array] = function ( arg0, arg1, what, bbo
             _arg1 = arg1.getElementRowCol( iRow, iCol );
             retArr.addElement( _func[_arg0.type][_arg1.type]( _arg0, _arg1, what ) );
         }
-		if (iRow < arg0.getRowCount()) {
+		if (iRow + 1 < arg0.getRowCount()) {
 			retArr.addRow();
 		}
     }
@@ -8720,7 +8720,7 @@ function parserFormula( formula, parent, _ws ) {
 					_arg0 = area[iRow] && area[iRow][iCol] ? area[iRow][iCol] : new cEmpty();
 					retArr.addElement(_arg0);
 				}
-				if (iRow < rowCount) {
+				if (iRow + 1 < rowCount) {
 					retArr.addRow();
 				}
 			}
@@ -8765,7 +8765,7 @@ function parserFormula( formula, parent, _ws ) {
 					ref = is3d ? new cRef3D(ref.getName(), ws) : new cRef(ref.getName(), ws);
 					retArr.addElement(ref);
 				}
-				if (iRow <= countRow + bbox.r1) {
+				if (iRow + 1 <= countRow + bbox.r1) {
 					retArr.addRow();
 				}
 			}
@@ -8785,7 +8785,7 @@ function parserFormula( formula, parent, _ws ) {
 					_arg1 = arg1.getElementRowCol(iRow, iCol);
 					retArr.addElement(_func[_arg0.type][_arg1.type](_arg0, _arg1, what));
 				}
-				if (iRow < arg1.getRowCount()) {
+				if (iRow + 1 < arg1.getRowCount()) {
 					retArr.addRow();
 				}
 			}
@@ -8806,7 +8806,7 @@ function parserFormula( formula, parent, _ws ) {
 					_arg1 = arg1.getElementRowCol(iRow, iCol);
 					retArr.addElement(_func[_arg0.type][_arg1.type](_arg0, _arg1, what));
 				}
-				if (iRow < arg1.getRowCount()) {
+				if (iRow + 1 < arg1.getRowCount()) {
 					retArr.addRow();
 				}
 			}
@@ -8818,7 +8818,7 @@ function parserFormula( formula, parent, _ws ) {
 					_arg1 = arg1.getElementRowCol(0, iCol);
 					retArr.addElement(_func[_arg0.type][_arg1.type](_arg0, _arg1, what));
 				}
-				if (iRow < arg0.getRowCount()) {
+				if (iRow + 1 < arg0.getRowCount()) {
 					retArr.addRow();
 				}
 			}
@@ -8830,7 +8830,7 @@ function parserFormula( formula, parent, _ws ) {
 					_arg1 = arg1.getElementRowCol(0, iCol);
 					retArr.addElement(_func[_arg0.type][_arg1.type](_arg0, _arg1, what));
 				}
-				if (iRow < arg0.getRowCount()) {
+				if (iRow + 1 < arg0.getRowCount()) {
 					retArr.addRow();
 				}
 			}
@@ -8842,7 +8842,7 @@ function parserFormula( formula, parent, _ws ) {
 					_arg1 = arg1.getElementRowCol(iRow, 0);
 					retArr.addElement(_func[_arg0.type][_arg1.type](_arg0, _arg1, what));
 				}
-				if (iRow < arg1.getRowCount()) {
+				if (iRow + 1 < arg1.getRowCount()) {
 					retArr.addRow();
 				}
 			}
@@ -8949,7 +8949,7 @@ function parserFormula( formula, parent, _ws ) {
 					_arg1 = arg1Copy.getElementRowCol(iRow, iCol);
 					retArr.addElement(_func[_arg0.type][_arg1.type](_arg0, _arg1, what));
 				}
-				if (iRow < arrayMaxRows) {
+				if (iRow + 1 < arrayMaxRows) {
 					retArr.addRow();
 				}
 			}

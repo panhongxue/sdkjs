@@ -7583,7 +7583,7 @@ function BinaryFileReader(doc, openParams)
 {
     this.Document = doc;
 	this.openParams = openParams;
-    this.stream;
+    this.stream = null;
 	this.oReadResult = new DocReadResult(doc);
 	this.oReadResult.bCopyPaste = openParams.bCopyPaste;
 	this.oReadResult.disableRevisions = openParams.disableRevisions;
@@ -9187,9 +9187,9 @@ function Binary_pPrReader(doc, oReadResult, stream)
     this.Document = doc;
 	this.oReadResult = oReadResult;
     this.stream = stream;
-    this.pPr;
-    this.paragraph;
-	this.style;
+    this.pPr = null;
+    this.paragraph = null;
+	this.style = null;
 	this.isPrChange = false;
     this.bcr = new Binary_CommonReader(this.stream);
     this.brPrr = new Binary_rPrReader(this.Document, this.oReadResult, this.stream);
@@ -10033,7 +10033,7 @@ function Binary_rPrReader(doc, oReadResult, stream)
     this.Document = doc;
 	this.oReadResult = oReadResult;
     this.stream = stream;
-    this.rPr;
+    this.rPr = null;
     this.bcr = new Binary_CommonReader(this.stream);
     this.Read = function(stLen, rPr, run, paraRPr)
     {
@@ -17349,8 +17349,8 @@ function DocReadResult(doc) {
 	this.endnoteRefs = [];
 	this.bookmarksStarted = {};
 	this.moveRanges = {};
-	this.Application;
-	this.AppVersion;
+	this.Application = null;
+	this.AppVersion = null;
 	this.defaultTabStop = null;
 	this.TrackRevisions = null;
 	this.bdtr = null;

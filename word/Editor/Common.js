@@ -637,7 +637,6 @@ window['AscCommonWord'].CTextToTableEngine = CTextToTableEngine;
 		else (AscCommon.CollaborativeEditing.Is_Fast() && !AscCommon.CollaborativeEditing.Is_SingleUser())
 			return AscCommon.CollaborativeEditing.getCoHistory().checkAsYouTypeEnterText(run, inRunPos, codePoint);
 		
-		return false;
 	}
 	//--------------------------------------------------------export----------------------------------------------------
 	window['AscWord'] = window['AscWord'] || {};

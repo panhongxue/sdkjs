@@ -1243,29 +1243,29 @@
 
 		var style2       = document.createElement('style');
 		style2.type      = 'text/css';
-		style2.innerHTML = ".buttonRuler {\
-background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAwCAYAAAAYX/pXAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwwAADsMBx2+oZAAAABp0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuMTAw9HKhAAABhElEQVRIS62Uwa6CMBBF/VQNQcOCBS5caOICApEt3+Wv+AcmfQ7pbdreqY+CJifTdjpng727aZrMFmbB+/3erYEE+/3egMPhMPP57QR/EJCgKAoTs1hQlqURjsdjAESyPp1O7pwEVVWZ1+s1VyB7DemRoK5rN+CvNaRPgqZpgqHz+UwSnEklweVyCQbivX8mlQTX65UGfG63m+vLXRLc7/ekQHoAexK0bWs0uq5TKwli8Afq+94Mw+CQPe78K5D6eDzMOI4GVcCdr4IlOMEWfiP4fJpVkEDLA38ghgR+DgB/ICYQ5OYBCez7d1mAvQZ6gcBmAK010A8ENg8c9u2rZ6iBwL51R7z3z1ADgc2DJDYPZnA3ENi3rhLlgauBAO8/JpUHJEih5QF6iwRaHqC3SPANJ9jCbwTP53MVJNDywB+IIYGfA8AfiAkEqTyQDEAO+HlAgtw8IEFuHpAgNw9IkJsHJMjNAxLk5gEJ8P5jUnlAghRaHqC3SKDlAXqLBN9wgvVM5g/dFuEU6U2wnAAAAABJRU5ErkJggg==);\
-background-position: 0px 0px;\
-background-repeat: no-repeat;\
-}";
+		style2.innerHTML = ".buttonRuler {" +
+"background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAwCAYAAAAYX/pXAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwwAADsMBx2+oZAAAABp0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuMTAw9HKhAAABhElEQVRIS62Uwa6CMBBF/VQNQcOCBS5caOICApEt3+Wv+AcmfQ7pbdreqY+CJifTdjpng727aZrMFmbB+/3erYEE+/3egMPhMPP57QR/EJCgKAoTs1hQlqURjsdjAESyPp1O7pwEVVWZ1+s1VyB7DemRoK5rN+CvNaRPgqZpgqHz+UwSnEklweVyCQbivX8mlQTX65UGfG63m+vLXRLc7/ekQHoAexK0bWs0uq5TKwli8Afq+94Mw+CQPe78K5D6eDzMOI4GVcCdr4IlOMEWfiP4fJpVkEDLA38ghgR+DgB/ICYQ5OYBCez7d1mAvQZ6gcBmAK010A8ENg8c9u2rZ6iBwL51R7z3z1ADgc2DJDYPZnA3ENi3rhLlgauBAO8/JpUHJEih5QF6iwRaHqC3SPANJ9jCbwTP53MVJNDywB+IIYGfA8AfiAkEqTyQDEAO+HlAgtw8IEFuHpAgNw9IkJsHJMjNAxLk5gEJ8P5jUnlAghRaHqC3SKDlAXqLBN9wgvVM5g/dFuEU6U2wnAAAAABJRU5ErkJggg==);" +
+"background-position: 0px 0px;" +
+"background-repeat: no-repeat;" +
+"}";
 		_head.appendChild(style2);
 
 		var style3       = document.createElement('style');
 		style3.type      = 'text/css';
-		style3.innerHTML = ".buttonPrevPage {\
-background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAABgBAMAAADm/++TAAAABGdBTUEAALGPC/xhBQAAABJQTFRFAAAA////UVNVu77Cenp62Nrc3x8hMQAAAAF0Uk5TAEDm2GYAAABySURBVCjPY2AgETDBGEoKUAElJcJSxANjKGAwDQWDYAKMIBhDSRXCCFJSIixF0GS4M+AMExcwcCbAcIQxBEUgDEdBQcJSBE2GO4PU6IJHASxS4NGER4p28YWIAlikwKMJjxTt4gsRBbBIgUcTHini4wsAwMmIvYZODL0AAAAASUVORK5CYII=);\
-background-position: 0px 0px;\
-background-repeat: no-repeat;\
-}";
+		style3.innerHTML = ".buttonPrevPage {" +
+"background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAABgBAMAAADm/++TAAAABGdBTUEAALGPC/xhBQAAABJQTFRFAAAA////UVNVu77Cenp62Nrc3x8hMQAAAAF0Uk5TAEDm2GYAAABySURBVCjPY2AgETDBGEoKUAElJcJSxANjKGAwDQWDYAKMIBhDSRXCCFJSIixF0GS4M+AMExcwcCbAcIQxBEUgDEdBQcJSBE2GO4PU6IJHASxS4NGER4p28YWIAlikwKMJjxTt4gsRBbBIgUcTHini4wsAwMmIvYZODL0AAAAASUVORK5CYII=);" +
+"background-position: 0px 0px;" +
+"background-repeat: no-repeat;" +
+"}";
 		_head.appendChild(style3);
 
 		var style4       = document.createElement('style');
 		style4.type      = 'text/css';
-		style4.innerHTML = ".buttonNextPage {\
-background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAABgBAMAAADm/++TAAAABGdBTUEAALGPC/xhBQAAABJQTFRFAAAA////UVNVu77Cenp62Nrc3x8hMQAAAAF0Uk5TAEDm2GYAAABySURBVCjPY2AgETDBGEoKUAElJcJSxANjKGAwDQWDYAKMIBhDSRXCCFJSIixF0GS4M+AMExcwcCbAcIQxBEUgDEdBQcJSBE2GO4PU6IJHASxS4NGER4p28YWIAlikwKMJjxTt4gsRBbBIgUcTHini4wsAwMmIvYZODL0AAAAASUVORK5CYII=);\
-background-position: 0px -48px;\
-background-repeat: no-repeat;\
-}";
+		style4.innerHTML = ".buttonNextPage {" +
+"background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAABgBAMAAADm/++TAAAABGdBTUEAALGPC/xhBQAAABJQTFRFAAAA////UVNVu77Cenp62Nrc3x8hMQAAAAF0Uk5TAEDm2GYAAABySURBVCjPY2AgETDBGEoKUAElJcJSxANjKGAwDQWDYAKMIBhDSRXCCFJSIixF0GS4M+AMExcwcCbAcIQxBEUgDEdBQcJSBE2GO4PU6IJHASxS4NGER4p28YWIAlikwKMJjxTt4gsRBbBIgUcTHini4wsAwMmIvYZODL0AAAAASUVORK5CYII=);" +
+"background-position: 0px -48px;" +
+"background-repeat: no-repeat;" +
+"}";
 		_head.appendChild(style4);
 	};
 
@@ -1277,31 +1277,31 @@ background-repeat: no-repeat;\
 		this.CreateCSS();
 
 		if (this.HtmlElement != null)
-			this.HtmlElement.innerHTML = ("<div id=\"id_main\" class=\"block_elem\" style=\"touch-action:none;-ms-touch-action: none;-moz-user-select:none;-khtml-user-select:none;user-select:none;background-color:" + AscCommon.GlobalSkin.BackgroundColor + ";overflow:hidden;\" UNSELECTABLE=\"on\">\
-								<div id=\"id_panel_left\" class=\"block_elem\">\
-									<canvas id=\"id_buttonTabs\" class=\"block_elem\"></canvas>\
-									<canvas id=\"id_vert_ruler\" class=\"block_elem\"></canvas>\
-								</div>\
-									<div id=\"id_panel_top\" class=\"block_elem\">\
-									<canvas id=\"id_hor_ruler\" class=\"block_elem\"></canvas>\
-									</div>\
-                                    <div id=\"id_main_view\" class=\"block_elem\" style=\"touch-action:none;overflow:hidden\">\
-                                        <canvas id=\"id_viewer\" class=\"block_elem\" style=\"touch-action:none;-ms-touch-action: none;-webkit-user-select: none; background-color:" + AscCommon.GlobalSkin.BackgroundColor + ";z-index:1\"></canvas>\
-									    <canvas id=\"id_viewer_overlay\" class=\"block_elem\" style=\"touch-action:none;-ms-touch-action: none;-webkit-user-select: none; z-index:2\"></canvas>\
-									    <div id=\"id_target_cursor\" class=\"block_elem\" width=\"1\" height=\"1\" style=\"touch-action:none;-ms-touch-action: none;-webkit-user-select: none;width:2px;height:13px;z-index:4;\"></div>\
-                                    </div>\
-								</div>\
-									<div id=\"id_panel_right\" class=\"block_elem\" style=\"touch-action:none;margin-right:1px;background-color:" + AscCommon.GlobalSkin.ScrollBackgroundColor + ";\">\
-									<div id=\"id_buttonRulers\" class=\"block_elem buttonRuler\"></div>\
-									<div id=\"id_vertical_scroll\" style=\"left:0;top:0px;width:14px;overflow:hidden;position:absolute;\">\
-									</div>\
-									<div id=\"id_buttonPrevPage\" class=\"block_elem buttonPrevPage\"></div>\
-									<div id=\"id_buttonNextPage\" class=\"block_elem buttonNextPage\"></div>\
-								</div>\
-									<div id=\"id_horscrollpanel\" class=\"block_elem\" style=\"touch-action:none;margin-bottom:1px;background-color:" + AscCommon.GlobalSkin.ScrollBackgroundColor + ";\">\
-									<div id=\"id_horizontal_scroll\" style=\"left:0px;top:0;height:14px;overflow:hidden;position:absolute;width:100%;\">\
-									</div>\
-									</div>" + this.HtmlElement.innerHTML);
+			this.HtmlElement.innerHTML = ("<div id=\"id_main\" class=\"block_elem\" style=\"touch-action:none;-ms-touch-action: none;-moz-user-select:none;-khtml-user-select:none;user-select:none;background-color:" + AscCommon.GlobalSkin.BackgroundColor + ";overflow:hidden;\" UNSELECTABLE=\"on\">" +
+								"<div id=\"id_panel_left\" class=\"block_elem\">" +
+									"<canvas id=\"id_buttonTabs\" class=\"block_elem\"></canvas>" +
+									"<canvas id=\"id_vert_ruler\" class=\"block_elem\"></canvas>" +
+								"</div>" +
+									"<div id=\"id_panel_top\" class=\"block_elem\">" +
+									"<canvas id=\"id_hor_ruler\" class=\"block_elem\"></canvas>" +
+									"</div>" +
+                                    "<div id=\"id_main_view\" class=\"block_elem\" style=\"touch-action:none;overflow:hidden\">" +
+                                        "<canvas id=\"id_viewer\" class=\"block_elem\" style=\"touch-action:none;-ms-touch-action: none;-webkit-user-select: none; background-color:" + AscCommon.GlobalSkin.BackgroundColor + ";z-index:1\"></canvas>" +
+									    "<canvas id=\"id_viewer_overlay\" class=\"block_elem\" style=\"touch-action:none;-ms-touch-action: none;-webkit-user-select: none; z-index:2\"></canvas>" +
+									    "<div id=\"id_target_cursor\" class=\"block_elem\" width=\"1\" height=\"1\" style=\"touch-action:none;-ms-touch-action: none;-webkit-user-select: none;width:2px;height:13px;z-index:4;\"></div>" +
+                                    "</div>" +
+								"</div>" +
+									"<div id=\"id_panel_right\" class=\"block_elem\" style=\"touch-action:none;margin-right:1px;background-color:" + AscCommon.GlobalSkin.ScrollBackgroundColor + ";\">" +
+									"<div id=\"id_buttonRulers\" class=\"block_elem buttonRuler\"></div>" +
+									"<div id=\"id_vertical_scroll\" style=\"left:0;top:0px;width:14px;overflow:hidden;position:absolute;\">" +
+									"</div>" +
+									"<div id=\"id_buttonPrevPage\" class=\"block_elem buttonPrevPage\"></div>" +
+									"<div id=\"id_buttonNextPage\" class=\"block_elem buttonNextPage\"></div>" +
+									"</div>" +
+									"<div id=\"id_horscrollpanel\" class=\"block_elem\" style=\"touch-action:none;margin-bottom:1px;background-color:" + AscCommon.GlobalSkin.ScrollBackgroundColor + ";\">" +
+									"<div id=\"id_horizontal_scroll\" style=\"left:0px;top:0;height:14px;overflow:hidden;position:absolute;width:100%;\">" +
+									"</div>" +
+									"</div>" + this.HtmlElement.innerHTML);
 	};
 
 	asc_docs_api.prototype.asc_setSkin = function(theme)

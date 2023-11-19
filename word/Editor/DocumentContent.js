@@ -3231,8 +3231,6 @@ CDocumentContent.prototype.AddInlineTable = function(nCols, nRows, nMode)
 			return Item.AddInlineTable(nCols, nRows, nMode);
 		}
 	}
-
-	return null;
 };
 CDocumentContent.prototype.AddToParagraph = function(ParaItem, bRecalculate)
 {
@@ -6681,8 +6679,6 @@ CDocumentContent.prototype.CheckPosInSelection = function(X, Y, CurPage, NearPos
 							var ElementPageIndex = this.private_GetElementPageIndexByXY(ContentPos, X, Y, CurPage);
 							return this.Content[ContentPos].CheckPosInSelection(X, Y, ElementPageIndex, NearPos);
 						}
-
-						return false;
 					}
 				}
 				case selectionflag_Numbering :

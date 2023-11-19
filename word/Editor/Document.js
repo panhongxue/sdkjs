@@ -4467,11 +4467,7 @@ CDocument.prototype.Recalculate_PageColumn                   = function()
             }
             else
             {
-                if (_SectionIndex > 0)
-                {
-                    // Сюда мы никогда не должны попадать
-                }
-
+				// _SectionIndex никогда не должен быть > 0 
                 _PageIndex    = Math.max(PageIndex - 1, 0);
                 _SectionIndex = this.Pages[_PageIndex].Sections.length - 1;
                 _ColumnIndex  = 0;
@@ -18997,10 +18993,6 @@ CDocument.prototype.controller_AddInlineTable = function(nCols, nRows, nMode)
 	{
 		return Item.AddInlineTable(nCols, nRows, nMode);
 	}
-
-	this.Recalculate();
-
-	return null;
 };
 CDocument.prototype.controller_ClearParagraphFormatting = function(isClearParaPr, isClearTextPr)
 {

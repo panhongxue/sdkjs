@@ -11110,7 +11110,6 @@
 					}
 					return null;
 				}
-				return;
 			}
 			if(oSelectionState2.groupSelection) {
 				if(oSelectionState1.groupObject !== oSelectionState2.groupObject) {

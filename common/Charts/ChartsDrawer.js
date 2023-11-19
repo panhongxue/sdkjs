@@ -15696,23 +15696,23 @@ CColorObj.prototype =
 	{
 		this.chartsDrawer = chartsDrawer;
 
-		this.x;//startX
-		this.y;//startY
-		this.z;//gapDepth
+		this.x = null;//startX
+		this.y = null;//startY
+		this.z = null;//gapDepth
 
-		this.w;//individualBarWidth
-		this.h;//height
-		this.d;//perspectiveDepth
+		this.w = null;//individualBarWidth
+		this.h = null;//height
+		this.d = null;//perspectiveDepth
 
-		this.onlyFrontFaces;
-		this.val;
-		this.rotated ;//hbar
+		this.onlyFrontFaces = null;
+		this.val = null;
+		this.rotated = null;//hbar
 
-		this.dRadius1;
-		this.dRadius2;
+		this.dRadius1 = null;
+		this.dRadius2 = null;
 		//нужны только для конусов uRadius1/uRadius2
-		this.uRadius1;
-		this.uRadius2;
+		this.uRadius1 = null;
+		this.uRadius2 = null;
 	}
 
 	calcShapesHelper.prototype.setProps = function (x, y, z, w, h, d, onlyFrontFaces, val, rotated, dRadius1, dRadius2, uRadius1, uRadius2, cone) {

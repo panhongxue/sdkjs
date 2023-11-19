@@ -1175,9 +1175,8 @@ function(window, undefined) {
 
 		if (!bForceVertical || true) {
 			oLabelsBox.layoutVertNormal(fX, fDistance, fYStart, fInterval, bOnTickMark_);
-		} else {
-			//TODO: vertical text
 		}
+		//TODO: vertical text
 	}
 
 	function fLayoutRadarCatLabelsBox(oLabelsBox, oRect, aAlphaPoints) {
@@ -3878,7 +3877,6 @@ function(window, undefined) {
 				return AscFormat.CROSS_BETWEEN_BETWEEN;
 			}
 		}
-		return AscFormat.CROSS_BETWEEN_BETWEEN;
 	};
 	CChartSpace.prototype.getValAxisCrossType = function () {
 		if (this.chart && this.chart.plotArea && this.chart.plotArea.charts[0]) {

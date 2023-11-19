@@ -587,13 +587,13 @@
 
 	function CFontCacheSizes()
 	{
-		this.ushUnicode; // Значение символа в юникоде
-		this.eState;     // Есть ли символ в шрифте/стандартном шрифте
-		this.nCMapIndex; // Номер таблицы 'cmap', в которой был найден данный символ
+		this.ushUnicode = null; // Значение символа в юникоде
+		this.eState = null;     // Есть ли символ в шрифте/стандартном шрифте
+		this.nCMapIndex = null; // Номер таблицы 'cmap', в которой был найден данный символ
 
-		this.ushGID;
+		this.ushGID = null;
 
-		this.fAdvanceX;
+		this.fAdvanceX = null;
 
 		this.oBBox = new CBBox();
 		this.oMetrics = new CMetrics();

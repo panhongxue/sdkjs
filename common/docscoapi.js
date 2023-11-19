@@ -633,7 +633,7 @@
     this._state = ConnectionState.None;
     // Online-пользователи в документе
     this._participants = {};
-    this._participantsTimestamp;
+    this._participantsTimestamp = null;
     this._countEditUsers = 0;
     this._countUsers = 0;
     this._countCalls = 0;

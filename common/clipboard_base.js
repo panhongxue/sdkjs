@@ -352,21 +352,16 @@
 			this._console_log("onbeforepaste");
 			
 			//TODO условие добавил, чтобы не терялся фокус со строки формул при copy/paste. проверить!
-			if (!this.Api.asc_IsFocus(true))
-				return;
-			
-			//if (isAttackEmulate === true)
-			{
-				this.CommonDiv = this.CommonDiv_Check();
-				this.CommonDiv_Start();
-
-				this.CommonDiv.focus();
-				this.StartFocus();
-				this.CommonDiv_Select();
+			if (!this.Api.asc_IsFocus(true)) {
 				return;
 			}
+			this.CommonDiv = this.CommonDiv_Check();
+			this.CommonDiv_Start();
 
-			return false;
+			this.CommonDiv.focus();
+			this.StartFocus();
+			this.CommonDiv_Select();
+			return;
 		},
 
 		_private_onbeforecopy_select : function()

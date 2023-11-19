@@ -8314,8 +8314,6 @@ CTable.prototype.GetCurrentParagraph = function(bIgnoreSelection, arrSelectedPar
 			return oCellContent.GetCurrentParagraph(bIgnoreSelection, null, oPr);
 		}
 	}
-
-	return null;
 };
 CTable.prototype.GetCurrentTablesStack = function(arrTables)
 {

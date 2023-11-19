@@ -450,11 +450,6 @@
 
 	CGraphicFrame.prototype.getTransformMatrix = function () {
 		return this.transform;
-		if (this.recalcInfo.recalculateTransform) {
-			this.recalculateTransform();
-			this.recalcInfo.recalculateTransform = false;
-		}
-		return this.transform;
 	};
 
 	CGraphicFrame.prototype.OnContentReDraw = function () {

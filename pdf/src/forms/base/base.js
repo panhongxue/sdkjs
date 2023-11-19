@@ -1511,12 +1511,6 @@
 
     // pdf api methods
 
-    /**
-	 * A string that sets the trigger for the action. Values are:
-	 * @typedef {"MouseUp" | "MouseDown" | "MouseEnter" | "MouseExit" | "OnFocus" | "OnBlur" | "Keystroke" | "Validate" | "Calculate" | "Format"} cTrigger
-	 * For a list box, use the Keystroke trigger for the Selection Change event.
-     */
-    
     CBaseField.prototype.RevertContentViewToOriginal = function() {
         this.content.ResetShiftView();
         this._curShiftView.x = this._originShiftView.x;

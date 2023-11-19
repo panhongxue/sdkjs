@@ -12170,7 +12170,7 @@
         this.personList = [];
         this.commentUniqueGuids = {};
 
-        this.defNameList;
+        this.defNameList = null;
 
         this.isCopyPaste = isCopyPaste;
         this.wb = wb;

@@ -340,22 +340,20 @@
 
 	CFile.prototype._pixelsToCanvas3d = function(pixels, width, height, isNoUseCacheManager) 
     {
-        var vs_source = "\
-attribute vec2 aVertex;\n\
-attribute vec2 aTex;\n\
-varying vec2 vTex;\n\
-void main() {\n\
-	gl_Position = vec4(aVertex, 0.0, 1.0);\n\
-	vTex = aTex;\n\
-}";
+        var vs_source = "attribute vec2 aVertex;\n" +
+        "attribute vec2 aTex;\n" +
+        "varying vec2 vTex;\n" +
+        "void main() {\n" +
+            "gl_Position = vec4(aVertex, 0.0, 1.0);\n" +
+            "vTex = aTex;\n" +
+        "}";
 
-        var fs_source = "\
-precision mediump float;\n\
-uniform sampler2D uTexture;\n\
-varying vec2 vTex;\n\
-void main() {\n\
-	gl_FragColor = texture2D(uTexture, vTex);\n\
-}";
+        var fs_source = "precision mediump float;\n" +
+        "uniform sampler2D uTexture;\n" +
+        "varying vec2 vTex;\n" +
+        "void main() {\n" +
+            "gl_FragColor = texture2D(uTexture, vTex);\n" +
+        "}";
         var canvas = null;
         if (this.cacheManager && isNoUseCacheManager !== true)
         {

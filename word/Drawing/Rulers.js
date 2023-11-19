@@ -1774,16 +1774,6 @@ function CHorRuler()
 
             // если вникуда - то ВСЕГДА margins
             return -1;
-
-            if (isColumnsInside2)
-                return 0;
-            if ((y >= _top && y <= _bottom) && !isTableInside)
-            {
-				if (x < _margin_left)
-					return -1;
-				if (x > _margin_right)
-					return -2;
-            }
         }
 
         return 0;

@@ -8060,8 +8060,8 @@ PivotFormatsManager.prototype.get = function(query) {
 		result = new AscCommonExcel.CellXfs();
 		const formatsCollectionItem = suitableFormatsCollectionItems[i];
 		const format = formatsCollectionItem.format;
-		const dxf = format.dxf;
 		/**@type {CellXfs} */
+		const dxf = format.dxf;
 		if (result.num === null && dxf && dxf.num) {
 			result.num = dxf.num;
 			result.setNum(dxf.getNum());

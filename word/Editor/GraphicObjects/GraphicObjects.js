@@ -1428,11 +1428,11 @@ CGraphicObjects.prototype =
         {
             this.graphicPages[pageIndex] = new CGraphicPage(pageIndex, this);
         }
-        if(!documentContent.IsHdrFtr()) {
+        if(!documentContent.IsHdrFtr())
             return this.graphicPages[pageIndex].getTableByXY(x, y, documentContent);
-        } else {
+        else
             return this.graphicPages[pageIndex].hdrFtrPage.getTableByXY(x, y, documentContent);
-        }
+        return null;
     },
 
     OnMouseDown: function(e, x, y, pageIndex)

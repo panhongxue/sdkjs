@@ -2632,6 +2632,8 @@
 							if (DiffRight2 > DiffRight) {
 								DiffRight = DiffRight2;
 							}
+						} else if (nElementType === AscCommonWord.type_BlockLevelSdt) {
+
 						}
 					}
 
@@ -5964,9 +5966,10 @@
 				let bResult = oGeometry.hitInPath(this.getCanvasContext(), x_t, y_t);
 				AscFormat.DIST_HIT_IN_LINE = dOldDIst;
 				return bResult;
-			} else {
-				return this.hitInBoundingRect(x, y);
 			}
+			else
+				return this.hitInBoundingRect(x, y);
+			return false;
 		};
 
 		CShape.prototype.hitInInnerArea = function (x, y) {

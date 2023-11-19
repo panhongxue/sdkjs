@@ -1109,11 +1109,9 @@
 				}
 			}
 		}
-		if (range) {
-			range.isName = isName;
-			range.formulaRangeLength = r.oper.value.length;
-			range.cursorePos = _s;
-		}
+		range ? range.isName = isName : null;
+		range ? range.formulaRangeLength = r.oper.value.length : null;
+		range ? range.cursorePos = _s : null;
 		return !range ? {range: null} : {range: range, wsName: wsName};
 	};
 

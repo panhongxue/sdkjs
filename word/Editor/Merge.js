@@ -93,11 +93,11 @@
 
     CMergeComparisonNode.prototype.insertContentAfterRemoveChanges = function (aContentToInsert, nInsertPosition, comparison, options) {
 			const oElement = this.getApplyParagraph(comparison);
-			let t = 0;
+	    let t = 0;
 			const arrSkippedComments = [];
 			if (options && AscFormat.isRealNumber(options.nCommentInsertIndex))
 			{
-				for (;t < aContentToInsert.length; t += 1)
+				for (t;t < aContentToInsert.length; t += 1)
 				{
 					if (aContentToInsert[t] instanceof AscCommon.ParaComment)
 					{
@@ -123,7 +123,7 @@
 	        {
 		        oElement.AddToContent(nInsertPosition, arrSkippedComments[i]);
 	        }
-            for (; t < aContentToInsert.length; t += 1) {
+            for (t; t < aContentToInsert.length; t += 1) {
                 if(comparison.isElementForAdd(aContentToInsert[t]))
                 {
                     if (aContentToInsert[t] instanceof AscCommon.CParaRevisionMove) {

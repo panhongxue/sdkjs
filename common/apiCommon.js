@@ -5889,8 +5889,8 @@
 		this.Permissions = null;
 		this.Lang = null;
 		this.OfflineApp = false;
-		this.Encrypted = null;
-		this.EncryptedInfo = null;
+		this.Encrypted;
+		this.EncryptedInfo;
 		this.IsEnabledPlugins = true;
         this.IsEnabledMacroses = true;
 
@@ -6869,7 +6869,7 @@
 		this.minVersion = "";
 		this.version = "";
 		this.isConnector = false;
-		this.loader = null;
+		this.loader;
 
 		this.variations = [];
 	}

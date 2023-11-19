@@ -1135,9 +1135,9 @@ function CEditorPage(api)
 		}
 
 		this.ReaderModeDivWrapper = document.createElement('div');
-		this.ReaderModeDivWrapper.setAttribute("style", "z-index:11;font-family:arial;font-size:12pt;position:absolute;" +
-            "resize:none;padding:0px;display:block;" +
-            "margin:0px;left:0px;top:0px;background-color:#FFFFFF");
+		this.ReaderModeDivWrapper.setAttribute("style", "z-index:11;font-family:arial;font-size:12pt;position:absolute;\
+            resize:none;padding:0px;display:block;\
+            margin:0px;left:0px;top:0px;background-color:#FFFFFF");
 
 		var _c_h                               = parseInt(oThis.m_oMainView.HtmlElement.style.height);
 		this.ReaderModeDivWrapper.style.top    = _c_h + "px";

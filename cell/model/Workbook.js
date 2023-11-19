@@ -10951,6 +10951,10 @@
 				this.workbook.slicersUpdateAfterChangeTable(tables[i].DisplayName);
 			}
 		}
+		var pivot = false;
+		if (pivot) {
+
+		}
 	};
 
 
@@ -17834,9 +17838,11 @@
 			nStartRowCol = opt_by_row ? sortConditions[0].Ref.r1 : sortConditions[0].Ref.c1;
 			bAscent = !sortConditions[0].ConditionDescending;
 		}
-		//caseSensitive = opt_custom_sort.CaseSensitive;
-		//пока игнорируем данный флаг, поскольку сравнения строк в excel при сортировке работает иначе(например - "Green" > "green")
-		//возможно, стоит воспользоваться функцией localeCompare - но для этого необходимо проверить грамотное ли сравнение будет
+		if(opt_custom_sort) {
+			//caseSensitive = opt_custom_sort.CaseSensitive;
+			//пока игнорируем данный флаг, поскольку сравнения строк в excel при сортировке работает иначе(например - "Green" > "green")
+			//возможно, стоит воспользоваться функцией localeCompare - но для этого необходимо проверить грамотное ли сравнение будет
+		}
 
 		var nLastRow0, nLastCol0;
 		if (opt_by_row) {

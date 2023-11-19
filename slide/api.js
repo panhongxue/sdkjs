@@ -601,6 +601,7 @@
 		if (window.editor == undefined)
 		{
 			window.editor = this;
+			window.editor;
 			window['editor'] = window.editor;
 			Asc['editor'] = Asc.editor = this;
 
@@ -1302,29 +1303,29 @@
 
 		var style1       = document.createElement('style');
 		style1.type      = 'text/css';
-		style1.innerHTML = ".buttonTabs {" +
-"background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAA5CAMAAADjueCuAAAABGdBTUEAALGPC/xhBQAAAEhQTFRFAAAAWFhYZWVlSEhIY2NjV1dXQ0NDYWFhYmJiTk5OVlZWYGBgVFRUS0tLbGxsRERETExMZmZmVVVVXl5eR0dHa2trPj4+u77CpAZQrwAAAAF0Uk5TAEDm2GYAAABwSURBVDjL1dHHDoAgEEVR7NLr4P//qQm6EMaFxtje8oTF5ELIpU35Fstf3GegsPEBG+uwSYpNB1qNKreoDeNw/r6dLr/tnFpbbNZj8wKbk8W/1d6ZPjfrhdHx9c4fbA9wzMYWm3OFhbQmbC2ue6z9DCH/Exf/mU3YAAAAAElFTkSuQmCC);" +
-"background-position: 0px 0px;" +
-"background-repeat: no-repeat;" +
-"}";
+		style1.innerHTML = ".buttonTabs {\
+background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAA5CAMAAADjueCuAAAABGdBTUEAALGPC/xhBQAAAEhQTFRFAAAAWFhYZWVlSEhIY2NjV1dXQ0NDYWFhYmJiTk5OVlZWYGBgVFRUS0tLbGxsRERETExMZmZmVVVVXl5eR0dHa2trPj4+u77CpAZQrwAAAAF0Uk5TAEDm2GYAAABwSURBVDjL1dHHDoAgEEVR7NLr4P//qQm6EMaFxtje8oTF5ELIpU35Fstf3GegsPEBG+uwSYpNB1qNKreoDeNw/r6dLr/tnFpbbNZj8wKbk8W/1d6ZPjfrhdHx9c4fbA9wzMYWm3OFhbQmbC2ue6z9DCH/Exf/mU3YAAAAAElFTkSuQmCC);\
+background-position: 0px 0px;\
+background-repeat: no-repeat;\
+}";
 		_head.appendChild(style1);
 
 		var style3       = document.createElement('style');
 		style3.type      = 'text/css';
-		style3.innerHTML = ".buttonPrevPage {" +
-"background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAABgBAMAAADm/++TAAAABGdBTUEAALGPC/xhBQAAABJQTFRFAAAA////UVNVu77Cenp62Nrc3x8hMQAAAAF0Uk5TAEDm2GYAAABySURBVCjPY2AgETDBGEoKUAElJcJSxANjKGAwDQWDYAKMIBhDSRXCCFJSIixF0GS4M+AMExcwcCbAcIQxBEUgDEdBQcJSBE2GO4PU6IJHASxS4NGER4p28YWIAlikwKMJjxTt4gsRBbBIgUcTHini4wsAwMmIvYZODL0AAAAASUVORK5CYII=);" +
-"background-position: 0px 0px;" +
-"background-repeat: no-repeat;" +
-"}";
+		style3.innerHTML = ".buttonPrevPage {\
+background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAABgBAMAAADm/++TAAAABGdBTUEAALGPC/xhBQAAABJQTFRFAAAA////UVNVu77Cenp62Nrc3x8hMQAAAAF0Uk5TAEDm2GYAAABySURBVCjPY2AgETDBGEoKUAElJcJSxANjKGAwDQWDYAKMIBhDSRXCCFJSIixF0GS4M+AMExcwcCbAcIQxBEUgDEdBQcJSBE2GO4PU6IJHASxS4NGER4p28YWIAlikwKMJjxTt4gsRBbBIgUcTHini4wsAwMmIvYZODL0AAAAASUVORK5CYII=);\
+background-position: 0px 0px;\
+background-repeat: no-repeat;\
+}";
 		_head.appendChild(style3);
 
 		var style4       = document.createElement('style');
 		style4.type      = 'text/css';
-		style4.innerHTML = ".buttonNextPage {" +
-"background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAABgBAMAAADm/++TAAAABGdBTUEAALGPC/xhBQAAABJQTFRFAAAA////UVNVu77Cenp62Nrc3x8hMQAAAAF0Uk5TAEDm2GYAAABySURBVCjPY2AgETDBGEoKUAElJcJSxANjKGAwDQWDYAKMIBhDSRXCCFJSIixF0GS4M+AMExcwcCbAcIQxBEUgDEdBQcJSBE2GO4PU6IJHASxS4NGER4p28YWIAlikwKMJjxTt4gsRBbBIgUcTHini4wsAwMmIvYZODL0AAAAASUVORK5CYII=);" +
-"background-position: 0px -48px;" +
-"background-repeat: no-repeat;" +
-"}";
+		style4.innerHTML = ".buttonNextPage {\
+background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAABgBAMAAADm/++TAAAABGdBTUEAALGPC/xhBQAAABJQTFRFAAAA////UVNVu77Cenp62Nrc3x8hMQAAAAF0Uk5TAEDm2GYAAABySURBVCjPY2AgETDBGEoKUAElJcJSxANjKGAwDQWDYAKMIBhDSRXCCFJSIixF0GS4M+AMExcwcCbAcIQxBEUgDEdBQcJSBE2GO4PU6IJHASxS4NGER4p28YWIAlikwKMJjxTt4gsRBbBIgUcTHini4wsAwMmIvYZODL0AAAAASUVORK5CYII=);\
+background-position: 0px -48px;\
+background-repeat: no-repeat;\
+}";
 		_head.appendChild(style4);
 	};
 
@@ -1335,66 +1336,66 @@
 
 		this.CreateCSS();
 
-		var _innerHTML = "<div id=\"id_panel_thumbnails\" class=\"block_elem\" style=\"touch-action:none;-webkit-touch-callout:none;background-color:" + AscCommon.GlobalSkin.BackgroundColorThumbnails + ";\">" +
-									"<div id=\"id_panel_thumbnails_split\" class=\"block_elem\" style=\"pointer-events:none;background-color:" + AscCommon.GlobalSkin.BackgroundColorThumbnails + ";\"></div>" +
-		                            "<canvas id=\"id_thumbnails_background\" class=\"block_elem\" style=\"-ms-touch-action: none;-webkit-user-select: none;z-index:1\"></canvas>" +
-		                            "<canvas id=\"id_thumbnails\" class=\"block_elem\" style=\"-ms-touch-action: none;-webkit-user-select: none;z-index:2\"></canvas>" +
-		                            "<div id=\"id_vertical_scroll_thmbnl\" style=\"left:0;top:0;width:1px;overflow:hidden;position:absolute;\">" +
-									"</div>" +
-		                        "</div>" +
-		                    "<div id=\"id_main_parent\" class=\"block_elem\" style=\"touch-action:none;-ms-touch-action: none;-moz-user-select:none;-khtml-user-select:none;user-select:none;overflow:hidden;border-left-width: 1px;border-left-color:" + AscCommon.GlobalSkin.BorderSplitterColor + "; border-left-style: solid;\" UNSELECTABLE=\"on\">" +
-                            "<div id=\"id_main\" class=\"block_elem\" style=\"z-index:5;-ms-touch-action: none;-moz-user-select:none;-khtml-user-select:none;user-select:none;background-color:" + AscCommon.GlobalSkin.BackgroundColor + ";overflow:hidden;\" UNSELECTABLE=\"on\">" +
-								"<div id=\"id_panel_left\" class=\"block_elem\">" +
-									"<canvas id=\"id_buttonTabs\" class=\"block_elem\"></canvas>" +
-									"<canvas id=\"id_vert_ruler\" class=\"block_elem\"></canvas>" +
-								"</div>" +
-                                "<div id=\"id_panel_top\" class=\"block_elem\">" +
-									"<canvas id=\"id_hor_ruler\" class=\"block_elem\"></canvas>" +
-                                "</div>" +
-                                "<div id=\"id_main_view\" class=\"block_elem\" style=\"overflow:hidden\">" +
-                                    "<canvas id=\"id_viewer\" class=\"block_elem\" style=\"-ms-touch-action: none;-webkit-user-select: none;background-color:" + AscCommon.GlobalSkin.BackgroundColor + ";z-index:6\"></canvas>" +
-                                    "<canvas id=\"id_viewer_overlay\" class=\"block_elem\" style=\"-ms-touch-action: none;-webkit-user-select: none;z-index:7\"></canvas>" +
-                                    "<div id=\"id_target_cursor\" class=\"block_elem\" width=\"1\" height=\"1\" style=\"-ms-touch-action: none;-webkit-user-select: none;width:2px;height:13px;display:none;z-index:9;\"></div>" +
-                                "</div>" +
-							    "<div id=\"id_panel_right\" class=\"block_elem\" style=\"margin-right:1px;background-color:" + AscCommon.GlobalSkin.BackgroundColor + ";z-index:0;\">" +
-							        "<div id=\"id_buttonRulers\" class=\"block_elem buttonRuler\"></div>" +
-								    "<div id=\"id_vertical_scroll\" style=\"left:0;top:0;width:14px;overflow:hidden;position:absolute;\">" +
-								    "</div>" +
-								    "<div id=\"id_buttonPrevPage\" class=\"block_elem buttonPrevPage\"></div>" +
-								    "<div id=\"id_buttonNextPage\" class=\"block_elem buttonNextPage\"></div>" +
-                                "</div>" +
-                                "<div id=\"id_horscrollpanel\" class=\"block_elem\" style=\"margin-bottom:1px;background-color:" + AscCommon.GlobalSkin.BackgroundColor + ";\">" +
-                                    "<div id=\"id_horizontal_scroll\" style=\"left:0;top:0;height:14px;overflow:hidden;position:absolute;width:100%;\">" +
-                                    "</div>" +
-                                "</div>" +
-                            "</div>";
+		var _innerHTML = "<div id=\"id_panel_thumbnails\" class=\"block_elem\" style=\"touch-action:none;-webkit-touch-callout:none;background-color:" + AscCommon.GlobalSkin.BackgroundColorThumbnails + ";\">\
+									<div id=\"id_panel_thumbnails_split\" class=\"block_elem\" style=\"pointer-events:none;background-color:" + AscCommon.GlobalSkin.BackgroundColorThumbnails + ";\"></div>\
+		                            <canvas id=\"id_thumbnails_background\" class=\"block_elem\" style=\"-ms-touch-action: none;-webkit-user-select: none;z-index:1\"></canvas>\
+		                            <canvas id=\"id_thumbnails\" class=\"block_elem\" style=\"-ms-touch-action: none;-webkit-user-select: none;z-index:2\"></canvas>\
+		                            <div id=\"id_vertical_scroll_thmbnl\" style=\"left:0;top:0;width:1px;overflow:hidden;position:absolute;\">\
+									</div>\
+		                        </div>\
+		                    <div id=\"id_main_parent\" class=\"block_elem\" style=\"touch-action:none;-ms-touch-action: none;-moz-user-select:none;-khtml-user-select:none;user-select:none;overflow:hidden;border-left-width: 1px;border-left-color:" + AscCommon.GlobalSkin.BorderSplitterColor + "; border-left-style: solid;\" UNSELECTABLE=\"on\">\
+                            <div id=\"id_main\" class=\"block_elem\" style=\"z-index:5;-ms-touch-action: none;-moz-user-select:none;-khtml-user-select:none;user-select:none;background-color:" + AscCommon.GlobalSkin.BackgroundColor + ";overflow:hidden;\" UNSELECTABLE=\"on\">\
+								<div id=\"id_panel_left\" class=\"block_elem\">\
+									<canvas id=\"id_buttonTabs\" class=\"block_elem\"></canvas>\
+									<canvas id=\"id_vert_ruler\" class=\"block_elem\"></canvas>\
+								</div>\
+                                <div id=\"id_panel_top\" class=\"block_elem\">\
+									<canvas id=\"id_hor_ruler\" class=\"block_elem\"></canvas>\
+                                </div>\
+                                <div id=\"id_main_view\" class=\"block_elem\" style=\"overflow:hidden\">\
+                                    <canvas id=\"id_viewer\" class=\"block_elem\" style=\"-ms-touch-action: none;-webkit-user-select: none;background-color:" + AscCommon.GlobalSkin.BackgroundColor + ";z-index:6\"></canvas>\
+                                    <canvas id=\"id_viewer_overlay\" class=\"block_elem\" style=\"-ms-touch-action: none;-webkit-user-select: none;z-index:7\"></canvas>\
+                                    <div id=\"id_target_cursor\" class=\"block_elem\" width=\"1\" height=\"1\" style=\"-ms-touch-action: none;-webkit-user-select: none;width:2px;height:13px;display:none;z-index:9;\"></div>\
+                                </div>\
+							    <div id=\"id_panel_right\" class=\"block_elem\" style=\"margin-right:1px;background-color:" + AscCommon.GlobalSkin.BackgroundColor + ";z-index:0;\">\
+							        <div id=\"id_buttonRulers\" class=\"block_elem buttonRuler\"></div>\
+								    <div id=\"id_vertical_scroll\" style=\"left:0;top:0;width:14px;overflow:hidden;position:absolute;\">\
+								    </div>\
+								    <div id=\"id_buttonPrevPage\" class=\"block_elem buttonPrevPage\"></div>\
+								    <div id=\"id_buttonNextPage\" class=\"block_elem buttonNextPage\"></div>\
+                                </div>\
+                                <div id=\"id_horscrollpanel\" class=\"block_elem\" style=\"margin-bottom:1px;background-color:" + AscCommon.GlobalSkin.BackgroundColor + ";\">\
+                                    <div id=\"id_horizontal_scroll\" style=\"left:0;top:0;height:14px;overflow:hidden;position:absolute;width:100%;\">\
+                                    </div>\
+                                </div>\
+                            </div>";
 
 		if (true)
 		{
-			_innerHTML += "<div id=\"id_bottom_pannels_container\" class=\"block_elem\" style=\"-ms-touch-action: none;-moz-user-select:none;-khtml-user-select:none;user-select:none;overflow:hidden;background-color:" + AscCommon.GlobalSkin.BackgroundColorNotes + ";\">" +
-							"<div id=\"id_panel_notes\" class=\"block_elem\" style=\"-ms-touch-action: none;-moz-user-select:none;-khtml-user-select:none;user-select:none;overflow:hidden;background-color:" + AscCommon.GlobalSkin.BackgroundColorNotes + ";\">" +
-                                "<canvas id=\"id_notes\" class=\"block_elem\" style=\"-ms-touch-action: none;-webkit-user-select: none;background-color:" + AscCommon.GlobalSkin.BackgroundColorNotes + ";z-index:6\"></canvas>" +
-                                "<canvas id=\"id_notes_overlay\" class=\"block_elem\" style=\"-ms-touch-action: none;-webkit-user-select: none;z-index:7\"></canvas>" +
-                                "<div id=\"id_vertical_scroll_notes\" style=\"left:0;top:0;width:16px;overflow:hidden;position:absolute;\">" +
-                                    "<div id=\"panel_right_scroll_notes\" class=\"block_elem\" style=\"left:0;top:0;width:1px;height:1px;\"></div>" +
-                                "</div>" +
-                            "</div>" +
-                            "<div id=\"id_panel_animation\" class=\"block_elem\" style=\"-ms-touch-action: none;-moz-user-select:none;-khtml-user-select:none;user-select:none;overflow:hidden;background-color:" + AscCommon.GlobalSkin.BackgroundColor + ";\">" +
-								"<div id=\"id_anim_header\" class=\"block_elem\">" +
-									"<canvas id=\"id_anim_header_canvas\" class=\"block_elem\" style=\"-ms-touch-action: none;-webkit-user-select: none;background-color:" + AscCommon.GlobalSkin.BackgroundColorNotes + ";z-index:8\"></canvas>" +
-								"</div>" +
-								"<div id=\"id_anim_list_container\" class=\"block_elem\">" +
-									"<canvas id=\"id_anim_list_canvas\" class=\"block_elem\"></canvas>" +
-									"<div id=\"id_anim_list_scroll\" style=\"left:0;top:0;width:16px;overflow:hidden;position:absolute;\">" +
-                                    	"<div id=\"id_pane_anim_list_scroll\" class=\"block_elem\" style=\"left:0;top:0;width:1px;height:1px;\"></div>" +
-                                	"</div>" +
-								"</div>" +
-								"<div id=\"id_anim_timeline_container\" class=\"block_elem\">" +
-									"<canvas id=\"id_anim_timeline_canvas\" class=\"block_elem\"></canvas>" +
-								"</div>" +
-                            "</div>" +
-						"</div>" +
-						"</div>";
+			_innerHTML += "<div id=\"id_bottom_pannels_container\" class=\"block_elem\" style=\"-ms-touch-action: none;-moz-user-select:none;-khtml-user-select:none;user-select:none;overflow:hidden;background-color:" + AscCommon.GlobalSkin.BackgroundColorNotes + ";\">\
+							<div id=\"id_panel_notes\" class=\"block_elem\" style=\"-ms-touch-action: none;-moz-user-select:none;-khtml-user-select:none;user-select:none;overflow:hidden;background-color:" + AscCommon.GlobalSkin.BackgroundColorNotes + ";\">\
+                                <canvas id=\"id_notes\" class=\"block_elem\" style=\"-ms-touch-action: none;-webkit-user-select: none;background-color:" + AscCommon.GlobalSkin.BackgroundColorNotes + ";z-index:6\"></canvas>\
+                                <canvas id=\"id_notes_overlay\" class=\"block_elem\" style=\"-ms-touch-action: none;-webkit-user-select: none;z-index:7\"></canvas>\
+                                <div id=\"id_vertical_scroll_notes\" style=\"left:0;top:0;width:16px;overflow:hidden;position:absolute;\">\
+                                    <div id=\"panel_right_scroll_notes\" class=\"block_elem\" style=\"left:0;top:0;width:1px;height:1px;\"></div>\
+                                </div>\
+                            </div>\
+                            <div id=\"id_panel_animation\" class=\"block_elem\" style=\"-ms-touch-action: none;-moz-user-select:none;-khtml-user-select:none;user-select:none;overflow:hidden;background-color:" + AscCommon.GlobalSkin.BackgroundColor + ";\">\
+								<div id=\"id_anim_header\" class=\"block_elem\">\
+									<canvas id=\"id_anim_header_canvas\" class=\"block_elem\" style=\"-ms-touch-action: none;-webkit-user-select: none;background-color:" + AscCommon.GlobalSkin.BackgroundColorNotes + ";z-index:8\"></canvas>\
+								</div>\
+								<div id=\"id_anim_list_container\" class=\"block_elem\">\
+									<canvas id=\"id_anim_list_canvas\" class=\"block_elem\"></canvas>\
+									<div id=\"id_anim_list_scroll\" style=\"left:0;top:0;width:16px;overflow:hidden;position:absolute;\">\
+                                    	<div id=\"id_pane_anim_list_scroll\" class=\"block_elem\" style=\"left:0;top:0;width:1px;height:1px;\"></div>\
+                                	</div>\
+								</div>\
+								<div id=\"id_anim_timeline_container\" class=\"block_elem\">\
+									<canvas id=\"id_anim_timeline_canvas\" class=\"block_elem\"></canvas>\
+								</div>\
+                            </div>\
+						</div>\
+						</div>";
 		}
 
 		if (this.HtmlElement)
@@ -6874,6 +6875,7 @@
 	};
 
 	window.ID_KEYBOARD_AREA = undefined;
+	window.ID_KEYBOARD_AREA;
 	asc_docs_api.prototype.SetDeviceInputHelperId = function(idKeyboard)
 	{
 		if (window.ID_KEYBOARD_AREA === undefined && this.WordControl.m_oMainView != null)

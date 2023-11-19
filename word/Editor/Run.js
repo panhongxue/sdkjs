@@ -3019,6 +3019,10 @@ ParaRun.prototype.Remove_DrawingObject = function(Id)
                 {
                     this.Remove_FromContent(CurPos, 1, true);
                 }
+                else if (reviewtype_Remove === ReviewType)
+                {
+                    // Ничего не делаем
+                }
             }
             else
             {

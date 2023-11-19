@@ -353,6 +353,10 @@ NullState.prototype =
                 }
             }
         }
+        else if(selection.chartSelection)
+        {}
+
+
         if(!b_no_handle_selected)
         {
             ret = AscFormat.handleSelectedObjects(this.drawingObjects, e, x, y, null, pageIndex, true);

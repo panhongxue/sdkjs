@@ -787,9 +787,7 @@
 
 			function stop(immediate) {
 				event.stopPropagation();
-				if (immediate) {
-					event.stopImmediatePropagation();
-				}
+				immediate ? event.stopImmediatePropagation() : true;
 				event.preventDefault();
 				result = false;
 			}
@@ -1421,15 +1419,11 @@
 				this.isResizeModeMove = true;
 				this._resizeElement(event);
 			}
-            if (this.hsbApiLockMouse) {
-				if (this.hsbApi.mouseDown) {
-					this.hsbApi.evt_mousemove.call(this.hsbApi,event);
-				}
-			} else if (this.vsbApiLockMouse) {
-				if (this.vsbApi.mouseDown) {
-					this.vsbApi.evt_mousemove.call(this.vsbApi,event);
-				}
-			}
+            if (this.hsbApiLockMouse)
+                this.hsbApi.mouseDown ? this.hsbApi.evt_mousemove.call(this.hsbApi,event) : false;
+            else if (this.vsbApiLockMouse)
+                this.vsbApi.mouseDown ? this.vsbApi.evt_mousemove.call(this.vsbApi,event) : false;
+				
 			// Режим установки закреплённых областей
 			if (this.frozenAnchorMode) {
 				this._moveFrozenAnchorHandle(event, this.frozenAnchorMode);
@@ -1456,15 +1450,11 @@
 
 			var button = AscCommon.getMouseButton(event);
 			var coord = this._getCoordinates(event);
-            if (this.hsbApiLockMouse) {
-				if (this.hsbApi.mouseDown) {
-					this.hsbApi.evt_mouseup.call(this.hsbApi, event);
-				}
-			} else if (this.vsbApiLockMouse) {
-				if (this.vsbApi.mouseDown) {
-					this.vsbApi.evt_mouseup.call(this.vsbApi, event);
-				}
-			}
+            if (this.hsbApiLockMouse)
+                this.hsbApi.mouseDown ? this.hsbApi.evt_mouseup.call(this.hsbApi, event) : false;
+            else if (this.vsbApiLockMouse)
+                this.vsbApi.mouseDown ? this.vsbApi.evt_mouseup.call(this.vsbApi, event) : false;
+
 			this.isMousePressed = false;
 			// Shapes
 			if (this.isShapeAction) {

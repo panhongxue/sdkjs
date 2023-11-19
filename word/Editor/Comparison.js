@@ -786,9 +786,9 @@
 			    this.pushToArrInsertContentWithCopy(aContentToInsert, arrLastComments[i].element, comparison);
 		    }
 	    }
-        let lastCheckRun;
         let k = oParentParagraph.Content.length - 1;
-        for(;k > -1; --k)
+        let lastCheckRun;
+        for(k; k > -1; --k)
         {
             // если мы встретили последний ран, где встречается слово
             const oCurrentRun = oParentParagraph.Content[k];
@@ -1059,7 +1059,7 @@
                         else if(Array.isArray(oCurRun.Content) && Array.isArray(oFirstText.elements))
                         {
                             let k = 0;
-                            for(;k < oCurRun.Content.length; ++k)
+                            for(k; k < oCurRun.Content.length; ++k)
                             {
                                 // если элементы совпали, значит, мы нашли место вставки
                                 if(oFirstText.elements[0] === oCurRun.Content[k])
@@ -1125,7 +1125,7 @@
         let k = oApplyParagraph.Content.length - 1;
         let nInsertPosition = -1;
 
-        for(;k > -1; --k)
+        for(k; k > -1; --k)
         {
             const oCurRun = oApplyParagraph.Content[k];
             if(oCurRun === oEndOfRemoveRun)
@@ -1136,7 +1136,7 @@
 									arrSetRemove.push.apply(arrSetRemove, arrComments)
 
                     let t = oEndOfRemoveRun.Content.length - 1;
-                    for(; t > -1; t--)
+                    for(t; t > -1; t--)
                     {
                         if(oEndOfRemoveRun.Content[t] === oLastText.elements[oLastText.elements.length - 1])
                         {
@@ -1168,7 +1168,8 @@
 
         let k = posLastRunInContent;
 
-        for(; k > -1; --k)
+        let bBreak = false;
+        for(k; k > -1; --k)
         {
             const oChildElement = oApplyParagraph.Content[k];
             if(!(oChildElement === oFirstText.firstRun || oChildElement === oFirstText))
@@ -1180,7 +1181,7 @@
                 if(oChildElement instanceof ParaRun)
                 {
                     let t = 0;
-                    for(;t < oChildElement.Content.length; t++)
+                    for(t; t < oChildElement.Content.length; t++)
                     {
                         if(oChildElement.Content[t] === oFirstText.elements[0])
                         {

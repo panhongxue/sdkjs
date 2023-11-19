@@ -5426,6 +5426,9 @@ CPresentation.prototype.GetTargetPosition = function () {
 			var oElem = oTargetDocContent.Content[oTargetDocContent.CurPos.ContentPos];
 			if (oElem) {
 				var oPos = oElem.GetTargetPos();
+				if (oPos) {
+
+				}
 				var x, y;
 				if (oPos.Transform) {
 					x = oPos.Transform.TransformPointX(oPos.X, oPos.Y + oPos.Height);

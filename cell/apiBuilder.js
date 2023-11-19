@@ -3067,13 +3067,13 @@
 		this.range.unmerge();
 	};
 	
+	/**
+	 * Returns one cell or cells from the merge area.
+	 * @memberof ApiRange
+	 * @typeofeditors ["CSE"]
+	 * @returns {ApiRange | null} - returns null if range isn't one cell
+	 */
 	Object.defineProperty(ApiRange.prototype, "MergeArea", {
-		/**
-		 * Returns one cell or cells from the merge area.
-		 * @memberof ApiRange
-		 * @typeofeditors ["CSE"]
-		 * @returns {ApiRange | null} - returns null if range isn't one cell
-		 */
 		get: function () {
 			let result = null;
 			if (this.range.isOneCell()) {

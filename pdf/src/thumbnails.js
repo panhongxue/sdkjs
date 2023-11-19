@@ -198,8 +198,8 @@
     function CBlock()
     {
         this.pages = [];
-        this.top = null;
-        this.bottom = null;
+        this.top;
+        this.bottom;
     }
 
     CBlock.prototype.getHeight = function(columnW, startOffset, betweenPages, zoom)

@@ -6333,7 +6333,7 @@ const ContentIterator = function(Content, oBracketContent)
     this.cursor = this.Content.length - 1;
     this.RulePosition = [];
     this.BracketPosition = [];
-    this.CurrentElement = null;
+    this.CurrentElement;
     this.intBracketCounter = 0;
     this.BracketContent = oBracketContent;
     this.isBracket = false;

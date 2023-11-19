@@ -11746,6 +11746,9 @@
         var oTiming = this.slide.timing;
         if (oTiming) {
             var oDemoTiming = oTiming.createDemoTiming();
+            if (oDemoTiming) {
+
+            }
             this.timings.push(oDemoTiming);
         }
         var oTr = editor.WordControl.m_oDrawingDocument.TransitionSlide;

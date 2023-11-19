@@ -13715,13 +13715,14 @@ CTextPr.prototype.createDuplicateForSmartArt = function(oPr)
 };
 CTextPr.prototype.Copy_HighLight = function()
 {
-	if (undefined === this.HighLight) {
-        return undefined;
-    } else if (highlight_None === this.HighLight) {
-        return highlight_None;
-    } else {
-        return this.HighLight.Copy();
-    }
+	if (undefined === this.HighLight)
+		return undefined;
+	else if (highlight_None === this.HighLight)
+		return highlight_None;
+	else
+		return this.HighLight.Copy();
+
+	return undefined;
 };
 CTextPr.prototype.Merge = function(TextPr)
 {

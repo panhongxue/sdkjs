@@ -147,7 +147,7 @@ function RgbColor(rgb)
 {
 	this.rgb = rgb;
 
-	this._hash = null;
+	this._hash;
 }
 RgbColor.prototype =
 {
@@ -235,7 +235,7 @@ function ThemeColor()
 	this.theme = null;
 	this.tint = null;
 
-	this._hash = null;
+	this._hash;
 }
 ThemeColor.prototype =
 {
@@ -626,8 +626,8 @@ var g_oFontProperties = {
 		this.skip = null;
 		this.repeat = null;
 
-		this._hash = null;
-		this._index = null;
+		this._hash;
+		this._index;
 	}
 	Font.prototype.Properties = g_oFontProperties;
 	Font.prototype.getHash = function() {
@@ -3622,7 +3622,7 @@ var g_oFontProperties = {
 		this.gradientFill = null;
 
 		this._hash = null;
-		this._index = null;
+		this._index;
 	}
 
 	Fill.prototype.Properties = {
@@ -4019,7 +4019,7 @@ var g_oFontProperties = {
 		this.du = false;
 
 		this._hash = null;
-		this._index = null;
+		this._index;
 	}
 
 	Border.prototype.Properties = {
@@ -4391,8 +4391,8 @@ var g_oFontProperties = {
 		this.f = val.f;
 		this.id = val.id;
 
-		this._hash = null;
-		this._index = null;
+		this._hash;
+		this._index;
 	}
 
 	Num.prototype.Properties = g_oNumProperties;
@@ -4544,8 +4544,8 @@ var g_oFontProperties = {
         this.hidden = null;
 
         //inner
-        this._hash = null;
-        this._index = null;
+        this._hash;
+        this._index;
         this.operationCache = {};
     }
 
@@ -5094,8 +5094,8 @@ var g_oFontProperties = {
 		this.ver = val.ver;
 		this.wrap = val.wrap;
 
-		this._hash = null;
-		this._index = null;
+		this._hash;
+		this._index;
 	}
 
 	Align.prototype.Properties = g_oAlignProperties;

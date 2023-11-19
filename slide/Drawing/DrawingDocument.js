@@ -322,6 +322,8 @@ function CTableOutlineDr()
 				}
 			}
 		}
+
+		return false;
 	};
 
 	this.checkMouseUp = function (X, Y, word_control)
@@ -6817,6 +6819,7 @@ window['AscCommon']                  = window['AscCommon'] || {};
 window['AscCommon'].CDrawingDocument = CDrawingDocument;
 
 window['AscCommon'].g_comment_image = new Image();
+window['AscCommon'].g_comment_image;
 window['AscCommon'].g_comment_image.asc_complete = false;
 window['AscCommon'].g_comment_image.onload       = function()
 {

@@ -2705,22 +2705,19 @@ function (window, undefined) {
 		this.mpForecast = [];                 // forecasted value array
 		this.mnSmplInPrd = 0;                 // samples per period
 		this.mfStepSize = 0;                  // increment of X in maRange
-		// constants to minimise the RMSE in the ES-equations
-		this.mfAlpha = null;
-		this.mfBeta = null;
-		this.mfGamma = null;    
+		this.mfAlpha, this.mfBeta, this.mfGamma;    // constants to minimise the RMSE in the ES-equations
 		this.mnCount = nSize;                     // No of data points
-		this.mbInitialised = null;
-		this.mnMonthDay = null;                     // n-month X-interval, value is day of month
+		this.mbInitialised;
+		this.mnMonthDay;                     // n-month X-interval, value is day of month
 		// accuracy indicators
-		this.mfMAE = null;                       // mean absolute error
-		this.mfMASE = null;                      // mean absolute scaled error
-		this.mfMSE = null;                       // mean squared error (variation)
-		this.mfRMSE = null;                      // root mean squared error (standard deviation)
-		this.mfSMAPE = null;                     // symmetric mean absolute error
+		this.mfMAE;                       // mean absolute error
+		this.mfMASE;                      // mean absolute scaled error
+		this.mfMSE;                       // mean squared error (variation)
+		this.mfRMSE;                      // root mean squared error (standard deviation)
+		this.mfSMAPE;                     // symmetric mean absolute error
 		//FormulaError mnErrorValue;
-		this.bAdditive = null;                     // true: additive method, false: multiplicative method
-		this.bEDS = null;                          // true: EDS, false: ETS
+		this.bAdditive;                     // true: additive method, false: multiplicative method
+		this.bEDS;                          // true: EDS, false: ETS
 
 		// constants used in determining best fit for alpha, beta, gamma
 		this.cfMinABCResolution = 0.001;  // minimum change of alpha, beta, gamma

@@ -2713,6 +2713,10 @@ CTable.prototype.private_RecalculatePage = function(CurPage)
 						Cell.PagesCount = Cell.Content.Pages.length + 1;
 						bNextPage       = true;
 					}
+					else if (recalcresult2_End & RecalcResult)
+					{
+						// Ничего не делаем
+					}
                 }
 
                 var CellContentBounds = Cell.Content.Get_PageBounds( CellPageIndex, undefined, true );

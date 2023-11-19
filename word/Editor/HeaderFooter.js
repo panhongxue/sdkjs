@@ -2547,15 +2547,16 @@ CHeaderFooterController.prototype =
         
         var PageH = this.LogicDocument.Get_PageLimits( PageIndex).YLimit;
 
-        if ( Y <= PageH / 2 && null != Header ) {
+        if ( Y <= PageH / 2 && null != Header )
             return Header;
-        } else if ( Y >= PageH / 2 && null != Footer ) {
+        else if ( Y >= PageH / 2 && null != Footer )
             return Footer;
-        } else if ( null != Header ) {
+        else if ( null != Header )
             return Header;
-        } else {
+        else
             return Footer;
-        }
+
+        return null;
     },
 
 //-----------------------------------------------------------------------------------

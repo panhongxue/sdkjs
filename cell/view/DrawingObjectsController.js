@@ -46,6 +46,7 @@ function (window, undefined) {
 if(window.editor === "undefined" && window["Asc"]["editor"])
 {
     window.editor = window["Asc"]["editor"];
+	window.editor;
 }
 
 // ToDo убрать это отсюда!!!

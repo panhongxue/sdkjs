@@ -1526,8 +1526,10 @@ var CPresentation = CPresentation || function(){};
             oAnnot.SetOpacity(opacity / 100);
         }
 
-        editor.sendEvent("asc_onMarkerFormatChanged", AscPDF.ANNOTATIONS_TYPES.Highlight, false);
-        editor.SetMarkerFormat(AscPDF.ANNOTATIONS_TYPES.Highlight, false);
+        if (this.bOffMarkerAfterUsing) {
+            editor.sendEvent("asc_onMarkerFormatChanged", AscPDF.ANNOTATIONS_TYPES.Highlight, false);
+            editor.SetMarkerFormat(AscPDF.ANNOTATIONS_TYPES.Highlight, false);
+        }
     };
     CPDFDoc.prototype.SetUnderline = function(r, g, b, opacity) {
         this.UnderlineColor = {
@@ -1575,8 +1577,10 @@ var CPresentation = CPresentation || function(){};
             oAnnot.SetOpacity(opacity / 100);
         }
 
-        editor.sendEvent("asc_onMarkerFormatChanged", AscPDF.ANNOTATIONS_TYPES.Underline, false);
-        editor.SetMarkerFormat(AscPDF.ANNOTATIONS_TYPES.Underline, false);
+        if (this.bOffMarkerAfterUsing) {
+            editor.sendEvent("asc_onMarkerFormatChanged", AscPDF.ANNOTATIONS_TYPES.Underline, false);
+            editor.SetMarkerFormat(AscPDF.ANNOTATIONS_TYPES.Underline, false);
+        }
     };
     CPDFDoc.prototype.SetStrikeout = function(r, g, b, opacity) {
         this.StrikeoutColor = {
@@ -1624,8 +1628,10 @@ var CPresentation = CPresentation || function(){};
             oAnnot.SetOpacity(opacity / 100);
         }
 
-        editor.sendEvent("asc_onMarkerFormatChanged", AscPDF.ANNOTATIONS_TYPES.Strikeout, false);
-        editor.SetMarkerFormat(AscPDF.ANNOTATIONS_TYPES.Strikeout, false);
+        if (this.bOffMarkerAfterUsing) {
+            editor.sendEvent("asc_onMarkerFormatChanged", AscPDF.ANNOTATIONS_TYPES.Strikeout, false);
+            editor.SetMarkerFormat(AscPDF.ANNOTATIONS_TYPES.Strikeout, false);
+        }
     };
     CPDFDoc.prototype.GetMarkerColor = function(nType) {
         switch (nType) {
@@ -1771,26 +1777,32 @@ var CPresentation = CPresentation || function(){};
         }
     };
     CPDFDoc.prototype.UpdateCopyCutState = function() {
-        editor.sync_CanCopyCutCallback(this.CanCopyCut());
+        let oCanCopyCut = this.CanCopyCut();
+        editor.sync_CanCopyCutCallback(oCanCopyCut.copy, oCanCopyCut.cut);
     };
     CPDFDoc.prototype.CanCopyCut = function() {
         let oViewer = editor.getDocumentRenderer();
 
-        let isHasSelect = false;
+        let isCanCopy = false;
+        let isCanCut = false;
 
         let oSelection = oViewer.file.Selection;
         if (oSelection.Glyph1 != oSelection.Glyph2 || oSelection.Line1 != oSelection.Line2 ||
             oSelection.Page1 != oSelection.Page2) {
-                isHasSelect = true;
+                isCanCopy = true;
             }
         
 
         if (this.activeForm && this.activeForm.content && this.activeForm.content.IsSelectionUse() && 
             this.activeForm.content.IsSelectionEmpty() == false) {
-                isHasSelect = true;
+                isCanCopy = true;
+                isCanCut = true;
             }
 
-        return isHasSelect;
+        return {
+            copy: isCanCopy,
+            cut: isCanCut
+        };
     };
     CPDFDoc.prototype.RemoveComment = function(Id) {
         let oAnnot = this.annots.find(function(annot) {

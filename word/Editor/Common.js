@@ -659,6 +659,8 @@ window['AscCommonWord'].CTextToTableEngine = CTextToTableEngine;
 	window['AscWord'].codePointToRunElement    = codePointToRunElement;
 	window['AscWord'].sortByDocumentPosition   = sortByDocumentPosition;
 	window['AscWord'].checkAsYouTypeEnterText  = checkAsYouTypeEnterText;
+	
+	window['AscWord'].MAX_MM_VALUE             = 558.7;
 	window['AscWord'].isEnterTextDescription  = isEnterTextDescription;
 
 })(window);

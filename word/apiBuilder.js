@@ -5563,11 +5563,11 @@
 	ApiDocument.prototype.CreateSection = function(oParagraph)
 	{
 		if (!(oParagraph instanceof ApiParagraph)) {
-			private_makeError('Parameter is invalid.', false);
+			logError(new Error('Parameter is invalid.'));
 			return null;
 		}
 		if (!oParagraph.Paragraph.CanAddSectionPr()) {
-			private_makeError('Paragraph must be in a document.', false);
+			logError(new Error('Paragraph must be in a document.'));
 			return null;
 		}
 
@@ -6021,7 +6021,45 @@
 
 		return arrResult;
 	};
-
+	/**
+	 * The specific type of the form
+	 * @typedef {("text" | "checkBox" | "picture" | "comboBox" | "dropDownList" | "dateTime" | "radio")} FormSpecificType
+	 */
+	/**
+	 * Form data
+	 * @typedef {Object} FormData
+	 * @property {string} key - The key of the form. It current form is a radiobutton then this field holds the group key.
+	 * @property {string|boolean} value - Data of the current field.
+	 * @property {string} tag - Tag of the form
+	 * @property {FormSpecificType} type - Type of the form
+	 * @example
+	 * 	{
+	 * 	  "key" : "CompanyName",
+	 * 	  "tag" : "companyName"
+	 * 	  "value" : "OnlyOffice"
+	 * 	  "type" : "text"
+	 * 	}
+	 */
+	/**
+	 * Get data from all forms present in the current document.
+	 * If any form was created by not assigned to any part of the document, it won't be present in this list.
+	 * @returns {Array.<FormData>}
+	 */
+	ApiDocument.prototype.GetFormsData = function()
+	{
+		return this.Document.GetFormsManager().GetAllFormsData();
+	};
+	/**
+	 * Set the data for specified forms.
+	 * @param {Array.<FormData>} arrData
+	 */
+	ApiDocument.prototype.SetFormsData = function(arrData)
+	{
+		if (!arrData || !Array.isArray(arrData))
+			return;
+		
+		this.Document.GetFormsManager().SetAllFormsData(arrData);
+	};
 	/**
 	 * Sets the change tracking mode.
 	 * @memberof ApiDocument
@@ -6202,6 +6240,40 @@
 		}
 
 		return arrApiAllTables;
+	};
+	/**
+	 * Add the shape to a specified page
+	 * <note>This method can be a little bit slow, because it runs the document calculation
+	 * process to arrange tables on the specified page.</note>
+	 * @memberof ApiDocument
+	 * @typeofeditors ["CDE"]
+	 * @param oDrawing {ApiDrawing}
+	 * @param nPage {number}
+	 * @param x {EMU}
+	 * @param y {EMU}
+	 * @return {boolean}
+	 */
+	ApiDocument.prototype.AddDrawingToPage = function(oDrawing, nPage, x, y)
+	{
+		if (!(oDrawing instanceof ApiDrawing) || oDrawing.Drawing.IsUseInDocument())
+			return false;
+		
+		this.ForceRecalculate(nPage + 1);
+		if (this.Document.GetPagesCount() <= nPage)
+			return false;
+		
+		this.Document.RemoveSelection();
+		this.Document.GoToPage(nPage);
+		let paragraph = this.Document.GetCurrentParagraph();
+		if (!paragraph)
+			return false;
+		
+		let drawing = oDrawing.Drawing;
+		drawing.Set_PositionH(Asc.c_oAscRelativeFromH.Page, false, private_EMU2MM(x), false);
+		drawing.Set_PositionV(Asc.c_oAscRelativeFromV.Page, false, private_EMU2MM(y), false);
+		drawing.Set_DrawingType(drawing_Anchor);
+		paragraph.AddToParagraph(drawing);
+		return true;
 	};
 	/**
 	 * Removes the current selection.
@@ -6429,7 +6501,7 @@
 
 					for (var nParaIndex = 0, nParasCount = arrParagraphs.length; nParaIndex < nParasCount; ++nParaIndex)
 					{
-						var arrPageNumbers = arrParagraphs[nParaIndex].GetComplexFieldsArrayByType(AscCommonWord.fieldtype_PAGEREF);
+						var arrPageNumbers = arrParagraphs[nParaIndex].GetComplexFieldsArrayByType(AscWord.fieldtype_PAGEREF);
 						for (var nRefIndex = 0, nRefsCount = arrPageNumbers.length; nRefIndex < nRefsCount; ++nRefIndex)
 						{
 							arrPageNumbers[nRefIndex].Update();
@@ -6485,7 +6557,7 @@
 
 				for (var nParaIndex = 0, nParasCount = arrParagraphs.length; nParaIndex < nParasCount; ++nParaIndex)
 				{
-					var arrPageNumbers = arrParagraphs[nParaIndex].GetComplexFieldsArrayByType(AscCommonWord.fieldtype_PAGEREF);
+					var arrPageNumbers = arrParagraphs[nParaIndex].GetComplexFieldsArrayByType(AscWord.fieldtype_PAGEREF);
 					for (var nRefIndex = 0, nRefsCount = arrPageNumbers.length; nRefIndex < nRefsCount; ++nRefIndex)
 					{
 						arrPageNumbers[nRefIndex].Update();
@@ -8439,7 +8511,7 @@
 	{
 		var oDocument = private_GetLogicDocument();
 		var fieldName = this.GetText();
-		var oField    = new ParaField(fieldtype_MERGEFIELD, [fieldName], []);
+		var oField    = new ParaField(AscWord.fieldtype_MERGEFIELD, [fieldName], []);
 		
 		var leftQuote  = new ParaRun();
 		var rightQuote = new ParaRun();
@@ -9004,7 +9076,7 @@
 			return false;
 
 		if (!this.Paragraph.CanAddSectionPr()) {
-			private_makeError('Paragraph must be in a document.', false);
+			logError(new Error('Paragraph must be in a document.'));
 			return false;
 		}
 
@@ -9656,7 +9728,7 @@
 	{
 		var oDocument = private_GetLogicDocument();
 		var fieldName = this.Run.GetText();
-		var oField    = new ParaField(fieldtype_MERGEFIELD, [fieldName], []);
+		var oField    = new ParaField(AscWord.fieldtype_MERGEFIELD, [fieldName], []);
 		var runParent = this.Run.GetParent();
 
 		var leftQuote  = new ParaRun();
@@ -16351,7 +16423,7 @@
 	ApiInlineLvlSdt.prototype.GetDropdownList = function()
 	{
 		if (!this.Sdt.IsComboBox() && !this.Sdt.IsDropDownList())
-			private_makeError("Not a drop down content control", true);
+			throwException(new Error("Not a drop down content control"));
 		
 		return new ApiContentControlList(this);
 	};
@@ -16470,9 +16542,9 @@
 		
 		nIndex = AscBuilder.GetNumberParameter(nIndex, null);
 		if (null === nIndex)
-			private_makeError("Index must be a number", true);
+			throwException(new Error("Index must be a number"));
 		else if (nIndex < 0 || nIndex >= listPr.GetItemsCount())
-			private_makeError("Index out of list range", true);
+			throwException(new Error("Index out of list range"));
 		
 		return new ApiContentControlListEntry(this.Sdt, this, listPr.GetItemDisplayText(nIndex), listPr.GetItemValue(nIndex));
 	};
@@ -17431,7 +17503,7 @@
 	ApiBlockLvlSdt.prototype.GetDropdownList = function()
 	{
 		if (!this.Sdt.IsComboBox() && !this.Sdt.IsDropDownList())
-			private_makeError("Not a drop down content control", true);
+			throwException(new Error("Not a drop down content control"));
 		
 		return new ApiContentControlList(this);
 	};
@@ -19666,6 +19738,8 @@
 	ApiDocument.prototype["GetTagsOfAllForms"]           = ApiDocument.prototype.GetTagsOfAllForms;
 	ApiDocument.prototype["GetContentControlsByTag"]     = ApiDocument.prototype.GetContentControlsByTag;
 	ApiDocument.prototype["GetFormsByTag"]               = ApiDocument.prototype.GetFormsByTag;
+	ApiDocument.prototype["GetFormsData"]                = ApiDocument.prototype.GetFormsData;
+	ApiDocument.prototype["SetFormsData"]                = ApiDocument.prototype.SetFormsData;
 	ApiDocument.prototype["SetTrackRevisions"]           = ApiDocument.prototype.SetTrackRevisions;
 	ApiDocument.prototype["IsTrackRevisions"]            = ApiDocument.prototype.IsTrackRevisions;
 	ApiDocument.prototype["GetRange"]                    = ApiDocument.prototype.GetRange;
@@ -19677,6 +19751,7 @@
 	ApiDocument.prototype["GetBookmarkRange"]            = ApiDocument.prototype.GetBookmarkRange;
 	ApiDocument.prototype["GetSections"]                 = ApiDocument.prototype.GetSections;
 	ApiDocument.prototype["GetAllTablesOnPage"]          = ApiDocument.prototype.GetAllTablesOnPage;
+	ApiDocument.prototype["AddDrawingToPage"]            = ApiDocument.prototype.AddDrawingToPage;
 	ApiDocument.prototype["RemoveSelection"]             = ApiDocument.prototype.RemoveSelection;
 	ApiDocument.prototype["Search"]                      = ApiDocument.prototype.Search;
 	ApiDocument.prototype["ToMarkdown"]                  = ApiDocument.prototype.ToMarkdown;
@@ -20990,16 +21065,18 @@
 		return oColor;
 	}
 
-	function private_makeError(message, bMakeThrow) {
-		let err = new Error(message);
-		if (!console.error)
+	function logError(err) {
+		if (console.error)
+			console.error(err);
+		else
 			console.log(err);
-		
-		if (!bMakeThrow && console.error)
-			console.error(err)
-		else if (bMakeThrow)
-			throw err;
-	};;
+	};
+
+	function throwException(err) {
+		if (!console.error)
+			logError(err);
+		throw err;
+	};
 
 	ApiDocument.prototype.OnChangeParaPr = function(oApiParaPr)
 	{

@@ -1553,7 +1553,7 @@ CHistory.prototype.private_PostProcessingRecalcData = function()
 	/**
 	 * Специальная функция для отмены последнего ввода через композитный ввод
 	 */
-	CHistory.prototype.UndoCompositeInput = function()
+	CHistory.prototype.UndoCompositeInput = function(documentState)
 	{
 		if (this.UndoRedoInProgress)
 			return [];
@@ -1584,6 +1584,10 @@ CHistory.prototype.private_PostProcessingRecalcData = function()
 		}
 
 		this.UndoRedoInProgress = false;
+		
+		if (documentState)
+			this.Document.SetSelectionState(documentState);
+		
 		return changes;
 	};
 	/**

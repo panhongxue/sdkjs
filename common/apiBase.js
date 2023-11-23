@@ -591,9 +591,9 @@
 	{
 		return this.copyOutEnabled;
 	};
-	baseEditorsApi.prototype.sync_CanCopyCutCallback = function (bCanCopyCut)
+	baseEditorsApi.prototype.sync_CanCopyCutCallback = function (bCanCopyCut, bCanCut)
 	{
-		this.sendEvent("asc_onCanCopyCut", bCanCopyCut);
+		this.sendEvent("asc_onCanCopyCut", bCanCopyCut, bCanCut);
 	};
 	baseEditorsApi.prototype.can_CopyCut = function ()
 	{
@@ -2387,6 +2387,7 @@
 			{
 				t.sendStartUploadImageActionToFrameEditor();
 			}
+			obj && obj.fStartUploadImageCallback && obj.fStartUploadImageCallback();
 			t.sync_StartAction(c_oAscAsyncActionType.BlockInteraction, c_oAscAsyncAction.UploadImage);
 		});
 	};
@@ -2396,6 +2397,7 @@
 		if (c_oAscError.ID.No !== error)
 		{
 			this.sendEvent("asc_onError", error, c_oAscError.Level.NoCritical);
+			obj && obj.fErrorCallback && obj.fErrorCallback(error);
 		}
 		else
 		{
@@ -2403,12 +2405,14 @@
 			{
 				this.sendStartUploadImageActionToFrameEditor();
 			}
+			obj && obj.fStartUploadImageCallback && obj.fStartUploadImageCallback();
 			this.sync_StartAction(c_oAscAsyncActionType.BlockInteraction, c_oAscAsyncAction.UploadImage);
 			AscCommon.UploadImageFiles(files, this.documentId, this.documentUserId, this.CoAuthoringApi.get_jwt(), function(error, urls)
 			{
 				if (c_oAscError.ID.No !== error)
 				{
 					t.sendEvent("asc_onError", error, c_oAscError.Level.NoCritical);
+					obj && obj.fErrorCallback && obj.fErrorCallback(error);
 				}
 				else
 				{
@@ -2804,9 +2808,13 @@
 
 		this._loadSdkImages();
 
-		if(AscFonts.FontPickerByCharacter && this.documentTitle) {
-			AscFonts.FontPickerByCharacter.getFontsByString(this.documentTitle);
-		}
+		this.checkDocumentTitleFonts();
+	};
+	baseEditorsApi.prototype.checkDocumentTitleFonts = function() {
+		if (!AscFonts.FontPickerByCharacter || !this.documentTitle)
+			return;
+
+		AscFonts.FontPickerByCharacter.getFontsByString(this.documentTitle);
 	};
 	baseEditorsApi.prototype._loadSdkImages = function ()
 	{
@@ -4880,6 +4888,16 @@
 				this.sendEvent("asc_onNeedUpdateExternalReferenceOnOpen");
 			}
 		}
+	};
+
+	// speech
+	baseEditorsApi.prototype["setSpeechEnabled"] = function(isEnabled) {
+		if (!AscCommon.EditorActionSpeaker)
+			return;
+		if (isEnabled)
+			AscCommon.EditorActionSpeaker.run();
+		else
+			AscCommon.EditorActionSpeaker.stop();
 	};
 
 	//----------------------------------------------------------export----------------------------------------------------

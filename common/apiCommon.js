@@ -7084,17 +7084,36 @@
 		this.symbol = null;
 		this.currency = null;
 	}
-	asc_CFormatCellsInfo.prototype.asc_setType = function (val) {this.type = val;};
-	asc_CFormatCellsInfo.prototype.asc_setDecimalPlaces = function (val) {this.decimalPlaces = val;};
-	asc_CFormatCellsInfo.prototype.asc_setSeparator = function (val) {this.separator = val;};
-	asc_CFormatCellsInfo.prototype.asc_setSymbol = function (val) {this.symbol = val;};
-	asc_CFormatCellsInfo.prototype.asc_setCurrencySymbol = function (val) {this.currency = val;};
-	asc_CFormatCellsInfo.prototype.asc_getType = function () {return this.type;};
-	asc_CFormatCellsInfo.prototype.asc_getDecimalPlaces = function () {return this.decimalPlaces;};
-	asc_CFormatCellsInfo.prototype.asc_getSeparator = function () {return this.separator;};
-	asc_CFormatCellsInfo.prototype.asc_getSymbol = function () {return this.symbol;};
-	asc_CFormatCellsInfo.prototype.asc_getCurrencySymbol = function () {return this.currency;};
-
+	asc_CFormatCellsInfo.prototype.asc_setType = function (val) {
+		this.type = val;
+	};
+	asc_CFormatCellsInfo.prototype.asc_setDecimalPlaces = function (val) {
+		this.decimalPlaces = val;
+	};
+	asc_CFormatCellsInfo.prototype.asc_setSeparator = function (val) {
+		this.separator = val;
+	};
+	asc_CFormatCellsInfo.prototype.asc_setSymbol = function (val) {
+		this.symbol = val;
+	};
+	asc_CFormatCellsInfo.prototype.asc_setCurrencySymbol = function (val) {
+		this.currency = val;
+	};
+	asc_CFormatCellsInfo.prototype.asc_getType = function () {
+		return this.type;
+	};
+	asc_CFormatCellsInfo.prototype.asc_getDecimalPlaces = function () {
+		return this.decimalPlaces;
+	};
+	asc_CFormatCellsInfo.prototype.asc_getSeparator = function () {
+		return this.separator;
+	};
+	asc_CFormatCellsInfo.prototype.asc_getSymbol = function () {
+		return this.symbol;
+	};
+	asc_CFormatCellsInfo.prototype.asc_getCurrencySymbol = function () {
+		return this.currency;
+	};
 
 	/**
 	 * @constructor

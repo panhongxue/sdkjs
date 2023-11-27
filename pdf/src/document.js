@@ -96,7 +96,7 @@ var CPresentation = CPresentation || function(){};
 	 * Main class for working with PDF structure
 	 * @constructor
 	 */
-    function CPDFDoc(viewer) {
+    function CPDFDoc(viewer, isMain) {
         this.rootFields = new Map(); // root поля форм
         this.widgets    = []; // непосредственно сами поля, которые отрисовываем (дочерние без потомков)
         this.annots     = [];
@@ -108,6 +108,14 @@ var CPresentation = CPresentation || function(){};
         this.fieldsToCommit = [];
         this.event = {};
         this.AutoCorrectSettings = new AscCommon.CAutoCorrectSettings();
+        this.DrawingDocument = editor.WordControl.m_oDrawingDocument;
+
+        if (isMain) {
+            this.CollaborativeEditing = (("undefined" !== typeof(AscPDF.CPDFCollaborativeEditing) && AscPDF.CollaborativeEditing instanceof AscPDF.CPDFCollaborativeEditing) ? AscPDF.CollaborativeEditing : null);
+            if (this.CollaborativeEditing)
+                this.CollaborativeEditing.m_oLogicDocument = this;
+        }
+
         Object.defineProperties(this.event, {
             "change": {
                 set: function(value) {
@@ -286,6 +294,9 @@ var CPresentation = CPresentation || function(){};
     };
     CPDFDoc.prototype.Get_Id = function() {
         return this._id;
+    };
+    CPDFDoc.prototype.StartCollaborationEditing = function() {
+        this.GetDrawingDocument().Start_CollaborationEditing();
     };
     CPDFDoc.prototype.GetDrawingDocument = function() {
 		if (!editor || !editor.WordControl)

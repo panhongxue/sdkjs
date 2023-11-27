@@ -428,6 +428,125 @@
 			oDoc.bOffMarkerAfterUsing = true;
 		}
 	};
+	PDFEditorApi.prototype.sync_CollaborativeChanges = function()
+	{
+		if (true !== AscCommon.CollaborativeEditing.Is_Fast())
+			this.sendEvent("asc_onCollaborativeChanges");
+	};
+	PDFEditorApi.prototype._openDocumentEndCallback = function()
+	{
+		if (this.isApplyChangesOnOpenEnabled) {
+			if (AscPDF.EncryptionWorker)
+			{
+				AscPDF.EncryptionWorker.init();
+				if (!AscPDF.EncryptionWorker.isChangesHandled)
+					return AscPDF.EncryptionWorker.handleChanges(AscPDF.CollaborativeEditing.m_aChanges, this, this._openDocumentEndCallback);
+			}
+
+			this.isApplyChangesOnOpenEnabled = false;
+		}
+	};
+	PDFEditorApi.prototype._autoSaveInner = function () {
+		if (false == AscPDF.CollaborativeEditing.Is_SingleUser()) {
+			AscPDF.CollaborativeEditing.Apply_Changes();
+			AscPDF.CollaborativeEditing.Send_Changes();
+		}
+	};
+	PDFEditorApi.prototype._coAuthoringSetChange = function(change, oColor)
+	{
+		var oChange = new AscCommon.CCollaborativeChanges();
+		oChange.Set_Data(change);
+		oChange.Set_Color(oColor);
+		AscPDF.CollaborativeEditing.Add_Changes(oChange);
+	};
+	PDFEditorApi.prototype._onSaveCallbackInner = function()
+	{
+		var t = this;
+		History.CheckUnionLastPoints();
+		if (c_oAscCollaborativeMarksShowType.LastChanges === this.CollaborativeMarksShowType)
+		{
+			AscPDF.CollaborativeEditing.Clear_CollaborativeMarks();
+		}
+
+		// Принимаем чужие изменения
+		var HaveOtherChanges = AscPDF.CollaborativeEditing.Have_OtherChanges();
+		AscPDF.CollaborativeEditing.Apply_Changes();
+
+		this.CoAuthoringApi.onUnSaveLock = function()
+		{
+			t.CoAuthoringApi.onUnSaveLock = null;
+			if (t.isForceSaveOnUserSave && t.IsUserSave) {
+				t.forceSaveButtonContinue = t.forceSave();
+			}
+			if (t.forceSaveForm) {
+				t.forceSaveForm();
+			}
+
+			// Выставляем, что документ не модифицирован
+			t.CheckChangedDocument();
+			t.canSave    = true;
+			t.IsUserSave = false;
+			if (!t.forceSaveButtonContinue) {
+				t.sync_EndAction(Asc.c_oAscAsyncActionType.Information, Asc.c_oAscAsyncAction.Save);
+			}
+
+			// Обновляем состояние возможности сохранения документа
+			t._onUpdateDocumentCanSave();
+
+			if (undefined !== window["AscDesktopEditor"])
+			{
+				window["AscDesktopEditor"]["OnSave"]();
+			}
+			if (t.disconnectOnSave) {
+				t.CoAuthoringApi.disconnect(t.disconnectOnSave.code, t.disconnectOnSave.reason);
+				t.disconnectOnSave = null;
+			}
+			if(AscPDF.g_specialPasteHelper && !AscPDF.CollaborativeEditing.Is_SingleUser()){
+				AscPDF.g_specialPasteHelper.SpecialPasteButton_Hide();
+			}
+
+			if (t.canUnlockDocument) {
+				t._unlockDocument();
+			}
+		};
+
+		var CursorInfo = null;
+		if (true === AscPDF.CollaborativeEditing.Is_Fast())
+		{
+			CursorInfo = History.Get_DocumentPositionBinary();
+		}
+
+		if (this.forceSaveUndoRequest)
+		{
+			AscPDF.CollaborativeEditing.Set_GlobalLock(false);
+			AscPDF.CollaborativeEditing.Undo();
+			this.forceSaveUndoRequest = false;
+		}
+		else
+		{
+			// Пересылаем свои изменения
+			AscPDF.CollaborativeEditing.Send_Changes(this.IsUserSave, {
+				"UserId"      : this.CoAuthoringApi.getUserConnectionId(),
+				"UserShortId" : this.DocInfo.get_UserId(),
+				"CursorInfo"  : CursorInfo
+			}, HaveOtherChanges, true);
+		}
+	};
+	PDFEditorApi.prototype.startCollaborationEditing = function() {
+		let oDoc = this.getPDFDoc();
+		AscPDF.CollaborativeEditing.Start_CollaborationEditing();
+
+		oDoc &&	oDoc.StartCollaborationEditing();
+
+		this.asc_setDrawCollaborationMarks(true);
+		if (window['AscCommon'].g_specialPasteHelper && AscPDF.CollaborativeEditing.m_bFast) {
+			window['AscCommon'].g_specialPasteHelper.SpecialPasteButton_Hide();
+		}
+	};
+	PDFEditorApi.prototype.endCollaborationEditing = function() {
+		AscPDF.CollaborativeEditing.End_CollaborationEditing();
+		this.asc_setDrawCollaborationMarks(false);
+	};
 	PDFEditorApi.prototype.Paste = function()
 	{
 		if (AscCommon.g_clipboardBase.IsWorking())

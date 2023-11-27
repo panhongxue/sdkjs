@@ -97,6 +97,9 @@
     return '#' + ('000000' + this.color.toString(16)).substr(-6);
   };
   asc_CUser.prototype.asc_getView = function() {
+    if (Asc.editor.isPdfEditor())
+      return false;
+
     return this.view;
   };
   asc_CUser.prototype.asc_getLive = function() {

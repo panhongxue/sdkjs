@@ -222,7 +222,7 @@
 		this.isFocusOnThumbnails = false;
 		this.isDocumentContentReady = false;
 
-		this.doc = new AscPDF.CPDFDoc(this);
+		this.doc = new AscPDF.CPDFDoc(this, true);
 		if (typeof CGraphicObjects !== "undefined") {
 			this.DrawingObjects = new CGraphicObjects(this.doc, editor.WordControl.m_oDrawingDocument, this.Api);
 			this.DrawingObjects.saveDocumentState = null;
@@ -2585,6 +2585,8 @@
 			this._paintComboboxesMarkers();
 			oDoc.UpdateUndoRedo();
 			oDoc.UpdateCommentPos();
+
+			editor._onSaveCallbackInner();
 		};
 		this.Get_PageLimits = function() {
 			let W = this.width;

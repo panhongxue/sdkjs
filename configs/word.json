@@ -341,6 +341,7 @@
 			"pdf/src/annotations/annotsChanges.js",
 			"pdf/src/forms/formsChanges.js",
 			"pdf/src/apiPDF.js",
+			"pdf/src/CollaborativeEditing.js",
 			"pdf/src/document.js",
 			"word/document/empty.js",
 			"word/Math/NamesOfLiterals.js",

@@ -12452,7 +12452,7 @@
 
 		this.isDirty = false;
 		this.isCalc = false;
-		this.isMainCellForIterCalc = false;
+		this.oStartCellForIterCalc = null;
 
 		this._hasChanged = false;
 	}
@@ -13579,22 +13579,65 @@
 		}
 	};
 	/**
-	 * Method sets flag who recogmizes is main cell for iteration calculations
-	 * Uses for only with enabled iterative calculations setting
+	 * Method sets start cell which starts and finish an iteration when recursion formula is running.
+	 * Uses for only with enabled iterative calculations setting.
 	 * @memberof Cell
-	 * @param {boolean} isMainCellForIterCalc
+	 * @param {Cell} oStartCellForIterCalc
 	 */
-	Cell.prototype.setMainCellForIterCalc = function (isMainCellForIterCalc) {
-		this.isMainCellForIterCalc = isMainCellForIterCalc;
+	Cell.prototype.setStartCellForIterCalc = function (oStartCellForIterCalc) {
+		this.oStartCellForIterCalc = oStartCellForIterCalc;
 	};
 	/**
-	 * Method returns flag who recognizes is main cell for iteration calculations
-	 * Uses for only with enabled iterative calculations setting
+	 * Method returns start cell which starts and finish an iteration when recursion formula is running.
+	 * Uses for only with enabled iterative calculations setting.
 	 * @memberof Cell
-	 * @returns {boolean}
+	 * @returns {Cell}
 	 */
-	Cell.prototype.getMainCellForIterCalc = function () {
-		return this.isMainCellForIterCalc;
+	Cell.prototype.getStartCellForIterCalc = function () {
+		return this.oStartCellForIterCalc;
+	};
+	Cell.prototype.initStartCellForIterCalc = function (oCell) {
+		let ws = oCell ? oCell.ws : this.ws;
+		let oActiveCell = ws.getSelection().activeCell;
+		console.log(oActiveCell);
+		let oDepFormulas = ws.workbook.dependencyFormulas;
+
+		if (oDepFormulas && oDepFormulas.sheetListeners) {
+			let oSheetListener = oDepFormulas.sheetListeners[ws.Id];
+			console.log(oSheetListener);
+			let nCellIndex = AscCommonExcel.getCellIndex(this.nRow, this.nCol);
+			console.log(nCellIndex);
+			let oCellListeners = oSheetListener.cellMap[nCellIndex];
+			if (oCellListeners) {
+				console.log(oCellListeners);
+				let oListeners = oCellListeners.listeners;
+				console.log(oListeners);
+				if (oCellListeners.count > 1) {
+					console.log("It's recursion baby. Please write some logic here.");
+				} else {
+					for (let i in oListeners) {
+						let oListener = oListeners[i];
+						console.log(oListener);
+						let oListenerCell = oListener.getParent();
+						console.log(oListenerCell);
+						if (this.nCol === oListenerCell.nCol && this.nRow === oListenerCell.nRow) {
+							this.setStartCellForIterCalc(this.duplicate());
+							console.log(this);
+						} else {
+							let oCellFromListener = null;
+							let oRangeOfCell = ws.getCell3(oListenerCell.nRow, oListenerCell.nCol);
+							console.log(oRangeOfCell);
+							oRangeOfCell._foreachNoEmpty(function (oCell) {
+								oCellFromListener = oCell;
+							});
+							console.log(oCellFromListener);
+							this.initStartCellForIterCalc(oCellFromListener.duplicate());
+
+						}
+					}
+				}
+			}
+		}
 	};
 	Cell.prototype._checkDirty = function(){
 		const t = this;

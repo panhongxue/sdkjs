@@ -28517,6 +28517,60 @@ $(function () {
 		real = AscCommonExcel.buildRelativePath(path1, path2);
 		assert.strictEqual(need, real);
 	});
+	QUnit.test('Iterative calculation', function (assert){
+		//TODO Need to check Cell._checkDirty and new methods of cell
+		// Test starts with setValue + _getCell + _checkDirty
+		// Need to understand how to make emulation of fill cell
+		// Test method initStartCellForIterCalc
+		// Create dependence cells
+
+		// Init necessary functions
+		const getRange = function (c1, r1, c2, r2) {
+			return new window["Asc"].Range(c1, r1, c2, r2);
+		};
+		const clearData = function (c1, r1, c2, r2) {
+			ws.autoFilters.deleteAutoFilter(getRange(0,0,0,0));
+			ws.removeRows(r1, r2, false);
+			ws.removeCols(c1, c2);
+		};
+
+		//Clear all cells
+		clearData(0, 0, AscCommonExcel.gc_nMaxCol0, AscCommonExcel.gc_nMaxRow0);
+		console.log(ws);
+		// Case: Sequence chain - A1: A1+B1 -> B1: B1+C1 -> C1: 1
+		// Fill cells
+		ws.getRange2("A1").setValue("=A1+B1");
+		ws.getRange2("B1").setValue("=B1+C1");
+		ws.getRange2("C1").setValue("1");
+
+		console.log('Case: Sequence chain');
+		console.log('dep formulas -> sheet listeners', ws.workbook.dependencyFormulas.sheetListeners);
+		console.log("A1", AscCommonExcel.getCellIndex(0, 0));
+		console.log("B1", AscCommonExcel.getCellIndex(0, 1));
+		console.log("C1", AscCommonExcel.getCellIndex(0, 2));
+		let selectCell = ws.getRange2("C1");
+		let oCell = null;
+		selectCell._foreach2(function (cell) {
+			oCell = cell;
+		})
+		console.log(oCell);
+		oCell.initStartCellForIterCalc();
+		//clearData(0, 0, AscCommonExcel.gc_nMaxCol0, AscCommonExcel.gc_nMaxRow0);
+		//Case: Loop chain - A1: C1/B1 <-> C1: B1+A1
+		ws.getRange2("D1").setValue("=F1/E1");
+		ws.getRange2("E1").setValue("1");
+		ws.getRange2("F1").setValue("=E1+D1");
+
+		console.log('Case: Loop chain');
+		console.log('dep formulas -> sheet listeners', ws.workbook.dependencyFormulas.sheetListeners);
+		console.log("D1", AscCommonExcel.getCellIndex(0, 3));
+		console.log("E1", AscCommonExcel.getCellIndex(0, 4));
+		console.log("F1", AscCommonExcel.getCellIndex(0, 5));
+
+
+
+
+	});
 
 	wb.dependencyFormulas.unlockRecal();
 });

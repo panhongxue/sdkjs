@@ -1189,6 +1189,203 @@
 		return sOutputText;
 	};
 	/**
+	 * Class represents the current selection. 
+	 * A selection represents either a selected (or highlighted) area in the document,
+	 * or it represents the insertion point if nothing in the document is selected.
+	 * There can be only one Selection object per document window pane, and only one Selection object in the entire application can be active. 
+	 * @param {Number} Start - The start element of Range in the current Element.
+	 * @param {Number} End - The end element of Range in the current Element.
+	 * @constructor
+	 */
+	function ApiSelection(oDocument)
+	{
+		this.Document = oDocument;
+		this.StartDocPos;
+		this.EndDocPos;
+	}
+	ApiSelection.prototype.constructor = ApiSelection;
+	
+	/**
+	 * Returns a type of the ApiSelection class.
+	 * @memberof ApiSelection
+	 * @typeofeditors ["CDE"]
+	 * @returns {"selection"}
+	 */
+	ApiSelection.prototype.GetClassType = function() {
+		return "selection";
+	};
+
+	/**
+	 * Ckecks if selection is active.
+	 * @memberof ApiSelection
+	 * @typeofeditors ["CDE"]
+	 * @returns {boolean}
+	 */
+	ApiSelection.prototype.IsActive = function() {
+		let oInfo = this.Document.getSelectionInfo();
+
+		return oInfo.isSelection;
+	};
+
+	/**
+	 * Returns or sets the starting character position of a selection.
+	 * @memberof ApiSelection
+	 * @typeofeditors ["CDE"]
+	 * @returns {boolean}
+	 */
+	Object.defineProperty(ApiSelection.prototype, "Start", {
+		get: function () {
+			return this.GetStartSymbol();
+		},
+		set: function(value) {
+			return this.SetStartSymbol(value);
+		}
+	});
+	/**
+	 * Returns or sets the starting character position of a selection.
+	 * @memberof ApiSelection
+	 * @typeofeditors ["CDE"]
+	 * @returns {boolean}
+	 */
+	Object.defineProperty(ApiSelection.prototype, "End", {
+		get: function () {
+			return this.GetEndSymbol();
+		},
+		set: function(value) {
+			return this.SetEndSymbol(value);
+		}
+	});
+
+    ApiSelection.prototype.CalcDocPos = function(nStart, nEnd) {
+		let oInfo = this.Document.getSelectionInfo();
+
+		let oPara;
+		for (let i = oInfo.selectionStart.length - 1; i >= 0; i--) {
+			oPara = oInfo.selectionStart[i].Class;
+			if (oPara instanceof Paragraph) {
+				break;
+			}
+		}
+
+        var isStartDone = false;
+		var isEndDone	= false;
+		var StartPos    = null;
+		var EndPos      = null;
+		var nCharsCount  = 0;
+		var DocPos, DocPosInRun;
+
+		function callback(oRun)
+		{
+			var nRangePos = 0;
+
+			var nCurPos = oRun.Content.length;
+			for (var nPos = 0; nPos < nCurPos; ++nPos)
+			{
+                if (isStartDone && isEndDone)
+                    break;
+
+				if (para_Text === oRun.Content[nPos].Type || para_Space === oRun.Content[nPos].Type || para_Tab === oRun.Content[nPos].Type || para_NewLine === oRun.Content[nPos].Type || para_End === oRun.Content[nPos].Type)
+					nRangePos++;
+				
+				if (nStart - nCharsCount === nRangePos - 1 && !isStartDone)
+				{
+					DocPosInRun =
+					{
+						Class : oRun,
+						Position : nPos,
+					};
+		
+					DocPos = oRun.GetDocumentPositionFromObject();
+					DocPos.push(DocPosInRun);
+		
+					StartPos = DocPos;
+					isStartDone = true;
+				}
+				
+				if (nEnd - nCharsCount === nRangePos - 1 && !isEndDone)
+				{
+					DocPosInRun =
+					{
+						Class : oRun,
+						Position : nPos,
+					};
+		
+					DocPos = oRun.GetDocumentPositionFromObject();
+					DocPos.push(DocPosInRun);
+		
+					EndPos = DocPos;
+					isEndDone = true;
+				}
+			}
+
+			if (nRangePos !== 0)
+				nCharsCount += nRangePos;
+		}
+
+		oPara.CheckRunContent(callback);
+
+        return { startPos: StartPos, endPos: EndPos }
+    };
+
+	ApiSelection.prototype.GetStartSymbol = function() {
+		let oInfo = this.Document.getSelectionInfo();
+
+		let oParentPara;
+		for (let i = oInfo.selectionStart.length - 1; i >= 0; i--) {
+			oParentPara = oInfo.selectionStart[i].Class;
+			if (oParentPara instanceof Paragraph) {
+				break;
+			}
+		}
+
+		let oSelStart = oParentPara.getSelectionStartPos();
+		return oParentPara.ConvertParaContentPosToRangePos(oSelStart);
+	};
+
+	ApiSelection.prototype.SetStartSymbol = function(nStart) {
+		let nEnd		= this["End"];
+		let oDocPos		= this.CalcDocPos(nStart, nEnd);
+        let startPos    = oDocPos.startPos;
+        let endPos      = oDocPos.endPos;
+
+        if (nStart == nEnd) {
+            this.Document.SetContentPosition(startPos, 0, 0);
+            this.Document.RecalculateCurPos();
+        }
+        else
+            this.Document.SetSelectionByContentPositions(startPos, endPos);
+	};
+
+	ApiSelection.prototype.GetEndSymbol = function() {
+		let oInfo = this.Document.getSelectionInfo();
+
+		let oParentPara;
+		for (let i = oInfo.selectionEnd.length - 1; i >= 0; i--) {
+			oParentPara = oInfo.selectionEnd[i].Class;
+			if (oParentPara instanceof Paragraph) {
+				break;
+			}
+		}
+
+		let oSelStart = oParentPara.getSelectionEndPos();
+		return oParentPara.ConvertParaContentPosToRangePos(oSelStart);
+	};
+
+	ApiSelection.prototype.SetEndSymbol = function(nEnd) {
+		let	nStart		= this["Start"];
+		let oDocPos		= this.CalcDocPos(nStart, nEnd);
+        let startPos    = oDocPos.startPos;
+        let endPos      = oDocPos.endPos;
+
+        if (nStart == nEnd) {
+            this.Document.SetContentPosition(startPos, 0, 0);
+            this.Document.RecalculateCurPos();
+        }
+        else
+            this.Document.SetSelectionByContentPositions(startPos, endPos);
+	};
+
+	/**
 	 * Class representing a continuous region in a document. 
 	 * Each Range object is determined by the position of the start and end characters.
 	 * @param oElement - The document element that may be Document, Table, Paragraph, Run or Hyperlink.
@@ -2971,6 +3168,7 @@
 	function ApiDocument(Document)
 	{
 		ApiDocumentContent.call(this, Document);
+		this.Selection = new ApiSelection(Document);
 	}
 
 	ApiDocument.prototype = Object.create(ApiDocumentContent.prototype);
@@ -6103,6 +6301,18 @@
 	{
 		return new ApiRange(this.Document, Start, End);
 	};
+
+	/**
+	 * Returns a Selection object that represents selection in document.
+	 * @memberof ApiDocument
+	 * @typeofeditors ["CDE"]
+	 * @returns {ApiSelection} 
+	 * */
+	ApiDocument.prototype.GetSelection = function()
+	{
+		return this.Selection;
+	};
+
 	/**
 	 * Returns a range object by the current selection.
 	 * @memberof ApiDocument

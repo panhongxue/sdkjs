@@ -1323,36 +1323,51 @@
 	ApiSelection.prototype.GetStartSymbolPos = function() {
 		let oInfo = this.Document.getSelectionInfo();
 
-		function calcSumChars(oRun)
+		let oLastParentCC;
+		function calcStartPos(oRun)
 		{
-			if (oRun.Paragraph == oParaStart || isCalculatedTillStartPara) {
-				isCalculatedTillStartPara = true;
+			if (isStartPosFounded)
 				return;
+
+			let oCurParentCC = oRun.GetParentContentControl();
+			// если встречаем контент контрол, то добавляется позиция
+			if (oCurParentCC && oCurParentCC != oLastParentCC) {
+				oLastParentCC = oCurParentCC;
+				nStartCharPos++;
+			}
+
+			if (oRun == oRunStart) {
+				isStartPosFounded = true;
 			}
 				
-			var nCurPos = oRun.Content.length;
-			
+			var nCurPos = oRun == oRunStart ? oRun.State.Selection.StartPos : oRun.Content.length;
 			for (var nPos = 0; nPos < nCurPos; ++nPos)
 			{
+				if (nPos == oRun.Content.length - 1) {
+					// перед концом параграфа в контроле так же добавляется позиция
+					if (oCurParentCC && oRun.GetNextRunElement() instanceof AscWord.CRunParagraphMark) {
+						nStartCharPos++;
+					}
+				}
+
 				if (para_Text === oRun.Content[nPos].Type || para_Space === oRun.Content[nPos].Type || para_Tab === oRun.Content[nPos].Type || para_NewLine === oRun.Content[nPos].Type || para_End === oRun.Content[nPos].Type)
-					nCharsBeforeStartPara++;
+					nStartCharPos++;
 			}
 		}
 
-		let oParaStart;
+		let oRunStart;
 		for (let i = oInfo.selectionStart.length - 1; i >= 0; i--) {
-			oParaStart = oInfo.selectionStart[i].Class;
-			if (oParaStart instanceof Paragraph) {
+			oRunStart = oInfo.selectionStart[i].Class;
+			if (oRunStart instanceof ParaRun) {
 				break;
 			}
 		}
 
-		let isCalculatedTillStartPara = false;
-		let nCharsBeforeStartPara = 0;
+		let isStartPosFounded = false;
+		let nStartCharPos = 0;
 
-		this.Document.CheckRunContent(calcSumChars);
-		let oSelEnd = oParaStart.getSelectionStartPos();
-		return oParaStart.ConvertParaContentPosToRangePos(oSelEnd) + nCharsBeforeStartPara;
+		this.Document.CheckRunContent(calcStartPos);
+		return nStartCharPos;
 	};
 
 	ApiSelection.prototype.SetStartSymbolPos = function(nStart) {
@@ -1372,36 +1387,51 @@
 	ApiSelection.prototype.GetEndSymbolPos = function() {
 		let oInfo = this.Document.getSelectionInfo();
 
-		function calcSumChars(oRun)
+		let oLastParentCC;
+		function calcEndPos(oRun)
 		{
-			if (oRun.Paragraph == oParaStart || isCalculatedTillStartPara) {
-				isCalculatedTillStartPara = true;
+			if (isEndPosFounded)
 				return;
+
+			let oCurParentCC = oRun.GetParentContentControl();
+			// если встречаем контент контрол, то добавляется позиция
+			if (oCurParentCC && oCurParentCC != oLastParentCC) {
+				oLastParentCC = oCurParentCC;
+				nEndCharPos++;
+			}
+
+			if (oRun == oRunEnd) {
+				isEndPosFounded = true;
 			}
 				
-			var nCurPos = oRun.Content.length;
-			
+			var nCurPos = oRun == oRunEnd ? oRun.State.Selection.EndPos : oRun.Content.length;
 			for (var nPos = 0; nPos < nCurPos; ++nPos)
 			{
+				if (nPos == oRun.Content.length - 1) {
+					// перед концом параграфа в контроле так же добавляется позиция
+					if (oCurParentCC && oRun.GetNextRunElement() instanceof AscWord.CRunParagraphMark) {
+						nEndCharPos++;
+					}
+				}
+
 				if (para_Text === oRun.Content[nPos].Type || para_Space === oRun.Content[nPos].Type || para_Tab === oRun.Content[nPos].Type || para_NewLine === oRun.Content[nPos].Type || para_End === oRun.Content[nPos].Type)
-					nCharsBeforeStartPara++;
+					nEndCharPos++;
 			}
 		}
 
-		let oParaStart;
+		let oRunEnd;
 		for (let i = oInfo.selectionEnd.length - 1; i >= 0; i--) {
-			oParaStart = oInfo.selectionEnd[i].Class;
-			if (oParaStart instanceof Paragraph) {
+			oRunEnd = oInfo.selectionEnd[i].Class;
+			if (oRunEnd instanceof ParaRun) {
 				break;
 			}
 		}
 
-		let isCalculatedTillStartPara = false;
-		let nCharsBeforeStartPara = 0;
+		let isEndPosFounded = false;
+		let nEndCharPos = 0;
 
-		this.Document.CheckRunContent(calcSumChars);
-		let oSelEnd = oParaStart.getSelectionEndPos();
-		return oParaStart.ConvertParaContentPosToRangePos(oSelEnd) + nCharsBeforeStartPara;
+		this.Document.CheckRunContent(calcEndPos);
+		return nEndCharPos;
 	};
 
 	ApiSelection.prototype.SetEndSymbolPos = function(nEnd) {

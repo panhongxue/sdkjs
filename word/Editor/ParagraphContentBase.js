@@ -803,6 +803,25 @@ CParagraphContentBase.prototype.GetDocumentPositionFromObject = function(arrPos)
 	return arrPos;
 };
 /**
+ * Получаем первый конент контрол, внутри которого лежит данный класс
+ * @returns {Array}
+ */
+CParagraphContentBase.prototype.GetParentContentControl = function()
+{
+	var oDocPos = this.GetDocumentPositionFromObject();
+	oDocPos.push({Class : this, Pos : 0});
+
+	for (var nIndex = 0, nCount = oDocPos.length; nIndex < nCount; ++nIndex)
+	{
+		if (oDocPos[nIndex].Class instanceof CInlineLevelSdt)
+			return oDocPos[nIndex].Class;
+		else if (oDocPos[nIndex].Class instanceof CDocumentContent && oDocPos[nIndex].Class.Parent instanceof CBlockLevelSdt)
+			return oDocPos[nIndex].Class.Parent;
+	}
+
+	return null;
+};
+/**
  * Получаем массив всех конент контролов, внутри которых лежит данный класс
  * @returns {Array}
  */

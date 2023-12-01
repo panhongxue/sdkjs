@@ -1235,10 +1235,10 @@
 	 */
 	Object.defineProperty(ApiSelection.prototype, "Start", {
 		get: function () {
-			return this.GetStartSymbol();
+			return this.GetStartSymbolPos();
 		},
 		set: function(value) {
-			return this.SetStartSymbol(value);
+			return this.SetStartSymbolPos(value);
 		}
 	});
 	/**
@@ -1249,23 +1249,16 @@
 	 */
 	Object.defineProperty(ApiSelection.prototype, "End", {
 		get: function () {
-			return this.GetEndSymbol();
+			return this.GetEndSymbolPos();
 		},
 		set: function(value) {
-			return this.SetEndSymbol(value);
+			return this.SetEndSymbolPos(value);
 		}
 	});
 
     ApiSelection.prototype.CalcDocPos = function(nStart, nEnd) {
 		let oInfo = this.Document.getSelectionInfo();
-
-		let oPara;
-		for (let i = oInfo.selectionStart.length - 1; i >= 0; i--) {
-			oPara = oInfo.selectionStart[i].Class;
-			if (oPara instanceof Paragraph) {
-				break;
-			}
-		}
+		let oTopELm = oInfo.selectionStart[0].Class;
 
         var isStartDone = false;
 		var isEndDone	= false;
@@ -1322,27 +1315,47 @@
 				nCharsCount += nRangePos;
 		}
 
-		oPara.CheckRunContent(callback);
+		oTopELm.CheckRunContent(callback);
 
         return { startPos: StartPos, endPos: EndPos }
     };
 
-	ApiSelection.prototype.GetStartSymbol = function() {
+	ApiSelection.prototype.GetStartSymbolPos = function() {
 		let oInfo = this.Document.getSelectionInfo();
 
-		let oParentPara;
+		function calcSumChars(oRun)
+		{
+			if (oRun.Paragraph == oParaStart || isCalculatedTillStartPara) {
+				isCalculatedTillStartPara = true;
+				return;
+			}
+				
+			var nCurPos = oRun.Content.length;
+			
+			for (var nPos = 0; nPos < nCurPos; ++nPos)
+			{
+				if (para_Text === oRun.Content[nPos].Type || para_Space === oRun.Content[nPos].Type || para_Tab === oRun.Content[nPos].Type || para_NewLine === oRun.Content[nPos].Type || para_End === oRun.Content[nPos].Type)
+					nCharsBeforeStartPara++;
+			}
+		}
+
+		let oParaStart;
 		for (let i = oInfo.selectionStart.length - 1; i >= 0; i--) {
-			oParentPara = oInfo.selectionStart[i].Class;
-			if (oParentPara instanceof Paragraph) {
+			oParaStart = oInfo.selectionStart[i].Class;
+			if (oParaStart instanceof Paragraph) {
 				break;
 			}
 		}
 
-		let oSelStart = oParentPara.getSelectionStartPos();
-		return oParentPara.ConvertParaContentPosToRangePos(oSelStart);
+		let isCalculatedTillStartPara = false;
+		let nCharsBeforeStartPara = 0;
+
+		this.Document.CheckRunContent(calcSumChars);
+		let oSelEnd = oParaStart.getSelectionStartPos();
+		return oParaStart.ConvertParaContentPosToRangePos(oSelEnd) + nCharsBeforeStartPara;
 	};
 
-	ApiSelection.prototype.SetStartSymbol = function(nStart) {
+	ApiSelection.prototype.SetStartSymbolPos = function(nStart) {
 		let nEnd		= this["End"];
 		let oDocPos		= this.CalcDocPos(nStart, nEnd);
         let startPos    = oDocPos.startPos;
@@ -1356,22 +1369,42 @@
             this.Document.SetSelectionByContentPositions(startPos, endPos);
 	};
 
-	ApiSelection.prototype.GetEndSymbol = function() {
+	ApiSelection.prototype.GetEndSymbolPos = function() {
 		let oInfo = this.Document.getSelectionInfo();
 
-		let oParentPara;
+		function calcSumChars(oRun)
+		{
+			if (oRun.Paragraph == oParaStart || isCalculatedTillStartPara) {
+				isCalculatedTillStartPara = true;
+				return;
+			}
+				
+			var nCurPos = oRun.Content.length;
+			
+			for (var nPos = 0; nPos < nCurPos; ++nPos)
+			{
+				if (para_Text === oRun.Content[nPos].Type || para_Space === oRun.Content[nPos].Type || para_Tab === oRun.Content[nPos].Type || para_NewLine === oRun.Content[nPos].Type || para_End === oRun.Content[nPos].Type)
+					nCharsBeforeStartPara++;
+			}
+		}
+
+		let oParaStart;
 		for (let i = oInfo.selectionEnd.length - 1; i >= 0; i--) {
-			oParentPara = oInfo.selectionEnd[i].Class;
-			if (oParentPara instanceof Paragraph) {
+			oParaStart = oInfo.selectionEnd[i].Class;
+			if (oParaStart instanceof Paragraph) {
 				break;
 			}
 		}
 
-		let oSelStart = oParentPara.getSelectionEndPos();
-		return oParentPara.ConvertParaContentPosToRangePos(oSelStart);
+		let isCalculatedTillStartPara = false;
+		let nCharsBeforeStartPara = 0;
+
+		this.Document.CheckRunContent(calcSumChars);
+		let oSelEnd = oParaStart.getSelectionEndPos();
+		return oParaStart.ConvertParaContentPosToRangePos(oSelEnd) + nCharsBeforeStartPara;
 	};
 
-	ApiSelection.prototype.SetEndSymbol = function(nEnd) {
+	ApiSelection.prototype.SetEndSymbolPos = function(nEnd) {
 		let	nStart		= this["Start"];
 		let oDocPos		= this.CalcDocPos(nStart, nEnd);
         let startPos    = oDocPos.startPos;
@@ -6300,6 +6333,41 @@
 	ApiDocument.prototype.GetRange = function(Start, End)
 	{
 		return new ApiRange(this.Document, Start, End);
+	};
+
+	/**
+	 * Gets the selected text in this document.
+	 * @memberof ApiDocument
+	 * @param {object} oPr - The resulting string display properties.
+     * @param {boolean} [oPr.NewLineParagraph=false] - Defines if the resulting string will include paragraph line boundaries or not.
+     * @param {boolean} [oPr.Numbering=false] - Defines if the resulting string will include numbering or not.
+     * @param {boolean} [oPr.Math=false] - Defines if the resulting string will include mathematical expressions or not.
+	 * @param {string} [oPr.NewLineSeparator='\r'] - Defines how the line separator will be specified in the resulting string.
+     * @param {string} [oPr.TableCellSeparator='\t'] - Defines how the table cell separator will be specified in the resulting string.
+     * @param {string} [oPr.TableRowSeparator='\r\n'] - Defines how the table row separator will be specified in the resulting string.
+     * @param {string} [oPr.ParaSeparator='\r\n'] - Defines how the paragraph separator will be specified in the resulting string.
+	 * @param {string} [oPr.TabSymbol='\t'] - Defines how the tab will be specified in the resulting string (does not apply to numbering)
+	 * @typeofeditors ["CDE"]
+	 * @returns {string} 
+	 * */
+	ApiDocument.prototype.GetSelectedText = function(oPr)
+	{
+		if (!oPr) {
+			oPr = {};
+		}
+		
+		let oProp = {
+			NewLineSeparator:	(oPr.hasOwnProperty("NewLineSeparator")) ? oPr["NewLineSeparator"] : "\r",
+			NewLineParagraph:	(oPr.hasOwnProperty("NewLineParagraph")) ? oPr["NewLineParagraph"] : true,
+			Numbering:			(oPr.hasOwnProperty("Numbering")) ? oPr["Numbering"] : true,
+			Math:				(oPr.hasOwnProperty("Math")) ? oPr["Math"] : true,
+			TableCellSeparator:	oPr["TableCellSeparator"],
+			TableRowSeparator:	oPr["TableRowSeparator"],
+			ParaSeparator:		oPr["ParaSeparator"],
+			TabSymbol:			oPr["TabSymbol"]
+		}
+
+		return this.Document.GetSelectedText(false, oProp);
 	};
 
 	/**
@@ -16677,6 +16745,42 @@
 		return new ApiContentControlList(this);
 	};
 
+	/**
+	 * Returns the text from the current content control
+	 * @memberof ApiInlineLvlSdt
+	 * @param {object} oPr - The resulting string display properties.
+     * @param {boolean} [oPr.NewLineParagraph=false] - Defines if the resulting string will include paragraph line boundaries or not.
+     * @param {boolean} [oPr.Numbering=false] - Defines if the resulting string will include numbering or not.
+     * @param {boolean} [oPr.Math=false] - Defines if the resulting string will include mathematical expressions or not.
+	 * @param {string} [oPr.NewLineSeparator='\r'] - Defines how the line separator will be specified in the resulting string.
+     * @param {string} [oPr.TableCellSeparator='\t'] - Defines how the table cell separator will be specified in the resulting string.
+     * @param {string} [oPr.TableRowSeparator='\r\n'] - Defines how the table row separator will be specified in the resulting string.
+     * @param {string} [oPr.ParaSeparator='\r\n'] - Defines how the paragraph separator will be specified in the resulting string.
+	 * @param {string} [oPr.TabSymbol='\t'] - Defines how the tab will be specified in the resulting string (does not apply to numbering)
+	 * @typeofeditors ["CDE"]
+	 * @returns {string}
+	 */
+	ApiInlineLvlSdt.prototype.GetText = function(oPr)
+	{
+		if (!oPr) {
+			oPr = {};
+		}
+		
+		let oProp = {
+			NewLineSeparator:	(oPr.hasOwnProperty("NewLineSeparator")) ? oPr["NewLineSeparator"] : "\r",
+			NewLineParagraph:	(oPr.hasOwnProperty("NewLineParagraph")) ? oPr["NewLineParagraph"] : true,
+			Numbering:			(oPr.hasOwnProperty("Numbering")) ? oPr["Numbering"] : true,
+			Math:				(oPr.hasOwnProperty("Math")) ? oPr["Math"] : true,
+			TableCellSeparator:	oPr["TableCellSeparator"],
+			TableRowSeparator:	oPr["TableRowSeparator"],
+			ParaSeparator:		oPr["ParaSeparator"],
+			TabSymbol:			oPr["TabSymbol"]
+		}
+
+		
+		return this.Sdt.GetSelectedText(true, oProp);
+	};
+
 	//------------------------------------------------------------------------------------------------------------------
 	//
 	// ApiContentControlList
@@ -17711,6 +17815,42 @@
 		
 		return new ApiContentControlList(this);
 	};
+
+	/**
+	 * Returns the text from the current content control
+	 * @memberof ApiBlockLvlSdt
+	 * @param {object} oPr - The resulting string display properties.
+     * @param {boolean} [oPr.NewLineParagraph=false] - Defines if the resulting string will include paragraph line boundaries or not.
+     * @param {boolean} [oPr.Numbering=false] - Defines if the resulting string will include numbering or not.
+     * @param {boolean} [oPr.Math=false] - Defines if the resulting string will include mathematical expressions or not.
+	 * @param {string} [oPr.NewLineSeparator='\r'] - Defines how the line separator will be specified in the resulting string.
+     * @param {string} [oPr.TableCellSeparator='\t'] - Defines how the table cell separator will be specified in the resulting string.
+     * @param {string} [oPr.TableRowSeparator='\r\n'] - Defines how the table row separator will be specified in the resulting string.
+     * @param {string} [oPr.ParaSeparator='\r\n'] - Defines how the paragraph separator will be specified in the resulting string.
+	 * @param {string} [oPr.TabSymbol='\t'] - Defines how the tab will be specified in the resulting string (does not apply to numbering)
+	 * @typeofeditors ["CDE"]
+	 * @returns {string}
+	 */
+	ApiBlockLvlSdt.prototype.GetText = function(oPr)
+	{
+		if (!oPr) {
+			oPr = {};
+		}
+		
+		let oProp = {
+			NewLineSeparator:	(oPr.hasOwnProperty("NewLineSeparator")) ? oPr["NewLineSeparator"] : "\r",
+			NewLineParagraph:	(oPr.hasOwnProperty("NewLineParagraph")) ? oPr["NewLineParagraph"] : true,
+			Numbering:			(oPr.hasOwnProperty("Numbering")) ? oPr["Numbering"] : true,
+			Math:				(oPr.hasOwnProperty("Math")) ? oPr["Math"] : true,
+			TableCellSeparator:	oPr["TableCellSeparator"],
+			TableRowSeparator:	oPr["TableRowSeparator"],
+			ParaSeparator:		oPr["ParaSeparator"],
+			TabSymbol:			oPr["TabSymbol"]
+		}
+		
+		return this.Sdt.GetSelectedText(true, oProp);
+	};
+
 	//------------------------------------------------------------------------------------------------------------------
 	//
 	// ApiFormBase
@@ -19945,6 +20085,7 @@
 	ApiDocument.prototype["SetTrackRevisions"]           = ApiDocument.prototype.SetTrackRevisions;
 	ApiDocument.prototype["IsTrackRevisions"]            = ApiDocument.prototype.IsTrackRevisions;
 	ApiDocument.prototype["GetRange"]                    = ApiDocument.prototype.GetRange;
+	ApiDocument.prototype["GetSelectedText"]             = ApiDocument.prototype.GetSelectedText;
 	ApiDocument.prototype["GetRangeBySelect"]            = ApiDocument.prototype.GetRangeBySelect;
 	ApiDocument.prototype["Last"]                        = ApiDocument.prototype.Last;
 	ApiDocument.prototype["Push"]                        = ApiDocument.prototype.Push;
@@ -20517,6 +20658,7 @@
 	ApiInlineLvlSdt.prototype["IsForm"]                 = ApiInlineLvlSdt.prototype.IsForm;
 	ApiInlineLvlSdt.prototype["GetForm"]                = ApiInlineLvlSdt.prototype.GetForm;
 	ApiInlineLvlSdt.prototype["GetDropdownList"]        = ApiInlineLvlSdt.prototype.GetDropdownList;
+	ApiInlineLvlSdt.prototype["GetText"]         		= ApiInlineLvlSdt.prototype.GetText;
 
 	ApiContentControlList.prototype["GetClassType"]		= ApiContentControlList.prototype.GetClassType;
 	ApiContentControlList.prototype["GetAllItems"]		= ApiContentControlList.prototype.GetAllItems;
@@ -20573,6 +20715,7 @@
 	ApiBlockLvlSdt.prototype["AddComment"]              = ApiBlockLvlSdt.prototype.AddComment;
 	ApiBlockLvlSdt.prototype["AddCaption"]              = ApiBlockLvlSdt.prototype.AddCaption;
 	ApiBlockLvlSdt.prototype["GetDropdownList"]         = ApiBlockLvlSdt.prototype.GetDropdownList;
+	ApiBlockLvlSdt.prototype["GetText"]         		= ApiBlockLvlSdt.prototype.GetText;
 
 	ApiFormBase.prototype["GetClassType"]        = ApiFormBase.prototype.GetClassType;
 	ApiFormBase.prototype["GetFormType"]         = ApiFormBase.prototype.GetFormType;

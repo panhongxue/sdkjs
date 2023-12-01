@@ -1344,9 +1344,14 @@
 			for (var nPos = 0; nPos < nCurPos; ++nPos)
 			{
 				if (nPos == oRun.Content.length - 1) {
-					// перед концом параграфа в контроле так же добавляется позиция
+					// перед концом параграфа в контроле так же добавляется позиция в том случае,
+					// если это InlineLvlSdt или это последний параграф в BlockLvlSdt
 					if (oCurParentCC && oRun.GetNextRunElement() instanceof AscWord.CRunParagraphMark) {
-						nStartCharPos++;
+						if (oCurParentCC instanceof CInlineLevelSdt)
+							nStartCharPos++;
+						else if (oCurParentCC instanceof CBlockLevelSdt && oRun.Paragraph.GetIndex() == oCurParentCC.GetElementsCount() - 1) {
+							nStartCharPos++;
+						}
 					}
 				}
 
@@ -1408,9 +1413,14 @@
 			for (var nPos = 0; nPos < nCurPos; ++nPos)
 			{
 				if (nPos == oRun.Content.length - 1) {
-					// перед концом параграфа в контроле так же добавляется позиция
+					// перед концом параграфа в контроле так же добавляется позиция в том случае,
+					// если это InlineLvlSdt или это последний параграф в BlockLvlSdt
 					if (oCurParentCC && oRun.GetNextRunElement() instanceof AscWord.CRunParagraphMark) {
-						nEndCharPos++;
+						if (oCurParentCC instanceof CInlineLevelSdt)
+							nEndCharPos++;
+						else if (oCurParentCC instanceof CBlockLevelSdt && oRun.Paragraph.GetIndex() == oCurParentCC.GetElementsCount() - 1) {
+							nEndCharPos++;
+						}
 					}
 				}
 

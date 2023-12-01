@@ -13596,43 +13596,45 @@
 	Cell.prototype.getStartCellForIterCalc = function () {
 		return this.oStartCellForIterCalc;
 	};
-	Cell.prototype.initStartCellForIterCalc = function (oCell) {
+	Cell.prototype.initStartCellForIterCalc = function (oCell, oPrevCell) {
 		let ws = oCell ? oCell.ws : this.ws;
-		let oActiveCell = ws.getSelection().activeCell;
-		console.log(oActiveCell);
+		let oThis = oCell ? oCell : this;
 		let oDepFormulas = ws.workbook.dependencyFormulas;
 
 		if (oDepFormulas && oDepFormulas.sheetListeners) {
 			let oSheetListener = oDepFormulas.sheetListeners[ws.Id];
-			console.log(oSheetListener);
-			let nCellIndex = AscCommonExcel.getCellIndex(this.nRow, this.nCol);
-			console.log(nCellIndex);
+			let nCellIndex = AscCommonExcel.getCellIndex(oThis.nRow, oThis.nCol);
 			let oCellListeners = oSheetListener.cellMap[nCellIndex];
+			let oCellFromListener = null;
 			if (oCellListeners) {
-				console.log(oCellListeners);
 				let oListeners = oCellListeners.listeners;
-				console.log(oListeners);
 				if (oCellListeners.count > 1) {
-					console.log("It's recursion baby. Please write some logic here.");
+					for (let i in oListeners) {
+						let oListener = oListeners[i];
+						let oListenerCell = oListener.getParent();
+						let nListenerCellIndex = AscCommonExcel.getCellIndex(oListenerCell.nRow, oListenerCell.nCol);
+						if (nCellIndex !== nListenerCellIndex) {
+							ws._getCell(oListenerCell.nRow, oListenerCell.nCol, function (oCell) {
+								oCellFromListener = oCell;
+							});
+							this.initStartCellForIterCalc(oCellFromListener, oThis);
+						}
+					}
 				} else {
 					for (let i in oListeners) {
 						let oListener = oListeners[i];
-						console.log(oListener);
 						let oListenerCell = oListener.getParent();
-						console.log(oListenerCell);
-						if (this.nCol === oListenerCell.nCol && this.nRow === oListenerCell.nRow) {
-							this.setStartCellForIterCalc(this.duplicate());
-							console.log(this);
+						let nListenerCellIndex = AscCommonExcel.getCellIndex(oListenerCell.nRow, oListenerCell.nCol);
+						let nPrevCellIndex = oPrevCell ? AscCommonExcel.getCellIndex(oPrevCell.nRow, oPrevCell.nCol) : null;
+						if (nCellIndex === nListenerCellIndex) {
+							this.setStartCellForIterCalc(oThis);
+						} else if (nPrevCellIndex != null && nListenerCellIndex === nPrevCellIndex) {
+							this.setStartCellForIterCalc(this);
 						} else {
-							let oCellFromListener = null;
-							let oRangeOfCell = ws.getCell3(oListenerCell.nRow, oListenerCell.nCol);
-							console.log(oRangeOfCell);
-							oRangeOfCell._foreachNoEmpty(function (oCell) {
+							ws._getCell(oListenerCell.nRow, oListenerCell.nCol, function (oCell) {
 								oCellFromListener = oCell;
 							});
-							console.log(oCellFromListener);
-							this.initStartCellForIterCalc(oCellFromListener.duplicate());
-
+							this.initStartCellForIterCalc(oCellFromListener, oThis);
 						}
 					}
 				}

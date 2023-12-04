@@ -1259,7 +1259,7 @@ CDocumentFieldsManager.prototype.Register_Field = function(oField)
     this.m_aFields.push(oField);
 
     var nFieldType = oField.Get_FieldType();
-    if (fieldtype_MERGEFIELD === nFieldType)
+    if (AscWord.fieldtype_MERGEFIELD === nFieldType)
     {
         var sName = oField.Get_Argument(0);
         if (undefined !== sName)
@@ -1652,7 +1652,7 @@ CSelectedElementsInfo.prototype.GetAllTablesOfFigures = function()
 		var oComplexField = this.m_arrComplexFields[nIndex];
 		var oInstruction  = oComplexField.GetInstruction();
 
-		if (AscCommonWord.fieldtype_TOC === oInstruction.GetType() && oInstruction.IsTableOfFigures())//TOC field can be table of contents or table or figures depending on flags
+		if (AscWord.fieldtype_TOC === oInstruction.GetType() && oInstruction.IsTableOfFigures())//TOC field can be table of contents or table or figures depending on flags
         {
             aTOF.push(oComplexField);
         }
@@ -1666,7 +1666,7 @@ CSelectedElementsInfo.prototype.GetTableOfContents = function()
         var oComplexField = this.m_arrComplexFields[nIndex];
         var oInstruction  = oComplexField.GetInstruction();
 
-        if (AscCommonWord.fieldtype_TOC === oInstruction.GetType() && oInstruction.IsTableOfContents())//TOC field can be table of contents or table or figures depending on flags
+        if (AscWord.fieldtype_TOC === oInstruction.GetType() && oInstruction.IsTableOfContents())//TOC field can be table of contents or table or figures depending on flags
         {
             return oComplexField;
         }
@@ -1690,9 +1690,9 @@ CSelectedElementsInfo.prototype.GetHyperlink = function()
 	{
 		var oInstruction = this.m_arrComplexFields[nIndex].GetInstruction();
 		if (oInstruction && 
-			(fieldtype_HYPERLINK === oInstruction.GetType() 
-			|| fieldtype_REF === oInstruction.GetType() && oInstruction.GetHyperlink()
-			|| fieldtype_NOTEREF === oInstruction.GetType() && oInstruction.GetHyperlink()))
+			(AscWord.fieldtype_HYPERLINK === oInstruction.GetType()
+			|| AscWord.fieldtype_REF === oInstruction.GetType() && oInstruction.GetHyperlink()
+			|| AscWord.fieldtype_NOTEREF === oInstruction.GetType() && oInstruction.GetHyperlink()))
 			return oInstruction;
 	}
 
@@ -2306,7 +2306,7 @@ CDocument.prototype.private_UpdateFieldsOnEndLoad = function()
 	{
 		let oField = arrFields[nFieldIndex];
 		if (oField instanceof ParaField
-			&& (fieldtype_PAGECOUNT === oField.GetFieldType() || fieldtype_PAGENUM === oField.GetFieldType()))
+			&& (AscWord.fieldtype_PAGECOUNT === oField.GetFieldType() || AscWord.fieldtype_PAGENUM === oField.GetFieldType()))
 		{
 			let oComplexField = oField.ReplaceWithComplexField();
 			if (oComplexField)
@@ -2329,7 +2329,7 @@ CDocument.prototype.private_UpdateFieldsOnEndLoad = function()
 		let oField = arrFields[nFieldIndex];
 		if (oField instanceof CComplexField
 			&& oField.GetInstruction()
-			&& fieldtype_TIME === oField.GetInstruction().Type)
+			&& AscWord.fieldtype_TIME === oField.GetInstruction().Type)
 		{
 			oField.UpdateTIME(openedAt);
 		}
@@ -5940,7 +5940,7 @@ CDocument.prototype.Extend_ToPos = function(X, Y)
         }))
     {
         // Теперь нам нужно вставить таб по X
-        LastPara.Extend_ToPos(X);
+        LastPara.extendLastLineToPos(X);
     }
 
     LastPara.MoveCursorToEndPos();
@@ -7844,7 +7844,7 @@ CDocument.prototype.Selection_SetEnd = function(X, Y, MouseEvent)
 				else if (null !== this.Selection.Data && this.Selection.Data.PageRef)
 				{
 					var oInstruction = this.Selection.Data.PageRef.GetInstruction();
-					if (oInstruction && fieldtype_PAGEREF === oInstruction.GetType())
+					if (oInstruction && AscWord.fieldtype_PAGEREF === oInstruction.GetType())
 					{
 						var oBookmark = this.BookmarksManager.GetBookmarkByName(oInstruction.GetBookmarkName());
 						if (oBookmark)
@@ -9873,6 +9873,14 @@ CDocument.prototype.OnKeyDown = function(e)
 			bUpdateSelection = false;
 			bRetValue        = keydownresult_PreventAll;
 		}
+		else if (e.KeyCode === 187) // +
+		{
+			if (e.IsCtrl() && e.IsShift())
+			{
+				bUpdateSelection = false;
+				bRetValue        = keydownresult_PreventAll;
+			}
+		}
 		else if (e.KeyCode === 12288) // Space
 		{
 			if (false === this.Document_Is_SelectionLocked(changestype_Paragraph_Content, null, true, this.IsFormFieldEditing()))
@@ -10028,13 +10036,27 @@ CDocument.prototype.CorrectEnterText = function(oldValue, newValue)
 		oldText += String.fromCodePoint(oldCodePoints[index]);
 	}
 
-	let state     = this.SaveDocumentState();
+	let state    = this.SaveDocumentState();
+	let startPos = paragraph.getCurrentPos();
+	let endPos   = startPos;
+	
+	let paraSearchPos = new CParagraphSearchPos();
+
 	let maxShifts = oldCodePoints.length;
 	let selectedText;
+	this.StartSelectionFromCurPos();
 	while (maxShifts >= 0)
 	{
-		this.MoveCursorLeft(true, false);
-		selectedText = this.GetSelectedText(true);
+		paraSearchPos.Reset();
+		paragraph.Get_LeftPos(paraSearchPos, endPos);
+		
+		if (!paraSearchPos.IsFound())
+			break;
+		
+		endPos = paraSearchPos.GetPos().Copy();
+		
+		paragraph.SetSelectionContentPos(startPos, endPos, false);
+		selectedText = paragraph.GetSelectedText(true);
 
 		if (!selectedText || selectedText === oldText)
 			break;
@@ -10047,6 +10069,7 @@ CDocument.prototype.CorrectEnterText = function(oldValue, newValue)
 		this.LoadDocumentState(state);
 		return false;
 	}
+	
 
 	this.StartAction(AscDFH.historydescription_Document_CorrectEnterText);
 
@@ -12035,7 +12058,7 @@ CDocument.prototype.private_UpdateTracks = function(bSelection, bEmptySelection)
 	}
 
 	var oField = oSelectedInfo.GetField();
-	if (null !== oField && (fieldtype_MERGEFIELD !== oField.Get_FieldType() || true !== this.MailMergeFieldsHighlight))
+	if (null !== oField && (AscWord.fieldtype_MERGEFIELD !== oField.Get_FieldType() || true !== this.MailMergeFieldsHighlight))
 	{
 		var aBounds = oField.Get_Bounds();
 		this.DrawingDocument.Update_FieldTrack(true, aBounds);
@@ -16964,7 +16987,7 @@ CDocument.prototype.Add_MailMergeField = function(Name)
 	{
 		this.StartAction(AscDFH.historydescription_Document_AddMailMergeField);
 
-		var oField = new ParaField(fieldtype_MERGEFIELD, [Name], []);
+		var oField = new ParaField(AscWord.fieldtype_MERGEFIELD, [Name], []);
 		var oRun = new ParaRun();
 		oRun.AddText("«" + Name + "»");
 		oField.Add_ToContent(0, oRun);
@@ -21850,7 +21873,7 @@ CDocument.prototype.AddFormTextField = function(sName, sDefaultText)
 	{
 		this.StartAction(AscDFH.historydescription_Document_AddMailMergeField);
 
-		var oField = new ParaField(fieldtype_FORMTEXT);
+		var oField = new ParaField(AscWord.fieldtype_FORMTEXT);
 		var oRun = new ParaRun();
 		oField.SetFormFieldName(sName);
 		oField.SetFormFieldDefaultText(sDefaultText);
@@ -21865,7 +21888,7 @@ CDocument.prototype.AddFormTextField = function(sName, sDefaultText)
 };
 CDocument.prototype.GetAllFormTextFields = function()
 {
-	return this.FieldsManager.GetAllFieldsByType(fieldtype_FORMTEXT);
+	return this.FieldsManager.GetAllFieldsByType(AscWord.fieldtype_FORMTEXT);
 };
 CDocument.prototype.IsFillingFormMode = function()
 {
@@ -21909,7 +21932,7 @@ CDocument.prototype.IsInFormField = function(isAllowComplexForm, isCheckCurrentU
 	// оInlineSdt отдает нам нижний уровень, если на нем у нас ComplexField, значит мы находимся внутри текста,
 	// в такой ситуации мы отдаем, что ме не находимся в форме, чтобы запретить редактирование в этой части формы
 	// Когда мы будем находится внутри простой формы, находящейся в сложной, то oInlineSdt вернет именно проостую форму
-	return !!(oBlockSdt || (oInlineSdt && (!oInlineSdt.IsComplexForm() || isAllowComplexForm)) || (oField && fieldtype_FORMTEXT === oField.Get_FieldType()));
+	return !!(oBlockSdt || (oInlineSdt && (!oInlineSdt.IsComplexForm() || isAllowComplexForm)) || (oField && AscWord.fieldtype_FORMTEXT === oField.Get_FieldType()));
 };
 CDocument.prototype.IsFormFieldEditing = function()
 {
@@ -22460,15 +22483,15 @@ CDocument.prototype.StartCollaborationEditing = function()
 };
 CDocument.prototype.AddField = function(nType, oPr)
 {
-	if (fieldtype_PAGENUM === nType)
+	if (AscWord.fieldtype_PAGENUM === nType)
 	{
 		return this.AddFieldWithInstruction("PAGE");
 	}
-	else if (fieldtype_TOC === nType)
+	else if (AscWord.fieldtype_TOC === nType)
 	{
 		return this.AddFieldWithInstruction("TOC");
 	}
-	else if (fieldtype_PAGEREF === nType)
+	else if (AscWord.fieldtype_PAGEREF === nType)
 	{
 		return this.AddFieldWithInstruction("PAGEREF Test \\p");
 	}
@@ -24333,7 +24356,7 @@ CDocument.prototype.GetTableCellFormula = function(isReturnField)
 	for (var nIndex = 0, nCount = arrAllFields.length; nIndex < nCount; ++nIndex)
 	{
 		var oField = arrAllFields[nIndex];
-		if (oField instanceof CComplexField && oField.GetInstruction() && fieldtype_FORMULA === oField.GetInstruction().Type)
+		if (oField instanceof CComplexField && oField.GetInstruction() && AscWord.fieldtype_FORMULA === oField.GetInstruction().Type)
 		{
 			if (isReturnField)
 				return oField;

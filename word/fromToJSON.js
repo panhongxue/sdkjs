@@ -22029,7 +22029,10 @@
 	window['AscJsonConverter'] = window.AscJsonConverter = window['AscJsonConverter'] || {};
 	window['AscJsonConverter'].WriterToJSON   = WriterToJSON;
 	window['AscJsonConverter'].ReaderFromJSON = ReaderFromJSON;
-	
+
+	window['AscCommon'].To_XML_ST_LayoutShapeType = To_XML_ST_LayoutShapeType;
+	window['AscCommon'].From_XML_ST_LayoutShapeType = From_XML_ST_LayoutShapeType;
+
 })(window);
 
 

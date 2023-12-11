@@ -6157,7 +6157,7 @@
         return false;
     };
     CPlotArea.prototype.isLineType = function(nType) {
-        return getIsLineType(nType);
+        return isLineChartType(nType);
     };
     CPlotArea.prototype.isPieType = function(nType) {
         if(Asc.c_oAscChartTypeSettings.pie === nType
@@ -6167,35 +6167,19 @@
         return false;
     };
     CPlotArea.prototype.isDoughnutType = function(nType) {
-        if(Asc.c_oAscChartTypeSettings.doughnut === nType) {
-            return true
-        }
-        return false;
+        isDoughnutChartType(nType);
     };
     CPlotArea.prototype.isAreaType = function(nType) {
-        if(Asc.c_oAscChartTypeSettings.areaNormal === nType
-            || Asc.c_oAscChartTypeSettings.areaStacked === nType
-            || Asc.c_oAscChartTypeSettings.areaStackedPer === nType) {
-            return true
-        }
-        return false;
+        return isAreaChartType(nType);
     };
     CPlotArea.prototype.isRadarType = function(nType) {
-        if(Asc.c_oAscChartTypeSettings.radar === nType
-            || Asc.c_oAscChartTypeSettings.radarMarker === nType
-            || Asc.c_oAscChartTypeSettings.radarFilled === nType) {
-            return true
-        }
-        return false;
+        return isRadarChartType(nType);
     };
     CPlotArea.prototype.isScatterType = function(nType) {
         return isScatterChartType(nType);
     };
     CPlotArea.prototype.isStockChart = function(nType) {
-        if(Asc.c_oAscChartTypeSettings.stock === nType) {
-            return true
-        }
-        return false;
+        isStockChartType(nType);
     };
     CPlotArea.prototype.isRadarChart = function(nType) {
       return this.isRadarType(nType);
@@ -6445,7 +6429,7 @@
         return false;
     }
 
-    function getIsLineType(nType) {
+    function isLineChartType(nType) {
         if(Asc.c_oAscChartTypeSettings.lineNormal === nType
             || Asc.c_oAscChartTypeSettings.lineStacked === nType
             || Asc.c_oAscChartTypeSettings.lineStackedPer === nType
@@ -6457,6 +6441,7 @@
         }
         return false;
     }
+
 
     function COrderedAxes(oPlotArea) {
         this.verticalAxes = [];
@@ -15589,10 +15574,19 @@
     }
 
     function CheckContentTextAndAdd(oContent, sText) {
-        oContent.SetApplyToAll(true);
-        var sContentText = oContent.GetSelectedText(false, {NewLine: true, NewParagraph: true});
-        oContent.SetApplyToAll(false);
-        if(sContentText !== sText) {
+        let bClear = false;
+        if(oContent.AllFields && oContent.AllFields.length > 0) {
+            bClear = true;
+        }
+        else {
+            oContent.SetApplyToAll(true);
+            let sContentText = oContent.GetSelectedText(false, {NewLine: true, NewParagraph: true});
+            oContent.SetApplyToAll(false);
+            if(sContentText !== sText) {
+                bClear = true;
+            }
+        }
+        if(bClear) {
             oContent.ClearContent(true);
             AddToContentFromString(oContent, sText);
         }
@@ -15938,18 +15932,32 @@
         || Asc.c_oAscChartTypeSettings.scatterMarker === nType
         || Asc.c_oAscChartTypeSettings.scatterNone === nType
         || Asc.c_oAscChartTypeSettings.scatterSmooth === nType
-        || Asc.c_oAscChartTypeSettings.scatterSmoothMarker === nType)
+        || Asc.c_oAscChartTypeSettings.scatterSmoothMarker === nType);
     }
 
     function isStockChartType(nType) {
-        return (Asc.c_oAscChartTypeSettings.stock === nType)
+        return (Asc.c_oAscChartTypeSettings.stock === nType);
     }
 
     function isComboChartType(nType) {
         return (Asc.c_oAscChartTypeSettings.comboAreaBar === nType
             || Asc.c_oAscChartTypeSettings.comboBarLine === nType
             || Asc.c_oAscChartTypeSettings.comboBarLineSecondary === nType
-            || Asc.c_oAscChartTypeSettings.comboCustom === nType)
+            || Asc.c_oAscChartTypeSettings.comboCustom === nType);
+    }
+    function isAreaChartType(nType) {
+        return (Asc.c_oAscChartTypeSettings.areaNormal === nType
+            || Asc.c_oAscChartTypeSettings.areaStacked === nType
+            || Asc.c_oAscChartTypeSettings.areaStackedPer === nType);
+    }
+
+    function isRadarChartType(nType) {
+        return (Asc.c_oAscChartTypeSettings.radar === nType
+            || Asc.c_oAscChartTypeSettings.radarMarker === nType
+            || Asc.c_oAscChartTypeSettings.radarFilled === nType);
+    }
+    function isDoughnutChartType(nType) {
+        return (Asc.c_oAscChartTypeSettings.doughnut === nType);
     }
 
     function CParseResult() {
@@ -17398,7 +17406,7 @@
                 nCol = oBBox.c2;
 
                 var nStartRow = oBBox.r2;
-                if(aGridRow.length === 1) {
+                if(aGridRow.length === 1 && oBBox.r2 > oBBox.r1) {
                     for(nRow = oBBox.r2 - 1; nRow >= oBBox.r1; --nRow) {
                         if(!this.privateCheckCellDateTimeFormatFull(oRef.worksheet.getCell3(nRow, nCol))) {
                             break;
@@ -17423,7 +17431,7 @@
                 oBBox = oRef.bbox;
                 nRow = oBBox.r2;
                 var nStartCol = oBBox.c2;
-                if(aGrid.length === 1) {
+                if(aGrid.length === 1  && oBBox.c2 > oBBox.c1) {
                     for(nCol = oBBox.c2 - 1; nCol >= oBBox.c1; --nCol) {
                         if(!this.privateCheckCellDateTimeFormatFull(oRef.worksheet.getCell3(nRow, nCol))) {
                             break;
@@ -17437,7 +17445,7 @@
                     }
                 }
                 nLeftHeader = nCol - oBBox.c1;
-                if(nCol === oBBox.r2) {
+                if(nCol === oBBox.c2) {
                     if(aGrid.length === 1) {
                         nLeftHeader -= 1;
                     }
@@ -17738,11 +17746,13 @@
         }
         return aData;
     };
-    CChartDataRefs.prototype.checkDataRange = function(sRange, bHorValue, nType) {
-        if(typeof  sRange !== "string") {
-            return  Asc.c_oAscError.ID.DataRangeError;
-        }
-        var aSeriesRefs = this.getSeriesRefsFromUnionRefs(AscFormat.fParseChartFormulaExternal(sRange), bHorValue, isScatterChartType(nType));
+
+    CChartDataRefs.prototype.checkValidDataRangeRefs = function (aRanges, bHorValue, nType) {
+        return this.checkDataRangeRefs(aRanges, bHorValue, nType) === Asc.c_oAscError.ID.No;
+    };
+
+    CChartDataRefs.prototype.checkDataRangeRefs = function (aRanges, bHorValue, nType) {
+        var aSeriesRefs = this.getSeriesRefsFromUnionRefs(aRanges, bHorValue, isScatterChartType(nType));
         if(!Array.isArray(aSeriesRefs)) {
             return  Asc.c_oAscError.ID.DataRangeError;
         }
@@ -17772,6 +17782,12 @@
             }
         }
         return Asc.c_oAscError.ID.No;
+    };
+    CChartDataRefs.prototype.checkDataRange = function(sRange, bHorValue, nType) {
+        if(typeof  sRange !== "string") {
+            return  Asc.c_oAscError.ID.DataRangeError;
+        }
+        return this.checkDataRangeRefs(AscFormat.fParseChartFormulaExternal(sRange), bHorValue, nType);
     };
     CChartDataRefs.prototype.fillSelectedRanges = function(oWSView) {
         this.updateDataRefs();
@@ -18668,13 +18684,18 @@
     window['AscFormat'].getIsMarkerByType = getIsMarkerByType;
     window['AscFormat'].getIsSmoothByType = getIsSmoothByType;
     window['AscFormat'].getIsLineByType = getIsLineByType;
-    window['AscFormat'].getIsLineType = getIsLineType;
+    window['AscFormat'].isLineChartType = isLineChartType;
     window['AscFormat'].isValidChartRange = isValidChartRange;
     window['AscFormat'].CChartStyle = CChartStyle;
     window['AscFormat'].CStyleEntry = CStyleEntry;
     window['AscFormat'].CMarkerLayout = CMarkerLayout;
     window['AscFormat'].CChartColors = CChartColors;
     window['AscFormat'].CBaseChartObject = CBaseChartObject;
+    window['AscFormat'].isStockChartType = isStockChartType;
+    window['AscFormat'].isComboChartType = isComboChartType;
+    window['AscFormat'].isAreaChartType = isAreaChartType;
+    window['AscFormat'].isRadarChartType = isRadarChartType;
+    window['AscFormat'].isDoughnutChartType = isDoughnutChartType;
 
     window['AscFormat'].AX_POS_L = AX_POS_L;
     window['AscFormat'].AX_POS_T = AX_POS_T;

@@ -5457,7 +5457,7 @@
     CCTn.prototype.changeRewind = function (v) {
         this.setFill(v === true ? NODE_FILL_REMOVE : NODE_FILL_HOLD);
     };
-    CCTn.prototype.getObjectId = function (v) {
+    CCTn.prototype.getObjectId = function () {
         var sObjectId = null;
         this.traverse(function (oChild) {
             if (oChild.isTimeNode() && (sObjectId = oChild.getTargetObjectId())) {
@@ -6841,7 +6841,7 @@
             }
 
             if (oBrush) {
-                oStartRGBColor = oBrush.getRGBAColor();
+                oStartRGBColor = oBrush.getStartAnimRGBA();
                 oStartUniColor = AscFormat.CreateUniColorRGB(oStartRGBColor.R, oStartRGBColor.G, oStartRGBColor.B);
             } else {
                 oStartUniColor = AscFormat.CreateUniColorRGB(255, 255, 255);

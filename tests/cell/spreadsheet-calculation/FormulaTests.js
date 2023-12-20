@@ -19205,6 +19205,18 @@ $(function () {
 		assert.ok(oParser.parse(), 'VLOOKUP(A116,A101:A116,1)');
 		assert.strictEqual(oParser.calculate().getValue(), "Ke", 'Result of VLOOKUP(A116,A101:A116,1)');
 
+		// perfomance tests don't show the real situation
+		// ws.getRange2("A1:A100000").setValue("22");
+		// ws.getRange2("A1000:A21199").setValue("TRUE");
+		// ws.getRange2("A21200").setValue("Value1");
+		// ws.getRange2("A21201").setValue("Value2");
+		// ws.getRange2("A21202").setValue("Value");
+		// // ws.getRange2("A21205:A70000").setValue("2222");
+		// // ws.getRange2("A250000:A500000").setValue("str2");
+		// oParser = new parserFormula('VLOOKUP("Value",A:A,1,0)', "A2", ws);
+		// assert.ok(oParser.parse(), 'VLOOKUP("Value",A:A,1,0)');
+		// assert.strictEqual(oParser.calculate().getValue(), "Value", 'Result of VLOOKUP("Value",A:A,1,0)');
+
 
 	});
 

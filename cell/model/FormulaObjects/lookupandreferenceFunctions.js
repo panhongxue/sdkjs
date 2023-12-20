@@ -2763,9 +2763,15 @@ function (window, undefined) {
 		} else if (cElementType.array === arg1.type && opt_xlookup) {
 			var _cacheElem = {elements: []};
 			arg1.foreach(function (elem, r, c) {
+				let type = elem.type;
+				
+				if (!_cacheElem[type]) {
+					_cacheElem[type] = [];
+				}
+				_cacheElem[type].push({v: elem, i: (t.bHor ? c : r)});
 				_cacheElem.elements.push({v: elem, i: (t.bHor ? c : r)});
 			});
-			return this._calculate(_cacheElem.elements, arg0Val, null, opt_arg4, opt_arg5);
+			return this._calculate(_cacheElem, arg0Val, null, opt_arg4, opt_arg5);
 		}
 
 		if (!range) {
@@ -2837,14 +2843,15 @@ function (window, undefined) {
 		res = cacheElem.results[sInputKey];
 		if (!res) {
 			cacheElem.results[sInputKey] =
-				res = this._calculate(cacheElem.elements, valueForSearching, arg3Value, opt_arg4, opt_arg5);
+				res = this._calculate(cacheElem, valueForSearching, arg3Value, opt_arg4, opt_arg5);
 		}
 
 		return res;
 	};
-	VHLOOKUPCache.prototype._calculate = function (cacheArray, valueForSearching, lookup, opt_arg4, opt_arg5) {
-		let res = -1, i = 0, j, length = cacheArray.length, k, elem, val, nextVal;
+	VHLOOKUPCache.prototype._calculate = function (cache, valueForSearching, lookup, opt_arg4, opt_arg5) {
+		let res = -1, i = 0, j, k, elem, val, nextVal;
 		let xlookup = opt_arg4 !== undefined && opt_arg5 !== undefined;
+		let valueForSearchingType = valueForSearching.type;
 
 		//TODO неверно работает функция, допустим для случая: VLOOKUP("12",A1:A5,1) 12.00 ; "qwe" ; "3" ; 3.00 ; 4.00
 		//ascending order: ..., -2, -1, 0, 1, 2, ..., A-Z, FALSE
@@ -2878,6 +2885,8 @@ function (window, undefined) {
 		};
 
 		const simpleSearch = function (revert) {
+			let cacheArray = cache[valueForSearchingType];
+			let length = cacheArray ? cacheArray.length : 0;
 			if (revert) {
 				for (i = length - 1; i >= 0; i--) {
 					elem = cacheArray[i];
@@ -2913,6 +2922,8 @@ function (window, undefined) {
 		//из обработанных элементов выбираем те, которые больше(меньше) -> из них уже ищем наименьший(наибольший)
 		//т.е. в итоге получаем следующий наименьший/наибольший элемент
 		const _binarySearch = function (revert) {
+			let cacheArray = cache.elements;
+			let length = cacheArray ? cacheArray.length : 0;
 			i = 0;
 
 			//TODO проверить обратный поиск
@@ -2965,7 +2976,7 @@ function (window, undefined) {
 			return _res;
 		};
 
-		if (valueForSearching.type === cElementType.string) {
+		if (valueForSearchingType === cElementType.string) {
 			valueForSearching = new cString(valueForSearching.getValue().toLowerCase());
 		}
 
@@ -3013,8 +3024,22 @@ function (window, undefined) {
 		var _this = this;
 
 		//сильного прироста не получил, пока оставляю прежнюю обработку, подумать на счёт разбития диапазонов
+		// range._foreachNoEmpty(function (cell, r, c) {
+		// 	cacheElem.elements.push({v: checkTypeCell(cell), i: (_this.bHor ? c : r)});
+		// });
+
+		// другой подход: при генерации элементов для кэша создаем несколько массивов с разными типами
+		// массив содержит элементы только одного типа
+		// ключ - тип (cElementType.any), а значение - массив элементов такого же типа
 		range._foreachNoEmpty(function (cell, r, c) {
-			cacheElem.elements.push({v: checkTypeCell(cell), i: (_this.bHor ? c : r)});
+			let cellVal = checkTypeCell(cell);
+			let type = cellVal.type;
+			
+			if (!cacheElem[type]) {
+				cacheElem[type] = [];
+			}
+			cacheElem[type].push({v: cellVal, i: (_this.bHor ? c : r)});
+			cacheElem.elements.push({v: cellVal, i: (_this.bHor ? c : r)});
 		});
 		return;
 
@@ -3894,7 +3919,8 @@ function (window, undefined) {
 			return res;
 		}
 	};
-	LOOKUPCache.prototype._calculate = function (cacheArray, valueForSearching, lookup) {
+	LOOKUPCache.prototype._calculate = function (cache, valueForSearching, lookup) {
+		let cacheArray = cache.elements;
 		return _func.lookupBinarySearch(valueForSearching, cacheArray, true);
 	};
 

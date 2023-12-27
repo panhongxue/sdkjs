@@ -2912,7 +2912,7 @@ function (window, undefined) {
 				if (cacheArray.size > 0 && (opt_arg4 === -1 || opt_arg4 === 1 || opt_arg4 === 2)) {
 					// todo wildcard match(can be in v/hlookup)
 					let maxIndex = -1;
-					for (let [key, elem] of cacheArray) {
+					cacheArray.forEach(function (elem, key) {
 						if (_compareValues(valueForSearching, elem.v, "=")) {
 							if (!(valueForSearching.type !== cElementType.error && elem.v.type === cElementType.error)) {
 								let curIndex = (elem.i && elem["last_index"]) ? elem["last_index"] : elem.i
@@ -2920,7 +2920,7 @@ function (window, undefined) {
 							}
 						}
 						(opt_arg4 === 1 || opt_arg4 === -1) && addNextOptVal(elem, valueForSearching);
-					}
+					})
 					return maxIndex
 				} else {
 					let key = valueForSearching.getValue();
@@ -2932,14 +2932,16 @@ function (window, undefined) {
 			} else {
 				if (cacheArray.size > 0 && (opt_arg4 === -1 || opt_arg4 === 1 || opt_arg4 === 2)) {
 					// todo wildcard match(can be in v/hlookup)
-					for (let [key, elem] of cacheArray) {
+					let minIndex = Infinity;
+					cacheArray.forEach(function (elem, key) {
 						if (_compareValues(valueForSearching, elem.v, "=")) {
 							if (!(valueForSearching.type !== cElementType.error && elem.v.type === cElementType.error)) {
-								return elem.i;
+								minIndex = minIndex >= elem.i ? elem.i : minIndex;
 							}
 						}
 						(opt_arg4 === 1 || opt_arg4 === -1) && addNextOptVal(elem, valueForSearching);
-					}
+					})
+					return minIndex === Infinity ? -1 : minIndex
 				} else {
 					let key = valueForSearching.getValue();
 					let item = cacheArray.get(key);

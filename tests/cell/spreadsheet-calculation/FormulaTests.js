@@ -19205,6 +19205,64 @@ $(function () {
 		assert.ok(oParser.parse(), 'VLOOKUP(A116,A101:A116,1)');
 		assert.strictEqual(oParser.calculate().getValue(), "Ke", 'Result of VLOOKUP(A116,A101:A116,1)');
 
+		ws.getRange2("A201").setValue("Aa");
+		ws.getRange2("A202").setValue("Aa");
+		ws.getRange2("A203").setValue("TRUE");
+		ws.getRange2("A204").setValue("TRUE");
+		ws.getRange2("A205").setValue("0");
+		ws.getRange2("A206").setValue("1");
+		ws.getRange2("A207").setValue("0");
+		ws.getRange2("A208").setValue("1");
+		ws.getRange2("A209").setValue("#NUM!");
+		ws.getRange2("A210").setValue("#NUM!");
+		ws.getRange2("A211").setValue("FALSE");
+		ws.getRange2("A212").setValue("FALSE");
+		ws.getRange2("A213").setValue("TRUE");
+		ws.getRange2("A214").setValue("TRUE");
+		ws.getRange2("A215").setValue("");
+		ws.getRange2("A216").setValue("AA");
+
+		ws.getRange2("B201").setValue("1");
+		ws.getRange2("B202").setValue("2");
+		ws.getRange2("B203").setValue("3");
+		ws.getRange2("B204").setValue("4");
+		ws.getRange2("B205").setValue("5");
+		ws.getRange2("B206").setValue("6");
+		ws.getRange2("B207").setValue("7");
+		ws.getRange2("B208").setValue("8");
+		ws.getRange2("B209").setValue("9");
+		ws.getRange2("B210").setValue("10");
+		ws.getRange2("B211").setValue("11");
+		ws.getRange2("B212").setValue("12");
+		ws.getRange2("B213").setValue("13");
+		ws.getRange2("B214").setValue("14");
+		ws.getRange2("B215").setValue("15");
+		ws.getRange2("B216").setValue("16");
+
+		oParser = new parserFormula('VLOOKUP("Aa",A201:B202,2,0)', "A2", ws);
+		assert.ok(oParser.parse(), 'VLOOKUP("Aa",A201:B202,2,0)');
+		assert.strictEqual(oParser.calculate().getValue(), 1, 'Result of VLOOKUP("Aa",A201:B202,2,0)');
+
+		oParser = new parserFormula('VLOOKUP(99,A201:B202,2,0)', "A2", ws);
+		assert.ok(oParser.parse(), 'VLOOKUP(99,A201:B202,2,0)');
+		assert.strictEqual(oParser.calculate().getValue(), "#N/A", 'Result of VLOOKUP(99,A201:B202,2,0)');
+
+		oParser = new parserFormula('VLOOKUP(TRUE,A201:B202,2,0)', "A2", ws);
+		assert.ok(oParser.parse(), 'VLOOKUP(TRUE,A201:B202,2,0)');
+		assert.strictEqual(oParser.calculate().getValue(), "#N/A", 'Result of VLOOKUP(TRUE,A201:B202,2,0)');
+
+		oParser = new parserFormula('VLOOKUP(TRUE,A201:B216,2,0)', "A2", ws);
+		assert.ok(oParser.parse(), 'VLOOKUP(TRUE,A201:B216,2,0)');
+		assert.strictEqual(oParser.calculate().getValue(), 3, 'Result of VLOOKUP(TRUE,A201:B216,2,0)');
+
+		oParser = new parserFormula('VLOOKUP(FALSE,A201:B216,2,0)', "A2", ws);
+		assert.ok(oParser.parse(), 'VLOOKUP(FALSE,A201:B216,2,0)');
+		assert.strictEqual(oParser.calculate().getValue(), 11, 'Result of VLOOKUP(FALSE,A201:B216,2,0)');
+
+		oParser = new parserFormula('VLOOKUP(A215,A201:B216,2,0)', "A2", ws);
+		assert.ok(oParser.parse(), 'VLOOKUP(A215,A201:B216,2,0)');
+		assert.strictEqual(oParser.calculate().getValue(), 5, 'Result of VLOOKUP(A215,A201:B216,2,0)');
+
 		// perfomance tests don't show the real situation
 		// ws.getRange2("A1:A100000").setValue("22");
 		// ws.getRange2("A1000:A21199").setValue("TRUE");

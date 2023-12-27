@@ -2680,9 +2680,11 @@ function (window, undefined) {
 		if (cElementType.cell3D === arg0.type || cElementType.cell === arg0.type) {
 			arg0 = arg0.getValue();
 		}
-
 		if (cElementType.error === arg0.type) {
 			return arg0;
+		}
+		if (cElementType.empty === arg0.type) {
+			arg0 = new cNumber(0);
 		}
 
 		var arg0Val;
@@ -2902,6 +2904,10 @@ function (window, undefined) {
 
 		const simpleSearch = function (revert) {
 			let cacheArray = cache[valueForSearchingType];
+			if (!cacheArray) {
+				return -1;
+			}
+
 			if (revert) {
 				if (cacheArray.size > 0 && (opt_arg4 === -1 || opt_arg4 === 1 || opt_arg4 === 2)) {
 					// todo wildcard match(can be in v/hlookup)

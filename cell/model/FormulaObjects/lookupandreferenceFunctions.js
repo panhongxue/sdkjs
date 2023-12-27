@@ -2909,7 +2909,6 @@ function (window, undefined) {
 					for (let [key, elem] of cacheArray) {
 						if (_compareValues(valueForSearching, elem.v, "=")) {
 							if (!(valueForSearching.type !== cElementType.error && elem.v.type === cElementType.error)) {
-								// return elem.i;
 								let curIndex = (elem.i && elem["last_index"]) ? elem["last_index"] : elem.i
 								maxIndex = maxIndex >= curIndex ? maxIndex : curIndex;
 							}
@@ -2925,7 +2924,6 @@ function (window, undefined) {
 					}
 				}
 			} else {
-				// if (valueForSearchingType === cElementType.string && cacheArray.size > 0 && (opt_arg4 === -1 || opt_arg4 === 1 || opt_arg4 === 2)) {
 				if (cacheArray.size > 0 && (opt_arg4 === -1 || opt_arg4 === 1 || opt_arg4 === 2)) {
 					// todo wildcard match(can be in v/hlookup)
 					for (let [key, elem] of cacheArray) {
@@ -2947,14 +2945,14 @@ function (window, undefined) {
 			return -1;
 		};
 
-		//бинарный поиск для xlookup(так работает ms) бинарный поиск происходит до определенной длины массива
-		//как только длина становится меньше n(около 10), начинается линейный поиск
-		//так же в случае бинарного поиска когда требуется возвратить меньший или больший элемент(opt_arg4)
-		//- возвращается последний обработанный элемент меньший(больший) искомого, между собой элементы не сравниваются
+		//binary search for xlookup (this is how ms works) binary search occurs up to a certain length of the array
+		//as soon as the length becomes less than n (about 10), linear search begins
+		//also in the case of binary search when you need to return a smaller or larger element (opt_arg4)
+		//- the last processed element smaller (larger) than the one being sought is returned, the elements are not compared with each other
 
-		//мы делаем иначе: бинарный поиск происходит всегда и не зависит от длины массива, при поиске наибольшего(наименьшего)
-		//из обработанных элементов выбираем те, которые больше(меньше) -> из них уже ищем наименьший(наибольший)
-		//т.е. в итоге получаем следующий наименьший/наибольший элемент
+		//we do it differently: binary search always occurs and does not depend on the length of the array, when searching for the largest (smallest)
+		//from the processed elements, select those that are larger (smaller) -> from them we are already looking for the smallest (largest)
+		//those. as a result we get the next smallest/largest element
 		const _binarySearch = function (revert) {
 			let cacheArray = cache.elements;
 			let length = cacheArray ? cacheArray.length : 0;
@@ -3055,17 +3053,12 @@ function (window, undefined) {
 		this.cacheRanges = {};
 	};
 	VHLOOKUPCache.prototype.generateElements = function (range, cacheElem) {
-		var _this = this;
+		const _this = this;
 
-		//сильного прироста не получил, пока оставляю прежнюю обработку, подумать на счёт разбития диапазонов
-		// range._foreachNoEmpty(function (cell, r, c) {
-		// 	cacheElem.elements.push({v: checkTypeCell(cell), i: (_this.bHor ? c : r)});
-		// });
-
-		// другой подход: при генерации элементов для кэша создаем ассоциативный массив Map отдельно для каждого типа данных
-		// каждый Map хранится в объекте cache. Найти его можно по ключу искомого типа
-		// например cache[cElementType.string] вернет Map содержащий строки cString, а также индекс отдельной ячейки i и последний индекс last_index в случае если этот элемент встречается больше одного раза 
-		// В самом Map ключом будет являться значение из ячейки
+		// another approach: when generating elements for the cache, create an associative Map array separately for each data type
+		// Each Map is stored in a cache object. The key is the type of the element being searched, the value is the Map array itself
+		// for example cache[cElementType.string] will return a Map containing cStrings, as well as the index of an individual cell "i" and the index "last_index" if this element occurs more than once
+		// In the Map itself, the key will be the value from the cell
 
 		range._foreachNoEmpty(function (cell, r, c) {
 			let cellVal = checkTypeCell(cell);
@@ -3090,7 +3083,6 @@ function (window, undefined) {
 			}
 			
 			cacheElem.elements.push(obj);
-			// cacheElem.elements.push({v: cellVal, i: (_this.bHor ? c : r)});
 		});
 
 		return;

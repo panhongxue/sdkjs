@@ -2761,16 +2761,30 @@ function (window, undefined) {
 			cElementType.cellsRange === arg1.type || cElementType.cellsRange3D === arg1.type) {
 			range = arg1.getRange();
 		} else if (cElementType.array === arg1.type && opt_xlookup) {
-			var _cacheElem = {elements: []};
+			let _cacheElem = {elements: []};
 			arg1.foreach(function (elem, r, c) {
 				let type = elem.type;
+				let key = elem.getValue();
+				let obj = {v: elem, i: (t.bHor ? c : r)};
 				
 				if (!_cacheElem[type]) {
-					_cacheElem[type] = [];
+					_cacheElem[type] = new Map();
 				}
-				_cacheElem[type].push({v: elem, i: (t.bHor ? c : r)});
-				_cacheElem.elements.push({v: elem, i: (t.bHor ? c : r)});
+
+				if (type === cElementType.string) {
+					key = key.toLowerCase();
+				}
+
+				if (!_cacheElem[type].get(key)) {
+					_cacheElem[type].set(key, obj);
+				} else {
+					// save the last index number for possible reverse search
+					_cacheElem[type].get(key)["last_index"] = (t.bHor ? c : r);
+				}
+
+				_cacheElem.elements.push(obj);
 			});
+
 			return this._calculate(_cacheElem, arg0Val, null, opt_arg4, opt_arg5);
 		}
 
@@ -2853,6 +2867,8 @@ function (window, undefined) {
 		let xlookup = opt_arg4 !== undefined && opt_arg5 !== undefined;
 		let valueForSearchingType = valueForSearching.type;
 
+		// todo использовать запись флагов выполнения, например если xlookup, то {arg4: 1, arg5: 2} и т.д.
+
 		//TODO неверно работает функция, допустим для случая: VLOOKUP("12",A1:A5,1) 12.00 ; "qwe" ; "3" ; 3.00 ; 4.00
 		//ascending order: ..., -2, -1, 0, 1, 2, ..., A-Z, FALSE
 
@@ -2886,28 +2902,46 @@ function (window, undefined) {
 
 		const simpleSearch = function (revert) {
 			let cacheArray = cache[valueForSearchingType];
-			let length = cacheArray ? cacheArray.length : 0;
 			if (revert) {
-				for (i = length - 1; i >= 0; i--) {
-					elem = cacheArray[i];
-					val = elem.v;
-					if (_compareValues(valueForSearching, val, "=")) {
-						if (!(valueForSearching.type !== cElementType.error && val.type === cElementType.error)) {
-							return elem.i;
+				if (cacheArray.size > 0 && (opt_arg4 === -1 || opt_arg4 === 1 || opt_arg4 === 2)) {
+					// todo wildcard match(can be in v/hlookup)
+					let maxIndex = -1;
+					for (let [key, elem] of cacheArray) {
+						if (_compareValues(valueForSearching, elem.v, "=")) {
+							if (!(valueForSearching.type !== cElementType.error && elem.v.type === cElementType.error)) {
+								// return elem.i;
+								let curIndex = (elem.i && elem["last_index"]) ? elem["last_index"] : elem.i
+								maxIndex = maxIndex >= curIndex ? maxIndex : curIndex;
+							}
 						}
+						(opt_arg4 === 1 || opt_arg4 === -1) && addNextOptVal(elem, valueForSearching);
 					}
-					opt_arg4 !== undefined && addNextOptVal(elem, valueForSearching);
+					return maxIndex
+				} else {
+					let key = valueForSearching.getValue();
+					let item = cacheArray.get(key);
+					if (item) {
+						return item["last_index"] ? item["last_index"] : item.i;
+					}
 				}
 			} else {
-				for (i = 0; i < length; i++) {
-					elem = cacheArray[i];
-					val = elem.v;
-					if (_compareValues(valueForSearching, val, "=")) {
-						if (!(valueForSearching.type !== cElementType.error && val.type === cElementType.error)) {
-							return elem.i;
+				// if (valueForSearchingType === cElementType.string && cacheArray.size > 0 && (opt_arg4 === -1 || opt_arg4 === 1 || opt_arg4 === 2)) {
+				if (cacheArray.size > 0 && (opt_arg4 === -1 || opt_arg4 === 1 || opt_arg4 === 2)) {
+					// todo wildcard match(can be in v/hlookup)
+					for (let [key, elem] of cacheArray) {
+						if (_compareValues(valueForSearching, elem.v, "=")) {
+							if (!(valueForSearching.type !== cElementType.error && elem.v.type === cElementType.error)) {
+								return elem.i;
+							}
 						}
+						(opt_arg4 === 1 || opt_arg4 === -1) && addNextOptVal(elem, valueForSearching);
 					}
-					(opt_arg4 === 1 || opt_arg4 === -1) && addNextOptVal(elem, valueForSearching);
+				} else {
+					let key = valueForSearching.getValue();
+					let item = cacheArray.get(key);
+					if (item) {
+						return item.i;
+					}
 				}
 			}
 			return -1;
@@ -3028,19 +3062,37 @@ function (window, undefined) {
 		// 	cacheElem.elements.push({v: checkTypeCell(cell), i: (_this.bHor ? c : r)});
 		// });
 
-		// другой подход: при генерации элементов для кэша создаем несколько массивов с разными типами
-		// массив содержит элементы только одного типа
-		// ключ - тип (cElementType.any), а значение - массив элементов такого же типа
+		// другой подход: при генерации элементов для кэша создаем ассоциативный массив Map отдельно для каждого типа данных
+		// каждый Map хранится в объекте cache. Найти его можно по ключу искомого типа
+		// например cache[cElementType.string] вернет Map содержащий строки cString, а также индекс отдельной ячейки i и последний индекс last_index в случае если этот элемент встречается больше одного раза 
+		// В самом Map ключом будет являться значение из ячейки
+
 		range._foreachNoEmpty(function (cell, r, c) {
 			let cellVal = checkTypeCell(cell);
 			let type = cellVal.type;
-			
+
 			if (!cacheElem[type]) {
-				cacheElem[type] = [];
+				cacheElem[type] = new Map();
 			}
-			cacheElem[type].push({v: cellVal, i: (_this.bHor ? c : r)});
-			cacheElem.elements.push({v: cellVal, i: (_this.bHor ? c : r)});
+
+			let key = cellVal.getValue();
+			let obj = {v: cellVal, i: (_this.bHor ? c : r)};
+
+			if (type === cElementType.string) {
+				key = key.toLowerCase();
+			}
+
+			if (!cacheElem[type].get(key)) {
+				cacheElem[type].set(key, obj);
+			} else {
+				// save the last index of this element for possible reverse search
+				cacheElem[type].get(key)["last_index"] = (_this.bHor ? c : r);
+			}
+			
+			cacheElem.elements.push(obj);
+			// cacheElem.elements.push({v: cellVal, i: (_this.bHor ? c : r)});
 		});
+
 		return;
 
 		//попытка оптимизации фукнции. если находим диапазон, который полностью перекрывает текущий или пересекаемся с текущим - тогда данные из кэша берём и не обращаемся к модели

@@ -19820,6 +19820,44 @@ $(function () {
 		assert.strictEqual(_getValue(oParser.calculate(), 0, 0), "c");
 		assert.strictEqual(_getValue(oParser.calculate(), 0, 1), "test2");
 
+		oParser = new parserFormula('XLOOKUP("t*",A551:A561,B551:C561,,2,-1)', "A2", ws);
+		assert.ok(oParser.parse(), 'XLOOKUP("t*",A551:A561,B551:C561,,2,-1). Reverse search');
+		assert.strictEqual(_getValue(oParser.calculate(), 0, 0), "p", 'Result of XLOOKUP("t*",A551:A561,B551:C561,,2,-1)[0,0]');
+		assert.strictEqual(_getValue(oParser.calculate(), 0, 1), "l", 'Result of XLOOKUP("t*",A551:A561,B551:C561,,2,-1)[0,1]');
+
+		ws.getRange2("A300").setValue("TRUE");
+		ws.getRange2("A301").setValue("TRUE");
+		ws.getRange2("A302").setValue("FALSE");
+		ws.getRange2("A303").setValue("TRUE");
+		ws.getRange2("A304").setValue("FALSE");
+		ws.getRange2("A305").setValue("FALSE");
+		ws.getRange2("A306").setValue("FALSE");
+
+		ws.getRange2("B300").setValue("1");
+		ws.getRange2("B301").setValue("2");
+		ws.getRange2("B302").setValue("3");
+		ws.getRange2("B303").setValue("4");
+		ws.getRange2("B304").setValue("5");
+		ws.getRange2("B305").setValue("6");
+		ws.getRange2("B306").setValue("7");
+
+		oParser = new parserFormula('XLOOKUP(FALSE,A300:A306,B300:B306,,0,1)', "A2", ws);
+		assert.ok(oParser.parse(), 'XLOOKUP(FALSE,A300:A306,B300:B306,,0,1)');
+		assert.strictEqual(_getValue(oParser.calculate(), 0, 0), 3, 'Result of XLOOKUP(FALSE,A300:A306,B300:B306,,0,1)');
+
+		oParser = new parserFormula('XLOOKUP(FALSE,A300:A306,B300:B306,,0,-1)', "A2", ws);
+		assert.ok(oParser.parse(), 'XLOOKUP(FALSE,A300:A306,B300:B306,,0,-1). Reverse search');
+		assert.strictEqual(_getValue(oParser.calculate(), 0, 0), 7, 'Result of XLOOKUP(FALSE,A300:A306,B300:B306,,0,-1). Reverse search');
+
+		oParser = new parserFormula('XLOOKUP(TRUE,A300:A306,B300:B306,,0,1)', "A2", ws);
+		assert.ok(oParser.parse(), 'XLOOKUP(TRUE,A300:A306,B300:B306,,0,1)');
+		assert.strictEqual(_getValue(oParser.calculate(), 0, 0), 1, 'Result of XLOOKUP(TRUE,A300:A306,B300:B306,,0,1)');
+
+		oParser = new parserFormula('XLOOKUP(TRUE,A300:A306,B300:B306,,0,-1)', "A2", ws);
+		assert.ok(oParser.parse(), 'XLOOKUP(TRUE,A300:A306,B300:B306,,0,-1). Reverse search');
+		assert.strictEqual(_getValue(oParser.calculate(), 0, 0), 4, 'Result of XLOOKUP(TRUE,A300:A306,B300:B306,,0,-1). Reverse search');
+
+		// arrays
 		oParser = new parserFormula('XLOOKUP(1,{1,2,3},{2,2,3})', "A2", ws);
 		assert.ok(oParser.parse());
 		assert.strictEqual(_getValue(oParser.calculate(), 0, 0), 2);

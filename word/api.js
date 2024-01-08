@@ -1340,12 +1340,12 @@ background-repeat: no-repeat;\
 		if (!this.WordControl || !this.WordControl.m_oLogicDocument)
 			return "";
 		
-		this.DocumentReaderMode            = new AscCommon.CDocumentReaderMode();
+		this.DocumentReaderMode = new AscCommon.CDocumentReaderMode();
 		
 		this.WordControl.m_oLogicDocument.SelectAll();
 		
 		var text_data = {
-			data : "",
+			data     : "",
 			pushData : function(format, value)
 			{
 				this.data = value;
@@ -11876,8 +11876,8 @@ background-repeat: no-repeat;\
 		bClearText = typeof(bClearText) === "boolean" ? bClearText : false;
 		let logicDocument = this.private_GetLogicDocument();
 		if (!logicDocument)
-					return "";
-				
+			return "";
+		
 		return logicDocument.GetSelectedText(bClearText, select_Pr);
 	};
 	asc_docs_api.prototype.asc_AddBlankPage = function()
@@ -11958,7 +11958,7 @@ background-repeat: no-repeat;\
 	{
 		let logicDocument = this.private_GetLogicDocument();
 		if (!logicDocument)
-		return 0;
+			return 0;
 		
 		return logicDocument.getCompositeInput().getPos();
 	};
@@ -11974,7 +11974,7 @@ background-repeat: no-repeat;\
 	{
 		let logicDocument = this.private_GetLogicDocument();
 		if (!logicDocument)
-		return 0;
+			return 0;
 		
 		return logicDocument.getCompositeInput().getMaxPos();
 	};
@@ -12202,9 +12202,9 @@ background-repeat: no-repeat;\
 				AscFonts.IsCheckSymbols = true;
 				const oSmartArt = new AscFormat.SmartArt();
 				oSmartArt.fillByPreset(nSmartArtType);
-		oSmartArt.fitToPageSize();
-		oSmartArt.fitFontSize();
-		oSmartArt.recalculateBounds();
+				oSmartArt.fitToPageSize();
+				oSmartArt.fitFontSize();
+				oSmartArt.recalculateBounds();
 				oThis.WordControl.m_oLogicDocument.AddInlineImage(null, null, null, oSmartArt);
 				AscFonts.IsCheckSymbols = false;
 
@@ -12212,7 +12212,7 @@ background-repeat: no-repeat;\
 					oThis.asc_SetSilentMode(false, true);
 					oThis.WordControl.m_oLogicDocument.FinalizeAction();
 				}, false, false, false);
-		}
+			}
 		});
 	};
 	asc_docs_api.prototype.asc_CompareDocumentFile_local = function (oOptions) {
@@ -13218,9 +13218,9 @@ background-repeat: no-repeat;\
 		if (!this.WordControl || !this.WordControl.m_oDrawingDocument)
 			return;
 		
-			this.WordControl.m_oDrawingDocument.ClearCachePages();
-            this.WordControl.m_oDrawingDocument.FirePaint();
-            this.WordControl.m_oDrawingDocument.UpdateTargetNoAttack();
+		this.WordControl.m_oDrawingDocument.ClearCachePages();
+		this.WordControl.m_oDrawingDocument.FirePaint();
+		this.WordControl.m_oDrawingDocument.UpdateTargetNoAttack();
 	};
     asc_docs_api.prototype.getPageBackgroundColor = function()
     {
@@ -13504,10 +13504,10 @@ background-repeat: no-repeat;\
 			|| this.WordControl.m_oDrawingDocument.IsFreezePage(pageIndex))
 			return null;
 		
-			return {
-				"W" : this.WordControl.m_oDrawingDocument.m_arrPages[pageIndex].width_mm,
-				"H" : this.WordControl.m_oDrawingDocument.m_arrPages[pageIndex].height_mm
-	};
+		return {
+			"W" : this.WordControl.m_oDrawingDocument.m_arrPages[pageIndex].width_mm,
+			"H" : this.WordControl.m_oDrawingDocument.m_arrPages[pageIndex].height_mm
+		};
 	};
 	asc_docs_api.prototype.getEyedropperImgData = function()
 	{

@@ -951,7 +951,7 @@
       }
     });
     this.model.handlers.add("changeDocument", function(prop, arg1, arg2, wsId) {
-		self.SearchEngine && self.SearchEngine.changeDocument(prop, arg1, arg2);
+      self.SearchEngine && self.SearchEngine.changeDocument(prop, arg1, arg2);
       let ws = wsId && self.getWorksheetById(wsId, true);
       if (ws) {
         ws.traceDependentsManager.changeDocument(prop, arg1, arg2);
@@ -985,7 +985,6 @@
     this.model.handlers.add("setCanUndo", function(bCanUndo) {
       if (!self.Api.canUndoRedoByRestrictions())
         bCanUndo = false;
-		console.trace && console.trace('asc_onCanUndo:'+bCanUndo);
       self.handlers.trigger("asc_onCanUndoChanged", bCanUndo);
     });
     this.model.handlers.add("setCanRedo", function(bCanRedo) {
@@ -1452,11 +1451,11 @@
                         this.handlers.trigger("asc_onConfirmAction", Asc.c_oAscConfirm.ConfirmFileOpen, function (can) {
                             if (can) {
                                 t.handlers.trigger("asc_onFileOpenClick", hyperlink.asc_getHyperlinkUrl());
-                }
+                            }
                         });
                         break;
+                }
             }
-        }
         }
         else if(isSelectOnShape && c_oTargetType.Shape === ct.target &&  ct.macro) {
             var button = 0;
@@ -1991,9 +1990,9 @@
       var pivotTable = ws.model.getPivotTable(ct.col, ct.row);
       if (pivotTable) {
         if(pivotTable.asc_canShowDetails(ct.row, ct.col)) {
-        this.Api.asc_pivotShowDetails(pivotTable);
-        return;
-      }
+          this.Api.asc_pivotShowDetails(pivotTable);
+          return;
+        }
         if (pivotTable.canExpandCollapse(ct.row, ct.col)) {
           pivotTable.toggleExpandCollapseByActiveCell(this.Api, false);
           return;
@@ -2791,86 +2790,86 @@
 		};
 
 		let defNamesList, defName, defNameStr, _lastFNameLength, _type;
-			fName = fName.toUpperCase();
+		fName = fName.toUpperCase();
 		for (let i = 0; i < this.formulasList.length; ++i) {
-				if (0 === this.formulasList[i].indexOf(fName)) {
-					arrResult.push(new AscCommonExcel.asc_CCompleteMenu(this.formulasList[i], c_oAscPopUpSelectorType.Func));
-				}
+			if (0 === this.formulasList[i].indexOf(fName)) {
+				arrResult.push(new AscCommonExcel.asc_CCompleteMenu(this.formulasList[i], c_oAscPopUpSelectorType.Func));
+			}
+		}
+
+		defNamesList = this.getDefinedNames(Asc.c_oAscGetDefinedNamesList.WorksheetWorkbook);
+		fName = fName.toLowerCase();
+		for (let i = 0; i < defNamesList.length; ++i) {
+			defName = defNamesList[i];
+			defNameStr = defName.Name;
+			if (null !== defName.LocalSheetId && defNameStr.toLowerCase() === "print_area") {
+				defNameStr = AscCommon.translateManager.getValue("Print_Area");
 			}
 
-			defNamesList = this.getDefinedNames(Asc.c_oAscGetDefinedNamesList.WorksheetWorkbook);
-			fName = fName.toLowerCase();
-		for (let i = 0; i < defNamesList.length; ++i) {
-				defName = defNamesList[i];
-				defNameStr = defName.Name;
-				if (null !== defName.LocalSheetId && defNameStr.toLowerCase() === "print_area") {
-					defNameStr = AscCommon.translateManager.getValue("Print_Area");
+			if (0 === defNameStr.toLowerCase().indexOf(fName)) {
+				_type = c_oAscPopUpSelectorType.Range;
+				if (defName.type === Asc.c_oAscDefNameType.slicer) {
+					_type = c_oAscPopUpSelectorType.Slicer;
+				} else if (defName.type === Asc.c_oAscDefNameType.table) {
+					_type = c_oAscPopUpSelectorType.Table;
 				}
-
-				if (0 === defNameStr.toLowerCase().indexOf(fName)) {
-					_type = c_oAscPopUpSelectorType.Range;
-					if (defName.type === Asc.c_oAscDefNameType.slicer) {
-						_type = c_oAscPopUpSelectorType.Slicer;
-					} else if (defName.type === Asc.c_oAscDefNameType.table) {
-						_type = c_oAscPopUpSelectorType.Table;
-					}
-					arrResult.push(new AscCommonExcel.asc_CCompleteMenu(defNameStr, _type));
-				} else if (defName.type === Asc.c_oAscDefNameType.table && 0 === fName.indexOf(defNameStr.toLowerCase())) {
-					if (-1 !== fName.indexOf("[")) {
-						var tableNameParse = fName.split("[");
-						if (tableNameParse[0] && 0 === defNameStr.toLowerCase().indexOf(tableNameParse[0])) {
-							//ищем совпадения по названию столбцов
-							var table = this.model.getTableByName(defNameStr);
-							if (table) {
-								var sTableInner = _getInnerTable(fName, defNameStr.toLowerCase());
-								if (null !== sTableInner) {
-									var _str, j;
+				arrResult.push(new AscCommonExcel.asc_CCompleteMenu(defNameStr, _type));
+			} else if (defName.type === Asc.c_oAscDefNameType.table && 0 === fName.indexOf(defNameStr.toLowerCase())) {
+				if (-1 !== fName.indexOf("[")) {
+					var tableNameParse = fName.split("[");
+					if (tableNameParse[0] && 0 === defNameStr.toLowerCase().indexOf(tableNameParse[0])) {
+						//ищем совпадения по названию столбцов
+						var table = this.model.getTableByName(defNameStr);
+						if (table) {
+							var sTableInner = _getInnerTable(fName, defNameStr.toLowerCase());
+							if (null !== sTableInner) {
+								var _str, j;
 								for (let j = 0; j < table.TableColumns.length; j++) {
-										_str = table.TableColumns[j].Name;
-										_type = c_oAscPopUpSelectorType.TableColumnName;
-										if (sTableInner === "" || 0 === _str.toLowerCase().indexOf(sTableInner)) {
+									_str = table.TableColumns[j].Name;
+									_type = c_oAscPopUpSelectorType.TableColumnName;
+									if (sTableInner === "" || 0 === _str.toLowerCase().indexOf(sTableInner)) {
+										arrResult.push(new AscCommonExcel.asc_CCompleteMenu(_str, _type));
+									}
+								}
+
+								if (AscCommon.cStrucTableLocalColumns) {
+									for (let j in AscCommon.cStrucTableLocalColumns) {
+										_str = AscCommon.cStrucTableLocalColumns[j];
+										if (j === "h") {
+											_str = "#" + _str;
+											_type = c_oAscPopUpSelectorType.TableHeaders;
+										} else if (j === "d") {
+											_str = "#" + _str;
+											_type = c_oAscPopUpSelectorType.TableData;
+										} else if (j === "a") {
+											_str = "#" + _str;
+											_type = c_oAscPopUpSelectorType.TableAll;
+										} else if (j === "tr") {
+											_str = "@" + " - " + _str;
+											_type = c_oAscPopUpSelectorType.TableThisRow;
+										} else if (j === "t") {
+											_str = "#" + _str;
+											_type = c_oAscPopUpSelectorType.TableTotals;
+										}
+										if (sTableInner === "" || (0 === _str.toLocaleLowerCase().indexOf(sTableInner) && _type !== c_oAscPopUpSelectorType.TableThisRow)) {
 											arrResult.push(new AscCommonExcel.asc_CCompleteMenu(_str, _type));
 										}
 									}
-
-									if (AscCommon.cStrucTableLocalColumns) {
-									for (let j in AscCommon.cStrucTableLocalColumns) {
-											_str = AscCommon.cStrucTableLocalColumns[j];
-											if (j === "h") {
-												_str = "#" + _str;
-												_type = c_oAscPopUpSelectorType.TableHeaders;
-											} else if (j === "d") {
-												_str = "#" + _str;
-												_type = c_oAscPopUpSelectorType.TableData;
-											} else if (j === "a") {
-												_str = "#" + _str;
-												_type = c_oAscPopUpSelectorType.TableAll;
-											} else if (j === "tr") {
-												_str = "@" + " - " + _str;
-												_type = c_oAscPopUpSelectorType.TableThisRow;
-											} else if (j === "t") {
-												_str = "#" + _str;
-												_type = c_oAscPopUpSelectorType.TableTotals;
-											}
-											if (sTableInner === "" || (0 === _str.toLocaleLowerCase().indexOf(sTableInner) && _type !== c_oAscPopUpSelectorType.TableThisRow)) {
-												arrResult.push(new AscCommonExcel.asc_CCompleteMenu(_str, _type));
-											}
-										}
-									}
-									fPos += defNameStr.length + (fName.length - defNameStr.length - sTableInner.length);
-									_lastFNameLength = sTableInner.length;
 								}
+								fPos += defNameStr.length + (fName.length - defNameStr.length - sTableInner.length);
+								_lastFNameLength = sTableInner.length;
 							}
 						}
 					}
 				}
 			}
+		}
 
 		return {fPos: fPos, _lastFNameLength: _lastFNameLength};
 	};
 
 
-    // Вставка формулы в редактор
+	// Вставка формулы в редактор
     WorkbookView.prototype.insertInCellEditor = function (name, type, autoComplete) {
         var t = this, ws = this.getWorksheet(), cursorPos, tmp;
 
@@ -3200,25 +3199,29 @@
 	};
 
   WorkbookView.prototype.undo = function(Options) {
-	  if (true === AscCommon.CollaborativeEditing.Get_GlobalLock())
-		  return;
+    if (true === AscCommon.CollaborativeEditing.Get_GlobalLock())
+      return;
 
-    this.Api.sendEvent("asc_onBeforeUndoRedo");	  var oFormulaLocaleInfo = AscCommonExcel.oFormulaLocaleInfo;
-	  oFormulaLocaleInfo.Parse = false;
-	  oFormulaLocaleInfo.DigitSep = false;
+    this.Api.sendEvent("asc_onBeforeUndoRedo");
+    var oFormulaLocaleInfo = AscCommonExcel.oFormulaLocaleInfo;
+    oFormulaLocaleInfo.Parse = false;
+    oFormulaLocaleInfo.DigitSep = false;
 	  if (this.Api.isEditVisibleAreaOleEditor) {
 		  const oOleSize = this.getOleSize();
 		  oOleSize.undo();
-	  } else if (this.getCellEditMode()) {
-		  this.cellEditor.undo();
-	  } else if (true !== History.Can_Undo() && this.collaborativeEditing && this.collaborativeEditing.Is_Fast() && !this.collaborativeEditing.Is_SingleUser()) {
-		  this.collaborativeEditing.Set_GlobalLock(true);
-		  this.Api.forceSaveUndoRequest = true;
-	  } else {
-		  History.Undo(Options);
-	  }
-	  oFormulaLocaleInfo.Parse = true;
-	  oFormulaLocaleInfo.DigitSep = true;
+	  } else if (!this.getCellEditMode()) {
+      if (!History.Undo(Options) && this.collaborativeEditing.getFast() && this.collaborativeEditing.getCollaborativeEditing()) {
+        this.Api.sync_TryUndoInFastCollaborative();
+      }
+    } else {
+      this.cellEditor.undo();
+    }
+    oFormulaLocaleInfo.Parse = true;
+    oFormulaLocaleInfo.DigitSep = true;
+    if (!AscCommon.CollaborativeEditing.Get_GlobalLock()) {
+      this.restoreFocus();
+    }
+
     this.Api.sendEvent("asc_onUndoRedo");
   };
 
@@ -5470,7 +5473,7 @@
 			const oDataUpdater = new AscCommon.CExternalDataLoader(externalReferences, this.Api, doUpdateData);
 			oDataUpdater.updateExternalData();
 		}
-			};
+	};
 
 	WorkbookView.prototype.updateExternalReferences = function (arr, callback) {
 		this.doUpdateExternalReference(arr, callback);
@@ -5882,7 +5885,7 @@
 					let activeCell =  new AscCommon.CellBase(elem.row, elem.col);
 					ws.setActiveCell(activeCell);
 				} else {
-				ws.setSelection(range);
+					ws.setSelection(range);
 				}
 
 				this.SetCurrent(nId);

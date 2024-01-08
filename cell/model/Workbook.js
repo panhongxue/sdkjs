@@ -8641,8 +8641,8 @@
 		range._setPropertyNoEmpty(null, null, function(cell) {
 			if (cell.isFormula()) {
 				if (!cell.formulaParsed.ref || (cell.formulaParsed.ref && cell.formulaParsed.checkFirstCellArray(cell))) {
-				formulas.push(needReturnCellProps ? {f: cell.getFormulaParsed(), c: cell.nCol, r: cell.nRow} : cell.getFormulaParsed());
-			}
+					formulas.push(needReturnCellProps ? {f: cell.getFormulaParsed(), c: cell.nCol, r: cell.nRow} : cell.getFormulaParsed());
+				}
 			}
 		});
 		for (var i = 0; i < this.TableParts.length; ++i) {
@@ -8938,7 +8938,7 @@
 					field: index
 				});
 				cells.setStyle(formatting);
-		}
+			}
 			// update topRight pivot area formats
 			const pivotTableLenC = pivotRange.c2 - pivotRange.c1;
 			const lenC = pivotTableLenC - location.firstDataCol - colFields.length + 1;
@@ -13411,7 +13411,7 @@
 		if(History.Is_On() && false == DataOld.isEqual(DataNew)) {
 			History.Add(new AscDFH.CChangesCellValueChange(this.ws, DataOld, DataNew, new AscDFH.CCellCoordsWritable(this.nRow, this.nCol)));
 		}
-			// History.Add(AscCommonExcel.g_oUndoRedoCell, AscCH.historyitem_Cell_ChangeValue, this.ws.getId(), new Asc.Range(this.nCol, this.nRow, this.nCol, this.nRow), new UndoRedoData_CellSimpleData(this.nRow, this.nCol, DataOld, DataNew));
+		// History.Add(AscCommonExcel.g_oUndoRedoCell, AscCH.historyitem_Cell_ChangeValue, this.ws.getId(), new Asc.Range(this.nCol, this.nRow, this.nCol, this.nRow), new UndoRedoData_CellSimpleData(this.nRow, this.nCol, DataOld, DataNew));
 		//todo не должны удаляться ссылки, если сделать merge ее части.
 		if(this.isNullTextString())
 		{

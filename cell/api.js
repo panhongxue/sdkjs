@@ -1906,8 +1906,8 @@ var editor;
 										}
 									}
 								}
-					});
-				}
+							});
+						}
 					});
 				}
 
@@ -1970,8 +1970,8 @@ var editor;
 
 						if (styleSheet.oTimelineStyles) {
 							wb.TimelineStyles = styleSheet.oTimelineStyles;
+						}
 					}
-				}
 				}
 				xmlParserContext.InitOpenManager.aCellXfs = aCellXfs;
 				xmlParserContext.InitOpenManager.Dxfs = dxfs;
@@ -2226,9 +2226,9 @@ var editor;
 
 									if (oNewTimelines.timelines && oNewTimelines.timelines.length) {
 										ws.timelines = oNewTimelines.timelines;
+									}
+								}
 							}
-						}
-					}
 						}
 					}
 				});
@@ -4088,10 +4088,10 @@ var editor;
 
 	if (window["NATIVE_EDITOR_ENJINE"]) {
         if (SearchEngine.Count > 0) {
-		var ws = this.wb.getWorksheet();
-		var activeCell = this.wbModel.getActiveWs().selectionRange.activeCell;
-		result = [ws.getCellLeftRelative(activeCell.col, 0), ws.getCellTopRelative(activeCell.row, 0)];
-	} else {
+            var ws = this.wb.getWorksheet();
+            var activeCell = this.wbModel.getActiveWs().selectionRange.activeCell;
+            result = [ws.getCellLeftRelative(activeCell.col, 0), ws.getCellTopRelative(activeCell.row, 0)];
+        } else {
             result = null;
         }
 	} else {

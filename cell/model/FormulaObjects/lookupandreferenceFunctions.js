@@ -2837,8 +2837,8 @@ function (window, undefined) {
 
 		var cacheElem = this.cacheId[sRangeName];
 		if (!cacheElem) {
-			cacheElem = {elements: [], results: {}};
-			this.generateElements(range, cacheElem);
+			cacheElem = {/*mapElements: {},*/ elements: [], results: {}, range: range};
+			this.generateElements(range, cacheElem, this.cacheId);
 			this.cacheId[sRangeName] = cacheElem;
 			var cacheRange = this.cacheRanges[wsId];
 			if (!cacheRange) {
@@ -3060,7 +3060,7 @@ function (window, undefined) {
 		this.cacheId = {};
 		this.cacheRanges = {};
 	};
-	VHLOOKUPCache.prototype.generateElements = function (range, cacheElem) {
+	VHLOOKUPCache.prototype.generateElements = function (currentRange, cacheElem, cache) {
 		const _this = this;
 
 		// another approach: when generating elements for the cache, create an associative Map array separately for each data type
@@ -3068,30 +3068,403 @@ function (window, undefined) {
 		// for example cache[cElementType.string] will return a Map containing cStrings, as well as the index of an individual cell "i" and the index "last_index" if this element occurs more than once
 		// In the Map itself, the key will be the value from the cell
 
-		range._foreachNoEmpty(function (cell, r, c) {
-			let cellVal = checkTypeCell(cell);
-			let type = cellVal.type;
+		function fillCurrentCache () {
+			currentRange._foreachNoEmpty(function (cell, r, c) {
+				let cellVal = checkTypeCell(cell);
+				let type = cellVal.type;
+	
+				if (!cacheElem[type]) {
+					cacheElem[type] = new Map();
+				}
+	
+				let key = cellVal.getValue();
+				let currentIndex = _this.bHor ? c : r;
+	
+				if (type === cElementType.string) {
+					key = key.toLowerCase();
+				}
+	
+				if (!cacheElem[type].get(key)) {
+					cacheElem[type].set(key, {v: cellVal, i: currentIndex, indexes: [], last_index: null});
+					cacheElem[type].get(key).indexes.push(currentIndex);
+				} else {
+					let curObj = cacheElem[type].get(key);
+					// save the last index of this element for possible reverse search
+					curObj.last_index = currentIndex;
+					// save all encountered indexes for this value 
+					curObj.indexes ? curObj.indexes.push(currentIndex) : null;
+				}
+				
+				cacheElem.elements.push({v: cellVal, i: currentIndex});
+			});
+		}
+		
+		// optimization of generation of cache elements 2:
+		// if the cache is not empty, then we go through all the elements trying to find a range that intersects with the current one
+		// if there is one, then write down the number of elements that are already in the existing range in the cache
+		// in this way we find the range that is closest in value
+		// calculate the difference in elements (if any) and copy? all elements of the range to the current one
+		// if there are not enough elements, then we go through the remaining pieces of the current range and write them down
+		// if there are too many elements, then you need to find and remove these elements: search by index
 
-			if (!cacheElem[type]) {
-				cacheElem[type] = new Map();
+		// todo r/c indexes for array mode in lookup
+		// todo put all map to another object
+
+		if (true) {
+			let r1diff = Infinity, r2diff = Infinity, c1diff = Infinity, c2diff = Infinity;
+			let lookingKey;
+
+			for (let key in cache) {
+				let elem = cache[key];
+				let cacheRange = elem.range;
+				if (currentRange.isIntersect(cacheRange)) {
+					let tempR1Diff = Math.abs(currentRange.bbox.r1 - cacheRange.bbox.r1),
+						tempR2Diff = Math.abs(currentRange.bbox.r2 - cacheRange.bbox.r2),
+						tempC1Diff = Math.abs(currentRange.bbox.c1 - cacheRange.bbox.c1),
+						tempC2Diff = Math.abs(currentRange.bbox.c2 - cacheRange.bbox.c2);
+
+					if (tempR1Diff < r1diff || tempR2Diff < r2diff || tempC1Diff < c1diff || tempC2Diff < c2diff) {
+						lookingKey = key;
+						r1diff = Math.min(tempR1Diff, r1diff);
+						r2diff = Math.min(r2diff, r2diff);
+						c1diff = Math.min(c1diff, c1diff);
+						c2diff = Math.min(c2diff, c2diff);
+					}
+				}
 			}
 
-			let key = cellVal.getValue();
-			let obj = {v: cellVal, i: (_this.bHor ? c : r)};
+			let lookingObj = lookingKey ? cache[lookingKey] : null;
 
-			if (type === cElementType.string) {
-				key = key.toLowerCase();
-			}
+			if (lookingObj) {
+				// get the range and find difference between current range
+				// add all elements to a new object and remove or add extra/missing ones
+				let topElem = lookingObj.range.bbox.r1 - currentRange.bbox.r1, 	//> 0 add, < 0 remove 
+					botElem = lookingObj.range.bbox.r2 - currentRange.bbox.r2, 	//< 0 add, > 0 remove
+					leftElem = lookingObj.range.bbox.c1 - currentRange.bbox.c1,  //> 0 add, < 0 remove 
+					rightElem = lookingObj.range.bbox.c2 - currentRange.bbox.c2; //< 0 add, > 0 remove
 
-			if (!cacheElem[type].get(key)) {
-				cacheElem[type].set(key, obj);
+				cacheElem[cElementType.string] = new Map(lookingObj[cElementType.string]);
+				cacheElem[cElementType.number] = new Map(lookingObj[cElementType.number]);
+				cacheElem[cElementType.empty] = new Map(lookingObj[cElementType.empty]);
+				cacheElem[cElementType.error] = new Map(lookingObj[cElementType.error]);
+				cacheElem[cElementType.bool] = new Map(lookingObj[cElementType.bool]);
+				cacheElem.elements = lookingObj.elements.slice();
+				cacheElem.range = currentRange;
+
+				// r1 check
+				if (topElem > 0) {
+					// add missing elements
+					// create a temp array and then concatenate it to current arr
+					let tempArr;
+					let tempRange = currentRange.worksheet ? currentRange.worksheet.getRange3(currentRange.bbox.r1, currentRange.bbox.c1, currentRange.bbox.r1 + topElem, currentRange.bbox.c2) : null;
+
+					if (tempRange) {
+						tempArr = [];
+						tempRange._foreachNoEmpty(function (cell, r, c) {
+							let cellVal = checkTypeCell(cell);
+							let key = cellVal.getValue();
+							let type = cellVal.type;
+				
+							if (!cacheElem[type]) {
+								cacheElem[type] = new Map();
+							}
+				
+							if (type === cElementType.string) {
+								key = key.toLowerCase();
+							}
+	
+							let curIndex = _this.bHor ? c : r;
+							if (!cacheElem[type].get(key)) {
+								cacheElem[type].set(key, {v: cellVal, i: curIndex, indexes: [], last_index: null});
+								cacheElem[type].get(key).indexes.push(curIndex);
+								tempArr.push({v: cellVal, i: curIndex, last_index: null});
+							} else {
+								let curObj = cacheElem[type].get(key);
+								// add index to indexes array
+								if (!curObj.indexes.includes(curIndex)) {
+									curObj.indexes.push(curIndex);
+									curObj.i = curObj.i > curIndex ? curIndex : curObj.i;
+									tempArr.push({v: cellVal, i: curIndex, last_index: null});
+								}
+							}
+						});
+					}
+
+					// concat
+					if (tempArr) {
+						cacheElem.elements = tempArr.concat(cacheElem.elements);
+					}
+
+				} else if (topElem < 0) {
+					// remove unnecessary elements
+					for (let i = 0; i < Math.abs(topElem); i++) {
+						let elem = cacheElem.elements[i];
+						let key = elem.v.getValue();
+						let type = elem.v.type;
+
+						if (type === cElementType.string) {
+							key = key.toLowerCase();
+						}
+
+						let mapElem = cacheElem[type].get(key);
+						if (mapElem) {
+							// check indexes inside the map value
+							// if indexes match with current 'i', need to delete this and reassign them inside value
+							// if (mapElem.i === (i + lookingObj.range.bbox.r1)) {
+							// 	// change indexes arr 
+							// 	if (mapElem['indexes'].length > 1) {
+							// 		mapElem['indexes'].splice(0, 1);
+							// 		mapElem.i = mapElem['indexes'][0];
+							// 	} else {
+							// 		cacheElem[type].delete(key);
+							// 	}
+							// }
+
+							let indexesElemArr = mapElem.indexes;
+							if (indexesElemArr && indexesElemArr.includes(mapElem.i)) {
+								// if single index - delete this element
+								if (indexesElemArr.length < 2) {
+									cacheElem[type].delete(key);
+								} else {
+									// delete only this index from array
+									// reassign elem.i and elem.last_index
+									mapElem.indexes.splice(0, 1);
+									mapElem.indexes.sort();
+									mapElem.i = mapElem.indexes[0];
+									mapElem.last_index = mapElem.indexes[mapElem.indexes.length - 1];
+								}
+							}
+						}
+					}
+					cacheElem.elements.splice(0, Math.abs(topElem));
+				}
+
+				// r2 check
+				if (botElem < 0) {
+					// add missing elements
+					let tempRange = currentRange.worksheet ? currentRange.worksheet.getRange3(currentRange.bbox.r2 + botElem, currentRange.bbox.c1, currentRange.bbox.r2, currentRange.bbox.c2) : null;
+					if (tempRange) {
+						tempRange._foreachNoEmpty(function (cell, r, c) {
+							let cellVal = checkTypeCell(cell);
+							let key = cellVal.getValue();
+							let type = cellVal.type;
+				
+							if (!cacheElem[type]) {
+								cacheElem[type] = new Map();
+							}
+				
+							if (type === cElementType.string) {
+								key = key.toLowerCase();
+							}
+	
+							let curIndex = _this.bHor ? c : r;
+							if (!cacheElem[type].get(key)) {
+								cacheElem[type].set(key, {v: cellVal, i: curIndex, indexes: [], last_index: null});
+								cacheElem[type].get(key).indexes.push(curIndex);
+								cacheElem.elements.push({v: cellVal, i: curIndex, last_index: null});
+							} else {
+								let curObj = cacheElem[type].get(key);
+								// add index to indexes array
+								if (!curObj.indexes.includes(curIndex)) {
+									curObj.indexes.push(curIndex);
+									curObj.i = curObj.i > curIndex ? curIndex : curObj.i;
+									cacheElem.elements.push({v: cellVal, i: curIndex, last_index: null});
+								}
+							}
+						});
+					}
+				} else if (botElem > 0) {
+					// remove unnecessary elements
+					for (let i = cacheElem.elements.length - 1; i > cacheElem.elements.length - Math.abs(botElem); i--) {
+						let elem = cacheElem.elements[i];
+						let key = elem.v.getValue();
+						let type = elem.v.type;
+
+						if (type === cElementType.string) {
+							key = key.toLowerCase();
+						}
+
+						let mapElem = cacheElem[type].get(key);
+						if (mapElem) {
+							// check indexes inside the map value
+							// if indexes match with current 'i', need to delete this and reassign them inside value
+							// if (mapElem.i === (i + lookingObj.range.bbox.r2)) {
+							// 	// change indexes arr 
+							// 	if (mapElem['indexes'].length > 1) {
+							// 		mapElem['indexes'].splice(0,1);
+							// 		mapElem.i = mapElem['indexes'][0];
+							// 	} else {
+							// 		cacheElem[type].delete(key);
+							// 	}
+							// }
+
+							let indexesElemArr = mapElem.indexes;
+							if (indexesElemArr && indexesElemArr.includes(mapElem.i)) {
+								// if single index - delete this element
+								if (indexesElemArr.length < 2) {
+									cacheElem[type].delete(key);
+								} else {
+									// delete only this index from array
+									// reassign elem.i and elem.last_index
+									mapElem.indexes.splice(-1, 1);
+									mapElem.indexes.sort();
+									mapElem.i = mapElem.indexes[0];
+									mapElem.last_index = mapElem.indexes[mapElem.indexes.length - 1];
+								}
+							}
+						}
+					}
+					// cacheElem.elements.splice(cacheElem.elements.length - 1 - Math.abs(topElem), cacheElem.elements.length - 1);
+					cacheElem.elements.splice(-botElem, botElem);
+				}
+
+				// c1 check
+				if (leftElem > 0) {
+					// add missing elements
+					// create a temp array and then concatenate it to current arr
+					let tempArr;
+					let tempRange = currentRange.worksheet ? currentRange.worksheet.getRange3(currentRange.bbox.r1, currentRange.bbox.c1, currentRange.bbox.r2, currentRange.bbox.c2 + leftElem) : null;
+					if (tempRange) {
+						tempArr = [];
+						tempRange._foreachNoEmpty(function (cell, r, c) {
+							let cellVal = checkTypeCell(cell);
+							let key = cellVal.getValue();
+							let type = cellVal.type;
+				
+							if (!cacheElem[type]) {
+								cacheElem[type] = new Map();
+							}
+				
+							if (type === cElementType.string) {
+								key = key.toLowerCase();
+							}
+	
+							let curIndex = _this.bHor ? c : r;
+							if (!cacheElem[type].get(key)) {
+								cacheElem[type].set(key, {v: cellVal, i: curIndex, indexes: [], last_index: null});
+								cacheElem[type].get(key).indexes.push(curIndex);
+								tempArr.push({v: cellVal, i: curIndex, last_index: null});
+							} else {
+								let curObj = cacheElem[type].get(key);
+								// add index to indexes array
+								if (!curObj.indexes.includes(curIndex)) {
+									curObj.indexes.push(curIndex);
+									curObj.i = curObj.i > curIndex ? curIndex : curObj.i;
+									tempArr.push({v: cellVal, i: curIndex, last_index: null});
+								}
+							}
+						});
+					}
+
+					// concat
+					if (tempArr) {
+						cacheElem.elements = tempArr.concat(cacheElem.elements);
+					}
+
+				} else if (leftElem < 0) {
+					// remove unnecessary elements
+					for (let i = 0; i < Math.abs(leftElem); i++) {
+						let elem = cacheElem.elements[i];
+						let key = elem.v.getValue();
+						let type = elem.v.type;
+
+						if (type === cElementType.string) {
+							key = key.toLowerCase();
+						}
+
+						let mapElem = cacheElem[type].get(key);
+						if (mapElem) {
+							let indexesElemArr = mapElem.indexes;
+							if (indexesElemArr && indexesElemArr.includes(mapElem.i)) {
+								// if single index - delete this element
+								if (indexesElemArr.length < 2) {
+									cacheElem[type].delete(key);
+								} else {
+									// delete only this index from array
+									// reassign elem.i and elem.last_index
+									mapElem.indexes.splice(0, 1);
+									mapElem.indexes.sort();
+									mapElem.i = mapElem.indexes[0];
+									mapElem.last_index = mapElem.indexes[mapElem.indexes.length - 1];
+								}
+							}
+						}
+					}
+					cacheElem.elements.splice(0, Math.abs(leftElem));
+				}
+
+				// c2 check
+				if (rightElem < 0) {
+					// add missing elements
+					let tempRange = currentRange.worksheet ? currentRange.worksheet.getRange3(currentRange.bbox.r2, currentRange.bbox.c1 + rightElem, currentRange.bbox.r2, currentRange.bbox.c2) : null;
+					if (tempRange) {
+						tempRange._foreachNoEmpty(function (cell, r, c) {
+							let cellVal = checkTypeCell(cell);
+							let key = cellVal.getValue();
+							let type = cellVal.type;
+				
+							if (!cacheElem[type]) {
+								cacheElem[type] = new Map();
+							}
+				
+							if (type === cElementType.string) {
+								key = key.toLowerCase();
+							}
+	
+							let curIndex = _this.bHor ? c : r;
+							if (!cacheElem[type].get(key)) {
+								cacheElem[type].set(key, {v: cellVal, i: curIndex, indexes: [], last_index: null});
+								cacheElem[type].get(key).indexes.push(curIndex);
+								cacheElem.elements.push({v: cellVal, i: curIndex, last_index: null});
+							} else {
+								let curObj = cacheElem[type].get(key);
+								// add index to indexes array
+								if (!curObj.indexes.includes(curIndex)) {
+									curObj.indexes.push(curIndex);
+									curObj.i = curObj.i > curIndex ? curIndex : curObj.i;
+									cacheElem.elements.push({v: cellVal, i: curIndex, last_index: null});
+								}
+							}
+						});
+					}
+				} else if (rightElem > 0) {
+					// remove unnecessary elements
+					for (let i = cacheElem.elements.length - 1; i > cacheElem.elements.length - Math.abs(rightElem); i--) {
+						let elem = cacheElem.elements[i];
+						let key = elem.v.getValue();
+						let type = elem.v.type;
+
+						if (type === cElementType.string) {
+							key = key.toLowerCase();
+						}
+
+						let mapElem = cacheElem[type].get(key);
+						if (mapElem) {
+							let indexesElemArr = mapElem.indexes;
+							if (indexesElemArr && indexesElemArr.includes(mapElem.i)) {
+								// if single index - delete this element
+								if (indexesElemArr.length < 2) {
+									cacheElem[type].delete(key);
+								} else {
+									// delete only this index from array
+									// reassign elem.i and elem.last_index
+									mapElem.indexes.splice(-1, 1);
+									mapElem.indexes.sort();
+									mapElem.i = mapElem.indexes[0];
+									mapElem.last_index = mapElem.indexes[mapElem.indexes.length - 1];
+								}
+							}
+						}
+					}
+					cacheElem.elements.splice(-rightElem, rightElem);
+				}
+				
 			} else {
-				// save the last index of this element for possible reverse search
-				cacheElem[type].get(key)["last_index"] = (_this.bHor ? c : r);
+				fillCurrentCache();
 			}
-			
-			cacheElem.elements.push(obj);
-		});
+		} else {
+			fillCurrentCache();
+		}
 
 		return;
 

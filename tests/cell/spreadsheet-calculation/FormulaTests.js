@@ -18857,9 +18857,34 @@ $(function () {
 		assert.ok( oParser.parse() );
 		assert.strictEqual( oParser.calculate().getValue(), 2 );*/
 
+		// for bug 54946
+		ws.getRange2("A101").setValue("1");
+		ws.getRange2("B101").setValue("2");
+		ws.getRange2("C101").setValue("3");
+		ws.getRange2("D101").setValue("4");
+		ws.getRange2("E101").setValue("5");
+		ws.getRange2("F101").setValue("6");
+
+		oParser = new parserFormula('HLOOKUP(B101,A101:C101,1,0)', "A2", ws);
+		assert.ok(oParser.parse(), 'HLOOKUP(B101,A101:C101,1,0)');
+		assert.strictEqual(oParser.calculate().getValue(), 2, 'Result of HLOOKUP(B101,A101:C101,1,0)');
+
+		oParser = new parserFormula('HLOOKUP(C101,A101:D101,1,0)', "A2", ws);
+		assert.ok(oParser.parse(), 'HLOOKUP(C101,A101:D101,1,0)');
+		assert.strictEqual(oParser.calculate().getValue(), 3, 'Result of HLOOKUP(C101,A101:D101,1,0)');
+
+		oParser = new parserFormula('HLOOKUP(D101,A101:E101,1,0)', "A2", ws);
+		assert.ok(oParser.parse(), 'HLOOKUP(D101,A101:E101,1,0)');
+		assert.strictEqual(oParser.calculate().getValue(), 4, 'Result of HLOOKUP(D101,A101:E101,1,0)');
+
+		oParser = new parserFormula('HLOOKUP(E101,A101:F101,1,0)', "A2", ws);
+		assert.ok(oParser.parse(), 'HLOOKUP(E101,A101:F101,1,0)');
+		assert.strictEqual(oParser.calculate().getValue(), 5, 'Result of HLOOKUP(E101,A101:F101,1,0)');
+
 	});
 
 	QUnit.test("Test: \"VLOOKUP\"", function (assert) {
+		AscCommonExcel.g_oVLOOKUPCache.clean();
 
 		ws.getRange2("A501").setValue("Density");
 		ws.getRange2("B501").setValue("Bearings");
@@ -19120,6 +19145,8 @@ $(function () {
 		assert.strictEqual(oParser.calculate().getValue(), 13, 'Result of VLOOKUP(5,A101:B113,2,FALSE)');
 
 		// for bug 54560
+		AscCommonExcel.g_oVLOOKUPCache.clean();
+
 		ws.getRange2("A101").setValue("Aa");
 		ws.getRange2("A102").setValue("Ae");
 		ws.getRange2("A103").setValue("Ba");
@@ -19263,7 +19290,7 @@ $(function () {
 		assert.ok(oParser.parse(), 'VLOOKUP(A215,A201:B216,2,0)');
 		assert.strictEqual(oParser.calculate().getValue(), 5, 'Result of VLOOKUP(A215,A201:B216,2,0)');
 
-		// perfomance tests don't show the real situation
+		// perfomance tests 
 		// ws.getRange2("A1:A100000").setValue("22");
 		// ws.getRange2("A1000:A21199").setValue("TRUE");
 		// ws.getRange2("A21200").setValue("Value1");
@@ -19275,7 +19302,7 @@ $(function () {
 		// assert.ok(oParser.parse(), 'VLOOKUP("Value",A:A,1,0)');
 		// assert.strictEqual(oParser.calculate().getValue(), "Value", 'Result of VLOOKUP("Value",A:A,1,0)');
 
-
+		AscCommonExcel.g_oVLOOKUPCache.clean();
 	});
 
 	QUnit.test("Test: \"LOOKUP\"", function (assert) {
@@ -19625,6 +19652,9 @@ $(function () {
 		oParser = new parserFormula("LOOKUP(6,A101:E103)", "A2", ws);
 		assert.ok(oParser.parse(), "LOOKUP(6,A101:E103)");
 		assert.strictEqual(oParser.calculate().getValue().getValue(), 14, "Result of LOOKUP(6,A101:E103)");
+
+		AscCommonExcel.g_oLOOKUPCache.clean();
+		// todo problem with indexes in lookupcache when using array form in LOOKUP
 
 		// rows > columns
 		oParser = new parserFormula("LOOKUP(2,A101:C105)", "A2", ws);

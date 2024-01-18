@@ -825,16 +825,16 @@
 
 		/** @param event {KeyboardEvent} */
 		asc_CEventsController.prototype._onWindowKeyDown = function (event) {
-			var t = this, dc = 0, dr = 0, canEdit = this.canEdit(), action = false, enterOptions;
-			var macOs = AscCommon.AscBrowser.isMacOs;
-			var ctrlKey = !AscCommon.getAltGr(event) && (event.metaKey || event.ctrlKey);
-			var macCmdKey = AscCommon.AscBrowser.isMacOs && event.metaKey;
-			var shiftKey = event.shiftKey;
-			var selectionDialogMode = this.getSelectionDialogMode();
-			var isFormulaEditMode = this.getFormulaEditMode();
-			var isChangeVisibleAreaMode = this.view.Api.isEditVisibleAreaOleEditor;
+			let t = this, dc = 0, dr = 0, canEdit = this.canEdit(), action = false, enterOptions;
+			let macOs = AscCommon.AscBrowser.isMacOs;
+			let ctrlKey = !AscCommon.getAltGr(event) && (event.metaKey || event.ctrlKey);
+			let macCmdKey = AscCommon.AscBrowser.isMacOs && event.metaKey;
+			let shiftKey = event.shiftKey;
+			let selectionDialogMode = this.getSelectionDialogMode();
+			let isFormulaEditMode = this.getFormulaEditMode();
+			let isChangeVisibleAreaMode = this.view.Api.isEditVisibleAreaOleEditor;
 
-			var result = true;
+			let result = true;
 
 			function stop(immediate) {
 				event.stopPropagation();
@@ -854,7 +854,7 @@
 			}
 
 			// Двигаемся ли мы в выделенной области
-			var selectionActivePointChanged = false;
+			let selectionActivePointChanged = false;
 
 			// Для таких браузеров, которые не присылают отжатие левой кнопки мыши для двойного клика, при выходе из
 			// окна редактора и отпускания кнопки, будем отрабатывать выход из окна (только Chrome присылает эвент MouseUp даже при выходе из браузера)
@@ -873,8 +873,9 @@
 
 			t._setSkipKeyPress(true);
 
-			var isNeedCheckActiveCellChanged = null;
-			var _activeCell;
+			let isNeedCheckActiveCellChanged = null;
+			let _activeCell;
+			let scrollType;
 
 			switch (event.which) {
 				case 116:
@@ -896,7 +897,7 @@
 					return true;
 
 				case 120: // F9
-					var type;
+					let type;
 					if (shiftKey) {
 						type = Asc.c_oAscCalculateType.ActiveSheet;
 					} else {
@@ -1023,8 +1024,8 @@
 					if (t.getCellEditMode()) {
 						return true;
 					}
-					var isSelectColumns = ctrlKey;
-					var isSelectAllMacOs = isSelectColumns && shiftKey && macOs;
+					let isSelectColumns = ctrlKey;
+					let isSelectAllMacOs = isSelectColumns && shiftKey && macOs;
 					// Обработать как обычный текст
 					if ((!isSelectColumns && !shiftKey) || isSelectAllMacOs) {
 						//теперь пробел обрабатывается на WindowKeyDown
@@ -1089,7 +1090,13 @@
 
 				case 37: // left
 					stop();                          // Отключим стандартную обработку браузера нажатия left
-					dc = ctrlKey ? -1.5 : -1;  // Движение стрелками (влево-вправо, вверх-вниз)
+					if (ctrlKey) {
+						_activeCell = t.handlers.trigger("getActiveCell", true);
+						dc = -_activeCell.c1;
+						scrollType = AscCommonExcel.c_oAscScrollType.ScrollHorizontal;
+					} else {
+						dc = -1;  // Движение стрелками (влево-вправо, вверх-вниз)
+					}
 					isNeedCheckActiveCellChanged = true;
 					break;
 
@@ -1098,13 +1105,25 @@
 					if (canEdit && !t.getCellEditMode() && !selectionDialogMode && event.altKey && t.handlers.trigger("onDataValidation")) {
 						return result;
 					}
-					dr = ctrlKey ? -1.5 : -1;  // Движение стрелками (влево-вправо, вверх-вниз)
+					if (ctrlKey) {
+						_activeCell = t.handlers.trigger("getActiveCell", true);
+						dr = -_activeCell.r1;
+						scrollType = AscCommonExcel.c_oAscScrollType.ScrollVertical;
+					} else {
+						dr = -1;  // Движение стрелками (влево-вправо, вверх-вниз)
+					}
 					isNeedCheckActiveCellChanged = true;
 					break;
 
 				case 39: // right
 					stop();                          // Отключим стандартную обработку браузера нажатия right
-					dc = ctrlKey ? +1.5 : +1;  // Движение стрелками (влево-вправо, вверх-вниз)
+					if (ctrlKey) {
+						_activeCell = t.handlers.trigger("getActiveCell", true);
+						dc = AscCommon.gc_nMaxCol0 - _activeCell.c1;
+						scrollType = AscCommonExcel.c_oAscScrollType.ScrollHorizontal;
+					} else {
+						dc = +1;  // Движение стрелками (влево-вправо, вверх-вниз)
+					}
 					isNeedCheckActiveCellChanged = true;
 					break;
 
@@ -1121,7 +1140,14 @@
 						t.handlers.trigger("showAutoComplete");
 						return result;
 					}
-					dr = ctrlKey ? +1.5 : +1;  // Движение стрелками (влево-вправо, вверх-вниз)
+
+					if (ctrlKey) {
+						_activeCell = t.handlers.trigger("getActiveCell", true);
+						dr = AscCommon.gc_nMaxRow0 - _activeCell.r1;
+						scrollType = AscCommonExcel.c_oAscScrollType.ScrollVertical;
+					} else {
+						dr = +1;  // Движение стрелками (влево-вправо, вверх-вниз)
+					}
 					isNeedCheckActiveCellChanged = true;
 					break;
 
@@ -1309,13 +1335,13 @@
 			} // end of switch
 
 
-			var activeCellBefore;
+			let activeCellBefore;
 			if (isNeedCheckActiveCellChanged) {
 				activeCellBefore = t.handlers.trigger("getActiveCell");
 			}
-			var _checkLastTab = function () {
+			let _checkLastTab = function () {
 				if (isNeedCheckActiveCellChanged) {
-					var activeCellAfter = t.handlers.trigger("getActiveCell");
+					let activeCellAfter = t.handlers.trigger("getActiveCell");
 					if (!activeCellBefore || !activeCellAfter || !activeCellAfter.isEqual(activeCellBefore)) {
 						t.lastTab = null;
 					}
@@ -1342,7 +1368,14 @@
 				} else {
 					t.handlers.trigger("changeSelection", /*isStartPoint*/!shiftKey, dc, dr, /*isCoord*/false, false,
 						function (d) {
-							var wb = window["Asc"]["editor"].wb;
+							let wb = window["Asc"]["editor"].wb;
+							if (scrollType != null) {
+								let ws = wb && wb.getWorksheet();
+								if (ws) {
+									ws.scrollType |= scrollType;
+								}
+							}
+
 							if (t.targetInfo) {
 								wb._onUpdateWorksheet(t.targetInfo.coordX, t.targetInfo.coordY, false);
 							}

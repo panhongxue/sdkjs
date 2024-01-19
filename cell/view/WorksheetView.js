@@ -387,111 +387,111 @@
      * @constructor
      * @memberOf Asc
      */
-    function WorksheetView(workbook, model, handlers, buffers, stringRender, maxDigitWidth, collaborativeEditing, settings) {
-        this.settings = settings;
+	function WorksheetView(workbook, model, handlers, buffers, stringRender, maxDigitWidth, collaborativeEditing, settings) {
+		this.settings = settings;
 
-        this.workbook = workbook;
-        this.handlers = handlers;
-        this.model = model;
+		this.workbook = workbook;
+		this.handlers = handlers;
+		this.model = model;
 
-        this.buffers = buffers;
-        this.drawingCtx = this.buffers.main;
-        this.overlayCtx = this.buffers.overlay;
+		this.buffers = buffers;
+		this.drawingCtx = this.buffers.main;
+		this.overlayCtx = this.buffers.overlay;
 
-        this.drawingGraphicCtx = this.buffers.mainGraphic;
-        this.overlayGraphicCtx = this.buffers.overlayGraphic;
+		this.drawingGraphicCtx = this.buffers.mainGraphic;
+		this.overlayGraphicCtx = this.buffers.overlayGraphic;
 
-        this.stringRender = stringRender;
+		this.stringRender = stringRender;
 
-        // Флаг, сигнализирует о том, что мы сделали resize, но это не активный лист (поэтому как только будем показывать, нужно перерисовать и пересчитать кеш)
-        this.updateResize = false;
-        // Флаг, сигнализирует о том, что мы сменили zoom, но это не активный лист (поэтому как только будем показывать, нужно перерисовать и пересчитать кеш)
-        this.updateZoom = false;
-        this.isZooming = false;
-        // ToDo Флаг-заглушка, для того, чтобы на mobile не было изменения высоты строк при zoom (по правильному высота просто не должна меняться)
-        this.notUpdateRowHeight = false;
+		// Флаг, сигнализирует о том, что мы сделали resize, но это не активный лист (поэтому как только будем показывать, нужно перерисовать и пересчитать кеш)
+		this.updateResize = false;
+		// Флаг, сигнализирует о том, что мы сменили zoom, но это не активный лист (поэтому как только будем показывать, нужно перерисовать и пересчитать кеш)
+		this.updateZoom = false;
+		this.isZooming = false;
+		// ToDo Флаг-заглушка, для того, чтобы на mobile не было изменения высоты строк при zoom (по правильному высота просто не должна меняться)
+		this.notUpdateRowHeight = false;
 
-        this.cache = new Cache();
+		this.cache = new Cache();
 
-        //---member declaration---
-        // Максимальная ширина числа из 0,1,2...,9, померенная в нормальном шрифте(дефалтовый для книги) в px(целое)
-        // Ecma-376 Office Open XML Part 1, пункт 18.3.1.13
-        this.maxDigitWidth = maxDigitWidth;
+		//---member declaration---
+		// Максимальная ширина числа из 0,1,2...,9, померенная в нормальном шрифте(дефалтовый для книги) в px(целое)
+		// Ecma-376 Office Open XML Part 1, пункт 18.3.1.13
+		this.maxDigitWidth = maxDigitWidth;
 
-        this.defaultColWidthChars = 0;
-        this.defaultColWidthPx = 0;
-        this.defaultRowHeightPx = 0;
-        this.defaultRowDescender = 0;
-        this.defaultSpaceWidth = 0;
-        this.headersLeft = 0;
-        this.headersTop = 0;
-        this.headersWidth = 0;
-        this.headersHeight = 0;
-        this.headersHeightByFont = 0;	// Размер по шрифту (размер без скрытия заголовков)
+		this.defaultColWidthChars = 0;
+		this.defaultColWidthPx = 0;
+		this.defaultRowHeightPx = 0;
+		this.defaultRowDescender = 0;
+		this.defaultSpaceWidth = 0;
+		this.headersLeft = 0;
+		this.headersTop = 0;
+		this.headersWidth = 0;
+		this.headersHeight = 0;
+		this.headersHeightByFont = 0;	// Размер по шрифту (размер без скрытия заголовков)
 		this.groupWidth = 0;
 		this.groupHeight = 0;
-        this.cellsLeft = 0;
-        this.cellsTop = 0;
-        this.cols = [];
-        this.rows = [];
+		this.cellsLeft = 0;
+		this.cellsTop = 0;
+		this.cols = [];
+		this.rows = [];
 
-        this.highlightedCol = -1;
-        this.highlightedRow = -1;
-        this.topLeftFrozenCell = null;	// Верхняя ячейка для закрепления диапазона
-        this.visibleRange = new asc_Range(0, 0, 0, 0);
-        this.isChanged = false;
-        this.isChartAreaEditMode = false;
-        this.lockDraw = false;
-        this.isSelectOnShape = false;	// Выделен shape
+		this.highlightedCol = -1;
+		this.highlightedRow = -1;
+		this.topLeftFrozenCell = null;	// Верхняя ячейка для закрепления диапазона
+		this.visibleRange = new asc_Range(0, 0, 0, 0);
+		this.isChanged = false;
+		this.isChartAreaEditMode = false;
+		this.lockDraw = false;
+		this.isSelectOnShape = false;	// Выделен shape
 
-        this.startCellMoveResizeRange = null;
-        this.startCellMoveResizeRange2 = null;
-        this.moveRangeDrawingObjectTo = null;
+		this.startCellMoveResizeRange = null;
+		this.startCellMoveResizeRange2 = null;
+		this.moveRangeDrawingObjectTo = null;
 
-        // Координаты ячейки начала перемещения диапазона
-        this.startCellMoveRange = null;
-        // Дипазон перемещения
-        this.activeMoveRange = null;
-        // Range for drag and drop
+		// Координаты ячейки начала перемещения диапазона
+		this.startCellMoveRange = null;
+		// Дипазон перемещения
+		this.activeMoveRange = null;
+		// Range for drag and drop
 		this.dragAndDropRange = null;
-        // Range fillHandle
-        this.activeFillHandle = null;
-        this.resizeTableIndex = null;
-        // Горизонтальное (0) или вертикальное (1) направление автозаполнения
-        this.fillHandleDirection = -1;
-        // Зона автозаполнения
-        this.fillHandleArea = -1;
-        this.nRowsCount = 0;
-        this.nColsCount = 0;
-        // Other ranges for draw (sparklines info, chart ranges or formula ranges)
-        this.oOtherRanges = null;
-        //------------------------
+		// Range fillHandle
+		this.activeFillHandle = null;
+		this.resizeTableIndex = null;
+		// Горизонтальное (0) или вертикальное (1) направление автозаполнения
+		this.fillHandleDirection = -1;
+		// Зона автозаполнения
+		this.fillHandleArea = -1;
+		this.nRowsCount = 0;
+		this.nColsCount = 0;
+		// Other ranges for draw (sparklines info, chart ranges or formula ranges)
+		this.oOtherRanges = null;
+		//------------------------
 
-        this.collaborativeEditing = collaborativeEditing;
+		this.collaborativeEditing = collaborativeEditing;
 
-        this.drawingArea = new AscFormat.DrawingArea(this);
-        this.cellCommentator = new AscCommonExcel.CCellCommentator(this);
-        this.objectRender = null;
+		this.drawingArea = new AscFormat.DrawingArea(this);
+		this.cellCommentator = new AscCommonExcel.CCellCommentator(this);
+		this.objectRender = null;
 
-        this.arrRecalcRanges = [];
+		this.arrRecalcRanges = [];
 		this.arrRecalcRangesWithHeight = [];
 		this.arrRecalcRangesCanChangeColWidth = [];
-        this.skipUpdateRowHeight = false;
-        this.canChangeColWidth = c_oAscCanChangeColWidth.none;
-        this.scrollType = 0;
-        this.updateRowHeightValuePx = null;
-        this.updateColumnsStart = Number.MAX_VALUE;
+		this.skipUpdateRowHeight = false;
+		this.canChangeColWidth = c_oAscCanChangeColWidth.none;
+		this.scrollType = 0;
+		this.updateRowHeightValuePx = null;
+		this.updateColumnsStart = Number.MAX_VALUE;
 
-        this.viewPrintLines = false;
+		this.viewPrintLines = false;
 
-        this.copyCutRange = null;
+		this.copyCutRange = null;
 
-        this.usePrintScale = false;//флаг нужен для того, чтобы возвращался scale только в случае печати, а при отрисовке, допустим сектки, он был равен 1
+		this.usePrintScale = false;//флаг нужен для того, чтобы возвращался scale только в случае печати, а при отрисовке, допустим сектки, он был равен 1
 
-        this.arrRowGroups = null;
-        this.arrColGroups = null;
-        this.clickedGroupButton = null;
-        this.ignoreGroupSize = null;//для печати не нужно учитывать отступы групп
+		this.arrRowGroups = null;
+		this.arrColGroups = null;
+		this.clickedGroupButton = null;
+		this.ignoreGroupSize = null;//для печати не нужно учитывать отступы групп
 
 		//ифомарция о залоченности нового добавленного правила
 		//TODO пока сюда добавляю, пересмотреть!
@@ -509,10 +509,13 @@
 
 		this.traceDependentsManager = new AscCommonExcel.TraceDependentsManager(this);
 
-        this._init();
+		//settings for split draw/
+		this.renderingSettings = null;
 
-        return this;
-    }
+		this._init();
+
+		return this;
+	}
 
 	WorksheetView.prototype._init = function () {
 		this._initTopLeftCell();
@@ -3249,10 +3252,10 @@
 	};
 
 	WorksheetView.prototype.drawForPrint = function (drawingCtx, printPagesData, indexPrintPage, pages) {
-		var t = this;
-		var countPrintPages = pages && pages.length;
+		let t = this;
+		let countPrintPages = pages && pages.length;
 
-		var recalcIndexPrintPage = function (_indexPrintPage) {
+		let recalcIndexPrintPage = function (_indexPrintPage) {
 			//real header/footer index starts with new sheet
 			let newIndex = null;
 			if (pages && pages[indexPrintPage]) {
@@ -3267,6 +3270,7 @@
 			return newIndex !== null ? newIndex : _indexPrintPage;
 		};
 		indexPrintPage = recalcIndexPrintPage(indexPrintPage);
+
 
 		this.stringRender.fontNeedUpdate = true;
 		if (null === printPagesData) {
@@ -3288,6 +3292,19 @@
 		} else {
 			drawingCtx.BeginPage && drawingCtx.BeginPage(printPagesData.pageWidth, printPagesData.pageHeight);
 
+			//special thumbnail split
+			let printOptionsJson = this.workbook && this.workbook.getPrintOptionsJson();
+			if (printOptionsJson && printOptionsJson["thumbnail"] && printOptionsJson["thumbnail"]["first"] === true) {
+				let thumbnailMaxRowCount = 100;
+				let currentRowCount = (printPagesData.pageRange.r2 - printPagesData.pageRange.r1) + (printPagesData.titleRowRange ? (printPagesData.titleRowRange.r2 - printPagesData.titleRowRange.r1) : 0);
+				if (currentRowCount > thumbnailMaxRowCount) {
+					this.initRenderingSettings();
+					let renderingSettings = this.getRenderingSettings();
+					let splitNumber = 2;
+					renderingSettings && renderingSettings.setSplitRowBG(splitNumber);
+				}
+			}
+
 			//TODO для печати не нужно учитывать размер группы
 			if(this.groupWidth || this.groupHeight) {
 				this.ignoreGroupSize = true;
@@ -3303,32 +3320,32 @@
 			this.drawHeaderFooter(drawingCtx, printPagesData, indexPrintPage, countPrintPages);
 
 			//отступы с учётом заголовков
-			var clipLeft, clipTop, clipWidth, clipHeight;
+			let clipLeft, clipTop, clipWidth, clipHeight;
 			//отступы без учёта загаловков
-			var clipLeftShape, clipTopShape, clipWidthShape, clipHeightShape;
+			let clipLeftShape, clipTopShape, clipWidthShape, clipHeightShape;
 
-			var doDraw = function(range, titleWidth, titleHeight) {
+			let doDraw = function(range, titleWidth, titleHeight) {
 				drawingCtx.AddClipRect && drawingCtx.AddClipRect(clipLeft, clipTop, clipWidth, clipHeight);
 
-				var transformMatrix;
-				var _transform = drawingCtx.Transform;
+				let transformMatrix;
+				let _transform = drawingCtx.Transform;
 				if (printScale !== 1 && _transform) {
-					var mmToPx = asc_getcvt(3/*mm*/, 0/*px*/, t._getPPIX());
-					var leftDiff = printPagesData.pageClipRectLeft * (1 - printScale);
-					var topDiff = printPagesData.pageClipRectTop * (1 - printScale);
+					let mmToPx = asc_getcvt(3/*mm*/, 0/*px*/, t._getPPIX());
+					let leftDiff = printPagesData.pageClipRectLeft * (1 - printScale);
+					let topDiff = printPagesData.pageClipRectTop * (1 - printScale);
 					transformMatrix = _transform.CreateDublicate ? _transform.CreateDublicate() : _transform.clone();
 
 					drawingCtx.setTransform(printScale, _transform.shy, _transform.shx, printScale,
 						leftDiff / mmToPx, topDiff / mmToPx);
 				}
 
-				var offsetCols = printPagesData.startOffsetPx;
+				let offsetCols = printPagesData.startOffsetPx;
 				//range = printPagesData.pageRange;
-				var offsetX = t._getColLeft(range.c1) - printPagesData.leftFieldInPx + offsetCols - titleWidth;
-				var offsetY = t._getRowTop(range.r1) - printPagesData.topFieldInPx - titleHeight;
+				let offsetX = t._getColLeft(range.c1) - printPagesData.leftFieldInPx + offsetCols - titleWidth;
+				let offsetY = t._getRowTop(range.r1) - printPagesData.topFieldInPx - titleHeight;
 
 				//TODO необходимо ли подменять visibleRange - в методе _prepareCellTextMetricsCache он может измениться
-				var tmpVisibleRange = t.visibleRange;
+				let tmpVisibleRange = t.visibleRange;
 				// Сменим visibleRange для прохождения проверок отрисовки
 				t.visibleRange = range.clone();
 
@@ -3342,7 +3359,7 @@
 
 				// Рисуем сетку
 				if (printPagesData.pageGridLines) {
-					var vector_koef = AscCommonExcel.vector_koef / t.getZoom();
+					let vector_koef = AscCommonExcel.vector_koef / t.getZoom();
 					if (AscCommon.AscBrowser.isCustomScaling()) {
 						vector_koef /= t.getRetinaPixelRatio();
 					}
@@ -3351,7 +3368,7 @@
 				}
 
 				//TODO временно подменяю scale. пересмотреть! подменять либо всегда, либо флаг добавить.
-				var _modelScale, _modelPagesOptions;
+				let _modelScale, _modelPagesOptions;
 				if(t.model.PagePrintOptions && t.model.PagePrintOptions.pageSetup) {
 					_modelScale = t.model.PagePrintOptions.pageSetup.scale;
 					t.model.PagePrintOptions.pageSetup.scale = printPagesData.scale;
@@ -3378,12 +3395,12 @@
 				//Отрисовываем панель группировки по строкам
 				//t._drawGroupData(drawingCtx, null, offsetX, offsetY);
 
-				var drawingPrintOptions = {
+				let drawingPrintOptions = {
 					ctx: drawingCtx, printPagesData: printPagesData, titleWidth: titleWidth, titleHeight: titleHeight
 				};
-				var oDocRenderer = drawingCtx.DocumentRenderer;
-				var oOldBaseTransform = oDocRenderer.m_oBaseTransform;
-				var oBaseTransform = new AscCommon.CMatrix();
+				let oDocRenderer = drawingCtx.DocumentRenderer;
+				let oOldBaseTransform = oDocRenderer.m_oBaseTransform;
+				let oBaseTransform = new AscCommon.CMatrix();
 				oBaseTransform.sx = printScale;
 				oBaseTransform.sy = printScale;
 
@@ -3392,8 +3409,8 @@
 
 				//oDocRenderer.transform(oDocRenderer.m_oFullTransform.sx, oDocRenderer.m_oFullTransform.shy, oDocRenderer.m_oFullTransform.shx, oDocRenderer.m_oFullTransform.sy, 100,200)
 
-				var bGraphics = !!(oDocRenderer instanceof AscCommon.CGraphics);
-				var clipL, clipT, clipR, clipB;
+				let bGraphics = !!(oDocRenderer instanceof AscCommon.CGraphics);
+				let clipL, clipT, clipR, clipB;
 				if (bGraphics) {
 					if (oDocRenderer.m_oCoordTransform) {
 						oDocRenderer.m_oCoordTransform.tx = (t.getCellLeft(0) - offsetX);
@@ -3402,11 +3419,11 @@
 					oDocRenderer.SaveGrState();
 					oDocRenderer.RestoreGrState();
 					oDocRenderer.PrintPreview = true;
-					var oInvertBaseTransform = AscCommon.global_MatrixTransformer.Invert(oDocRenderer.m_oCoordTransform);
+					let oInvertBaseTransform = AscCommon.global_MatrixTransformer.Invert(oDocRenderer.m_oCoordTransform);
 					clipLeftShape = (t.getCellLeft(range.c1) - offsetX) >> 0;
 					clipTopShape = (t.getCellTop(range.r1) - offsetY) >> 0;
-					var clipRightShape = (t.getCellLeft(range.c2 + 1) + 0.5 - offsetX) >> 0;
-					var clipBottomShape = (t.getCellTop(range.r2 + 1) + 0.5 - offsetY) >> 0;
+					let clipRightShape = (t.getCellLeft(range.c2 + 1) + 0.5 - offsetX) >> 0;
+					let clipBottomShape = (t.getCellTop(range.r2 + 1) + 0.5 - offsetY) >> 0;
 					clipL = oInvertBaseTransform.TransformPointX(clipLeftShape, clipTopShape);
 					clipT = oInvertBaseTransform.TransformPointY(clipLeftShape, clipTopShape);
 					clipR = oInvertBaseTransform.TransformPointX(clipRightShape, clipBottomShape);
@@ -3439,16 +3456,16 @@
 				t.visibleRange = tmpVisibleRange;
 			};
 
-			var printScale = printPagesData.scale ? printPagesData.scale : this.getPrintScale();
+			let printScale = printPagesData.scale ? printPagesData.scale : this.getPrintScale();
 
 
-			var cellsLeft = printPagesData.pageHeadings ? this.cellsLeft : 0;
-			var cellsTop = printPagesData.pageHeadings ? this.cellsTop : 0;
-			var changedCellLeft = cellsLeft - cellsLeft*printScale;
-			var changedCellTop = cellsTop - cellsTop*printScale;
-			var pageWidth, pageHeight;
+			let cellsLeft = printPagesData.pageHeadings ? this.cellsLeft : 0;
+			let cellsTop = printPagesData.pageHeadings ? this.cellsTop : 0;
+			let changedCellLeft = cellsLeft - cellsLeft*printScale;
+			let changedCellTop = cellsTop - cellsTop*printScale;
+			let pageWidth, pageHeight;
 			//увеличиваем область клипирования на половину максимального размера бордера - максимально выступающую часть за пределы листа
-			var borderDiff = 2;//Math.ceil(1.5)
+			let borderDiff = 2;//Math.ceil(1.5)
 			if(printPagesData.titleRowRange || printPagesData.titleColRange) {
 				if(printPagesData.titleRowRange && printPagesData.titleColRange){
 					clipLeft = printPagesData.pageClipRectLeft - borderDiff;
@@ -3534,13 +3551,13 @@
 				this._calcHeaderRowHeight();
 			}
 
-			var oWatermark = window['Asc']['editor'].watermarkDraw;
+			let oWatermark = window['Asc']['editor'].watermarkDraw;
 			if(oWatermark) {
-				var oDocRenderer = drawingCtx.DocumentRenderer;
+				let oDocRenderer = drawingCtx.DocumentRenderer;
 				oWatermark.zoom = 1;//this.worksheet.objectRender.zoom.current;
 				oWatermark.Generate();
 				if(oDocRenderer instanceof AscCommon.CGraphics) {
-					var oCtx = oDocRenderer.m_oContext;
+					let oCtx = oDocRenderer.m_oContext;
 					oWatermark.Draw(oCtx, oCtx.canvas.width, oCtx.canvas.height);
 				} else {
 					oWatermark.StartRenderer();
@@ -3550,6 +3567,7 @@
 				}
 			}
 			this.stringRender.resetTransform(drawingCtx);
+			this.setRenderingSettings(null);
 			drawingCtx.EndPage && drawingCtx.EndPage();
 		}
 	};
@@ -3965,42 +3983,42 @@
 
     // ----- Drawing -----
 
-    WorksheetView.prototype.draw = function (lockDraw) {
-        if (lockDraw || this.model.workbook.bCollaborativeChanges || window['IS_NATIVE_EDITOR']) {
-            return this;
-        }
+	WorksheetView.prototype.draw = function (lockDraw) {
+		if (lockDraw || this.model.workbook.bCollaborativeChanges || window['IS_NATIVE_EDITOR']) {
+			return this;
+		}
 		if (this.workbook.printPreviewState && this.workbook.printPreviewState.isStart()) {
 			//только перерисовываю, каждый раз пересчёт - может потребовать много ресурсов
 			//если изменилось количество строк/столбцов со значениями - пересчитываю
 			//пересчёт выполянется когда пришли данные от других пользователей
 			return;
 		}
-		if(this.workbook.Api.isEyedropperStarted()) {
+		if (this.workbook.Api.isEyedropperStarted()) {
 			this.workbook.Api.clearEyedropperImgData();
 		}
 		this._recalculate();
 		this.handlers.trigger("checkLastWork");
-        this._clean();
-        this._drawCorner();
-        this._drawColumnHeaders(null);
-        this._drawRowHeaders(null);
-        this._drawGrid(null);
-        this._drawCellsAndBorders(null);
+		this._clean();
+		this._drawCorner();
+		this._drawColumnHeaders(null);
+		this._drawRowHeaders(null);
+		this._drawGrid(null);
+		this._drawCellsAndBorders(null);
 		this._drawGroupData(null);
 		this._drawGroupData(null, null, undefined, undefined, true);
-        this._drawFrozenPane();
-        this._drawFrozenPaneLines();
-        this._fixSelectionOfMergedCells();
-        this._drawElements(this.af_drawButtons);
-        this.cellCommentator.drawCommentCells();
-        this.objectRender.showDrawingObjects();
-        if (this.overlayCtx) {
-            this._drawSelection();
-        }
+		this._drawFrozenPane();
+		this._drawFrozenPaneLines();
+		this._fixSelectionOfMergedCells();
+		this._drawElements(this.af_drawButtons);
+		this.cellCommentator.drawCommentCells();
+		this.objectRender.showDrawingObjects();
+		if (this.overlayCtx) {
+			this._drawSelection();
+		}
 		//this._cleanPagesModeData();
 
-        return this;
-    };
+		return this;
+	};
 
     WorksheetView.prototype._clean = function () {
         this.drawingCtx
@@ -4761,14 +4779,14 @@
 		//this._drawPageBreakPreviewLines(drawingCtx, range, leftFieldInPx, topFieldInPx, width, height);
 	};
 
-    WorksheetView.prototype._drawCellsAndBorders = function (drawingCtx, range, offsetXForDraw, offsetYForDraw) {
+	WorksheetView.prototype._drawCellsAndBorders = function (drawingCtx, range, offsetXForDraw, offsetYForDraw) {
 		if (range === undefined) {
 			range = this.visibleRange;
 		}
 
-		var left, top, cFrozen, rFrozen;
-		var offsetX = (undefined === offsetXForDraw) ? this._getColLeft(this.visibleRange.c1) - this.cellsLeft : offsetXForDraw;
-		var offsetY = (undefined === offsetYForDraw) ? this._getRowTop(this.visibleRange.r1) - this.cellsTop : offsetYForDraw;
+		let left, top, cFrozen, rFrozen;
+		let offsetX = (undefined === offsetXForDraw) ? this._getColLeft(this.visibleRange.c1) - this.cellsLeft : offsetXForDraw;
+		let offsetY = (undefined === offsetYForDraw) ? this._getRowTop(this.visibleRange.r1) - this.cellsTop : offsetYForDraw;
 		if (!drawingCtx && this.topLeftFrozenCell) {
 			if (undefined === offsetXForDraw) {
 				cFrozen = this.topLeftFrozenCell.getCol0();
@@ -4786,20 +4804,25 @@
 			// set clipping rect to cells area
 			this.drawingCtx.save()
 				.beginPath()
-				.rect(left - offsetX, top - offsetY, Math.min(this._getColLeft(range.c2 + 1) - left, this.drawingCtx.getWidth() - this.cellsLeft), Math.min(this._getRowTop(range.r2 + 1) - top, this.drawingCtx.getHeight() - this.cellsTop))
+				.rect(left - offsetX, top - offsetY, Math.min(this._getColLeft(range.c2 + 1) - left, this.drawingCtx.getWidth() - this.cellsLeft),
+					Math.min(this._getRowTop(range.r2 + 1) - top, this.drawingCtx.getHeight() - this.cellsTop))
 				.clip();
 		}
 
 		this._prepareCellTextMetricsCache(range);
 
-		var cfIterator = this.model.getConditionalFormattingRangeIterator();
+		let cfIterator = this.model.getConditionalFormattingRangeIterator();
 
-		var mergedCells = {}, mc;
-		for (var row = range.r1; row <= range.r2; ++row) {
+		let renderingSettings = this.getRenderingSettings();
+		let mergedCells = {}, mc;
+		for (let row = range.r1; row <= range.r2; ++row) {
+			if (renderingSettings && renderingSettings.isSkipRowBG(range.r1, row)) {
+				continue;
+			}
 			this._drawRowBG(drawingCtx, row, range.c1, range.c2, offsetX, offsetY, mergedCells, null, cfIterator);
 		}
 		// draw merged cells at last stage to fix cells background issue
-		for (var i in mergedCells) {
+		for (let i in mergedCells) {
 			mc = mergedCells[i];
 			this._drawRowBG(drawingCtx, mc.r1, mc.c1, mc.c1, offsetX, offsetY, null, mc, cfIterator);
 		}
@@ -6810,23 +6833,24 @@
 	/** */
 
     WorksheetView.prototype._drawSelectionElement = function (visibleRange, offsetX, offsetY, args) {
-        var range = args[0];
-        var selectionLineType = args[1];
-        var strokeColor = args[2];
-        var isAllRange = args[3];
-		var isAllowRetina = args[5] ? 1 : 0;
-        var colorN = this.settings.activeCellBorderColor2;
-        var ctx = this.overlayCtx;
-        var oIntersection = range.intersectionSimple(visibleRange);
+        let range = args[0];
+        let selectionLineType = args[1];
+        let strokeColor = args[2];
+        let isAllRange = args[3];
+		let isAllowRetina = args[5] ? 1 : 0;
+		let isAllowRetinaResize = args[6] ? 1 : 0;
+        let colorN = this.settings.activeCellBorderColor2;
+        let ctx = this.overlayCtx;
+        let oIntersection = range.intersectionSimple(visibleRange);
 
         if (!oIntersection) {
             return true;
         }
 
-        var fHorLine, fVerLine;
-        var canFill = AscCommonExcel.selectionLineType.Selection & selectionLineType;
-        var isDashLine = AscCommonExcel.selectionLineType.Dash & selectionLineType;
-        var dashThickLine = AscCommonExcel.selectionLineType.DashThick & selectionLineType;
+        let fHorLine, fVerLine;
+        let canFill = AscCommonExcel.selectionLineType.Selection & selectionLineType;
+        let isDashLine = AscCommonExcel.selectionLineType.Dash & selectionLineType;
+        let dashThickLine = AscCommonExcel.selectionLineType.DashThick & selectionLineType;
 
         if (isDashLine || dashThickLine) {
             fHorLine = ctx.dashLineCleverHor;
@@ -6836,13 +6860,13 @@
             fVerLine = ctx.lineVerPrevPx;
         }
 
-        var firstCol = oIntersection.c1 === visibleRange.c1 && !isAllRange;
-        var firstRow = oIntersection.r1 === visibleRange.r1 && !isAllRange;
+        let firstCol = oIntersection.c1 === visibleRange.c1 && !isAllRange;
+        let firstRow = oIntersection.r1 === visibleRange.r1 && !isAllRange;
 
-        var drawLeftSide = oIntersection.c1 === range.c1;
-        var drawRightSide = oIntersection.c2 === range.c2;
-        var drawTopSide = oIntersection.r1 === range.r1;
-        var drawBottomSide = oIntersection.r2 === range.r2;
+        let drawLeftSide = oIntersection.c1 === range.c1;
+        let drawRightSide = oIntersection.c2 === range.c2;
+        let drawTopSide = oIntersection.r1 === range.r1;
+        let drawBottomSide = oIntersection.r2 === range.r2;
 
         if(args[4]) {
         	if(args[4] === 1) {
@@ -6859,37 +6883,37 @@
 			}
 		}
 
-        var x1 = this._getColLeft(oIntersection.c1) - offsetX;
-        var x2 = this._getColLeft(oIntersection.c2 + 1) - offsetX;
-        var y1 = this._getRowTop(oIntersection.r1) - offsetY;
-        var y2 = this._getRowTop(oIntersection.r2 + 1) - offsetY;
+        let x1 = this._getColLeft(oIntersection.c1) - offsetX;
+        let x2 = this._getColLeft(oIntersection.c2 + 1) - offsetX;
+        let y1 = this._getRowTop(oIntersection.r1) - offsetY;
+        let y2 = this._getRowTop(oIntersection.r2 + 1) - offsetY;
 
         if (canFill) {
-            var fillColor = strokeColor.Copy();
+            let fillColor = strokeColor.Copy();
             fillColor.a = 0.15;
             ctx.setFillStyle(fillColor).fillRect(x1, y1, x2 - x1, y2 - y1);
         }
 
 
-        var isPagePreview = AscCommonExcel.selectionLineType.ResizeRange & selectionLineType;
+        let isPagePreview = AscCommonExcel.selectionLineType.ResizeRange & selectionLineType;
 		//меняю толщину линии для селекта(только в случае сплошной линии) и масштаба 200%
-		var isRetina = (!isDashLine || isAllowRetina) && this.getRetinaPixelRatio() >= 2;
-		var widthLine = isDashLine ? 1 : 2;
+		let isRetina = (!isDashLine || isAllowRetina) && this.getRetinaPixelRatio() >= 2;
+		let widthLine = isDashLine ? 1 : 2;
 
 		//TODO for scale > 200% use a multiplier of 2 . revise the rendering for scales over 200%
 		if (isRetina) {
 			widthLine = ((widthLine * 2) + 0.5) >> 0//AscCommon.AscBrowser.convertToRetinaValue(widthLine, true);
 		}
-		var thinLineDiff = 0;
+		let thinLineDiff = 0;
 		if (isPagePreview) {
 			widthLine = widthLine + 1;
 			thinLineDiff = isDashLine ? 0 : 1;
 		}
 
         //TODO проверить на следующих версиях. сдвиг, который получился опытным путём. проблема только в safari.
-        var notStroke = AscCommonExcel.selectionLineType.NotStroke & selectionLineType;
+        let notStroke = AscCommonExcel.selectionLineType.NotStroke & selectionLineType;
         if (!notStroke) {
-            var _diff = 0;
+            let _diff = 0;
             if (AscBrowser.isSafari) {
                 _diff = 1;
             }
@@ -6912,18 +6936,18 @@
 		}
 
 		// draw active cell in selection
-		var isActive = AscCommonExcel.selectionLineType.ActiveCell & selectionLineType;
+		let isActive = AscCommonExcel.selectionLineType.ActiveCell & selectionLineType;
 		if (isActive) {
-			var cell = this.model.getSelection().activeCell;
-			var fs = this.model.getMergedByCell(cell.row, cell.col);
+			let cell = this.model.getSelection().activeCell;
+			let fs = this.model.getMergedByCell(cell.row, cell.col);
 			fs = oIntersection.intersectionSimple(fs || new asc_Range(cell.col, cell.row, cell.col, cell.row));
 			if (fs) {
-			    var top = this._getRowTop(fs.r1);
-			    var left = this._getColLeft(fs.c1);
-				var _x1 = left - offsetX + 1;
-				var _y1 = top - offsetY + 1;
-				var _w = this._getColLeft(fs.c2 + 1) - left - 2 - isRetina * 1;
-				var _h = this._getRowTop(fs.r2 + 1) - top - 2  - isRetina * 1;
+			    let top = this._getRowTop(fs.r1);
+			    let left = this._getColLeft(fs.c1);
+				let _x1 = left - offsetX + 1;
+				let _y1 = top - offsetY + 1;
+				let _w = this._getColLeft(fs.c2 + 1) - left - 2 - isRetina * 1;
+				let _h = this._getRowTop(fs.r2 + 1) - top - 2  - isRetina * 1;
 				if (0 < _w && 0 < _h) {
 					ctx.clearRect(_x1, _y1, _w, _h);
 				}
@@ -6950,15 +6974,15 @@
         }
 
         // Отрисовка квадратов для move/resize
-        var isResize = AscCommonExcel.selectionLineType.Resize & selectionLineType;
-        var isPromote = AscCommonExcel.selectionLineType.Promote & selectionLineType;
+        let isResize = AscCommonExcel.selectionLineType.Resize & selectionLineType;
+        let isPromote = AscCommonExcel.selectionLineType.Promote & selectionLineType;
         if (isResize || isPromote) {
             //isResize - пока не увеличиваю квадрат при выборе диапазона в формуле, поскольку нужно менять логику очистки селекта в режиме формул
-			var retinaKf = isRetina && !isResize ? 2 : 1;
-			var size = 5 * retinaKf;
-			var sizeBorder = size + 2 * retinaKf;
-			var diff = Math.floor(size/2) + 1;
-			var diffBorder = Math.floor(sizeBorder/2) + 1 * retinaKf;
+			let retinaKf = isRetina && (!isResize || isAllowRetinaResize) ? 2 : 1;
+			let size = 5 * retinaKf;
+			let sizeBorder = size + 2 * retinaKf;
+			let diff = Math.floor(size/2) + 1;
+			let diffBorder = Math.floor(sizeBorder/2) + 1 * retinaKf;
 
 			ctx.setFillStyle(colorN);
             if (drawRightSide && drawBottomSide) {
@@ -7267,7 +7291,7 @@
 
             this._drawElements(this._drawSelectionElement, ranges[i],
                 AscCommonExcel.selectionLineType.Selection | (ranges[i].isName ? AscCommonExcel.selectionLineType.None :
-                AscCommonExcel.selectionLineType.Resize), strokeColor);
+                AscCommonExcel.selectionLineType.Resize), strokeColor, null, null, null, true);
         }
     };
 
@@ -7443,13 +7467,14 @@
         var t = this;
 		var isRetinaWidth = this.getRetinaPixelRatio() >= 2;
         var selectionRange = this.model.getSelection();
+        const isMacLinuxMozilla = (AscCommon.AscBrowser.isLinuxOS || AscCommon.AscBrowser.isMacOs) && AscCommon.AscBrowser.isMozilla;
         selectionRange.ranges.forEach(function (item, index) {
             var arnIntersection = item.intersectionSimple(range);
             if (arnIntersection) {
-                _x1 = t._getColLeft(arnIntersection.c1) - offsetX - 3;
+                _x1 = t._getColLeft(arnIntersection.c1) - offsetX - 3 - isMacLinuxMozilla * 1;
                 _x2 = t._getColLeft(arnIntersection.c2 + 1) - offsetX +
                   1 + /* Это ширина "квадрата" для автофильтра от границы ячейки */2;
-                _y1 = t._getRowTop(arnIntersection.r1) - offsetY - 2 - isRetinaWidth * 1;
+                _y1 = t._getRowTop(arnIntersection.r1) - offsetY - 2 - isRetinaWidth * 1 - isMacLinuxMozilla * 1;
                 _y2 = t._getRowTop(arnIntersection.r2 + 1) - offsetY +
                   1 + /* Это высота "квадрата" для автофильтра от границы ячейки */2;
 
@@ -7533,14 +7558,15 @@
 			this.overlayCtx.clear();
 		}
 
+		let retinaСoef = isRetinaWidth ? 2 : 1;
         if (this.oOtherRanges) {
             this.oOtherRanges.ranges.forEach(function (item) {
                 arnIntersection = item.intersectionSimple(range);
                 if (arnIntersection) {
-                    _x1 = t._getColLeft(arnIntersection.c1) - offsetX - 3;
-                    _x2 = arnIntersection.c2 > t.nColsCount ? width : t._getColLeft(arnIntersection.c2 + 1) - offsetX + 1 + 2;
-                    _y1 = t._getRowTop(arnIntersection.r1) - offsetY - 3;
-                    _y2 = arnIntersection.r2 > t.nRowsCount ? height : t._getRowTop(arnIntersection.r2 + 1) - offsetY + 1 + 2;
+                    _x1 = t._getColLeft(arnIntersection.c1) - offsetX - 3 * retinaСoef;
+                    _x2 = arnIntersection.c2 > t.nColsCount ? width : t._getColLeft(arnIntersection.c2 + 1) - offsetX + 3  *retinaСoef;
+                    _y1 = t._getRowTop(arnIntersection.r1) - offsetY - 3 * retinaСoef;
+                    _y2 = arnIntersection.r2 > t.nRowsCount ? height : t._getRowTop(arnIntersection.r2 + 1) - offsetY + 3 * retinaСoef;
 
                     x1 = Math.min(x1, _x1);
                     x2 = Math.max(x2, _x2);
@@ -12753,6 +12779,7 @@
                         t.fillHandleDirection = -1;	
 
                         t.updateSelection();
+                        callback && callback(false);
                     }
                 } else {
 					// Сбрасываем параметры автозаполнения
@@ -26721,38 +26748,66 @@
 
 			let oneRow = selectionRange.isOneRow();
 			let oneCol = selectionRange.isOneCol();
+			let ws = oThis.model;
+			let aMergedCells =  ws.mergeManager.get(selectionRange).all;
 			if (type === c_oAscFillType.fillDown) {
 				if (oneRow && selectionRange.r1 === 0) {
 					return false;
 				}
-
-				selectionRange.assign(selectionRange.c1, selectionRange.r1 - 1*oneRow, selectionRange.c2, selectionRange.r1 - 1*oneRow);
+				if (aMergedCells.length) {
+					let oMergedRange = aMergedCells[0].bbox;
+					selectionRange.assign(oMergedRange.c1, oMergedRange.r1, oMergedRange.c2, oMergedRange.r2);
+				} else {
+					selectionRange.assign(selectionRange.c1, selectionRange.r1 - 1*oneRow, selectionRange.c2, selectionRange.r1 - 1*oneRow);
+				}
 				_applyFillHandleSettings(cloneSelection, 1, 3);
 			} else if (type === c_oAscFillType.fillUp) {
 				if (oneRow && selectionRange.r2 === gc_nMaxRow0) {
 					return false;
 				}
-
-				selectionRange.assign(selectionRange.c1, selectionRange.r2 + 1*oneRow, selectionRange.c2, selectionRange.r2 + 1*oneRow);
+				if (aMergedCells.length) {
+					let oMergedRange = aMergedCells[aMergedCells.length - 1].bbox;
+					selectionRange.assign(oMergedRange.c1, oMergedRange.r1, oMergedRange.c2, oMergedRange.r2);
+				} else {
+					selectionRange.assign(selectionRange.c1, selectionRange.r2 + 1 * oneRow, selectionRange.c2, selectionRange.r2 + 1 * oneRow);
+				}
 				_applyFillHandleSettings(new asc_Range(cloneSelection.c2, cloneSelection.r2, cloneSelection.c1, cloneSelection.r1), 1, 1);
 			} else if (type === c_oAscFillType.fillRight) {
 				if (oneCol && selectionRange.c1 === 0) {
 					return false;
 				}
-
-				selectionRange.assign(selectionRange.c1 - 1*oneCol, selectionRange.r1, selectionRange.c1 - 1*oneCol, selectionRange.r2);
+				if (aMergedCells.length) {
+					let oMergedRange = aMergedCells[0].bbox;
+					selectionRange.assign(oMergedRange.c1, oMergedRange.r1, oMergedRange.c2, oMergedRange.r2);
+				} else {
+					selectionRange.assign(selectionRange.c1 - 1*oneCol, selectionRange.r1, selectionRange.c1 - 1*oneCol, selectionRange.r2);
+				}
 				_applyFillHandleSettings(cloneSelection, 0, 3);
 			} else if (type === c_oAscFillType.fillLeft) {
 				if (oneCol && selectionRange.c2 === gc_nMaxCol0) {
 					return false;
 				}
-
-				selectionRange.assign(selectionRange.c2 + 1*oneCol, selectionRange.r1, selectionRange.c2 + 1*oneCol, selectionRange.r2);
+				if (aMergedCells.length) {
+					let oMergedRange = aMergedCells[aMergedCells.length - 1].bbox;
+					selectionRange.assign(oMergedRange.c1, oMergedRange.r1, oMergedRange.c2, oMergedRange.r2);
+				} else {
+					selectionRange.assign(selectionRange.c2 + 1 * oneCol, selectionRange.r1, selectionRange.c2 + 1 * oneCol, selectionRange.r2);
+				}
 				_applyFillHandleSettings(new asc_Range(cloneSelection.c2, cloneSelection.r2, cloneSelection.c1, cloneSelection.r1), 0, 1);
 			}
 
 			return true;
 		};
+
+		let _setScrollType = function (_typeSelection) {
+			if (_typeSelection === Asc.c_oAscSelectionType.RangeCol || _typeSelection === Asc.c_oAscSelectionType.RangeMax) {
+				oThis.scrollType |= AscCommonExcel.c_oAscScrollType.ScrollVertical;
+			}
+			if (_typeSelection === Asc.c_oAscSelectionType.RangeRow || _typeSelection === Asc.c_oAscSelectionType.RangeMax) {
+				oThis.scrollType |= AscCommonExcel.c_oAscScrollType.ScrollHorizontal;
+			}
+		};
+
 
 		switch (type) {
 			case c_oAscFillType.copyCells:
@@ -26775,7 +26830,9 @@
 				if (oRange.isOneCell() && oRangeModel.getType() === AscCommon.CellValueType.Number && !bDateType) {
 					this.applyFillHandle(null, null, true, null);
 				} else {
+					this.model.setFillHandleRightClick(true);
 					this.applyFillHandle(null, null, false, null);
+					this.model.setFillHandleRightClick(false);
 				}
 				break;
 			case c_oAscFillType.linearTrend:
@@ -26840,6 +26897,7 @@
 					//update
 					for (let i = 0; i < aRanges.length; i++) {
 						oThis._updateRange(aRanges[i]);
+						_setScrollType(aRanges[i] && aRanges[i].getType());
 					}
 					oThis.draw();
 				});
@@ -26858,14 +26916,25 @@
 					History.Create_NewPoint();
 					History.StartTransaction();
 
-					oThis.applyFillHandle(null, null, true, true, function (success) {
+					let isCtrlKey = true;
+					oThis.model.setActiveFillType(type);
+					oThis.applyFillHandle(null, null, isCtrlKey, true, function (success) {
 						_setSelection(_cloneSelection);
 
 						History.SetSelection(_cloneSelection);
 						History.SetSelectionRedo(_cloneSelection);
 						History.EndTransaction();
 
-						success && oThis.draw();
+						let typeSelection = _cloneSelection.getType();
+						if ((type ===  c_oAscFillType.fillDown || type ===  c_oAscFillType.fillUp) && (typeSelection === Asc.c_oAscSelectionType.RangeCol || typeSelection === Asc.c_oAscSelectionType.RangeMax)) {
+							oThis.scrollType |= AscCommonExcel.c_oAscScrollType.ScrollVertical;
+						}
+						if ((type ===  c_oAscFillType.fillLeft || type ===  c_oAscFillType.fillRight) && (typeSelection === Asc.c_oAscSelectionType.RangeRow || typeSelection === Asc.c_oAscSelectionType.RangeMax)) {
+							oThis.scrollType |= AscCommonExcel.c_oAscScrollType.ScrollHorizontal;
+						}
+
+						oThis.draw();
+						oThis.model.setActiveFillType(null);
 					});
 				}
 
@@ -26883,6 +26952,38 @@
 		}
 	};
 
+	WorksheetView.prototype.getRenderingSettings = function () {
+		return this.renderingSettings;
+	};
+
+	WorksheetView.prototype.setRenderingSettings = function (val) {
+		this.renderingSettings = val;
+	};
+
+	WorksheetView.prototype.initRenderingSettings = function () {
+		this.renderingSettings = new CRenderingSettings();
+	};
+
+	function CRenderingSettings() {
+		this.splitRowBG = null; //number - how much row need skip, every 2,3 and..
+	}
+	CRenderingSettings.prototype.setSplitRowBG = function (val) {
+		this.splitRowBG = val;
+	};
+	CRenderingSettings.prototype.getSplitRowBG = function () {
+		return this.splitRowBG;
+	};
+	CRenderingSettings.prototype.isSkipRowBG = function (startRow, row) {
+		let res = null;
+
+		if (this.splitRowBG) {
+			if ((row - startRow + 1) % this.splitRowBG === 0) {
+				return true;
+			}
+		}
+
+		return res;
+	};
 
 	function cAsyncAction() {
 		this.timer = null;

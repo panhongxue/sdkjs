@@ -1838,24 +1838,13 @@
 		};
 
 		CShape.prototype.getPlaceholderType = function () {
-			return this.isPlaceholder() ? this.nvSpPr.nvPr.ph.type : null;
-		};
-
-		CShape.prototype.getPlaceholderIndex = function () {
-			return this.isPlaceholder() ? this.nvSpPr.nvPr.ph.idx : null;
-		};
-
-		CShape.prototype.getPhType = function () {
-			var point = this.getSmartArtShapePoint();
+			let point = this.getSmartArtShapePoint();
 			if (point) {
 				return AscFormat.phType_pic;
 			}
-			return this.isPlaceholder() ? this.nvSpPr.nvPr.ph.type : null;
+			return this.superclass.prototype.getPlaceholderType.call(this);
 		};
 
-		CShape.prototype.getPhIndex = function () {
-			return this.isPlaceholder() ? this.nvSpPr.nvPr.ph.idx : null;
-		};
 
 		CShape.prototype.setVerticalAlign = function (align) {
 			var content_to_add = this.getDocContent();
@@ -3095,7 +3084,7 @@
 				}
 			}
 			if (this.isPlaceholder()) {
-				var phldrType = this.getPhType();
+				var phldrType = this.getPlaceholderType();
 				if (phldrType == AscFormat.phType_title
 					|| phldrType == AscFormat.phType_ctrTitle
 					|| phldrType == AscFormat.phType_body

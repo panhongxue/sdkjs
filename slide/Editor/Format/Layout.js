@@ -108,6 +108,7 @@ function SlideLayout()
     this.matchingName = "";
     this.preserve = false;
     this.showMasterPhAnim = false;
+		this.showMasterSp = true;
     this.type = null;
 
     this.userDrawn = true;
@@ -341,7 +342,7 @@ AscFormat.InitClass(SlideLayout, AscFormat.CBaseFormatObject, AscDFH.historyitem
             _shape = _shapes[_shape_index];
             if(_shape.isPlaceholder())
             {
-                var _cur_type = _shape.getPhType();
+                var _cur_type = _shape.getPlaceholderType();
                 if(!(typeof(_cur_type) == "number"))
                 {
                     _cur_type = AscFormat.phType_body;
@@ -868,7 +869,7 @@ function CLayoutThumbnailDrawer()
 
         if (use_master_shapes !== false)
         {
-            if (_layout.showMasterSp == true || _layout.showMasterSp == undefined)
+            if (_layout.showMasterSp)
             {
                 if(_master.needRecalc && _master.needRecalc())
                 {

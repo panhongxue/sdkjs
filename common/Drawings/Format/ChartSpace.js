@@ -10841,6 +10841,12 @@ function(window, undefined) {
 		if (typeof sRange !== "string") {
 			return [];
 		}
+		const api = window["Asc"]["editor"] || editor;
+		const range = AscFormat.fParseChartFormulaExternal(sRange);
+		const pivotTable = range[0].worksheet.getPivotTable(range[0].bbox.c1, range[0].bbox.r1);
+		if (pivotTable) {
+			return pivotTable.getSeries();
+		}
 		let bInColumns = options.getInColumns();
 		let bHorValues = null;
 		if (bInColumns === true || bInColumns === false) {
@@ -10849,7 +10855,7 @@ function(window, undefined) {
 		let nChartType = options.getType();
 		let bScatter = AscFormat.isScatterChartType(nChartType);
 		let oDataRange = new AscFormat.CChartDataRefs(null);
-		let aSeriesRefs = oDataRange.getSeriesRefsFromUnionRefs(AscFormat.fParseChartFormulaExternal(sRange), bHorValues, bScatter, nChartType);
+		let aSeriesRefs = oDataRange.getSeriesRefsFromUnionRefs(range, bHorValues, bScatter, nChartType);
 		if (!Array.isArray(aSeriesRefs)) {
 			return [];
 		}

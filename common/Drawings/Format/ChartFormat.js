@@ -18809,6 +18809,7 @@
     window['AscFormat'].CScatterChart = CScatterChart;
     window['AscFormat'].CScatterSeries = CScatterSeries;
     window['AscFormat'].CTx = CTx;
+    window['AscFormat'].CSeriesBase = CSeriesBase;
     window['AscFormat'].CStockChart = CStockChart;
     window['AscFormat'].CStrCache = CStrCache;
     window['AscFormat'].CStringPoint = CStringPoint;

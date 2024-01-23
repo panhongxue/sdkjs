@@ -8121,6 +8121,13 @@ CT_pivotTableDefinition.prototype.canExpandCollapse = function(row, col) {
 	return layout && layout.canExpandCollapse() || false;
 };
 
+CT_pivotTableDefinition.prototype.getSeries = function() {
+	/**@type {CSeriesBase} */
+	const result = new AscFormat.CSeriesBase();
+	console.log('test');
+	return null;
+};
+
 function CT_pivotTableDefinitionX14() {
 //Attributes
 	this.fillDownLabelsDefault = false;

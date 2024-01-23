@@ -1339,7 +1339,7 @@ function isRealObject(obj)
     
     this.ReadByteFromPPTY = function ()
     {
-      var value = 0;
+      var value = null;
       var end = this.cur + this.GetULong() + 4;
       this.Skip2(1);
       while (true)

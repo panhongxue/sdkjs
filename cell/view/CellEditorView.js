@@ -1515,6 +1515,14 @@ function (window, undefined) {
 	};
 
 	CellEditor.prototype._renderText = function (dy) {
+
+		if (window.LOCK_DRAW)
+		{
+			window.TEXT_DRAW_INSTANCE = this;
+			window.TEXT_DRAW_INSTANCE_POS = dy;
+			return;
+		}
+
 		var t = this, opt = t.options, ctx = t.drawingCtx;
 
 		if (!window['IS_NATIVE_EDITOR']) {
@@ -1699,7 +1707,7 @@ function (window, undefined) {
 		}
 
 		if (AscCommon.g_inputContext) {
-			AscCommon.g_inputContext.move(this.left * this.kx + curLeft, this.top * this.ky + curTop);
+			AscCommon.g_inputContext.moveAccurate(this.left * this.kx + curLeft, this.top * this.ky + curTop);
 		}
 
 		if (cur) {

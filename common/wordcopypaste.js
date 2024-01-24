@@ -2274,6 +2274,51 @@ function Editor_Paste_Exec(api, _format, data1, data2, text_data, specialPastePr
 			oPasteProcessor.Start(null, null, null, null, data1);
 			break;
 		}
+		case AscCommon.c_oAscClipboardDataFormat.Rtf:
+		{
+			//convert rtf string to binary
+
+			//data: new Uint8Array(reader.result)
+
+
+			var reader = new FileReader();
+			reader.onload = function () {
+				let document = {data: new Uint8Array(reader.result), format: "rtf"}
+				api.getConvertedXLSXFileFromRtf(document, Asc.c_oAscFileType.CANVAS_WORD, function (sFileUrlAfterConvert) {
+					AscCommon.loadFileContent(sFileUrlAfterConvert, function(httpRequest) {
+						var stream;
+						if (null === httpRequest || !(stream = AscCommon.initStreamFromResponse(httpRequest)))
+						{
+							api.endInsertDocumentUrls();
+							api.sendEvent("asc_onError", c_oAscError.ID.DirectUrl,
+								c_oAscError.Level.NoCritical);
+							return;
+						}
+						api.asc_PasteData(AscCommon.c_oAscClipboardDataFormat.Internal, stream, undefined, undefined, true, function() {
+							api.WordControl.m_oLogicDocument.MoveCursorRight(false, false, true);
+							api.WordControl.m_oLogicDocument.Recalculate();
+
+							if (api.insertDocumentUrlsData.documents.length > 0) {
+								var options = new Asc.asc_CDownloadOptions(Asc.c_oAscFileType.CANVAS_WORD);
+								options.isNaturalDownload = true;
+								api.downloadAs(Asc.c_oAscAsyncAction.DownloadAs, options);
+							} else {
+								api.endInsertDocumentUrls();
+							}
+						}, false);
+					}, "arraybuffer");
+
+				});
+			};
+			reader.onerror = function () {
+				t.sendEvent("asc_onError", Asc.c_oAscError.ID.Unknown, Asc.c_oAscError.Level.NoCritical);
+			};
+			//reader.readAsArrayBuffer(new Blob([data1]));
+			reader.readAsArrayBuffer(new Blob([data1]));
+
+			//oPasteProcessor.Start(data1, data2, null, null, text_data);
+			break;
+		}
 	}
 }
 function trimString( str ){

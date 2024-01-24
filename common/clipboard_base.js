@@ -54,7 +54,8 @@
 		Text        : 1,
 		Html        : 2,
 		Internal    : 4,
-		HtmlElement : 8
+		HtmlElement : 8,
+		Rtf         : 16
 	};
 	var c_oClipboardPastedFrom       = {
 		Word        : 0,
@@ -259,6 +260,14 @@
 				if (_internal && _internal != "" && _internal.indexOf("asc_internalData2;") == 0)
 				{
 					this.Api.asc_PasteData(AscCommon.c_oAscClipboardDataFormat.Internal, _internal.substr("asc_internalData2;".length), null, _text_format);
+					g_clipboardBase.Paste_End();
+					return false;
+				}
+
+				var _rtf_format = this.ClosureParams.getData("text/rtf");
+				if (_rtf_format)
+				{
+					this.Api.asc_PasteData(AscCommon.c_oAscClipboardDataFormat.Rtf, _rtf_format);
 					g_clipboardBase.Paste_End();
 					return false;
 				}

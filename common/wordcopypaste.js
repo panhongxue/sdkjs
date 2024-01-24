@@ -2294,7 +2294,10 @@ function Editor_Paste_Exec(api, _format, data1, data2, text_data, specialPastePr
 								c_oAscError.Level.NoCritical);
 							return;
 						}
-						api.asc_PasteData(AscCommon.c_oAscClipboardDataFormat.Internal, stream, undefined, undefined, true, function() {
+						api.endInsertDocumentUrls();
+						oPasteProcessor.Start(null, null, null, stream);
+
+						/*api.asc_PasteData(AscCommon.c_oAscClipboardDataFormat.Internal, stream, undefined, undefined, true, function() {
 							api.WordControl.m_oLogicDocument.MoveCursorRight(false, false, true);
 							api.WordControl.m_oLogicDocument.Recalculate();
 
@@ -2305,7 +2308,7 @@ function Editor_Paste_Exec(api, _format, data1, data2, text_data, specialPastePr
 							} else {
 								api.endInsertDocumentUrls();
 							}
-						}, false);
+						}, false);*/
 					}, "arraybuffer");
 
 				});

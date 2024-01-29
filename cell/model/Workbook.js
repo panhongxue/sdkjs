@@ -12453,6 +12453,7 @@
 		this.isDirty = false;
 		this.isCalc = false;
 		this.oStartCellForIterCalc = null;
+		this.nRecursionCounter = 0; // Uses only for cells with recursion formula.
 
 		this._hasChanged = false;
 	}
@@ -13579,7 +13580,7 @@
 		}
 	};
 	/**
-	 * Method sets start cell which starts and finish an iteration when recursion formula is running.
+	 * Method sets start cell. This cell is a start and finish point of iteration for a recursion formula.
 	 * Uses for only with enabled iterative calculations setting.
 	 * @memberof Cell
 	 * @param {Cell} oStartCellForIterCalc
@@ -13588,7 +13589,7 @@
 		this.oStartCellForIterCalc = oStartCellForIterCalc;
 	};
 	/**
-	 * Method returns start cell which starts and finish an iteration when recursion formula is running.
+	 * Method returns start cell. This cell is a start and finish point of iteration for a recursion formula.
 	 * Uses for only with enabled iterative calculations setting.
 	 * @memberof Cell
 	 * @returns {Cell}
@@ -13596,47 +13597,89 @@
 	Cell.prototype.getStartCellForIterCalc = function () {
 		return this.oStartCellForIterCalc;
 	};
+	/**
+	 * Method increments recursion counter.
+	 * Uses for control recursion level of initStartCellForIterCalc method.
+	 * @memberof Cell
+	 */
+	Cell.prototype.incRecursionCounter = function () {
+		this.nRecursionCounter++;
+	};
+	/**
+	 * Method resets recursion counter.
+	 * Uses for control recursion level of initStartCellForIterCalc method.
+	 * @memberof Cell
+	 */
+	Cell.prototype.resetRecursionCounter = function () {
+		this.nRecursionCounter = 0;
+	}
+	/**
+	 * Method returns recursion counter.
+	 * Uses for control recursion level of initStartCellForIterCalc method.
+	 * @memberof Cell
+	 * @returns {number}
+	 */
+	Cell.prototype.getRecursionCounter = function () {
+		return this.nRecursionCounter;
+	}
+	/**
+	 * Method initializes a start cell. This cell is a start and finish point of iteration for a recursion formula.
+	 * Uses for only with enabled iterative calculations setting.
+	 * @param {Cell} oCell - Current cell in recursion.
+	 * @param {Cell} oPrevCell - Previous cell in recursion.
+	 */
 	Cell.prototype.initStartCellForIterCalc = function (oCell, oPrevCell) {
 		let ws = oCell ? oCell.ws : this.ws;
 		let oThis = oCell ? oCell : this;
 		let oDepFormulas = ws.workbook.dependencyFormulas;
 
-		if (oDepFormulas && oDepFormulas.sheetListeners) {
-			let oSheetListener = oDepFormulas.sheetListeners[ws.Id];
-			let nCellIndex = AscCommonExcel.getCellIndex(oThis.nRow, oThis.nCol);
-			let oCellListeners = oSheetListener.cellMap[nCellIndex];
-			let oCellFromListener = null;
-			if (oCellListeners) {
-				let oListeners = oCellListeners.listeners;
-				if (oCellListeners.count > 1) {
-					for (let i in oListeners) {
-						let oListener = oListeners[i];
-						let oListenerCell = oListener.getParent();
-						let nListenerCellIndex = AscCommonExcel.getCellIndex(oListenerCell.nRow, oListenerCell.nCol);
-						if (nCellIndex !== nListenerCellIndex) {
-							ws._getCell(oListenerCell.nRow, oListenerCell.nCol, function (oCell) {
-								oCellFromListener = oCell;
-							});
-							this.initStartCellForIterCalc(oCellFromListener, oThis);
-						}
-					}
+		if(this.getRecursionCounter() >= g_cCalcRecursion.getMaxRecursion()) {
+			return;
+		}
+		if (!oDepFormulas) {
+			return;
+		}
+		let nCellIndex = AscCommonExcel.getCellIndex(oThis.nRow, oThis.nCol);
+		let oCellListeners = oDepFormulas.sheetListeners[ws.Id].cellMap[nCellIndex];
+		if (!oCellListeners) {
+			return;
+		}
+		let oCellFromListener = null;
+		let oListeners = oCellListeners.listeners;
+		if (oCellListeners.count > 1) {
+			for (let i in oListeners) {
+				let oListener = oListeners[i];
+				let oListenerCell = oListener.getParent();
+				let nListenerCellIndex = AscCommonExcel.getCellIndex(oListenerCell.nRow, oListenerCell.nCol);
+				if (nCellIndex !== nListenerCellIndex) {
+					ws._getCell(oListenerCell.nRow, oListenerCell.nCol, function (oCell) {
+						oCellFromListener = oCell;
+					});
+					this.incRecursionCounter();
+					this.initStartCellForIterCalc(oCellFromListener, oThis);
+					return;
+				}
+			}
+		} else {
+			for (let i in oListeners) {
+				let oListener = oListeners[i];
+				let oListenerCell = oListener.getParent();
+				let nListenerCellIndex = AscCommonExcel.getCellIndex(oListenerCell.nRow, oListenerCell.nCol);
+				let nPrevCellIndex = oPrevCell ? AscCommonExcel.getCellIndex(oPrevCell.nRow, oPrevCell.nCol) : null;
+				if (nCellIndex === nListenerCellIndex) {
+					this.setStartCellForIterCalc(oThis);
+					this.resetRecursionCounter();
+					return;
+				} else if (nPrevCellIndex != null && nListenerCellIndex === nPrevCellIndex) {
+					this.setStartCellForIterCalc(this);
+					this.resetRecursionCounter();
+					return;
 				} else {
-					for (let i in oListeners) {
-						let oListener = oListeners[i];
-						let oListenerCell = oListener.getParent();
-						let nListenerCellIndex = AscCommonExcel.getCellIndex(oListenerCell.nRow, oListenerCell.nCol);
-						let nPrevCellIndex = oPrevCell ? AscCommonExcel.getCellIndex(oPrevCell.nRow, oPrevCell.nCol) : null;
-						if (nCellIndex === nListenerCellIndex) {
-							this.setStartCellForIterCalc(oThis);
-						} else if (nPrevCellIndex != null && nListenerCellIndex === nPrevCellIndex) {
-							this.setStartCellForIterCalc(this);
-						} else {
-							ws._getCell(oListenerCell.nRow, oListenerCell.nCol, function (oCell) {
-								oCellFromListener = oCell;
-							});
-							this.initStartCellForIterCalc(oCellFromListener, oThis);
-						}
-					}
+					ws._getCell(oListenerCell.nRow, oListenerCell.nCol, function (oCell) {
+						oCellFromListener = oCell;
+					});
+					this.incRecursionCounter();
+					this.initStartCellForIterCalc(oCellFromListener, oThis);
 				}
 			}
 		}

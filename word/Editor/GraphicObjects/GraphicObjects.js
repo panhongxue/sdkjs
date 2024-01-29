@@ -352,6 +352,12 @@ CGraphicObjects.prototype =
 
     swapTrackObjects: function()
     {
+        if (Asc.editor.isPdfEditor())
+        {
+            this.drawingObjects = this.drawingObjects.concat(this.selectedObjects);
+            AscFormat.DrawingObjectsController.prototype.checkConnectorsPreTrack.call(this);
+        }
+
         this.clearTrackObjects();
         for(var i = 0; i < this.arrPreTrackObjects.length; ++i)
         {
@@ -920,6 +926,7 @@ CGraphicObjects.prototype =
     },
 
     applyDrawingProps: DrawingObjectsController.prototype.applyDrawingProps,
+    updateConnectors: function (bMoveFlag) {},
     sendCropState: DrawingObjectsController.prototype.sendCropState,
 
     CheckAutoFit : function()

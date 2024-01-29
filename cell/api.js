@@ -374,6 +374,7 @@ var editor;
     // History & global counters
     History.init(wbModel);
 
+    AscCommonExcel.UndoRedoClassTypes.Clean();
     AscCommonExcel.g_oUndoRedoCell = new AscCommonExcel.UndoRedoCell(wbModel);
     AscCommonExcel.g_oUndoRedoWorksheet = new AscCommonExcel.UndoRedoWoorksheet(wbModel);
     AscCommonExcel.g_oUndoRedoWorkbook = new AscCommonExcel.UndoRedoWorkbook(wbModel);
@@ -1873,6 +1874,22 @@ var editor;
 								}
 							});
 						}
+						if (ext.timelineCachesIds) {
+							ext.timelineCachesIds.forEach(function (timelineCacheId) {
+								if (null !== timelineCacheId) {
+									var timelineCacheWorkbookPart = wbPart.getPartById(timelineCacheId);
+									if (timelineCacheWorkbookPart) {
+										var contentTimelineCache = timelineCacheWorkbookPart.getDocumentContent();
+										if (contentTimelineCache) {
+											var oTimelineCacheDefinition = new AscCommonExcel.CTimelineCacheDefinition();
+											var reader = new StaxParser(contentTimelineCache, timelineCacheWorkbookPart, xmlParserContext);
+											oTimelineCacheDefinition.fromXml(reader);
+											wb.timelineCaches.push(oTimelineCacheDefinition);
+										}
+									}
+								}
+							});
+						}
 					});
 				}
 
@@ -1931,6 +1948,11 @@ var editor;
 						xmlParserContext.InitOpenManager.InitStyleManager(oStyleObject, aCellXfs);
 						dxfs = oStyleObject.aDxfs;
 						wb.oNumFmtsOpen = oStyleObject.oNumFmts;
+						wb.dxfsOpen = oStyleObject.aDxfs;
+
+						if (styleSheet.oTimelineStyles) {
+							wb.TimelineStyles = styleSheet.oTimelineStyles;
+						}
 					}
 				}
 				xmlParserContext.InitOpenManager.aCellXfs = aCellXfs;
@@ -2176,6 +2198,18 @@ var editor;
 								}
 
 								AscCommonExcel.PrepareComments(ws, xmlParserContext, comments, pThreadedComments, personList);
+
+								var timelines = wsPart.getPartsByRelationshipType(openXml.Types.timelines.relationType);
+								if (timelines && timelines.length) {
+									let contentTimeline = timelines[i].getDocumentContent();
+									let oNewTimelines = new AscCommonExcel.CT_CTimelines();
+									reader = new StaxParser(contentTimeline, oNewTimelines, xmlParserContext);
+									oNewTimelines.fromXml(reader);
+
+									if (oNewTimelines.timelines && oNewTimelines.timelines.length) {
+										ws.timelines = oNewTimelines.timelines;
+									}
+								}
 							}
 						}
 					}
@@ -4021,9 +4055,13 @@ var editor;
 	}
 
 	if (window["NATIVE_EDITOR_ENJINE"]) {
-		var ws = this.wb.getWorksheet();
-		var activeCell = this.wbModel.getActiveWs().selectionRange.activeCell;
-		result = [ws.getCellLeftRelative(activeCell.col, 0), ws.getCellTopRelative(activeCell.row, 0)];
+        if (SearchEngine.Count > 0) {
+            var ws = this.wb.getWorksheet();
+            var activeCell = this.wbModel.getActiveWs().selectionRange.activeCell;
+            result = [ws.getCellLeftRelative(activeCell.col, 0), ws.getCellTopRelative(activeCell.row, 0)];
+        } else {
+            result = null;
+        }
 	} else {
 		result = SearchEngine.Count;
 	}
@@ -4395,6 +4433,30 @@ var editor;
     AscFonts.IsCheckSymbols = false;
     this.asc_onCloseChartFrame();
     return ret;
+  };
+  spreadsheet_api.prototype.asc_getRecommendedChartData = function() {
+	  if(!this.wb) {
+		  return null;
+	  }
+	  return this.wb.getRecommendedChartData();
+  };
+  spreadsheet_api.prototype.asc_getChartData = function(nType) {
+	  if(!this.wb) {
+		  return null;
+	  }
+	  return this.wb.getChartData(nType);
+  };
+  spreadsheet_api.prototype.asc_addChartSpace = function(oChartSpace) {
+	  var ws = this.wb.getWorksheet();
+	  if (ws.model.getSheetProtection(Asc.c_oAscSheetProtectType.objects)) {
+		  return;
+	  }
+
+	  const oWS = this.wb.getWorksheet();
+	  if(!oWS || !oWS.objectRender) {
+		  return;
+	  }
+	  oWS.objectRender.addChartSpace(oChartSpace);
   };
 
     spreadsheet_api.prototype.getScaleCoefficientsForOleTableImage = function (nImageWidth, nImageHeight) {
@@ -5607,11 +5669,12 @@ var editor;
     options.isMatchCase = true;
 
     if (replaceAll === true) {
-      if (!this.spellcheckState.isIgnoreUppercase) {
+      /*if (!this.spellcheckState.isIgnoreUppercase) {
         this.spellcheckState.changeWords[variantsFound.Word] = newWord;
       } else {
         this.spellcheckState.changeWords[variantsFound.Word.toLowerCase()] = newWord;
-      }
+      }*/
+      this.spellcheckState.changeWords[variantsFound.Word] = newWord;
       options.isReplaceAll = true;
     }
       this.spellcheckState.lockSpell = false;
@@ -6745,7 +6808,7 @@ var editor;
        }
     }
 
-    this.wb.setPrintOptionsJson(spreadsheetLayout && spreadsheetLayout["sheetsProps"]);
+    this.wb.setPrintOptionsJson(_options);
 
     var _printPagesData = this.wb.calcPagesPrint(_adjustPrint);
 
@@ -6813,6 +6876,15 @@ var editor;
   };
 
   spreadsheet_api.prototype.asc_nativeGetPDF = function(options) {
+    if (options && options["watermark"])
+    {
+      this.watermarkDraw = new AscCommon.CWatermarkOnDraw(options["watermark"], this);
+      this.watermarkDraw.generateNative();
+    }
+    else
+    {
+      this.watermarkDraw = null;
+    }
     var _ret = this.asc_nativePrint(undefined, undefined, options);
 
     window["native"]["Save_End"]("", _ret.GetCurPosition());
@@ -7466,11 +7538,10 @@ var editor;
     };
 
 	spreadsheet_api.prototype.asc_getCF = function (type, id) {
-		var sheet;
-		var rules = this.wbModel.getRulesByType(type, id, true);
-		var aSheet = type === Asc.c_oAscSelectionForCFType.selection ? sheet : this.wbModel.getActiveWs();
-		var activeRanges = aSheet.selectionRange.ranges;
-		var sActiveRanges = [];
+		let rules = this.wbModel.getRulesByType(type, id, true);
+		let activeSheet = this.wbModel.getActiveWs();
+		let activeRanges = activeSheet.selectionRange.ranges;
+		let sActiveRanges = [];
 		if (activeRanges) {
 			activeRanges.forEach(function (item) {
 				sActiveRanges.push(item.getAbsName());
@@ -8973,6 +9044,45 @@ var editor;
 		return wb.getSpeechDescription(prevState, wb.getSelectionState(), action);
 	};
 
+	spreadsheet_api.prototype.asc_GetSeriesSettings = function() {
+		let res = new Asc.asc_CSeriesSettings();
+
+		let ws = this.wb && this.wb.getWorksheet();
+		res.prepare(ws);
+
+		return res;
+	};
+
+	spreadsheet_api.prototype.asc_FillCells = function(type, settings) {
+		if (this.collaborativeEditing.getGlobalLock() || !this.canEdit()) {
+			return;
+		}
+		let wb = this.wb;
+		if (!wb) {
+			return;
+		}
+
+		var ws = this.wb.getWorksheet();
+		if (settings) {
+			settings.asc_setContextMenuChosenProperty(type);
+			settings.init(ws);
+		}
+		return ws.applySeriesSettings(type, settings);
+	};
+
+	spreadsheet_api.prototype.asc_CancelFillCells = function() {
+		if (this.collaborativeEditing.getGlobalLock() || !this.canEdit()) {
+			return;
+		}
+		let wb = this.wb;
+		if (!wb) {
+			return;
+		}
+
+		var ws = this.wb.getWorksheet();
+		return ws && ws.cleanFillHandleProps();
+	};
+
   /*
    * Export
    * -----------------------------------------------------------------------------
@@ -9202,6 +9312,9 @@ var editor;
   prot["asc_getChartObject"] = prot.asc_getChartObject;
   prot["asc_addChartDrawingObject"] = prot.asc_addChartDrawingObject;
   prot["asc_editChartDrawingObject"] = prot.asc_editChartDrawingObject;
+  prot["asc_getRecommendedChartData"] = prot.asc_getRecommendedChartData;
+  prot["asc_getChartData"] = prot.asc_getChartData;
+  prot["asc_addChartSpace"] = prot.asc_addChartSpace;
   prot["asc_addImageDrawingObject"] = prot.asc_addImageDrawingObject;
   prot["asc_getCurrentDrawingMacrosName"] = prot.asc_getCurrentDrawingMacrosName;
   prot["asc_assignMacrosToCurrentDrawing"] = prot.asc_assignMacrosToCurrentDrawing;
@@ -9334,6 +9447,8 @@ var editor;
   prot["asc_showAutoComplete"] = prot.asc_showAutoComplete;
   prot["asc_getHeaderFooterMode"] = prot.asc_getHeaderFooterMode;
   prot["asc_getActiveRangeStr"] = prot.asc_getActiveRangeStr;
+  prot["asc_getActiveRange"] = prot.asc_getActiveRange;
+
 
 
   prot["asc_onMouseUp"] = prot.asc_onMouseUp;
@@ -9553,7 +9668,9 @@ var editor;
   prot["asc_ContinueGoalSeek"]= prot.asc_ContinueGoalSeek;
   prot["asc_StepGoalSeek"]= prot.asc_StepGoalSeek;
 
-
+  prot["asc_GetSeriesSettings"]= prot.asc_GetSeriesSettings;
+  prot["asc_FillCells"]= prot.asc_FillCells;
+  prot["asc_CancelFillCells"]= prot.asc_CancelFillCells;
 
 
 

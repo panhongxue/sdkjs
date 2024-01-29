@@ -728,7 +728,7 @@
         get: function() {
             let oField = this.field.GetDocument().GetField(this.field.GetFullName());
             if (oField && oField.IsWidget()) {
-                return oField.GetButtonFitBounds();
+                return oField.IsButtonFitBounds();
             }
             else {
                 throw Error("InvalidGetError: Get not possible, invalid or unknown.");
@@ -749,7 +749,7 @@
 
                 if (aFields[0] && aFields[0].IsWidget()) {
                     aFields.forEach(function(field) {
-                        field.SetButtonPosition(bValue);
+                        field.SetHeaderPosition(bValue);
                     });
                 }
                 else {
@@ -763,7 +763,7 @@
         get: function() {
             let oField = this.field.GetDocument().GetField(this.field.GetFullName());
             if (oField && oField.IsWidget()) {
-                return oField.GetButtonPosition();
+                return oField.GetHeaderPosition();
             }
             else {
                 throw Error("InvalidGetError: Get not possible, invalid or unknown.");
@@ -907,7 +907,7 @@
         },
         "value": {
             get: function() {
-                return undefined;
+                return "";
             }
         }
     });
@@ -1044,7 +1044,7 @@
                     });
                 }
 
-                if (oCalcInfo.IsInProgress() == false) {
+                if (oCalcInfo.IsInProgress() == false && oDoc.IsNeedDoCalculate()) {
                     oDoc.DoCalculateFields(this.field);
                     oDoc.CommitFields();
                 }
@@ -1067,12 +1067,12 @@
                 if (typeof(bValue) == "boolean") {
                     let aFields = this._doc.GetFields(this.name);
                     aFields.forEach(function(field) {
-                        field._radiosInUnison = bValue;
+                        field.SetRadiosInUnison(bValue);
                     });
                 }
             },
             get: function() {
-                return this._radiosInUnison;
+                return this.IsRadiosInUnison();
             }
         },
         "value": {
@@ -1099,7 +1099,7 @@
                     });
                 }
 
-                if (oCalcInfo.IsInProgress() == false) {
+                if (oCalcInfo.IsInProgress() == false && oDoc.IsNeedDoCalculate()) {
                     oDoc.DoCalculateFields(this.field);
                     oDoc.CommitFields();
                 }
@@ -1283,7 +1283,7 @@
         get: function() {
             let oField = this.field.GetDocument().GetField(this.field.GetFullName());
             if (oField && oField.IsWidget()) {
-                return oField.GetDoNotScroll();
+                return oField.IsDoNotScroll();
             }
             else {
                 throw Error("InvalidGetError: Get not possible, invalid or unknown.");
@@ -1350,7 +1350,7 @@
         get: function() {
             let oField = this.field.GetDocument().GetField(this.field.GetFullName());
             if (oField && oField.IsWidget()) {
-                return oField.GetFileSelect();
+                return oField.IsFileSelect();
             }
             else {
                 throw Error("InvalidGetError: Get not possible, invalid or unknown.");
@@ -1459,7 +1459,7 @@
                     this.field.needValidate = false; 
                     this.field.Commit();
                     if (oCalcInfo.IsInProgress() == false) {
-                        if (oDoc.event["rc"] == true) {
+                        if (oDoc.event["rc"] == true && oDoc.IsNeedDoCalculate()) {
                             oDoc.DoCalculateFields(this.field);
                             oDoc.AddFieldToCommit(this.field);
                             oDoc.CommitFields();
@@ -1469,8 +1469,8 @@
             },
             get: function() {
                 let value = this.field.GetApiValue();
-                let isNumber = !isNaN(value) && isFinite(value) && value != "";
-                return isNumber ? parseFloat(value) : value;
+                let isNumber = /^\d+$/.test(value);
+                return isNumber ? parseFloat(value) : (value != undefined ? value : "");
             }
         },
     });
@@ -1506,7 +1506,7 @@
         get: function() {
             let oField = this.field.GetDocument().GetField(this.field.GetFullName());
             if (oField && oField.IsWidget()) {
-                return oField.GetCommitOnSelChange();
+                return oField.IsCommitOnSelChange();
             }
             else {
                 throw Error("InvalidGetError: Get not possible, invalid or unknown.");
@@ -1613,7 +1613,7 @@
             aFields[0].SelectOption(nValue);
             aFields[0].Commit();
 
-            if (oCalcInfo.IsInProgress() == false) {
+            if (oCalcInfo.IsInProgress() == false && oDoc.IsNeedDoCalculate()) {
                 oDoc.DoCalculateFields(this.field);
                 oDoc.AddFieldToCommit(this.field);
                 oDoc.CommitFields();
@@ -1687,7 +1687,7 @@
                     this.field.needValidate = false; 
                     this.field.Commit();
                     if (oCalcInfo.IsInProgress() == false) {
-                        if (oDoc.event["rc"] == true) {
+                        if (oDoc.event["rc"] == true && oDoc.IsNeedDoCalculate()) {
                             oDoc.DoCalculateFields(this.field);
                             oDoc.AddFieldToCommit(this.field);
                             oDoc.CommitFields();
@@ -1697,8 +1697,8 @@
             },
             get: function() {
                 let value = this.field.GetApiValue();
-                let isNumber = !isNaN(value) && isFinite(value) && value != "";
-                return isNumber ? parseFloat(value) : value;
+                let isNumber = /^\d+$/.test(value);
+                return isNumber ? parseFloat(value) : (value != undefined ? value : "");
             }
         }
     });
@@ -1833,7 +1833,7 @@
                 return;
 
             aFields[0].Commit();
-            if (oCalcInfo.IsInProgress() == false) {
+            if (oCalcInfo.IsInProgress() == false && oDoc.IsNeedDoCalculate()) {
                 oDoc.DoCalculateFields(this.field);
                 oDoc.AddFieldToCommit(this.field);
                 oDoc.CommitFields();
@@ -1864,7 +1864,7 @@
                 }
             },
             get: function() {
-                return this._multipleSelection;
+                return this.field.IsMultipleSelection();
             }
         },
         "value": {
@@ -1888,15 +1888,15 @@
                 this.field.SetValue(value);
                 this.field.Commit();
 
-                if (oCalcInfo.IsInProgress() == false) {
+                if (oCalcInfo.IsInProgress() == false && oDoc.IsNeedDoCalculate()) {
                     oDoc.DoCalculateFields(this.field);
                     oDoc.CommitFields();
                 }
             },
             get: function() {
                 let value = this.field.GetApiValue();
-                let isNumber = !isNaN(value) && isFinite(value) && value != "";
-                return isNumber ? parseFloat(value) : value;
+                let isNumber = /^\d+$/.test(value);
+                return isNumber ? parseFloat(value) : (value != undefined ? value : "");
             }
         }
     });
@@ -1953,7 +1953,7 @@
         this.SelectOption(0, true);
         this.UnionLastHistoryPoints();
 
-        if (this._multipleSelection)
+        if (this.field.IsMultipleSelection())
             this._currentValueIndices = [0];
         else
             this._currentValueIndices = 0;

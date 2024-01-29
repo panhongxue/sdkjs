@@ -48,6 +48,10 @@
     CAnnotationTextMarkup.prototype = Object.create(AscPDF.CAnnotationBase.prototype);
 	CAnnotationTextMarkup.prototype.constructor = CAnnotationTextMarkup;
 
+    CAnnotationTextMarkup.prototype.getObjectType = function() {
+        return -1;
+    };
+
     CAnnotationTextMarkup.prototype.SetQuads = function(aQuads) {
         this._quads = aQuads;
     };
@@ -611,7 +615,7 @@
         this.WriteToBinaryBase2(memory);
         
         // rectange diff
-        let aRD = this.GetReqtangleDiff();
+        let aRD = this.GetRectangleDiff();
         if (aRD) {
             memory.annotFlags |= (1 << 15);
             for (let i = 0; i < 4; i++) {

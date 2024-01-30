@@ -2835,7 +2835,9 @@ function CT_pivotTableDefinition(setDefaults) {
 	this.ascAltText = null;
 	this.ascAltTextSummary = null;
 	this.ascHideValuesRow = null;
+	
 	this.formatsManager = new PivotFormatsManager(this);
+	this.chartsManager = new PivotChartsManager(this);
 
 	if (setDefaults) {
 		this.setDefaults();
@@ -4287,9 +4289,15 @@ CT_pivotTableDefinition.prototype.asc_getPivotFields = function () {
 CT_pivotTableDefinition.prototype.asc_getPageFields = function () {
 	return this.pageFields && this.pageFields.pageField.length > 0 && this.pageFields.pageField;
 };
+/**
+ * @return {CT_Field[] | undefined}
+ */
 CT_pivotTableDefinition.prototype.asc_getColumnFields = function () {
 	return this.colFields && this.colFields.field.length > 0 && this.colFields.field;
 };
+/**
+ * @return {CT_Field[] | undefined}
+ */
 CT_pivotTableDefinition.prototype.asc_getRowFields = function () {
 	return this.rowFields && this.rowFields.field.length > 0 && this.rowFields.field;
 };
@@ -7557,6 +7565,28 @@ CT_pivotTableDefinition.prototype.getFormatting = function(query) {
 };
 
 /**
+ * @param {spreadsheet_api} api
+ * @return {boolean}
+ */
+CT_pivotTableDefinition.prototype.asc_canExpandCollapseByActiveCell = function(api) {
+	let ws = api.wbModel.getActiveWs();
+	let activeCell = ws.selectionRange.activeCell;
+	return this.canExpandCollapse(activeCell.row, activeCell.col);
+};
+/**
+ * @param {number} row index of cell
+ * @param {number} col index of cell
+ * @return {boolean}
+ */
+CT_pivotTableDefinition.prototype.canExpandCollapse = function(row, col) {
+	let layout = this.getLayoutByCell(row, col);
+	return layout && layout.canExpandCollapse() || false;
+};
+
+CT_pivotTableDefinition.prototype.getSeries = function() {
+	return this.chartsManager.getSeries();
+};
+/**
  * @typedef PivotFormatsCollectionItem
  * @property {PivotAreaReferencesInfo} referencesInfo
  * @property {number | null} pivotAreaField
@@ -8103,29 +8133,63 @@ PivotFormatsManager.prototype.get = function(query) {
 	return suitableFormatsCollectionItems.length === 0 ? null : result;
 };
 /**
- * @param {spreadsheet_api} api
- * @return {boolean}
+ * @class
+ * @param {CT_pivotTableDefinition} pivot 
  */
-CT_pivotTableDefinition.prototype.asc_canExpandCollapseByActiveCell = function(api) {
-	let ws = api.wbModel.getActiveWs();
-	let activeCell = ws.selectionRange.activeCell;
-	return this.canExpandCollapse(activeCell.row, activeCell.col);
-};
-/**
- * @param {number} row index of cell
- * @param {number} col index of cell
- * @return {boolean}
- */
-CT_pivotTableDefinition.prototype.canExpandCollapse = function(row, col) {
-	let layout = this.getLayoutByCell(row, col);
-	return layout && layout.canExpandCollapse() || false;
-};
+function PivotChartsManager(pivot) {
+	/**@type {CT_pivotTableDefinition} */
+	this.pivot = pivot;
+}
 
-CT_pivotTableDefinition.prototype.getSeries = function() {
-	/**@type {CSeriesBase} */
-	const result = new AscFormat.CSeriesBase();
+PivotChartsManager.prototype.getSeries = function() {
+	const result = this.getSeriesBar();
 	console.log('test');
 	return null;
+};
+/**
+ * @param {Function} SeriaConstructor
+ * @return {Array}
+ */
+PivotChartsManager.prototype.getBaseSeries = function(SeriaConstructor) {
+	const result = [];
+	const colFields = this.pivot.asc_getColumnFields();
+	if (colFields && colFields.length > 0) {
+		for(let i = 0; i < colFields.length; i += 1) {
+			const seria = new SeriaConstructor();
+			seria.idx = i;
+			seria.order = i;
+			seria.tx = this.getTx();
+			result.push(seria);
+		}
+	}
+	return result;
+};
+/**
+ * @param {number} index
+ * @return {CDataRefs}
+ */
+PivotChartsManager.prototype.getTx = function(index) {
+	const result = new AscFormat.CDataRefs([]);
+	return result;
+};
+/**
+ * @param {number} index
+ * @return {CDataRefs}
+ */
+PivotChartsManager.prototype.getCat = function(index) {
+	const rowFields = this.pivot.asc_getRowFields();
+	if (rowFields && rowFields.length > 0) {
+		
+	}
+	const result = new AscFormat.CDataRefs([]);
+	return result;
+};
+PivotChartsManager.prototype.getSeriesBar = function() {
+	const series = this.getBaseSeries(AscFormat.CBarSeries);
+	for (let i = 0; i < series.length; i += 1) {
+
+	}
+	return series;
 };
 
 function CT_pivotTableDefinitionX14() {

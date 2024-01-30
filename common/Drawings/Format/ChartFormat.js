@@ -18782,6 +18782,7 @@
     window['AscFormat'].CDLbls = CDLbls;
     window['AscFormat'].CDPt = CDPt;
     window['AscFormat'].CDTable = CDTable;
+    window['AscFormat'].CDataRefs = CDataRefs;
     window['AscFormat'].CDispUnits = CDispUnits;
     window['AscFormat'].CDoughnutChart = CDoughnutChart;
     window['AscFormat'].CErrBars = CErrBars;

@@ -722,6 +722,35 @@ $(function () {
 		nExpectedCellIndex = AscCommonExcel.getCellIndex(1000, 0);
 		nFactCellIndex = AscCommonExcel.getCellIndex(oStartCell.nRow, oStartCell.nCol);
 		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Loop cell - A1001. Selected cell: A1001. Start cell: ${oStartCell.getName()}`);
+		// Negative case sequence chain without loop cell.
+		ws.getRange2("A1002").setValue("=1+B1002");
+		ws.getRange2("B1002").setValue("=1+C1002");
+		ws.getRange2("C1002").setValue("1");
+
+		oCell = selectCell("C1002");
+		oStartCell = getStartCellForIterCalc(oCell);
+		assert.strictEqual(oStartCell, null, `Test initStartCellForIterCalc. Negative case sequence chain without loop cell. Selected cell: C1002. Start cell: ${oStartCell}`);
+
+		oCell = selectCell("B1002");
+		oStartCell = getStartCellForIterCalc(oCell);
+		assert.strictEqual(oStartCell, null, `Test initStartCellForIterCalc. Negative case sequence chain without loop cell. Selected cell: B1002. Start cell: ${oStartCell}`);
+
+		oCell = selectCell("A1002");
+		oStartCell = getStartCellForIterCalc(oCell);
+		assert.strictEqual(oStartCell, null, `Test initStartCellForIterCalc. Negative case sequence chain without loop cell. Selected cell: A1002. Start cell: ${oStartCell}`);
+		// Negative case cell without any chain.
+		ws.getRange2("A1003").setValue("=1+2");
+		oCell = selectCell("A1003");
+		oStartCell = getStartCellForIterCalc(oCell);
+		assert.strictEqual(oStartCell, null, `Test initStartCellForIterCalc. Negative case cell without any chain. Selected cell: A1003. Start cell: ${oStartCell}`);
+
+		ws.getRange2("A1004").setValue("1");
+		ws.getRange2("B1004").setValue("2");
+		ws.getRange2("C1004").setValue("=A1004+B1004");
+
+		oCell = selectCell("C1004");
+		oStartCell = getStartCellForIterCalc(oCell);
+		assert.strictEqual(oStartCell, null, `Test initStartCellForIterCalc. Negative case cell without any chain. Selected cell: C1004. Start cell: ${oStartCell}`);
 	});
 	QUnit.test("Test: \"ABS\"", function (assert) {
 

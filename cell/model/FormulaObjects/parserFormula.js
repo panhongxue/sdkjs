@@ -8227,12 +8227,13 @@ function parserFormula( formula, parent, _ws ) {
 	 */
 	function CalcRecursion() {
 		this.nLevel = 0;
-		this.nIterStep = 0;
+		this.nIterStep = 1;
 		this.bIsForceBacktracking = false;
 		this.nPrevCellValue = null;
+		this.oStartCellForIterCalc = null;
 
-		this.bIsEnabledRecursion = false;
-		this.nMaxIterations = 100; // Max iterations of recursion calculations. Default value: 100.
+		this.bIsEnabledRecursion = true;
+		this.nMaxIterations = 10; // Max iterations of recursion calculations. Default value: 100.
 		this.nRelativeError = 1e-4; // Relative error between current and previous cell value. Default value: 1e-4.
 		/*for chrome63(real maximum call stack size is 12575) nMaxRecursion that cause exception is 783
 		by measurement: stack size in doctrenderer is one fourth smaller than chrome*/
@@ -8313,6 +8314,13 @@ function parserFormula( formula, parent, _ws ) {
 		this.nIterStep++;
 	};
 	/**
+	 * Method resets iteration step.
+	 * @memberof CalcRecursion
+	 */
+	CalcRecursion.prototype.resetIterStep = function () {
+		this.nIterStep = 1;
+	}
+	/**
 	 * Method returns iteration step.
 	 * @memberof CalcRecursion
 	 * @returns {number}
@@ -8353,6 +8361,24 @@ function parserFormula( formula, parent, _ws ) {
 	 */
 	CalcRecursion.prototype.getPrevCellValue = function () {
 		return this.nPrevCellValue;
+	};
+	/**
+	 * Method sets start cell. This cell is a start and finish point of iteration for a recursion formula.
+	 * Uses for only with enabled iterative calculations setting.
+	 * @memberof CalcRecursion
+	 * @param {Cell} oStartCellForIterCalc
+	 */
+	CalcRecursion.prototype.setStartCellForIterCalc = function (oStartCellForIterCalc) {
+		this.oStartCellForIterCalc = oStartCellForIterCalc;
+	};
+	/**
+	 * Method returns start cell. This cell is a start and finish point of iteration for a recursion formula.
+	 * Uses for only with enabled iterative calculations setting.
+	 * @memberof CalcRecursion
+	 * @returns {Cell}
+	 */
+	CalcRecursion.prototype.getStartCellForIterCalc = function () {
+		return this.oStartCellForIterCalc;
 	};
 	/**
 	 * Method sets a maximum iterations.

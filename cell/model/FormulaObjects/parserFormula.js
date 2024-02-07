@@ -4120,7 +4120,14 @@ parserHelp.setDigitSeparator(AscCommon.g_oDefaultCultureInfo.NumberDecimalSepara
 	cMultOperator.prototype.Calculate = function (arg, opt_bbox, opt_defName, ws, bIsSpecialFunction) {
 		var arg0 = arg[0], arg1 = arg[1];
 
-		if(!bIsSpecialFunction){
+		let isRangesOperation = cElementType.cellsRange === arg0.type && cElementType.cellsRange === arg1.type;
+		if(bIsSpecialFunction && !isRangesOperation){
+			var convertArgs = this._convertAreaToArray([arg0, arg1]);
+			arg0 = convertArgs[0];
+			arg1 = convertArgs[1];
+		}
+
+		if (!isRangesOperation) {
 			if (arg0 instanceof cArea) {
 				arg0 = arg0.cross(arguments[1]);
 			} else if (arg0 instanceof cArea3D) {
@@ -4134,7 +4141,7 @@ parserHelp.setDigitSeparator(AscCommon.g_oDefaultCultureInfo.NumberDecimalSepara
 			arg0 = arg0.tocNumber();
 			arg1 = arg1.tocNumber();
 		}
-		
+
 		return _func[arg0.type][arg1.type](arg0, arg1, "*", arguments[1], bIsSpecialFunction);
 	};
 

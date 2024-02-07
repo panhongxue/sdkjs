@@ -11630,19 +11630,19 @@ $(function () {
 
 		oParser = new parserFormula("SUMPRODUCT({2,3})", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 5);
+		assert.strictEqual(oParser.calculate().getValue(), 5, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT({2,3},{4,5})", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 23);
+		assert.strictEqual(oParser.calculate().getValue(), 23, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT({2,3},{4,5},{2,2})", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 46);
+		assert.strictEqual(oParser.calculate().getValue(), 46, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT({2,3;4,5},{2,2;3,4})", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 42);
+		assert.strictEqual(oParser.calculate().getValue(), 42, "Formula: " + oParser.Formula);
 
 		ws.getRange2("N44").setValue("1");
 		ws.getRange2("N45").setValue("2");
@@ -11665,96 +11665,96 @@ $(function () {
 
 		oParser = new parserFormula("SUMPRODUCT(N44:N47,O44:O47,P44:P47)", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 780);
+		assert.strictEqual(oParser.calculate().getValue(), 780, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(N44:N47*O44:O47)", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 70);
+		assert.strictEqual(oParser.calculate().getValue(), 70, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(SUM(N44:N47*O44:O47))", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 70);
+		assert.strictEqual(oParser.calculate().getValue(), 70, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT({1,2,TRUE,3})", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 6);
+		assert.strictEqual(oParser.calculate().getValue(), 6, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT({1,2,FALSE,3})", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 6);
+		assert.strictEqual(oParser.calculate().getValue(), 6, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT({TRUE,TRUE,FALSE,3})", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 3);
+		assert.strictEqual(oParser.calculate().getValue(), 3, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(P48)", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), "#VALUE!");
+		assert.strictEqual(oParser.calculate().getValue(), "#VALUE!", "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(P48, P44:P47)", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), "#VALUE!");
+		assert.strictEqual(oParser.calculate().getValue(), "#VALUE!", "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(P48:P49)", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 0);
+		assert.strictEqual(oParser.calculate().getValue(), 0, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUM(SUMPRODUCT(N44:N47*O44:O47))", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 70);
+		assert.strictEqual(oParser.calculate().getValue(), 70, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(N44:O47*P44:P47)", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 388);
+		assert.strictEqual(oParser.calculate().getValue(), 388, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUM(SUMPRODUCT(N44:O47*P44:P47))", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 388);
+		assert.strictEqual(oParser.calculate().getValue(), 388, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUM(SUMPRODUCT(N44:O47))", "A2", ws);
 		assert.ok(oParser.parse());
 		assert.ok(oParser.assemble() == "SUM(SUMPRODUCT(N44:O47))");
-		assert.strictEqual(oParser.calculate().getValue(), 36);
+		assert.strictEqual(oParser.calculate().getValue(), 36, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(YEAR(N45:O47))", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 11400);
+		assert.strictEqual(oParser.calculate().getValue(), 11400, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(MONTH(N45:O47))", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 6);
+		assert.strictEqual(oParser.calculate().getValue(), 6, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(DAY(N45:O47))", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 30);
+		assert.strictEqual(oParser.calculate().getValue(), 30, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(HOUR(N45:P48))", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 12);
+		assert.strictEqual(oParser.calculate().getValue(), 12, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(MINUTE(N45:P48))", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 113);
+		assert.strictEqual(oParser.calculate().getValue(), 113, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(SECOND(N45:P48))", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 64);
+		assert.strictEqual(oParser.calculate().getValue(), 64, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(DAY(N44:P49))", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 78);
+		assert.strictEqual(oParser.calculate().getValue(), 78, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(MONTH(N44:P49))", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 18);
+		assert.strictEqual(oParser.calculate().getValue(), 18, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(YEAR(N44:P49))", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 34200);
+		assert.strictEqual(oParser.calculate().getValue(), 34200, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(({1,2,3})*({TRUE,TRUE,TRUE}))", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 6);
+		assert.strictEqual(oParser.calculate().getValue(), 6, "Formula: " + oParser.Formula);
 
 		/*oParser = new parserFormula( "SUMPRODUCT(({1,2,3})*({TRUE;TRUE;TRUE;TRUE}))", "A2", ws );
 		assert.ok( oParser.parse() );
@@ -11762,46 +11762,46 @@ $(function () {
 
 		oParser = new parserFormula("SUMPRODUCT({TRUE,TRUE,FALSE})", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 0);
+		assert.strictEqual(oParser.calculate().getValue(), 0, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT({1,2,3,3,TRUE})", "A2", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 9);
+		assert.strictEqual(oParser.calculate().getValue(), 9, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT({1,2,3,3,TRUE})+SUMPRODUCT({1,2,3,3,TRUE})", "A2", ws);
 		assert.ok(oParser.parse());
 		assert.ok(oParser.assemble() == "SUMPRODUCT({1,2,3,3,TRUE})+SUMPRODUCT({1,2,3,3,TRUE})");
-		assert.strictEqual(oParser.calculate().getValue(), 18);
+		assert.strictEqual(oParser.calculate().getValue(), 18, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT({1,2,3,3,TRUE})*SUMPRODUCT({1,2,3,3,TRUE})", "A2", ws);
 		assert.ok(oParser.parse());
 		assert.ok(oParser.assemble() == "SUMPRODUCT({1,2,3,3,TRUE})*SUMPRODUCT({1,2,3,3,TRUE})");
-		assert.strictEqual(oParser.calculate().getValue(), 81);
+		assert.strictEqual(oParser.calculate().getValue(), 81, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(SUMPRODUCT({1,2,3,3,TRUE})*SUMPRODUCT({1,2,3,3,TRUE}))", "A2", ws);
 		assert.ok(oParser.parse());
 		assert.ok(oParser.assemble() == "SUMPRODUCT(SUMPRODUCT({1,2,3,3,TRUE})*SUMPRODUCT({1,2,3,3,TRUE}))");
-		assert.strictEqual(oParser.calculate().getValue(), 81);
+		assert.strictEqual(oParser.calculate().getValue(), 81, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUM(SUMPRODUCT({1,2,3,3,TRUE})*SUMPRODUCT({1,2,3,3,TRUE}))", "A2", ws);
 		assert.ok(oParser.parse());
 		assert.ok(oParser.assemble() == "SUM(SUMPRODUCT({1,2,3,3,TRUE})*SUMPRODUCT({1,2,3,3,TRUE}))");
-		assert.strictEqual(oParser.calculate().getValue(), 81);
+		assert.strictEqual(oParser.calculate().getValue(), 81, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUM(SUMPRODUCT({1,2,3,3,TRUE})*SUMPRODUCT({1,2,3,3,TRUE}),1,2,3)", "A2", ws);
 		assert.ok(oParser.parse());
 		assert.ok(oParser.assemble() == "SUM(SUMPRODUCT({1,2,3,3,TRUE})*SUMPRODUCT({1,2,3,3,TRUE}),1,2,3)");
-		assert.strictEqual(oParser.calculate().getValue(), 87);
+		assert.strictEqual(oParser.calculate().getValue(), 87, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUM(SUMPRODUCT(N44:O47))+SUM(SUMPRODUCT(N44:O47))", "A2", ws);
 		assert.ok(oParser.parse());
 		assert.ok(oParser.assemble() == "SUM(SUMPRODUCT(N44:O47))+SUM(SUMPRODUCT(N44:O47))");
-		assert.strictEqual(oParser.calculate().getValue(), 72);
+		assert.strictEqual(oParser.calculate().getValue(), 72, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUM(SUMPRODUCT({1,2,3,3,TRUE})*SUMPRODUCT({1,2,3,3,TRUE}),SUMPRODUCT({1,2,3,3,TRUE}),2,SUMPRODUCT({1,2,3,3}))", "A2", ws);
 		assert.ok(oParser.parse());
 		assert.ok(oParser.assemble() == "SUM(SUMPRODUCT({1,2,3,3,TRUE})*SUMPRODUCT({1,2,3,3,TRUE}),SUMPRODUCT({1,2,3,3,TRUE}),2,SUMPRODUCT({1,2,3,3}))");
-		assert.strictEqual(oParser.calculate().getValue(), 101);
+		assert.strictEqual(oParser.calculate().getValue(), 101, "Formula: " + oParser.Formula);
 
 		ws.getRange2("A101").setValue("5");
 		ws.getRange2("A102").setValue("6");
@@ -11818,32 +11818,32 @@ $(function () {
 		oParser = new parserFormula("SUMPRODUCT((A101:A105)*((B101:B105)=1))", "A2", ws);
 		assert.ok(oParser.parse());
 		assert.ok(oParser.assemble() == "SUMPRODUCT((A101:A105)*((B101:B105)=1))");
-		assert.strictEqual(oParser.calculate().getValue(), 28);
+		assert.strictEqual(oParser.calculate().getValue(), 28, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT((A101:A105)*((B101:B105)=1))+SUMPRODUCT((A101:A104)*((B101:B104)=1))+SUMPRODUCT((A101:A103)*((B101:B103)=1))", "A2", ws);
 		assert.ok(oParser.parse());
 		assert.ok(oParser.assemble() == "SUMPRODUCT((A101:A105)*((B101:B105)=1))+SUMPRODUCT((A101:A104)*((B101:B104)=1))+SUMPRODUCT((A101:A103)*((B101:B103)=1))");
-		assert.strictEqual(oParser.calculate().getValue(), 58);
+		assert.strictEqual(oParser.calculate().getValue(), 58, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(({3})*({TRUE,TRUE,TRUE,TRUE}))", "A2", ws);
 		assert.ok(oParser.parse());
 		assert.ok(oParser.assemble() == "SUMPRODUCT(({3})*({TRUE,TRUE,TRUE,TRUE}))");
-		assert.strictEqual(oParser.calculate().getValue(), 12);
+		assert.strictEqual(oParser.calculate().getValue(), 12, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(({3;2;2;2})*({TRUE;TRUE;TRUE;TRUE}))", "A2", ws);
 		assert.ok(oParser.parse());
 		assert.ok(oParser.assemble() == "SUMPRODUCT(({3;2;2;2})*({TRUE;TRUE;TRUE;TRUE}))");
-		assert.strictEqual(oParser.calculate().getValue(), 9);
+		assert.strictEqual(oParser.calculate().getValue(), 9, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(--ISNUMBER({5;6;7;1;2;3;4}))", "A2", ws);
 		assert.ok(oParser.parse());
 		assert.ok(oParser.assemble() == "SUMPRODUCT(--ISNUMBER({5;6;7;1;2;3;4}))");
-		assert.strictEqual(oParser.calculate().getValue(), 7);
+		assert.strictEqual(oParser.calculate().getValue(), 7, "Formula: " + oParser.Formula);
 
 		oParser = new parserFormula("SUMPRODUCT(--ISNUMBER(SEARCH({5;6;7;1;2;3;4},123)))", "A2", ws);
 		assert.ok(oParser.parse());
 		assert.ok(oParser.assemble() == "SUMPRODUCT(--ISNUMBER(SEARCH({5;6;7;1;2;3;4},123)))");
-		assert.strictEqual(oParser.calculate().getValue(), 3);
+		assert.strictEqual(oParser.calculate().getValue(), 3, "Formula: " + oParser.Formula);
 
 
 		testArrayFormula2(assert, "SUMPRODUCT", 1, 8, null, true);

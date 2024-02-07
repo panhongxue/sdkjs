@@ -5194,7 +5194,7 @@ _func[cElementType.cellsRange][cElementType.cellsRange] = function ( arg0, arg1,
 		}*/
 
 		let arg0Array = arg0.getMatrixNoEmpty();
-		let arg1Array = arg0.getMatrixNoEmpty();
+		let arg1Array = arg1.getMatrixNoEmpty();
 
 		let isOneColArg0 = arg0Dimensions.col === 1;
 		let isOneRowArg0 = arg0Dimensions.row === 1;
@@ -5206,7 +5206,7 @@ _func[cElementType.cellsRange][cElementType.cellsRange] = function ( arg0, arg1,
 		let filledVal = new cError(cErrorType.not_available);
 		if ((isOneColArg0 && arg0Dimensions.row === arg1Dimensions.row) || (isOneColArg1 && arg0Dimensions.row === arg1Dimensions.row) ||
 			(isOneRowArg0 && arg0Dimensions.col === arg1Dimensions.col) || (isOneRowArg1 && arg0Dimensions.col === arg1Dimensions.col) ||
-			(arg0Dimensions.col === arg1Dimensions.col || arg0Dimensions.row === arg1Dimensions.row)) {
+			(arg0Dimensions.col === arg1Dimensions.col || arg0Dimensions.row === arg1Dimensions.row) || (isOneColArg1 && isOneRowArg1) || (isOneColArg0 && isOneRowArg0)) {
 			filledVal = _func[_empty.type][_empty.type]( _empty, _empty, what );
 		}
 
@@ -5214,10 +5214,22 @@ _func[cElementType.cellsRange][cElementType.cellsRange] = function ( arg0, arg1,
 		res.fillArray(filledVal, Math.max(arg0Dimensions.row, arg1Dimensions.row), Math.max(arg0Dimensions.col, arg1Dimensions.col));
 
 
-		let noEmptyRow = Math.max(arg0Array.length, arg1Array.length);
-		let noEmptyCol = 0;
+		let noEmptyRow = Math.min(arg0Array.length !== 1 ? arg0Array.length : Infinity, arg1Array.length !== 1 ? arg1Array.length : Infinity);
+		if (!noEmptyRow || noEmptyRow === Infinity) {
+			noEmptyRow = 1;
+		}
+
+		let noEmptyCol = Infinity;
 		for (let i = 0; i < noEmptyRow; i++) {
-			noEmptyCol = Math.max(noEmptyCol, arg0Array[i] && arg0Array[i].length, arg1Array[i] && arg1Array[i].length);
+			if (arg0Array[i] && arg0Array[i].length !== 1) {
+				noEmptyCol = Math.min(noEmptyCol, arg0Array[i].length);
+			}
+			if (arg1Array[i] && arg1Array[i].length !== 1) {
+				noEmptyCol = Math.min(noEmptyCol, arg1Array[i].length);
+			}
+		}
+		if (!noEmptyCol || noEmptyCol === Infinity) {
+			noEmptyCol = 1;
 		}
 
 		for (let i = 0; i < noEmptyRow; i++) {
@@ -5228,7 +5240,7 @@ _func[cElementType.cellsRange][cElementType.cellsRange] = function ( arg0, arg1,
 
 				let indexRowArg1 = isOneRowArg1 ? 0 : i;
 				let indexColArg1 = isOneColArg1 ? 0 : j;
-				let _arg1 = arg0Array[indexRowArg1] && arg0Array[indexRowArg1][indexColArg1];
+				let _arg1 = arg1Array[indexRowArg1] && arg1Array[indexRowArg1][indexColArg1];
 
 				if (!_arg0) {
 					_arg0 = _empty;

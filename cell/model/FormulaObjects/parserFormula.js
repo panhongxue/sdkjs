@@ -1368,6 +1368,25 @@ parserHelp.setDigitSeparator(AscCommon.g_oDefaultCultureInfo.NumberDecimalSepara
 		}
 		return row;
 	};
+	cArea.prototype._getRow = function (rowIndex) {
+		let dimensions = this.getDimensions();
+		if (rowIndex < 0 || rowIndex > dimensions.row) {
+			return null;
+		}
+
+		let row = [[]];
+		for (let j = 0; j < this.getDimensions().col; j++) {
+			let elem = this.getValueByRowCol(rowIndex, j);
+			if (!elem) {
+				elem = new cEmpty();
+			}
+			row[0].push(elem);
+		}
+		return row;
+	};
+	cArea.prototype.getRangeType = function () {
+		return this.range && this.range.bbox && this.range.bbox.getType && this.range.bbox.getType();
+	};
 
 
 	/**
@@ -1776,6 +1795,9 @@ parserHelp.setDigitSeparator(AscCommon.g_oDefaultCultureInfo.NumberDecimalSepara
 			row[0].push(elem);
 		}
 		return row;
+	};
+	cArea3D.prototype.getRangeType = function () {
+		return this.bbox && this.bbox.getType && this.bbox.getType();
 	};
 
 	/**
@@ -2951,6 +2973,25 @@ parserHelp.setDigitSeparator(AscCommon.g_oDefaultCultureInfo.NumberDecimalSepara
 	cArray.prototype.getFirstElement = function () {
 		return this.getElementRowCol(0,0);	
 	};
+	cArray.prototype.fillArray = function (element, row, col) {
+		if (!element || !row || !col) {
+			return
+		}
+
+		if (!this.countElementInRow) {
+			this.countElementInRow = [];
+		}
+
+		let newArr = new Array(row);
+		for (let i = 0; i < newArr.length; i++) {
+			newArr[i] = new Array(col).fill(element);
+			this.countElementInRow[i] = col;
+		}
+
+		this.array = newArr;
+		this.rowCount = row;
+		this.countElement = row * col;
+	};
 
 
 
@@ -4079,24 +4120,21 @@ parserHelp.setDigitSeparator(AscCommon.g_oDefaultCultureInfo.NumberDecimalSepara
 	cMultOperator.prototype.Calculate = function (arg, opt_bbox, opt_defName, ws, bIsSpecialFunction) {
 		var arg0 = arg[0], arg1 = arg[1];
 
-		if(bIsSpecialFunction){
-			var convertArgs = this._convertAreaToArray([arg0, arg1]);
-			arg0 = convertArgs[0];
-			arg1 = convertArgs[1];
+		if(!bIsSpecialFunction){
+			if (arg0 instanceof cArea) {
+				arg0 = arg0.cross(arguments[1]);
+			} else if (arg0 instanceof cArea3D) {
+				arg0 = arg0.cross(arguments[1], arguments[3]);
+			}
+			if (arg1 instanceof cArea) {
+				arg1 = arg1.cross(arguments[1]);
+			} else if (arg1 instanceof cArea3D) {
+				arg1 = arg1.cross(arguments[1], arguments[3]);
+			}
+			arg0 = arg0.tocNumber();
+			arg1 = arg1.tocNumber();
 		}
-
-		if (arg0 instanceof cArea) {
-			arg0 = arg0.cross(arguments[1]);
-		} else if (arg0 instanceof cArea3D) {
-			arg0 = arg0.cross(arguments[1], arguments[3]);
-		}
-		if (arg1 instanceof cArea) {
-			arg1 = arg1.cross(arguments[1]);
-		} else if (arg1 instanceof cArea3D) {
-			arg1 = arg1.cross(arguments[1], arguments[3]);
-		}
-		arg0 = arg0.tocNumber();
-		arg1 = arg1.tocNumber();
+		
 		return _func[arg0.type][arg1.type](arg0, arg1, "*", arguments[1], bIsSpecialFunction);
 	};
 
@@ -5146,9 +5184,66 @@ _func[cElementType.number][cElementType.cellsRange] = _func[cElementType.string]
         };
 
 
-_func[cElementType.cellsRange][cElementType.cellsRange] = function ( arg0, arg1, what, bbox ) {
-  var cross1 = arg0.cross(bbox), cross2 = arg1.cross(bbox);
-    return _func[cross1.type][cross2.type]( cross1, cross2, what );
+_func[cElementType.cellsRange][cElementType.cellsRange] = function ( arg0, arg1, what, bbox, bIsSpecialFunction ) {
+	if (bIsSpecialFunction) {
+		let arg0Dimensions = arg0.getDimensions();
+		let arg1Dimensions = arg1.getDimensions();
+
+		/*if (!arg0Dimensions || !arg1Dimensions || arg0Dimensions.col !== arg1Dimensions.col || arg0Dimensions.row !== arg1Dimensions.row) {
+			return new cError(cErrorType.wrong_value_type);
+		}*/
+
+		let arg0Array = arg0.getMatrixNoEmpty();
+		let arg1Array = arg0.getMatrixNoEmpty();
+
+		let isOneColArg0 = arg0Dimensions.col === 1;
+		let isOneRowArg0 = arg0Dimensions.row === 1;
+		let isOneColArg1 = arg1Dimensions.col === 1;
+		let isOneRowArg1 = arg1Dimensions.row === 1;
+
+		let _empty = new cEmpty();
+
+		let filledVal = new cError(cErrorType.not_available);
+		if ((isOneColArg0 && arg0Dimensions.row === arg1Dimensions.row) || (isOneColArg1 && arg0Dimensions.row === arg1Dimensions.row) ||
+			(isOneRowArg0 && arg0Dimensions.col === arg1Dimensions.col) || (isOneRowArg1 && arg0Dimensions.col === arg1Dimensions.col) ||
+			(arg0Dimensions.col === arg1Dimensions.col || arg0Dimensions.row === arg1Dimensions.row)) {
+			filledVal = _func[_empty.type][_empty.type]( _empty, _empty, what );
+		}
+
+		let res = new cArray();
+		res.fillArray(filledVal, Math.max(arg0Dimensions.row, arg1Dimensions.row), Math.max(arg0Dimensions.col, arg1Dimensions.col));
+
+
+		let noEmptyRow = Math.max(arg0Array.length, arg1Array.length);
+		let noEmptyCol = 0;
+		for (let i = 0; i < noEmptyRow; i++) {
+			noEmptyCol = Math.max(noEmptyCol, arg0Array[i] && arg0Array[i].length, arg1Array[i] && arg1Array[i].length);
+		}
+
+		for (let i = 0; i < noEmptyRow; i++) {
+			for (let j = 0; j < noEmptyCol; j++) {
+				let indexRowArg0 = isOneRowArg0 ? 0 : i;
+				let indexColArg0 = isOneColArg0 ? 0 : j;
+				let _arg0 = arg0Array[indexRowArg0] && arg0Array[indexRowArg0][indexColArg0];
+
+				let indexRowArg1 = isOneRowArg1 ? 0 : i;
+				let indexColArg1 = isOneColArg1 ? 0 : j;
+				let _arg1 = arg0Array[indexRowArg1] && arg0Array[indexRowArg1][indexColArg1];
+
+				if (!_arg0) {
+					_arg0 = _empty;
+				}
+				if (!_arg1) {
+					_arg1 = _empty;
+				}
+				res.array[i][j] = _func[_arg0.type][_arg1.type]( _arg0, _arg1, what );
+			}
+		}
+		return res;
+	} else {
+		let cross1 = arg0.cross(bbox), cross2 = arg1.cross(bbox);
+		return _func[cross1.type][cross2.type]( cross1, cross2, what );
+	}
 };
 
 _func[cElementType.array][cElementType.array] = function ( arg0, arg1, what, bbox, bIsSpecialFunction ) {
@@ -8749,6 +8844,8 @@ function parserFormula( formula, parent, _ws ) {
 
 	function convertAreaToArray(area){
 		var retArr = new cArray(), _arg0;
+		retArr.rangeType = area.getRangeType();
+
 		var dimension = area.getDimensions();
 		var ws;
 		if(cElementType.cellsRange3D === area.type) {

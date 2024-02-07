@@ -904,15 +904,15 @@ $(function () {
 		let array;
 		oParser = new parserFormula('1+3', "A1", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 4);
+		assert.strictEqual(oParser.calculate().getValue(), 4, "Result of +" + oParser.Formula);
 
 		oParser = new parserFormula('(1+2)*4+3', "A1", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), (1 + 2) * 4 + 3);
+		assert.strictEqual(oParser.calculate().getValue(), (1 + 2) * 4 + 3, "Result of +" + oParser.Formula);
 
 		oParser = new parserFormula('2^52', "A1", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), Math.pow(2, 52));
+		assert.strictEqual(oParser.calculate().getValue(), Math.pow(2, 52), "Result of +" + oParser.Formula);
 
 		oParser = new parserFormula("(0)^(0)", "A1", ws);
 		assert.ok(oParser.parse(), "(0)^(0)");
@@ -992,19 +992,19 @@ $(function () {
 
 		oParser = new parserFormula('-10', "A1", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), -10);
+		assert.strictEqual(oParser.calculate().getValue(), -10, "Result of +" + oParser.Formula);
 
 		oParser = new parserFormula('-10*2', "A1", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), -20);
+		assert.strictEqual(oParser.calculate().getValue(), -20), "Result of +" + oParser.Formula;
 
 		oParser = new parserFormula('-10+10', "A1", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 0);
+		assert.strictEqual(oParser.calculate().getValue(), 0, "Result of +" + oParser.Formula);
 
 		oParser = new parserFormula('12%', "A1", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), 0.12);
+		assert.strictEqual(oParser.calculate().getValue(), 0.12, "Result of +" + oParser.Formula);
 
 		oParser = new parserFormula("2<>\"3\"", "A1", ws);
 		assert.ok(oParser.parse());
@@ -1040,7 +1040,7 @@ $(function () {
 
 		oParser = new parserFormula("-TRUE", "A1", ws);
 		assert.ok(oParser.parse());
-		assert.strictEqual(oParser.calculate().getValue(), -1);
+		assert.strictEqual(oParser.calculate().getValue(), -1, "Result of +" + oParser.Formula);
 
 
 		ws.getRange2("K100:Z200").cleanAll();
@@ -1501,17 +1501,19 @@ $(function () {
 			assert.strictEqual(array.getElementRowCol(2, 0).getValue(), "TRUE");
 		}
 
+		console.time("asd")
 		oParser = new parserFormula("SUM(M:P*M:P)", "A1", ws);
 		oParser.setArrayFormulaRef(ws.getRange2("E106:H113").bbox);
 		assert.ok(oParser.parse());
 		array = oParser.calculate();
-		assert.strictEqual(array.getValue(), 1465);
+		assert.strictEqual(array.getValue(), 1465, "Result of +" + oParser.Formula);
 
 		oParser = new parserFormula("SUM(M:P+M:P)", "A1", ws);
 		oParser.setArrayFormulaRef(ws.getRange2("E106:H113").bbox);
 		assert.ok(oParser.parse());
 		array = oParser.calculate();
-		assert.strictEqual(array.getValue(), 170);
+		assert.strictEqual(array.getValue(), 170, "Result of +" + oParser.Formula);
+		console.timeEnd("asd")
 
 		// for bug 65316
 		ws.getRange2("A100").setValue("75");

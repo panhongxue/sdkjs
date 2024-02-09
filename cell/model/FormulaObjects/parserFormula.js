@@ -8229,8 +8229,8 @@ function parserFormula( formula, parent, _ws ) {
 		this.nLevel = 0;
 		this.nIterStep = 1;
 		this.bIsForceBacktracking = false;
-		this.nPrevCellValue = null;
-		this.oStartCellForIterCalc = null;
+		this.nStartCellIndex = null;
+		this.nRecursionCounter = 0;
 
 		this.bIsEnabledRecursion = true;
 		this.nMaxIterations = 10; // Max iterations of recursion calculations. Default value: 100.
@@ -8329,6 +8329,33 @@ function parserFormula( formula, parent, _ws ) {
 		return this.nIterStep;
 	};
 	/**
+	 * Method increments recursion counter.
+	 * Uses for control recursion level of initStartCellForIterCalc and enableCalcFormulas method of Cell class.
+	 * @memberof CalcRecursion
+	 */
+	CalcRecursion.prototype.incRecursionCounter = function () {
+		this.nRecursionCounter++;
+	};
+	/**
+	 * Method resets recursion counter.
+	 * Uses for control recursion level of initStartCellForIterCalc method.
+	 * @memberof CalcRecursion
+	 */
+	CalcRecursion.prototype.resetRecursionCounter = function () {
+		if (this.getRecursionCounter() > 0) {
+			this.nRecursionCounter = 0;
+		}
+	}
+	/**
+	 * Method returns recursion counter.
+	 * Uses for control recursion level of initStartCellForIterCalc method.
+	 * @memberof CalcRecursion
+	 * @returns {number}
+	 */
+	CalcRecursion.prototype.getRecursionCounter = function () {
+		return this.nRecursionCounter;
+	}
+	/**
 	 * Method sets a flag who recognizes an iteration calculations setting is enabled or not.
 	 * @memberof CalcRecursion
 	 * @param {boolean} bIsEnabledRecursion
@@ -8345,40 +8372,22 @@ function parserFormula( formula, parent, _ws ) {
 		return this.bIsEnabledRecursion;
 	};
 	/**
-	 * Method sets a previous cell value.
-	 * Uses for compare different between previous and current calculated cell value with relative error.
+	 * Method sets index of start cell. This cell is a start and finish point of iteration for a recursion formula.
+	 * Uses for only with enabled iterative calculations setting.
 	 * @memberof CalcRecursion
-	 * @param {number} nPrevCellValue
+	 * @param {number|null} nStartCellIndex
 	 */
-	CalcRecursion.prototype.setPrevCellValue = function (nPrevCellValue) {
-		this.nPrevCellValue = nPrevCellValue;
+	CalcRecursion.prototype.setStartCellIndex = function (nStartCellIndex) {
+		this.nStartCellIndex = nStartCellIndex;
 	};
 	/**
-	 * Method returns a previous cell value.
-	 * Uses for compare different between previous and current calculated cell value with relative error.
+	 * Method returns index of start cell. This cell is a start and finish point of iteration for a recursion formula.
+	 * Uses for only with enabled iterative calculations setting.
 	 * @memberof CalcRecursion
 	 * @returns {number}
 	 */
-	CalcRecursion.prototype.getPrevCellValue = function () {
-		return this.nPrevCellValue;
-	};
-	/**
-	 * Method sets start cell. This cell is a start and finish point of iteration for a recursion formula.
-	 * Uses for only with enabled iterative calculations setting.
-	 * @memberof CalcRecursion
-	 * @param {Cell} oStartCellForIterCalc
-	 */
-	CalcRecursion.prototype.setStartCellForIterCalc = function (oStartCellForIterCalc) {
-		this.oStartCellForIterCalc = oStartCellForIterCalc;
-	};
-	/**
-	 * Method returns start cell. This cell is a start and finish point of iteration for a recursion formula.
-	 * Uses for only with enabled iterative calculations setting.
-	 * @memberof CalcRecursion
-	 * @returns {Cell}
-	 */
-	CalcRecursion.prototype.getStartCellForIterCalc = function () {
-		return this.oStartCellForIterCalc;
+	CalcRecursion.prototype.getStartCellIndex = function () {
+		return this.nStartCellIndex;
 	};
 	/**
 	 * Method sets a maximum iterations.

@@ -656,7 +656,8 @@ $(function () {
 		// Need to understand how to make emulation of fill cell
 		// Test method initStartCellForIterCalc - V
 		// Create dependence cells
-		let nExpectedCellIndex, nFactCellIndex, oStartCell, oCell;
+		const g_cCalcRecursion = AscCommonExcel.g_cCalcRecursion;
+		let nExpectedCellIndex, nFactCellIndex, oCell;
 		// Init necessary functions
 		const selectCell = function (sRange) {
 			let oSelectCell = ws.getRange2(sRange);
@@ -670,9 +671,9 @@ $(function () {
 		};
 		const getStartCellForIterCalc = function (oCell) {
 			oCell.initStartCellForIterCalc();
-			oStartCell = oCell.getStartCellForIterCalc();
+			let nStartCellIndex = g_cCalcRecursion.getStartCellIndex();
 
-			return oStartCell;
+			return nStartCellIndex;
 		}
 
 		// Checking initStartCellForIterCalc method
@@ -684,19 +685,19 @@ $(function () {
 
 		nExpectedCellIndex = AscCommonExcel.getCellIndex(999, 0);
 		oCell = selectCell("C1000");
-		oStartCell = getStartCellForIterCalc(oCell);
-		nFactCellIndex = AscCommonExcel.getCellIndex(oStartCell.nRow, oStartCell.nCol);
-		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Sequence chain - A1000 -> B1000 -> C1000. Selected cell: C1000. Start cell: ${oStartCell.getName()}`);
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Sequence chain - A1000 -> B1000 -> C1000. Selected cell: C1000. Start cell index: ${nFactCellIndex}`);
+		g_cCalcRecursion.setStartCellIndex(null);
 
 		oCell = selectCell("B1000");
-		oStartCell = getStartCellForIterCalc(oCell);
-		nFactCellIndex = AscCommonExcel.getCellIndex(oStartCell.nRow, oStartCell.nCol);
-		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Sequence chain - A1000 -> B1000 -> C1000. Selected cell: B1000. Start cell: ${oStartCell.getName()}`);
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Sequence chain - A1000 -> B1000 -> C1000. Selected cell: B1000. Start cell index: ${nFactCellIndex}`);
+		g_cCalcRecursion.setStartCellIndex(null);
 
 		oCell = selectCell("A1000");
-		oStartCell = getStartCellForIterCalc(oCell);
-		nFactCellIndex = AscCommonExcel.getCellIndex(oStartCell.nRow, oStartCell.nCol);
-		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Sequence chain - A1000 -> B1000 -> C1000. Selected cell: A1000. Start cell: ${oStartCell.getName()}`);
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Sequence chain - A1000 -> B1000 -> C1000. Selected cell: A1000. Start cell: ${nFactCellIndex}`);
+		g_cCalcRecursion.setStartCellIndex(null);
 
 		//Case: Loop chain - D1000: F1000/E1000 <-> F1000: E1000+D1000
 		ws.getRange2("D1000").setValue("=F1000/E1000");
@@ -704,53 +705,72 @@ $(function () {
 		ws.getRange2("F1000").setValue("=E1000+D1000");
 
 		oCell = selectCell("D1000");
-		oStartCell = getStartCellForIterCalc(oCell);
+		nFactCellIndex = getStartCellForIterCalc(oCell);
 		nExpectedCellIndex = AscCommonExcel.getCellIndex(999, 3);
-		nFactCellIndex = AscCommonExcel.getCellIndex(oStartCell.nRow, oStartCell.nCol);
-		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Loop chain - D1000 <-> F1000. Selected cell: D1000. Start cell: ${oStartCell.getName()}`);
+		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Loop chain - D1000 <-> F1000. Selected cell: D1000. Start cell: ${nFactCellIndex}`);
+		g_cCalcRecursion.setStartCellIndex(null);
 
 		oCell = selectCell("F1000");
-		oStartCell = getStartCellForIterCalc(oCell);
+		nFactCellIndex = getStartCellForIterCalc(oCell);
 		nExpectedCellIndex = AscCommonExcel.getCellIndex(999, 5);
-		nFactCellIndex = AscCommonExcel.getCellIndex(oStartCell.nRow, oStartCell.nCol);
-		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Loop chain - D1000 <-> F1000. Selected cell: F1000. Start cell: ${oStartCell.getName()}`);
+		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Loop chain - D1000 <-> F1000. Selected cell: F1000. Start cell: ${nFactCellIndex}`);
+		g_cCalcRecursion.setStartCellIndex(null);
 		// Case: Loop cell - A1001: A1001+1
 		ws.getRange2("A1001").setValue("=A1001+1");
 
 		oCell = selectCell("A1001");
-		oStartCell = getStartCellForIterCalc(oCell);
+		nFactCellIndex = getStartCellForIterCalc(oCell);
 		nExpectedCellIndex = AscCommonExcel.getCellIndex(1000, 0);
-		nFactCellIndex = AscCommonExcel.getCellIndex(oStartCell.nRow, oStartCell.nCol);
-		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Loop cell - A1001. Selected cell: A1001. Start cell: ${oStartCell.getName()}`);
+		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Loop cell - A1001. Selected cell: A1001. Start cell: ${nFactCellIndex}`);
+		g_cCalcRecursion.setStartCellIndex(null);
 		// Negative case sequence chain without loop cell.
 		ws.getRange2("A1002").setValue("=1+B1002");
 		ws.getRange2("B1002").setValue("=1+C1002");
 		ws.getRange2("C1002").setValue("1");
 
 		oCell = selectCell("C1002");
-		oStartCell = getStartCellForIterCalc(oCell);
-		assert.strictEqual(oStartCell, null, `Test initStartCellForIterCalc. Negative case sequence chain without loop cell. Selected cell: C1002. Start cell: ${oStartCell}`);
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		assert.strictEqual(nFactCellIndex, null, `Test initStartCellForIterCalc. Negative case sequence chain without loop cell. Selected cell: C1002. Start cell: ${nFactCellIndex}`);
 
 		oCell = selectCell("B1002");
-		oStartCell = getStartCellForIterCalc(oCell);
-		assert.strictEqual(oStartCell, null, `Test initStartCellForIterCalc. Negative case sequence chain without loop cell. Selected cell: B1002. Start cell: ${oStartCell}`);
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		assert.strictEqual(nFactCellIndex, null, `Test initStartCellForIterCalc. Negative case sequence chain without loop cell. Selected cell: B1002. Start cell: ${nFactCellIndex}`);
 
 		oCell = selectCell("A1002");
-		oStartCell = getStartCellForIterCalc(oCell);
-		assert.strictEqual(oStartCell, null, `Test initStartCellForIterCalc. Negative case sequence chain without loop cell. Selected cell: A1002. Start cell: ${oStartCell}`);
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		assert.strictEqual(nFactCellIndex, null, `Test initStartCellForIterCalc. Negative case sequence chain without loop cell. Selected cell: A1002. Start cell: ${nFactCellIndex}`);
 		// Negative case cell without any chain.
 		ws.getRange2("A1003").setValue("=1+2");
 		oCell = selectCell("A1003");
-		oStartCell = getStartCellForIterCalc(oCell);
-		assert.strictEqual(oStartCell, null, `Test initStartCellForIterCalc. Negative case cell without any chain. Selected cell: A1003. Start cell: ${oStartCell}`);
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		assert.strictEqual(nFactCellIndex, null, `Test initStartCellForIterCalc. Negative case cell without any chain. Selected cell: A1003. Start cell: ${nFactCellIndex}`);
 
 		ws.getRange2("A1004").setValue("1");
 		ws.getRange2("B1004").setValue("2");
 		ws.getRange2("C1004").setValue("=A1004+B1004");
 
 		oCell = selectCell("C1004");
-		oStartCell = getStartCellForIterCalc(oCell);
-		assert.strictEqual(oStartCell, null, `Test initStartCellForIterCalc. Negative case cell without any chain. Selected cell: C1004. Start cell: ${oStartCell}`);
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		assert.strictEqual(nFactCellIndex, null, `Test initStartCellForIterCalc. Negative case cell without any chain. Selected cell: C1004. Start cell: ${nFactCellIndex}`);
+		// Test enableCalcFormula method.
+		oCell = selectCell("A1000");
+		let oCellNeedEnableRecalc = selectCell("B1000");
+		assert.strictEqual(oCellNeedEnableRecalc.getIsDirty(), false, "Test enableCalcFormulas. Before: Cell B1000 isDirty - false");
+		oCell.changeLinkedCell(function(oCell) {
+			if (oCell.isFormula && !oCell.getIsDirty()) {
+				oCell.setIsDirty(true);
+			}
+		}, true);
+		oCellNeedEnableRecalc = selectCell("B1000");
+		assert.strictEqual(oCellNeedEnableRecalc.getIsDirty(), true, "Test enableCalcFormulas. After: Cell B1000 isDirty - true");
+		// Test: Loop cell - A1001: A1001+1
+		assert.strictEqual(ws.getRange2("A1001").getValue(), "10", "Test: Loop cell - A1001: A1001+1");
+		// Test: Sequence chain - A1005: A1005+B1005, B1005: 1. Deep level of recursion - 0
+		ws.getRange2("A1005").setValue("=A1005+B1005");
+		ws.getRange2("B1005").setValue("1");
+		assert.strictEqual(ws.getRange2("A1005").getValue(), "10", "Test: Sequence chain - A1005: A1005+B1005, B1005: 1");
+		// Test: Sequence chain = A1000: A1000+B1000, B1000: B1000+C1000, C1000: 1. Deep level of recursion - 1
+		assert.strictEqual(ws.getRange2("A1000").getValue(), "45", "Test: Sequence chain = A1000: A1000+B1000, B1000: B1000+C1000, C1000: 1");
 	});
 	QUnit.test("Test: \"ABS\"", function (assert) {
 
@@ -821,7 +841,7 @@ $(function () {
 	});
 
 	QUnit.test("Test: \"Defined names cycle\"", function (assert) {
-
+		AscCommonExcel.g_cCalcRecursion.setIsEnabledRecursion(false);
 		var newNameQ = new Asc.asc_CDefName("q", "SUM('" + ws.getName() + "'!A2)");
 		wb.editDefinesNames(null, newNameQ);
 		ws.getRange2("Q1").setValue("=q");

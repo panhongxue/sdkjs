@@ -651,11 +651,6 @@ $(function () {
 
 	QUnit.module("Formula");
 	QUnit.test('Iterative calculation', function (assert) {
-		//TODO Need to check Cell._checkDirty and new methods of cell
-		// Test starts with setValue + _getCell + _checkDirty
-		// Need to understand how to make emulation of fill cell
-		// Test method initStartCellForIterCalc - V
-		// Create dependence cells
 		const g_cCalcRecursion = AscCommonExcel.g_cCalcRecursion;
 		let nExpectedCellIndex, nFactCellIndex, oCell;
 		// Init necessary functions
@@ -675,102 +670,170 @@ $(function () {
 
 			return nStartCellIndex;
 		}
-
-		// Checking initStartCellForIterCalc method
+		// Check recursion formula with iteration limit
 		// Case: Sequence chain - A1000: A1000+B1000 -> B1000: B1000+C1000 -> C1: 1
 		// Fill cells
 		ws.getRange2("A1000").setValue("=A1000+B1000");
 		ws.getRange2("B1000").setValue("=B1000+C1000");
 		ws.getRange2("C1000").setValue("1");
-
-		nExpectedCellIndex = AscCommonExcel.getCellIndex(999, 0);
-		oCell = selectCell("C1000");
-		nFactCellIndex = getStartCellForIterCalc(oCell);
-		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Sequence chain - A1000 -> B1000 -> C1000. Selected cell: C1000. Start cell index: ${nFactCellIndex}`);
-		g_cCalcRecursion.setStartCellIndex(null);
-
-		oCell = selectCell("B1000");
-		nFactCellIndex = getStartCellForIterCalc(oCell);
-		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Sequence chain - A1000 -> B1000 -> C1000. Selected cell: B1000. Start cell index: ${nFactCellIndex}`);
-		g_cCalcRecursion.setStartCellIndex(null);
-
-		oCell = selectCell("A1000");
-		nFactCellIndex = getStartCellForIterCalc(oCell);
-		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Sequence chain - A1000 -> B1000 -> C1000. Selected cell: A1000. Start cell: ${nFactCellIndex}`);
-		g_cCalcRecursion.setStartCellIndex(null);
-
+		assert.strictEqual(ws.getRange2("A1000").getValue(), "45", "Test: Sequence chain = A1000: A1000+B1000, B1000: B1000+C1000, C1000: 1. A1000 - 45");
+		assert.strictEqual(ws.getRange2("B1000").getValue(), "10", "Test: Sequence chain = A1000: A1000+B1000, B1000: B1000+C1000, C1000: 1. B1000 - 10");
 		//Case: Loop chain - D1000: F1000/E1000 <-> F1000: E1000+D1000
 		ws.getRange2("D1000").setValue("=F1000/E1000");
 		ws.getRange2("E1000").setValue("1");
 		ws.getRange2("F1000").setValue("=E1000+D1000");
-
-		oCell = selectCell("D1000");
-		nFactCellIndex = getStartCellForIterCalc(oCell);
-		nExpectedCellIndex = AscCommonExcel.getCellIndex(999, 3);
-		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Loop chain - D1000 <-> F1000. Selected cell: D1000. Start cell: ${nFactCellIndex}`);
-		g_cCalcRecursion.setStartCellIndex(null);
-
-		oCell = selectCell("F1000");
-		nFactCellIndex = getStartCellForIterCalc(oCell);
-		nExpectedCellIndex = AscCommonExcel.getCellIndex(999, 5);
-		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Loop chain - D1000 <-> F1000. Selected cell: F1000. Start cell: ${nFactCellIndex}`);
-		g_cCalcRecursion.setStartCellIndex(null);
 		// Case: Loop cell - A1001: A1001+1
 		ws.getRange2("A1001").setValue("=A1001+1");
-
-		oCell = selectCell("A1001");
-		nFactCellIndex = getStartCellForIterCalc(oCell);
-		nExpectedCellIndex = AscCommonExcel.getCellIndex(1000, 0);
-		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test initStartCellForIterCalc. Loop cell - A1001. Selected cell: A1001. Start cell: ${nFactCellIndex}`);
-		g_cCalcRecursion.setStartCellIndex(null);
+		assert.strictEqual(ws.getRange2("A1001").getValue(), "10", "Test: Loop cell - A1001: A1001+1. A1001 - 10");
 		// Negative case sequence chain without loop cell.
 		ws.getRange2("A1002").setValue("=1+B1002");
 		ws.getRange2("B1002").setValue("=1+C1002");
 		ws.getRange2("C1002").setValue("1");
-
-		oCell = selectCell("C1002");
-		nFactCellIndex = getStartCellForIterCalc(oCell);
-		assert.strictEqual(nFactCellIndex, null, `Test initStartCellForIterCalc. Negative case sequence chain without loop cell. Selected cell: C1002. Start cell: ${nFactCellIndex}`);
-
-		oCell = selectCell("B1002");
-		nFactCellIndex = getStartCellForIterCalc(oCell);
-		assert.strictEqual(nFactCellIndex, null, `Test initStartCellForIterCalc. Negative case sequence chain without loop cell. Selected cell: B1002. Start cell: ${nFactCellIndex}`);
-
-		oCell = selectCell("A1002");
-		nFactCellIndex = getStartCellForIterCalc(oCell);
-		assert.strictEqual(nFactCellIndex, null, `Test initStartCellForIterCalc. Negative case sequence chain without loop cell. Selected cell: A1002. Start cell: ${nFactCellIndex}`);
+		assert.strictEqual(ws.getRange2("A1002").getValue(), "3", "Test: Negative case sequence chain without loop cell - A1002: 1+B1002. A1002 - 3");
+		assert.strictEqual(ws.getRange2("B1002").getValue(), "2", "Test: Negative case sequence chain without loop cell - B1002: 1+C1002. B1002 - 2");
+		assert.strictEqual(ws.getRange2("C1002").getValue(), "1", "Test: Negative case sequence chain without loop cell - C1002: 1. C1002 - 1");
 		// Negative case cell without any chain.
 		ws.getRange2("A1003").setValue("=1+2");
-		oCell = selectCell("A1003");
-		nFactCellIndex = getStartCellForIterCalc(oCell);
-		assert.strictEqual(nFactCellIndex, null, `Test initStartCellForIterCalc. Negative case cell without any chain. Selected cell: A1003. Start cell: ${nFactCellIndex}`);
-
+		assert.strictEqual(ws.getRange2("A1003").getValue(), "3", "Test: Negative case cell without any chain - A1003: 1+2. A1003 - 3");
 		ws.getRange2("A1004").setValue("1");
 		ws.getRange2("B1004").setValue("2");
 		ws.getRange2("C1004").setValue("=A1004+B1004");
+		assert.strictEqual(ws.getRange2("C1004").getValue(), "3", "Test: Negative case cell without any chain - C1004: A1004+B1004. C1004 - 3");
+		// Test: Sequence chain - A1005: A1005+B1005, B1005: 1. Deep level of recursion - 0
+		ws.getRange2("A1005").setValue("=A1005+B1005");
+		ws.getRange2("B1005").setValue("1");
+		assert.strictEqual(ws.getRange2("A1005").getValue(), "10", "Test: Sequence chain - A1005: A1005+B1005, B1005: 1");
+		// Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. Deep level of recursion - 10, Max iteration 10
+		ws.getRange2("A1006").setValue("=A1006+B1006");
+		ws.getRange2("B1006").setValue("=B1006+C1006");
+		ws.getRange2("C1006").setValue("=C1006+D1006");
+		ws.getRange2("D1006").setValue("=D1006+E1006");
+		ws.getRange2("E1006").setValue("=E1006+F1006");
+		ws.getRange2("F1006").setValue("=F1006+G1006");
+		ws.getRange2("G1006").setValue("=G1006+H1006");
+		ws.getRange2("H1006").setValue("=H1006+I1006");
+		ws.getRange2("I1006").setValue("=I1006+J1006");
+		ws.getRange2("J1006").setValue("1");
+		assert.strictEqual(ws.getRange2("A1006").getValue(), "10", "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. A1006 - 10");
+		assert.strictEqual(ws.getRange2("B1006").getValue(), "45", "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. B1006 - 45");
+		assert.strictEqual(ws.getRange2("C1006").getValue(), "120", "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. C1006 - 120");
+		assert.strictEqual(ws.getRange2("D1006").getValue(), "210", "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. D1006 - 210");
+		assert.strictEqual(ws.getRange2("E1006").getValue(), "252", "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. E1006 - 252");
+		assert.strictEqual(ws.getRange2("F1006").getValue(), "210", "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. F1006 - 210");
+		assert.strictEqual(ws.getRange2("G1006").getValue(), "120", "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. G1006 - 120");
+		assert.strictEqual(ws.getRange2("H1006").getValue(), "45", "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. H1006 - 45");
+		assert.strictEqual(ws.getRange2("I1006").getValue(), "10", "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. I1006 - 10");
+		// Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... T1007: 1. Deep level of recursion - 20, Max iteration 10
+		ws.getRange2("A1007").setValue("=A1007+B1007");
+		ws.getRange2("B1007").setValue("=B1007+C1007");
+		ws.getRange2("C1007").setValue("=C1007+D1007");
+		ws.getRange2("D1007").setValue("=D1007+E1007");
+		ws.getRange2("E1007").setValue("=E1007+F1007");
+		ws.getRange2("F1007").setValue("=F1007+G1007");
+		ws.getRange2("G1007").setValue("=G1007+H1007");
+		ws.getRange2("H1007").setValue("=H1007+I1007");
+		ws.getRange2("I1007").setValue("=I1007+J1007");
+		ws.getRange2("J1007").setValue("=J1007+K1007");
+		ws.getRange2("K1007").setValue("=K1007+L1007");
+		ws.getRange2("L1007").setValue("=L1007+Q1007");
+		ws.getRange2("Q1007").setValue("=Q1007+R1007");
+		ws.getRange2("R1007").setValue("=R1007+S1007");
+		ws.getRange2("S1007").setValue("=S1007+T1007");
+		ws.getRange2("T1007").setValue("=T1007+U1007");
+		ws.getRange2("U1007").setValue("=U1007+V1007");
+		ws.getRange2("V1007").setValue("=V1007+W1007");
+		ws.getRange2("W1007").setValue("=W1007+X1007");
+		ws.getRange2("X1007").setValue("1");
+		assert.strictEqual(ws.getRange2("A1007").getValue(), "0", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. A1007 - 0");
+		assert.strictEqual(ws.getRange2("B1007").getValue(), "0", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. B1007 - 0");
+		assert.strictEqual(ws.getRange2("C1007").getValue(), "0", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. C1007 - 0");
+		assert.strictEqual(ws.getRange2("D1007").getValue(), "0", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. D1007 - 0");
+		assert.strictEqual(ws.getRange2("E1007").getValue(), "0", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. E1007 - 0");
+		assert.strictEqual(ws.getRange2("F1007").getValue(), "0", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. F1007 - 0");
+		assert.strictEqual(ws.getRange2("G1007").getValue(), "0", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. G1007 - 0");
+		assert.strictEqual(ws.getRange2("H1007").getValue(), "0", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. H1007 - 0");
+		assert.strictEqual(ws.getRange2("I1007").getValue(), "0", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. I1007 - 0");
+		assert.strictEqual(ws.getRange2("J1007").getValue(), "1", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. J1007 - 1");
+		assert.strictEqual(ws.getRange2("K1007").getValue(), "10", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. K1007 - 10");
+		assert.strictEqual(ws.getRange2("L1007").getValue(), "45", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. L1007 - 45");
+		assert.strictEqual(ws.getRange2("Q1007").getValue(), "120", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. Q1007 - 120");
+		assert.strictEqual(ws.getRange2("R1007").getValue(), "210", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. R1007 - 210");
+		assert.strictEqual(ws.getRange2("S1007").getValue(), "252", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. S1007 - 252");
+		assert.strictEqual(ws.getRange2("T1007").getValue(), "210", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. T1007 - 210");
+		assert.strictEqual(ws.getRange2("U1007").getValue(), "120", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. U1007 - 120");
+		assert.strictEqual(ws.getRange2("V1007").getValue(), "45", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. V1007 - 45");
+		assert.strictEqual(ws.getRange2("W1007").getValue(), "10", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. W1007 - 10");
+		// Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1
+		ws.getRange2("A1011").setValue("=A1011+A1012");
+		ws.getRange2("A1012").setValue("=A1012+A1013");
+		ws.getRange2("A1013").setValue("=A1013+A1014");
+		ws.getRange2("A1014").setValue("=A1014+A1015");
+		ws.getRange2("A1015").setValue("1");
+		assert.strictEqual(ws.getRange2("A1011").getValue(), "210", "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. A1011 - 1");
+		assert.strictEqual(ws.getRange2("A1012").getValue(), "120", "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. A1012 - 120");
+		assert.strictEqual(ws.getRange2("A1013").getValue(), "45", "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. A1013 - 45");
+		assert.strictEqual(ws.getRange2("A1014").getValue(), "10", "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. A1014 - 10");
 
-		oCell = selectCell("C1004");
-		nFactCellIndex = getStartCellForIterCalc(oCell);
-		assert.strictEqual(nFactCellIndex, null, `Test initStartCellForIterCalc. Negative case cell without any chain. Selected cell: C1004. Start cell: ${nFactCellIndex}`);
-		// Test enableCalcFormula method.
+		// Test changeLinkedCell method.
 		oCell = selectCell("A1000");
 		let oCellNeedEnableRecalc = selectCell("B1000");
-		assert.strictEqual(oCellNeedEnableRecalc.getIsDirty(), false, "Test enableCalcFormulas. Before: Cell B1000 isDirty - false");
+		assert.strictEqual(oCellNeedEnableRecalc.getIsDirty(), false, "Test: changeLinkedCell. Before: Cell B1000 isDirty - false");
 		oCell.changeLinkedCell(function(oCell) {
 			if (oCell.isFormula && !oCell.getIsDirty()) {
 				oCell.setIsDirty(true);
 			}
 		}, true);
 		oCellNeedEnableRecalc = selectCell("B1000");
-		assert.strictEqual(oCellNeedEnableRecalc.getIsDirty(), true, "Test enableCalcFormulas. After: Cell B1000 isDirty - true");
-		// Test: Loop cell - A1001: A1001+1
-		assert.strictEqual(ws.getRange2("A1001").getValue(), "10", "Test: Loop cell - A1001: A1001+1");
-		// Test: Sequence chain - A1005: A1005+B1005, B1005: 1. Deep level of recursion - 0
-		ws.getRange2("A1005").setValue("=A1005+B1005");
-		ws.getRange2("B1005").setValue("1");
-		assert.strictEqual(ws.getRange2("A1005").getValue(), "10", "Test: Sequence chain - A1005: A1005+B1005, B1005: 1");
-		// Test: Sequence chain = A1000: A1000+B1000, B1000: B1000+C1000, C1000: 1. Deep level of recursion - 1
-		assert.strictEqual(ws.getRange2("A1000").getValue(), "45", "Test: Sequence chain = A1000: A1000+B1000, B1000: B1000+C1000, C1000: 1");
+		assert.strictEqual(oCellNeedEnableRecalc.getIsDirty(), true, "Test: changeLinkedCell. After: Cell B1000 isDirty - true");
+		// Test initStartCellForIterCalc method
+		// Sequence chain A1000 -> B1000 -> C1000
+		nExpectedCellIndex = AscCommonExcel.getCellIndex(999, 0);
+		oCell = selectCell("C1000");
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test: initStartCellForIterCalc. Sequence chain - A1000 -> B1000 -> C1000. Selected cell: C1000. Start cell index: ${nFactCellIndex}`);
+		g_cCalcRecursion.setStartCellIndex(null);
+		oCell = selectCell("B1000");
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test: initStartCellForIterCalc. Sequence chain - A1000 -> B1000 -> C1000. Selected cell: B1000. Start cell index: ${nFactCellIndex}`);
+		g_cCalcRecursion.setStartCellIndex(null);
+		oCell = selectCell("A1000");
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test: initStartCellForIterCalc. Sequence chain - A1000 -> B1000 -> C1000. Selected cell: A1000. Start cell: ${nFactCellIndex}`);
+		g_cCalcRecursion.setStartCellIndex(null);
+		// Loop chain D1000 <-> F1000
+		oCell = selectCell("D1000");
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		nExpectedCellIndex = AscCommonExcel.getCellIndex(999, 3);
+		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test: initStartCellForIterCalc. Loop chain - D1000 <-> F1000. Selected cell: D1000. Start cell: ${nFactCellIndex}`);
+		g_cCalcRecursion.setStartCellIndex(null);
+		oCell = selectCell("F1000");
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		nExpectedCellIndex = AscCommonExcel.getCellIndex(999, 5);
+		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test: initStartCellForIterCalc. Loop chain - D1000 <-> F1000. Selected cell: F1000. Start cell: ${nFactCellIndex}`);
+		g_cCalcRecursion.setStartCellIndex(null);
+		// Loop cell
+		oCell = selectCell("A1001");
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		nExpectedCellIndex = AscCommonExcel.getCellIndex(1000, 0);
+		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test: initStartCellForIterCalc. Loop cell - A1001. Selected cell: A1001. Start cell: ${nFactCellIndex}`);
+		g_cCalcRecursion.setStartCellIndex(null);
+		//Negative case sequence chain without loop cell.
+		oCell = selectCell("C1002");
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		assert.strictEqual(nFactCellIndex, null, `Test: initStartCellForIterCalc. Negative case sequence chain without loop cell. Selected cell: C1002. Start cell: ${nFactCellIndex}`);
+		oCell = selectCell("B1002");
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		assert.strictEqual(nFactCellIndex, null, `Test: initStartCellForIterCalc. Negative case sequence chain without loop cell. Selected cell: B1002. Start cell: ${nFactCellIndex}`);
+		oCell = selectCell("A1002");
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		assert.strictEqual(nFactCellIndex, null, `Test: initStartCellForIterCalc. Negative case sequence chain without loop cell. Selected cell: A1002. Start cell: ${nFactCellIndex}`);
+		// Negative case cell without any chain.
+		oCell = selectCell("A1003");
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		assert.strictEqual(nFactCellIndex, null, `Test: initStartCellForIterCalc. Negative case cell without any chain. Selected cell: A1003. Start cell: ${nFactCellIndex}`);
+		oCell = selectCell("C1004");
+		nFactCellIndex = getStartCellForIterCalc(oCell);
+		assert.strictEqual(nFactCellIndex, null, `Test: initStartCellForIterCalc. Negative case cell without any chain. Selected cell: C1004. Start cell: ${nFactCellIndex}`);
 	});
 	QUnit.test("Test: \"ABS\"", function (assert) {
 

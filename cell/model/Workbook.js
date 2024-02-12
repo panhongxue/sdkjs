@@ -1854,17 +1854,14 @@
 						nStartCellIndex = g_cCalcRecursion.getStartCellIndex();
 						if (nStartCellIndex != null) {
 							let nThisCellIndex = AscCommonExcel.getCellIndex(oCell.nRow, oCell.nCol);
-							let aLinkedCells = oCell.getLinkedCells();
-							if (aLinkedCells.includes(nStartCellIndex)) {
-								// Fills 0 value for empty cells with recursive formula.
-								if (!oCell.getValueWithoutFormat()) {
-									oCell.setValueNumberInternal(0);
-								}
-								// Disable calculating formula for linked cells
-								if (nThisCellIndex !== nStartCellIndex) {
-									oCell.setIsDirty(false);
-									return;
-								}
+							// Fills 0 value for empty cells with recursive formula.
+							if (oCell.getNumberValue() == null) {
+								oCell.setValueNumberInternal(0);
+							}
+							// Disable calculating formula for linked cells
+							if (nThisCellIndex !== nStartCellIndex) {
+								oCell.setIsDirty(false);
+								return;
 							}
 						}
 					}
@@ -1873,7 +1870,8 @@
 			});
 			this._foreachChanged(function(oCell) {
 				oCell && oCell._checkDirty();
-				if (g_cCalcRecursion.getIsEnabledRecursion()) {
+				if (g_cCalcRecursion.getIsEnabledRecursion() && nStartCellIndex != null) {
+					// Enable calculating formula for next cell in chain
 					oCell.changeLinkedCell(function (oCell) {
 						if (oCell.isFormula() && !oCell.getIsDirty()) {
 							oCell.setIsDirty(true);
@@ -1882,7 +1880,7 @@
 				}
 			});
 			let bMaxStepNotExceeded = g_cCalcRecursion.getIterStep() < g_cCalcRecursion.getMaxIterations() && g_cCalcRecursion.getIterStep() <= g_cCalcRecursion.getMaxRecursion();
-			if (g_cCalcRecursion.getIsEnabledRecursion() && bMaxStepNotExceeded) {
+			if (g_cCalcRecursion.getIsEnabledRecursion() && bMaxStepNotExceeded && nStartCellIndex != null) {
 				g_cCalcRecursion.incIterStep();
 				this._calculateDirty();
 			} else {
@@ -14147,29 +14145,6 @@
 			}
 		}
 	};
-	/**
-	 * Method returns array with indexes of linked cells.
-	 * @returns {[]}
-	 * @memberof Cell
-	 */
-	Cell.prototype.getLinkedCells = function () {
-		let ws = this.ws;
-		let oDepFormulas = ws.workbook.dependencyFormulas;
-		let nCellIndex = AscCommonExcel.getCellIndex(this.nRow, this.nCol);
-		let oCellListeners = oDepFormulas.sheetListeners[ws.Id].cellMap[nCellIndex];
-		if (!oCellListeners) {
-			return [];
-		}
-		let oListeners = oCellListeners.listeners;
-		let aLinkedCells = [];
-		for (let i in oListeners) {
-			let oListenerCell = oListeners[i].getParent();
-			aLinkedCells.push(AscCommonExcel.getCellIndex(oListenerCell.nRow, oListenerCell.nCol));
-		}
-
-		return aLinkedCells;
-	};
-
 	/**
 	 * Method returns an array of reference cells from outStack attribute of parserFormula class.
 	 * @param {parserFormula} oFormulaParsed

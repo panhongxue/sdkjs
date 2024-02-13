@@ -206,7 +206,7 @@
 
 	function StartCollaboration(bFast) {
 		editor.asc_SetFastCollaborative(bFast);
-		editor.collaborativeEditing.startCollaborationEditing();
+		editor.startCollaborationEditing();
 	}
 
 	function SyncCollaboration() {
@@ -214,7 +214,7 @@
 	}
 
 	function EndCollaboration() {
-		editor.collaborativeEditing.endCollaborationEditing();
+		editor.endCollaborationEditing();
 	}
 
 	function InitCoAuthoring() {

@@ -3150,6 +3150,7 @@ var editor;
   spreadsheet_api.prototype.startCollaborationEditing = function() {
     // Начинаем совместное редактирование
     this.collaborativeEditing.startCollaborationEditing();
+		AscCommon.CollaborativeEditing.Start_CollaborationEditing();
 
 	  if (this.isDocumentLoadComplete) {
 		  var worksheet = this.wb.getWorksheet();
@@ -3164,6 +3165,7 @@ var editor;
 
   spreadsheet_api.prototype.endCollaborationEditing = function() {
     // Временно заканчиваем совместное редактирование
+	  AscCommon.CollaborativeEditing.End_CollaborationEditing();
     this.collaborativeEditing.endCollaborationEditing();
   };
 

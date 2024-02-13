@@ -72,10 +72,6 @@
         return false;
     };
 
-    CCollaborativeEditing.prototype.Start_CollaborationEditing = function()
-    {
-    };
-
     CCollaborativeEditing.prototype.Add_User = function(UserId)
     {
     };

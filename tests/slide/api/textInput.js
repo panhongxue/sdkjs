@@ -146,8 +146,6 @@ $(function () {
 	});
 	QUnit.test("EnterText/CorrectEnterText/CompositeInput in collaboration", function (assert) {
 		assert.timeout(1000);
-		StartCollaboration(true);
-
 		const TestWithParagraph = (paragraph) => {
 			EnterText("ABC");
 			assert.strictEqual(GetParagraphText(paragraph), "ABC", "Add text 'ABC' in collaboration");
@@ -163,20 +161,20 @@ $(function () {
 			SyncCollaboration();
 			assert.strictEqual(GetParagraphText(paragraph), "AB123QRSC", "Add text '111' and correct it with '123' in collaboration (no sync between actions)");
 		};
-
-		const done = assert.async();
-		AddSmartArt().then(({paragraph}) => {
-			TestWithParagraph(paragraph);
-			done();
-		});
-
+		StartCollaboration(true);
 		TestWithParagraph(ClearShapeAndAddParagraph("").paragraph);
-
 		const textArt = AddTextArt();
 		logicDocument.SelectAll();
 		logicDocument.Remove();
 		TestWithParagraph(textArt.paragraph);
-
 		EndCollaboration();
+
+		const done = assert.async();
+		AddSmartArt().then(({paragraph}) => {
+			StartCollaboration(true);
+			TestWithParagraph(paragraph);
+			done();
+			EndCollaboration();
+		});
 	});
 });

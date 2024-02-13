@@ -807,7 +807,7 @@
 			let oDrawingsController = this.objectRender.controller;
 			oChartSpace = oDrawingsController._getChartSpace([], {type: nType}, false);
 			oChartSpace.buildSeries(aSeriesRef);
-			let oProps = Asc.editor.asc_getChartObject(true);
+			let oProps = Asc.editor.asc_getChartSettings(true);
 			oProps.chartSpace = null;
 			oProps.removeAllAxesProps();
 			oProps.putType(nType);

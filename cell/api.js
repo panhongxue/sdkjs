@@ -9052,7 +9052,6 @@ var editor;
 
   prot["asc_showDrawingObjects"] = prot.asc_showDrawingObjects;
   prot["asc_drawingObjectsExist"] = prot.asc_drawingObjectsExist;
-  prot["asc_getChartObject"] = prot.asc_getChartObject;
   prot["asc_getFrameChartSettings"] = prot.asc_getFrameChartSettings;
   prot["asc_addChartDrawingObject"] = prot.asc_addChartDrawingObject;
 	prot["asc_applyChartSettings"] = prot.asc_applyChartSettings;

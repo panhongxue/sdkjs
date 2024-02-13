@@ -16955,6 +16955,41 @@ function RangeDataManagerElem(bbox, data)
 		return res;
 	};
 
+	function CCalcPr() {
+		this.calcId = null;
+		this.calcMode = null;
+		this.fullCalcOnLoad = null;
+		this.refMode = null;
+		this.iterate = null;
+		this.iterateCount = null;
+		this.iterateDelta = null;
+		this.fullPrecision = null;
+		this.calcCompleted = null;
+		this.calcOnSave = null;
+		this.concurrentCalc = null;
+		this.concurrentManualCount = null;
+		this.forceFullCalc = null;
+	}
+	CCalcPr.prototype.clone = function () {
+		var res = new CCalcPr();
+
+		res.calcId = this.calcId;
+		res.calcMode = this.calcMode;
+		res.fullCalcOnLoad = this.fullCalcOnLoad;
+		res.refMode = this.refMode;
+		res.iterate = this.iterate;
+		res.iterateCount = this.iterateCount;
+		res.iterateDelta = this.iterateDelta;
+		res.fullPrecision = this.fullPrecision;
+		res.calcCompleted = this.calcCompleted;
+		res.calcOnSave = this.calcOnSave;
+		res.concurrentCalc = this.concurrentCalc;
+		res.concurrentManualCount = this.concurrentManualCount;
+		res.forceFullCalc = this.forceFullCalc;
+
+		return res;
+	};
+
 
 	//----------------------------------------------------------export----------------------------------------------------
 	var prot;
@@ -17469,6 +17504,8 @@ function RangeDataManagerElem(bbox, data)
 	window["AscCommonExcel"].CTimelineStyle = CTimelineStyle;
 	window["AscCommonExcel"].CTimelineStyleElement = CTimelineStyleElement;
 	window["AscCommonExcel"].CTimelinePivotFilter = CTimelinePivotFilter;
+
+	window["AscCommonExcel"].CCalcPr = CCalcPr;
 
 
 

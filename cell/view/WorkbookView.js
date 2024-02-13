@@ -5226,7 +5226,7 @@
 		const oWSView = this.getWorksheet();
 		if (oWSView && oWSView.isSelectOnShape) {
 			if (oWSView.objectRender) {
-				oWSView.objectRender.CorrectEnterText(oldValue, newValue);
+				return oWSView.objectRender.CorrectEnterText(oldValue, newValue);
 			}
 			return;
 		}

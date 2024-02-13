@@ -171,6 +171,9 @@ function (window, undefined) {
 		// Обработчик кликов
 		this.clickCounter = new AscFormat.ClickCounter();
 
+		//temporary - for safari rendering. remove after fixed
+		this._originalCanvasWidth = null;
+
 		this._init();
 
 		return this;
@@ -621,10 +624,10 @@ function (window, undefined) {
 	};
 
 	CellEditor.prototype.checkSymbolBeforeRange = function (char) {
-		if (!char.trim) {
+		if (char && !char.trim) {
 			char = AscCommon.convertUnicodeToUTF16(char);
 		}
-		return this.rangeChars.indexOf(char) >= 0 || char === AscCommon.FormulaSeparators.functionArgumentSeparator;
+		return (this.rangeChars && this.rangeChars.indexOf(char) >= 0) || char === AscCommon.FormulaSeparators.functionArgumentSeparator;
 	};
 
 	CellEditor.prototype.changeCellRange = function (range, moveEndOfText) {
@@ -1468,8 +1471,14 @@ function (window, undefined) {
 		// canvas'ы прозрачные и их увеличенный размер не влияет на результат.
 		//
 		// в новой версии сафари увеличиваем не только canvas'ы, но и дивку тоже.
-		if (AscCommon.AscBrowser.isSafariMacOs && (widthStyle * heightStyle) < 5000)
-			widthStyle = ((5000 / heightStyle) >> 0) + 1;
+		if (AscCommon.AscBrowser.isSafariMacOs) {
+			if ((widthStyle * heightStyle) < 5000) {
+				this._originalCanvasWidth = width;
+				widthStyle = ((5000 / heightStyle) >> 0) + 1;
+			} else {
+				this._originalCanvasWidth = null;
+			}
+		}
 
 		this.canvasOuterStyle.left = left + 'px';
 		this.canvasOuterStyle.top = top + 'px';
@@ -1498,8 +1507,9 @@ function (window, undefined) {
 		var t = this, opt = t.options, ctx = t.drawingCtx;
 
 		if (!window['IS_NATIVE_EDITOR']) {
+			let _width = this._originalCanvasWidth ? this._originalCanvasWidth : ctx.getWidth();
 			ctx.setFillStyle(opt.background)
-				.fillRect(0, 0, ctx.getWidth(), ctx.getHeight());
+				.fillRect(0, 0, _width, ctx.getHeight());
 		}
 
 		if (opt.fragments.length > 0) {

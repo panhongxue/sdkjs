@@ -2619,7 +2619,7 @@
 				var arrColors = [];
 				for (var i = 0; i < colors.length; i++) {
 					var _stop = new AscCommonExcel.GradientStop();
-					_stop.position = (i + 1) / colors.length;
+					_stop.position = i / (colors.length - 1);
 					_stop.color = colors[i];
 					arrColors.push(_stop);
 				}
@@ -3811,7 +3811,9 @@
 		};
 
 		cDate.prototype.getDateFromExcelWithTime2 = function (val) {
-			return new cDate(val * c_msPerDay + this.getExcelNullDate());
+			let value = val * c_msPerDay + this.getExcelNullDate();
+			//double value is truncated in cDate constructor so use round
+			return new cDate(Math.round(value));
 		};
 
 		cDate.prototype.addYears = function (counts) {

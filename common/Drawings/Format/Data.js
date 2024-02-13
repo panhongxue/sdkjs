@@ -11701,9 +11701,6 @@ Because of this, the display is sometimes not correct.
       }
     }
 
-    SmartArt.prototype.isPlaceholder = function () {
-      return false;
-    };
     SmartArt.prototype.canRotate = function () {
       return false;
     };

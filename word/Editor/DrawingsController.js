@@ -119,7 +119,7 @@ CDrawingsController.prototype.AddTextArt = function(nStyle)
 	var ParaDrawing = this.DrawingObjects.getMajorParaDrawing();
 	if (ParaDrawing)
 	{
-		ParaDrawing.GoTo_Text(undefined, false);
+		ParaDrawing.GoToText(undefined, false);
 		this.LogicDocument.AddTextArt(nStyle);
 	}
 };
@@ -400,7 +400,7 @@ CDrawingsController.prototype.RemoveSelection = function(bNoCheckDrawing)
 				oParaDrawing = arrDrawings[0];
 		}
 
-		oParaDrawing.GoTo_Text(undefined, false);
+		oParaDrawing.GoToText(undefined, false);
 	}
 };
 CDrawingsController.prototype.IsSelectionEmpty = function(bCheckHidden)

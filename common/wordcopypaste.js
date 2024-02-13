@@ -2285,8 +2285,8 @@ function sendImgUrls(api, images, callback, bNotShowError, token) {
     var _data = [];
     for (var i = 0; i < images.length; i++)
     {
-      var _url = window["native"]["getImageUrl"](images[i]);
-      var _full_path = window["native"]["getImagesDirectory"]() + "/" + _url;
+      var _url = window["native"]["GetImageUrl"](images[i]);
+      var _full_path = window["native"]["GetImagesPath"]() + "/" + _url;
       var _local_url = "media/" + _url;
       AscCommon.g_oDocumentUrls.addUrls({_local_url:_full_path});
       _data[i] = {url:_full_path, path:_local_url};
@@ -3437,15 +3437,12 @@ PasteProcessor.prototype =
 			oSelectedElement.Element = aNewContent[i];
 			presentationSelectedContent.DocContent.Elements[i] = oSelectedElement;
 		}
-		const oPaste = presentation.InsertContent(presentationSelectedContent);
-		if(oPaste.insert) {
-			presentation.Recalculate();
-            editor.checkChangesSize();
-			presentation.Document_UpdateInterfaceState();
 
+		const oPaste = presentation.InsertContent(presentationSelectedContent);
+		presentation.FinalizeAction();
+		presentation.UpdateInterface();
+		if(oPaste.insert) {
 			this._setSpecialPasteShowOptionsPresentation();
-		} else {
-			//window['AscCommon'].g_specialPasteHelper.CleanButtonInfo();
 		}
 
 		window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
@@ -4029,21 +4026,19 @@ PasteProcessor.prototype =
 
 					var presentationSelectedContent = new PresentationSelectedContent();
 					presentationSelectedContent.Drawings = arr_shapes;
+
 					const oInsertResult = presentation.InsertContent(presentationSelectedContent);
+					presentation.FinalizeAction();
+					presentation.UpdateInterface();
 					if (oInsertResult.insert) {
 						let arrProps = [];
-						if (oInsertResult.specialPasteProps)
-						{
+						if (oInsertResult.specialPasteProps) {
 							arrProps = [].concat(oInsertResult.specialPasteProps[Asc.c_oSpecialPasteProps.destinationFormatting]);
 						}
-						presentation.Recalculate();
-                        editor.checkChangesSize();
-						presentation.Document_UpdateInterfaceState();
 						oThis._setSpecialPasteShowOptionsPresentation(arrProps);
 					} else {
 						window['AscCommon'].g_specialPasteHelper.CleanButtonInfo();
 					}
-
 					window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
 				}
 			};
@@ -4131,18 +4126,16 @@ PasteProcessor.prototype =
 			//вставка
 			var paste_callback_presentation = function () {
 				if (false == oThis.bNested) {
-					const oPaste = presentation.InsertContent(presentationSelectedContent);
-					if (oPaste.insert) {
-						presentation.Recalculate();
-                        editor.checkChangesSize();
-						presentation.Document_UpdateInterfaceState();
 
-						var props = [Asc.c_oSpecialPasteProps.destinationFormatting, Asc.c_oSpecialPasteProps.keepTextOnly];
+					const oPaste = presentation.InsertContent(presentationSelectedContent);
+					presentation.FinalizeAction();
+					presentation.UpdateInterface();
+					if (oPaste.insert) {
+						let props = [Asc.c_oSpecialPasteProps.destinationFormatting, Asc.c_oSpecialPasteProps.keepTextOnly];
 						oThis._setSpecialPasteShowOptionsPresentation(props);
 					} else {
 						window['AscCommon'].g_specialPasteHelper.CleanButtonInfo();
 					}
-
 					window['AscCommon'].g_specialPasteHelper.Paste_Process_End();
 				}
 			};
@@ -4370,20 +4363,16 @@ PasteProcessor.prototype =
 
 					}
 				}
-				const oPaste = presentation.InsertContent(presentationSelectedContent)
-				if (oPaste.insert) {
-					presentation.Recalculate();
-                    editor.checkChangesSize();
-					presentation.Document_UpdateInterfaceState();
 
-					if (oPaste.specialPasteProps)
-					{
-						var props = [].concat(oPaste.specialPasteProps[Asc.c_oSpecialPasteProps.destinationFormatting]);
+				const oPaste = presentation.InsertContent(presentationSelectedContent)
+				presentation.FinalizeAction();
+				presentation.UpdateInterface();
+				if (oPaste.insert) {
+					if (oPaste.specialPasteProps) {
+						const props = [].concat(oPaste.specialPasteProps[Asc.c_oSpecialPasteProps.destinationFormatting]);
 						oThis._setSpecialPasteShowOptionsPresentation(props);
-					}
-					else if (!onlyImages)
-					{
-						var props = [Asc.c_oSpecialPasteProps.destinationFormatting, Asc.c_oSpecialPasteProps.keepTextOnly];
+					} else if (!onlyImages) {
+						let props = [Asc.c_oSpecialPasteProps.destinationFormatting, Asc.c_oSpecialPasteProps.keepTextOnly];
 						oThis._setSpecialPasteShowOptionsPresentation(props);
 					} else {
 						window['AscCommon'].g_specialPasteHelper.CleanButtonInfo();
@@ -4641,29 +4630,21 @@ PasteProcessor.prototype =
 					var specialOptionsArr = [];
 					var specialProps = Asc.c_oSpecialPasteProps;
 					let nSliceCount = 1;
-					if (oPaste.specialPasteProps)
-					{
+					if (oPaste.specialPasteProps) {
 						nSliceCount = oPaste.specialPasteProps[specialProps.destinationFormatting].length;
-						if (multipleParamsCount === 1)
-						{
+						if (multipleParamsCount === 1) {
 							specialOptionsArr = oPaste.specialPasteProps[specialProps.destinationFormatting];
-						}
-						if (multipleParamsCount === 2)
-						{
+						} else if (multipleParamsCount === 2) {
 							specialOptionsArr = oPaste.specialPasteProps[specialProps.destinationFormatting].concat(
 								oPaste.specialPasteProps[specialProps.sourceformatting]
 							);
-						}
-						if (multipleParamsCount === 3)
-						{
+						} else if (multipleParamsCount === 3) {
 							specialOptionsArr = oPaste.specialPasteProps[specialProps.destinationFormatting].concat(
 								oPaste.specialPasteProps[specialProps.sourceformatting],
 								oPaste.specialPasteProps[specialProps.picture]
 							);
 						}
-					}
-					else
-					{
+					} else {
 						if (1 === multipleParamsCount) {
 							specialOptionsArr = [specialProps.destinationFormatting];
 						} else if (2 === multipleParamsCount) {
@@ -4680,9 +4661,8 @@ PasteProcessor.prototype =
 							specialOptionsArr.splice(1, nSliceCount);
 						}
 					}
-					presentation.Recalculate();
-                    editor.checkChangesSize();
-					presentation.Document_UpdateInterfaceState();
+					presentation.FinalizeAction();
+					presentation.UpdateInterface();
 
 					//пока не показываю значок специальной вставки после copy/paste слайдов
 					var bSlideObjects = aContents[nIndex] && aContents[nIndex].SlideObjects && aContents[nIndex].SlideObjects.length > 0;
@@ -5228,9 +5208,8 @@ PasteProcessor.prototype =
 					let oSelectedContent = new PresentationSelectedContent();
 					oSelectedContent.Drawings = aCopyObjects;
 					let oPaste = oPresentation.InsertContent(oSelectedContent);
-					oPresentation.Recalculate();
+					oPresentation.FinalizeAction();
 					oPresentation.UpdateInterface();
-					oAPI.checkChangesSize();
 
 					//check only images
 					let bOnlyImg = false;
@@ -6574,8 +6553,8 @@ PasteProcessor.prototype =
 			var originalSrcArr = [];
 			for (var image in this.oImages) {
 				var src = this.oImages[image];
-				if (undefined !== window["Native"] && undefined !== window["Native"]["GetImageUrl"]) {
-					this.oImages[image] = window["Native"]["GetImageUrl"](this.oImages[image]);
+				if (undefined !== window["native"] && undefined !== window["native"]["GetImageUrl"]) {
+					this.oImages[image] = window["native"]["GetImageUrl"](this.oImages[image]);
 				} else if (!g_oDocumentUrls.getImageLocal(src)) {
 					if (oThis.rtfImages && oThis.rtfImages[src]) {
 						aImagesToDownload.push(oThis.rtfImages[src]);
@@ -7147,6 +7126,7 @@ PasteProcessor.prototype =
 				var oLineHeight = AscCommon.valueToMmType(line_height);
 				if (oLineHeight && ("%" === oLineHeight.type || "none" === oLineHeight.type)) {
 					Spacing.Line = oLineHeight.val;
+					Spacing.LineRule = Asc.linerule_Auto;
 				} else if (line_height && null != (line_height = AscCommon.valueToMm(line_height)) && line_height >= 0) {
 					Spacing.Line = line_height;
 					Spacing.LineRule = Asc.linerule_AtLeast;
@@ -11131,9 +11111,9 @@ function Check_LoadingDataBeforePrepaste(_api, _fonts, _images, _callback)
     for (let image in _images)
     {
         var src = _images[image];
-        if (undefined !== window["Native"] && undefined !== window["Native"]["GetImageUrl"])
+        if (undefined !== window["native"] && undefined !== window["native"]["GetImageUrl"])
         {
-            _images[image] = window["Native"]["GetImageUrl"](_images[image]);
+            _images[image] = window["native"]["GetImageUrl"](_images[image]);
         }
         else if (!g_oDocumentUrls.getImageUrl(src) && !g_oDocumentUrls.getImageLocal(src) && !g_oDocumentUrls.isThemeUrl(src))
         {

@@ -199,6 +199,7 @@ function (window, undefined) {
 							}
 							let updatedData = wb.getExternalReferenceSheetsFromZip(stream);
 							wb.aWorksheets = updatedData;
+							wb._updateWorksheetIndexes();
 							if (updatedData) {
 								for (let j = 0; j < arrExternalChartReferences.length; j += 1) {
 									const oExternalReference = arrExternalChartReferences[j].externalReference;

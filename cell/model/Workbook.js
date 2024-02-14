@@ -14092,7 +14092,7 @@
 			g_cCalcRecursion.resetRecursionCounter();
 			return;
 		}
-		if (!oDepFormulas) {
+		if (!oDepFormulas || !oDepFormulas.sheetListeners.hasOwnProperty(ws.Id)) {
 			g_cCalcRecursion.resetRecursionCounter();
 			return;
 		}
@@ -14193,12 +14193,12 @@
 		for (let i = 0, length = aRefElements.length; i < length; i++) {
 			const oRefElement = aRefElements[i];
 			const nElemType = oRefElement.type;
-			const b3D = nElemType === cElementType.cell3D || nElemType === cElementType.cellsRange3D || nElemType === cElementType.name3D;
-			const bArea = nElemType === cElementType.cellsRange || nElemType === cElementType.name;
+			const b3D = nElemType === cElementType.cell3D || nElemType === cElementType.cellsRange3D;
+			const bArea = nElemType === cElementType.cellsRange;
 			const bDefName = nElemType === cElementType.name || nElemType === cElementType.name3D;
 			const bTable = nElemType === cElementType.table;
 
-			if (nElemType === cElementType.cell || bArea) {
+			if (nElemType === cElementType.cell || bArea || b3D) {
 				const oRange = oRefElement.range;
 				oRange._foreachNoEmpty(function(oCell) {
 					let nCellIndex = AscCommonExcel.getCellIndex(oCell.nRow, oCell.nCol);
@@ -14211,7 +14211,7 @@
 					}
 				});
 			}
-			// TODO Make logic for 3D, DefName, Table
+			// TODO Make logic for DefName, Table
 		}
 		g_cCalcRecursion.resetRecursionCounter();
 	};

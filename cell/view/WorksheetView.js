@@ -8034,7 +8034,7 @@
 
     WorksheetView.prototype._addCellTextToCache = function (col, row) {
         let self = this;
-		var cache = this._fetchCellCache(col, row);
+		let cache = this._fetchCellCache(col, row);
         function makeFnIsGoodNumFormat(flags, width, isWidth) {
             return function (str) {
 				let widthStr;
@@ -8321,7 +8321,7 @@
             textBound.dy -= 1.5;
         }
 
-        let cache = this._fetchCellCache(col, row);
+		cache = this._fetchCellCache(col, row);
 		cache.state = this.stringRender.getInternalState();
 		cache.flags = fl;
 		cache.metrics = tm;

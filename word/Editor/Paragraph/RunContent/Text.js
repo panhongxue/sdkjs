@@ -339,7 +339,7 @@
 		let oWb = Asc && Asc.editor && Asc.editor.wb;
 		if(oWb) {
 			let oSR = oWb.stringRender;
-			width = oSR.pixelsToMM(oSR.mmToPixels(dWidth));
+			width = oSR.pixelsToMM(oSR.mmToPixels(width));
 		}
 		return (width > 0 ? width : 0);
 	};

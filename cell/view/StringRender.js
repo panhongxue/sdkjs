@@ -1169,9 +1169,9 @@
 				let oContent = oShape.txBody.content;
 				let oParagraph = oContent.Content[0];
 				let nAlign = AscCommon.align_Left;
-				if(this.flags && AscFormat.isRealNumber(this.flags.textAlign)) {
-					nAlign = this.flags.textAlign;
-				}
+				//if(this.flags && AscFormat.isRealNumber(this.flags.textAlign)) {
+				//	nAlign = this.flags.textAlign;
+				//}
 				oParagraph.SetParagraphAlign(nAlign)
 				for(let nFgm = 0; nFgm < aFragments.length; ++nFgm) {
 					let oFgm = aFragments[nFgm];

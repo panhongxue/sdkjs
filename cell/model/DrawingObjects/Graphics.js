@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -478,6 +478,15 @@ CGraphics.prototype =
         this.m_oLastFont2   = null;
     },
 
+    isVectorImage : function(img)
+    {
+        if (img.isVectorImage !== undefined)
+            return img.isVectorImage;
+        let fileName = AscCommon.g_oDocumentUrls.getImageLocal(img.src);
+        img.isVectorImage = (fileName && fileName.endsWith(".svg")) ? true : false;
+        return img.isVectorImage;
+    },
+
     // images
     drawImage2 : function(img,x,y,w,h,alpha,srcRect)
     {
@@ -494,7 +503,8 @@ CGraphics.prototype =
             if (!srcRect)
             {
                 // тут нужно проверить, можно ли нарисовать точно. т.е. может картинка ровно такая, какая нужна.
-                if (!global_MatrixTransformer.IsIdentity2(this.m_oTransform))
+                if (!global_MatrixTransformer.IsIdentity2(this.m_oTransform) ||
+                    this.isVectorImage(img))
                 {
                     this.m_oContext.drawImage(img,x,y,w,h);
                 }
@@ -605,7 +615,8 @@ CGraphics.prototype =
             if (!srcRect)
             {
                 // тут нужно проверить, можно ли нарисовать точно. т.е. может картинка ровно такая, какая нужна.
-                if (!global_MatrixTransformer.IsIdentity2(this.m_oTransform))
+                if (!global_MatrixTransformer.IsIdentity2(this.m_oTransform) ||
+                    this.isVectorImage(img))
                 {
                     this.m_oContext.drawImage(img,_x1,_y1,w,h);
                 }

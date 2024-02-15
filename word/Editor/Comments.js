@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -661,6 +661,15 @@ function CCommentDrawingRect(X, Y, W, H, CommentId, InvertTransform)
 	{
 		this.Data && this.Data.CreateNewCommentsGuid();
 	};
+	CComment.prototype.GenerateDurableId = function()
+	{
+		if (!this.Data)
+			return -1;
+		
+		let data = this.Data.Copy();
+		data.CreateNewCommentsGuid();
+		this.SetData(data);
+	};
 	/**
 	 * Является ли текущий пользователем автором комментария
 	 * @returns {boolean}
@@ -821,12 +830,20 @@ function CCommentDrawingRect(X, Y, W, H, CommentId, InvertTransform)
     // Добавляем данный класс в таблицу Id (обязательно в конце конструктора)
 	AscCommon.g_oTableId.Add( this, this.Id );
 }
+	CComments.prototype.isUse = function()
+	{
+		return this.Is_Use();
+	};
 	CComments.prototype.GetById = function(sId)
 	{
 		if (this.m_arrCommentsById[sId])
 			return this.m_arrCommentsById[sId];
 
 		return null;
+	};
+	CComments.prototype.getCurrentCommentId = function()
+	{
+		return this.m_sCurrent;
 	};
 	CComments.prototype.Add = function(oComment)
 	{
@@ -963,6 +980,10 @@ function CCommentDrawingRect(X, Y, W, H, CommentId, InvertTransform)
 	{
 		return this.m_bUseSolved;
 	};
+	CComments.prototype.isUseSolved = function()
+	{
+		return this.m_bUseSolved;
+	};
 	CComments.prototype.GetCommentIdByGuid          = function(sGuid)
 	{
 		var nDurableId = parseInt(sGuid, 16);
@@ -998,6 +1019,17 @@ function CCommentDrawingRect(X, Y, W, H, CommentId, InvertTransform)
 		if (this.m_arrCommentsById[sId])
 			return this.m_arrCommentsById[sId];
 
+		return null;
+	};
+	CComments.prototype.GetByDurableId = function(durableId)
+	{
+		let _durableId = "" + durableId;
+		for (let commentId in this.m_arrCommentsById)
+		{
+			if ("" + this.m_arrCommentsById[commentId].GetDurableId() === _durableId)
+				return this.m_arrCommentsById[commentId];
+		}
+		
 		return null;
 	};
 	CComments.prototype.UpdateCommentPosition = function(oComment, oChangedComments)
@@ -1193,7 +1225,11 @@ ParaComment.prototype.Copy = function(Selected, oPr)
     var sId = this.CommentId;
     if(oPr && oPr.Comparison)
     {
-        sId = oPr.Comparison.copyComment(this.CommentId);
+			const sComparisonCommentId = oPr.Comparison.copyComment(this.CommentId);
+			if (sComparisonCommentId !== null)
+			{
+				sId = sComparisonCommentId;
+			}
     }
 	return new ParaComment(this.Start, sId);
 };
@@ -1274,9 +1310,9 @@ ParaComment.prototype.Shift_Range = function(Dx, Dy, _CurLine, _CurRange, _CurPa
 ParaComment.prototype.Draw_HighLights = function(PDSH)
 {
 	if (true === this.Start)
-		PDSH.AddComment(this.CommentId);
+		PDSH.addComment(this.CommentId);
 	else
-		PDSH.RemoveComment(this.CommentId);
+		PDSH.removeComment(this.CommentId);
 };
 ParaComment.prototype.Refresh_RecalcData = function()
 {
@@ -1355,10 +1391,6 @@ ParaComment.prototype.MoveCursorToMark = function()
 };
 //--------------------------------------------------------export----------------------------------------------------
 window['AscCommon'] = window['AscCommon'] || {};
-
-window['AscCommon'].comments_NoComment = comments_NoComment;
-window['AscCommon'].comments_NonActiveComment = comments_NonActiveComment;
-window['AscCommon'].comments_ActiveComment = comments_ActiveComment;
 
 window['AscCommon'].comment_type_Common = comment_type_Common;
 window['AscCommon'].comment_type_HdrFtr = comment_type_HdrFtr;

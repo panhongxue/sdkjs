@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -31,11 +31,6 @@
  */
 
 "use strict";
-/**
- * User: Ilja.Kirillov
- * Date: 08.05.2018
- * Time: 15:52
- */
 
 // Import
 var g_oTextMeasurer = AscCommon.g_oTextMeasurer;
@@ -595,6 +590,10 @@ CPresentationBullet.prototype.Draw = function(X, Y, Context, PDSE)
 		for (var iter = sT.getUnicodeIterator(); iter.check(); iter.next())
 		{
 			var charCode = iter.value();
+			if (Context.m_bIsTextDrawer === true)
+			{
+				Context.CheckAddNewPath(X, Y, charCode);
+			}
 			Context.FillTextCode( X, Y, charCode );
 			X += g_oTextMeasurer.MeasureCode(charCode).Width;
 		}

@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -430,6 +430,7 @@
 			this.PercentFullWidth = tblProp.PercentFullWidth;
 			this.TableDescription = tblProp.TableDescription;
 			this.TableCaption = tblProp.TableCaption;
+			this.TableName = tblProp.TableName;
 
 			this.ColumnWidth = tblProp.ColumnWidth;
 			this.RowHeight   = tblProp.RowHeight;
@@ -758,6 +759,14 @@
 	{
 		this.TableCaption = v;
 	};
+	CTableProp.prototype.get_TableName = function ()
+	{
+		return this.TableName;
+	};
+	CTableProp.prototype.put_TableName = function (v)
+	{
+		this.TableName = v;
+	};
 	CTableProp.prototype.get_ColumnWidth = function()
 	{
 		return this.ColumnWidth;
@@ -838,6 +847,8 @@
 	CTableProp.prototype['put_TableDescription'] = CTableProp.prototype.put_TableDescription;
 	CTableProp.prototype['get_TableCaption'] = CTableProp.prototype.get_TableCaption;
 	CTableProp.prototype['put_TableCaption'] = CTableProp.prototype.put_TableCaption;
+	CTableProp.prototype['get_TableName'] = CTableProp.prototype.get_TableName;
+	CTableProp.prototype['put_TableName'] = CTableProp.prototype.put_TableName;
 	CTableProp.prototype['get_ColumnWidth'] = CTableProp.prototype.get_ColumnWidth;
 	CTableProp.prototype['put_ColumnWidth'] = CTableProp.prototype.put_ColumnWidth;
 	CTableProp.prototype['get_RowHeight'] = CTableProp.prototype.get_RowHeight;
@@ -1670,8 +1681,7 @@
 	CAscStyle.prototype['put_UIPriority']     = CAscStyle.prototype.put_UIPriority;
 	CAscStyle.prototype['get_StyleId']        = CAscStyle.prototype.get_StyleId;
 	CAscStyle.prototype['get_TranslatedName'] = CAscStyle.prototype.get_TranslatedName;
-
-
+	
 	/**
 	 * Класс для работы с настройками нумерации
 	 * @constructor
@@ -1700,10 +1710,23 @@
 
 		return this.Lvl[nLvl];
 	};
+	CAscNumbering.prototype.get_JSONNumbering = function(singleLevel)
+	{
+		return AscWord.CNumInfo.FromNum(this, singleLevel ? 0 : null).ToJson();
+	};
+	CAscNumbering.prototype.put_FromJSON = function(value)
+	{
+		let numInfo = AscWord.CNumInfo.Parse(value);
+		if (!numInfo)
+			return;
+		
+		numInfo.FillNum(this);
+	};
 	window['Asc']['CAscNumbering'] = window['Asc'].CAscNumbering = CAscNumbering;
-	CAscNumbering.prototype['get_InternalId'] = CAscNumbering.prototype.get_InternalId;
-	CAscNumbering.prototype['get_Lvl']        = CAscNumbering.prototype.get_Lvl;
-
+	CAscNumbering.prototype['get_InternalId']    = CAscNumbering.prototype.get_InternalId;
+	CAscNumbering.prototype['get_Lvl']           = CAscNumbering.prototype.get_Lvl;
+	CAscNumbering.prototype['get_JSONNumbering'] = CAscNumbering.prototype.get_JSONNumbering;
+	CAscNumbering.prototype['put_FromJSON']      = CAscNumbering.prototype.put_FromJSON;
 
 	/**
 	 * Класс для работы с текстом конкретного уровня нумерации
@@ -2003,10 +2026,14 @@
 		this.Text = null;
 		this.TextPr = null;
 		this.Opacity = null;
-		this.IsDiagonal = null;
+		this.Angle = 0;
+		this.BackgroundColor = null;
+		this.Outline = null;
 
 		this.ImageUrl = null;
 		this.Scale = null;
+		this.ImageW = null;
+		this.ImageH = null;
 
 		this.DivId = null;
 		this.Api = null;
@@ -2043,10 +2070,45 @@
 		return this.Opacity;
 	};
 	CAscWatermarkProperties.prototype['put_IsDiagonal'] = CAscWatermarkProperties.prototype.put_IsDiagonal = function (v) {
-		this.IsDiagonal = v;
+		if(v) {
+			this.Angle = 45;
+		}
+		else {
+			this.Angle = 0;
+		}
 	};
 	CAscWatermarkProperties.prototype['get_IsDiagonal'] = CAscWatermarkProperties.prototype.get_IsDiagonal = function () {
-		return this.IsDiagonal;
+		if(AscFormat.fApproxEqual(this.Angle, 0)) {
+			return false;
+		}
+		return true;
+	};
+	CAscWatermarkProperties.prototype['get_Angle'] = CAscWatermarkProperties.prototype.get_Angle = function () {
+		return this.Angle;
+	};
+	CAscWatermarkProperties.prototype['put_Angle'] = CAscWatermarkProperties.prototype.put_Angle = function (v) {
+		if(!AscFormat.isRealNumber(v)) {
+			return;
+		}
+		let dValue = v;
+		while (dValue < 0) {
+			dValue += 360;
+		}
+		while (dValue >= 360) {
+			dValue -= 360;
+		}
+		this.Angle = dValue;
+	};
+	CAscWatermarkProperties.prototype.getXfrmRot = function () {
+		if(this.Angle > 0) {
+			return Math.PI * (360 - this.Angle) / 180;
+		}
+		return 0;
+	};
+	CAscWatermarkProperties.prototype.setXfrmRot = function (dRot) {
+		if(AscFormat.isRealNumber(dRot) && dRot > 0) {
+			this.Angle = (360 - 180 * (dRot / Math.PI)) + 0.5 >> 0;
+		}
 	};
 
 	CAscWatermarkProperties.prototype['put_ImageUrl'] = CAscWatermarkProperties.prototype.put_ImageUrl = function (sUrl, token) {
@@ -2078,7 +2140,30 @@
 		this.Scale = v;
 	};
 	CAscWatermarkProperties.prototype['get_Scale'] = CAscWatermarkProperties.prototype.get_Scale = function () {
-		return this.Scale;
+		return this.Scale || 1.0;
+	};
+	CAscWatermarkProperties.prototype['put_ImageSize'] = CAscWatermarkProperties.prototype.put_ImageSize = function (w, h) {
+		this.ImageW = w;
+		this.ImageH = h;
+		this.Scale = -1;
+	};
+	CAscWatermarkProperties.prototype['get_ImageWidth'] = CAscWatermarkProperties.prototype.get_ImageWidth = function () {
+		return this.ImageW;
+	};
+	CAscWatermarkProperties.prototype['get_ImageHeight'] = CAscWatermarkProperties.prototype.get_ImageHeight = function () {
+		return this.ImageH;
+	};
+	CAscWatermarkProperties.prototype['put_BackgroundColor'] = CAscWatermarkProperties.prototype.put_BackgroundColor = function (v) {
+		this.BackgroundColor = v;
+	};
+	CAscWatermarkProperties.prototype['get_BackgroundColor'] = CAscWatermarkProperties.prototype.get_BackgroundColor = function () {
+		return this.BackgroundColor;
+	};
+	CAscWatermarkProperties.prototype['put_Outline'] = CAscWatermarkProperties.prototype.put_Outline = function (v) {
+		this.Outline = v;
+	};
+	CAscWatermarkProperties.prototype['get_Outline'] = CAscWatermarkProperties.prototype.get_Outline = function () {
+		return this.Outline;
 	};
 	CAscWatermarkProperties.prototype['put_DivId'] = CAscWatermarkProperties.prototype.put_DivId = function (v) {
 		this.DivId = v;
@@ -2093,7 +2178,7 @@
 		}
 		var t = this.Api;
 		var _this = this;
-		AscCommon.ShowImageFileDialog(t.documentId, t.documentUserId, t.CoAuthoringApi.get_jwt(), function(error, files)
+		AscCommon.ShowImageFileDialog(t.documentId, t.documentUserId, t.CoAuthoringApi.get_jwt(), t.documentShardKey, function(error, files)
 			{
 				if (Asc.c_oAscError.ID.No !== error)
 				{
@@ -2102,7 +2187,7 @@
 				else
 				{
 					t.sync_StartAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.UploadImage);
-					AscCommon.UploadImageFiles(files, t.documentId, t.documentUserId, t.CoAuthoringApi.get_jwt(), function(error, urls)
+					AscCommon.UploadImageFiles(files, t.documentId, t.documentUserId, t.CoAuthoringApi.get_jwt(), t.documentShardKey, function(error, urls)
 					{
 						if (Asc.c_oAscError.ID.No !== error)
 						{
@@ -2266,7 +2351,7 @@
 		{
 			return false;
 		}
-		if(this.IsDiagonal !== oPr.IsDiagonal)
+		if(!AscFormat.fApproxEqual(this.Angle, oPr.Angle))
 		{
 			return false;
 		}
@@ -2349,7 +2434,7 @@
 				oCultureInfo = AscCommon.g_aCultureInfos[1033];
 
 			var oDateTime = sDate ? new Asc.cDate(sDate) : new Asc.cDate();
-			return oFormat.formatToWord(oDateTime.getExcelDate() + (oDateTime.getHours() * 60 * 60 + oDateTime.getMinutes() * 60 + oDateTime.getSeconds()) / AscCommonExcel.c_sPerDay, 15, oCultureInfo);
+			return oFormat.formatToWord(oDateTime.getExcelDate(true) + (oDateTime.getHours() * 60 * 60 + oDateTime.getMinutes() * 60 + oDateTime.getSeconds()) / AscCommonExcel.c_sPerDay, 15, oCultureInfo);
 		}
 
 		return sDate;
@@ -2370,18 +2455,12 @@
 	window['Asc']['CAscCaptionProperties'] = window['Asc'].CAscCaptionProperties = CAscCaptionProperties;
 	var prot = CAscCaptionProperties.prototype;
 	prot.get_Name = prot["get_Name"] = function(){return this.Name;};
-	prot.get_Label = prot["get_Label"] = function(){
-		if(typeof this.Label === "string")
-		{
-			var aSplit = this.Label.split("_");
-			var sResult = aSplit[0];
-			for(var nIdx = 1; nIdx < aSplit.length; ++nIdx)
-			{
-				sResult += (" " + aSplit[nIdx]);
-			}
-			return sResult;
-		}
-		return this.Label;
+	prot.get_Label = prot["get_Label"] = function()
+	{
+		if (!(typeof this.Label === "string"))
+			return this.Label;
+		
+		return this.Label.split("_").join(" ");
 	};
 	prot.get_Before = prot["get_Before"] = function(){return this.Before;};
 	prot.get_ExcludeLabel = prot["get_ExcludeLabel"] = function(){return this.ExcludeLabel;};
@@ -2444,17 +2523,10 @@
 	};
 	prot.getLabelForInstruction = function()
 	{
-		if(typeof this.Label === "string")
-		{
-			var aSplited = this.Label.split(" ");
-			var sResult = aSplited[0];
-			for(var nIdx = 1; nIdx < aSplited.length; ++nIdx)
-			{
-				sResult += ("_" + aSplited[nIdx]);
-			}
-			return sResult;
-		}
-		return "";
+		if (!(typeof this.Label === "string"))
+			return "";
+		
+		return this.Label.split(" ").join("_");
 	};
 	prot.getSeqInstructionLine = function()
 	{

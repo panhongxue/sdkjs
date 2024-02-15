@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -289,6 +289,18 @@
 			}
 		};
 
+		CGroupShape.prototype.handleUpdateExtents = function() {
+			this.recalcTransform();
+			for(let nSp = 0; nSp < this.spTree.length; ++nSp) {
+				this.spTree[nSp].handleUpdateExtents();
+			}
+			if(!this.group) {
+				if(this.addToRecalculate) {
+					this.addToRecalculate();
+				}
+			}
+		};
+
 		CGroupShape.prototype.copy = function (oPr) {
 			var copy = new CGroupShape();
 			this.copy2(copy, oPr);
@@ -349,6 +361,13 @@
 				}
 			}
 		};
+		CGroupShape.prototype.clearLang = function () {
+			for (var i = 0; i < this.spTree.length; ++i) {
+				if (typeof this.spTree[i].clearLang === "function") {
+					this.spTree[i].clearLang();
+				}
+			}
+		};
 
 		CGroupShape.prototype.convertToWord = function (document) {
 			this.setBDeleted(true);
@@ -366,6 +385,7 @@
 				c.addToSpTree(c.spTree.length, this.spTree[i].convertToWord(document));
 				c.spTree[c.spTree.length - 1].setGroup(c);
 			}
+			c.removePlaceholder();
 			return c;
 		};
 
@@ -662,7 +682,7 @@
 						this.selection.textSelection.select(this, this.selection.textSelection.selectStartPage);
 				} else if (this.selectedObjects.length > 0) {
 					if (this.parent) {
-						this.parent.GoTo_Text();
+						this.parent.GoToText();
 						this.resetSelection();
 					}
 				}
@@ -811,23 +831,9 @@
 				}
 			}
 		};
-
-		CGroupShape.prototype.getPlaceholderType = function () {
-			return this.isPlaceholder() ? this.nvGrpSpPr.nvPr.ph.type : null;
+		CGroupShape.prototype.getSelectedArray = function () {
+			return this.selectedObjects;
 		};
-
-		CGroupShape.prototype.getPlaceholderIndex = function () {
-			return this.isPlaceholder() ? this.nvGrpSpPr.nvPr.ph.idx : null;
-		};
-
-		CGroupShape.prototype.getPhType = function () {
-			return this.isPlaceholder() ? this.nvGrpSpPr.nvPr.ph.type : null;
-		};
-
-		CGroupShape.prototype.getPhIndex = function () {
-			return this.isPlaceholder() ? this.nvGrpSpPr.nvPr.ph.idx : null;
-		};
-
 		CGroupShape.prototype.getSelectionState = function () {
 			var selection_state = {};
 			if (this.selection.textSelection) {
@@ -1541,6 +1547,13 @@
 			}
 			return bRet;
 		};
+		CGroupShape.prototype.onTimeSlicerDelete = function (sName) {
+			var bRet = false;
+			for (var i = 0; i < this.spTree.length; ++i) {
+				bRet = bRet || this.spTree[i].onTimeSlicerDelete(sName);
+			}
+			return bRet;
+		};
 		CGroupShape.prototype.onSlicerLock = function (sName, bLock) {
 			for (var i = 0; i < this.spTree.length; ++i) {
 				this.spTree[i].onSlicerLock(sName, bLock);
@@ -1616,6 +1629,76 @@
 			for (let nSp = 0; nSp < this.spTree.length; ++nSp) {
 				this.spTree[nSp].pasteFormatting(oFormatData);
 			}
+		};
+
+		CGroupShape.prototype.compareForMorph = function(oDrawingToCheck, oCurCandidate, oMapPaired) {
+			if(this.getObjectType() !== oDrawingToCheck.getObjectType()) {
+				return oCurCandidate;
+			}
+			const sName = this.getOwnName();
+			if(sName && sName.startsWith(AscFormat.OBJECT_MORPH_MARKER)) {
+				const sCheckName = oDrawingToCheck.getOwnName();
+				if(sName !== sCheckName) {
+					return oCurCandidate;
+				}
+				return oDrawingToCheck;
+			}
+			if(this.spTree.length !== oDrawingToCheck.spTree.length) {
+				return oCurCandidate;
+			}
+			for(let nSp = 0; nSp < this.spTree.length; ++nSp) {
+				let oSp = this.spTree[nSp];
+				let oSpCheck = oDrawingToCheck.spTree[nSp];
+				if(!oSp.compareForMorph(oSpCheck, null)) {
+					return oCurCandidate;
+				}
+			}
+			if(!oCurCandidate) {
+				if(oMapPaired && oMapPaired[oDrawingToCheck.Id]) {
+					let oParedDrawing = oMapPaired[oDrawingToCheck.Id].drawing;
+					if(oParedDrawing.getOwnName() === oDrawingToCheck.getOwnName()) {
+						return oCurCandidate;
+					}
+
+					let dDistMCheck = oParedDrawing.getDistanceL1(oDrawingToCheck);
+					let dDistMCur = this.getDistanceL1(oDrawingToCheck);
+					if(dDistMCheck < dDistMCur) {
+						return oCurCandidate;
+					}
+
+					let dSizeMCandidate = Math.abs(oParedDrawing.extX - oDrawingToCheck.extX) + Math.abs(oParedDrawing.extY - oDrawingToCheck.extY);
+					let dSizeMCheck = Math.abs(oDrawingToCheck.extX - this.extX) + Math.abs(oDrawingToCheck.extY - this.extY);
+					if(dSizeMCandidate < dSizeMCheck) {
+						return oCurCandidate;
+					}
+				}
+				return oDrawingToCheck;
+			}
+			const dDistCheck = this.getDistanceL1(oDrawingToCheck);
+			const dDistCur = this.getDistanceL1(oCurCandidate);
+			let dSizeMCandidate = Math.abs(oCurCandidate.extX - this.extX) + Math.abs(oCurCandidate.extY - this.extY);
+			let dSizeMCheck = Math.abs(oDrawingToCheck.extX - this.extX) + Math.abs(oDrawingToCheck.extY - this.extY);
+			if(dDistCur < dDistCheck) {
+				return  oCurCandidate;
+			}
+			else {
+				if(dSizeMCandidate < dSizeMCheck) {
+					return  oCurCandidate;
+				}
+			}
+			if(!oMapPaired || !oMapPaired[oDrawingToCheck.Id]) {
+				return oDrawingToCheck;
+			}
+			else {
+				let oParedDrawing = oMapPaired[oDrawingToCheck.Id].drawing;
+				if(oParedDrawing.getOwnName() === oDrawingToCheck.getOwnName()) {
+					return oCurCandidate;
+				}
+				else {
+					return oDrawingToCheck;
+				}
+			}
+			return oCurCandidate;
 		};
 
 		//--------------------------------------------------------export----------------------------------------------------

@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -210,7 +210,29 @@
 		}
 		return changes;
 	};
-
+	/**
+	 * Проверяем, что последнее изменение в документе - это ввод заданного символа
+	 * @param {AscWord.CRun} run
+	 * @param {number} inRunPos
+	 * @param {?number} codePoint
+	 * @returns {boolean}
+	 */
+	CCollaborativeHistory.prototype.checkAsYouTypeEnterText = function(run, inRunPos, codePoint)
+	{
+		if (!this.Changes.length || !this.OwnRanges.length)
+			return false;
+		
+		let lastOwnRange = this.OwnRanges[this.OwnRanges.length - 1];
+		if (this.Changes.length !== lastOwnRange.Position + lastOwnRange.Length)
+			return false;
+		
+		let lastChange = this.Changes[this.Changes.length - 1];
+		return (AscDFH.historyitem_ParaRun_AddItem === lastChange.Type
+			&& lastChange.Class === run
+			&& lastChange.Pos === inRunPos - 1
+			&& lastChange.Items.length
+			&& (undefined === codePoint || lastChange.Items[0].GetCodePoint() === codePoint));
+	};
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Private area
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

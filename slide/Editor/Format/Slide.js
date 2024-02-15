@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -164,7 +164,7 @@ function Slide(presentation, slideLayout, slideNum)
 
     this.show = true;
     this.showMasterPhAnim = false;
-    this.showMasterSp = null;
+    this.showMasterSp = true;
 
     this.backgroundFill = null;
 
@@ -220,7 +220,7 @@ function Slide(presentation, slideLayout, slideNum)
         this.Width = presentation.GetWidthMM();
         this.Height = presentation.GetHeightMM();
         this.setSlideComments(new SlideComments(this));
-        this.setLocks(new PropLocker(this.Id), new PropLocker(this.Id), new PropLocker(this.Id), new PropLocker(this.Id), new PropLocker(this.Id), new PropLocker(this.Id));
+        this.setLocks(new PropLocker(this.Id), new PropLocker(this.Id), new PropLocker(this.Id), new PropLocker(this.Id), new PropLocker(this.Id), new PropLocker(this.Id), new PropLocker(this.Id));
     }
 
     if(slideLayout)
@@ -239,10 +239,9 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
         return editor.WordControl.m_oLogicDocument.DrawingDocument;
     };
     Slide.prototype.Reassign_ImageUrls = function(images_rename){
-        for(var i = 0; i < this.cSld.spTree.length; ++i){
-            this.cSld.spTree[i].Reassign_ImageUrls(images_rename);
-        }
-
+	    this.cSld.forEachSp(function(oSp) {
+		    oSp.Reassign_ImageUrls(images_rename);
+	    });
         if(this.cSld.Bg &&
             this.cSld.Bg.bgPr &&
             this.cSld.Bg.bgPr.Fill &&
@@ -274,13 +273,12 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
         {
             copy.changeBackground(this.cSld.Bg.createFullCopy());
         }
-        for(i = 0; i < this.cSld.spTree.length; ++i)
-        {
-            var _copy = this.cSld.spTree[i].copy(oPr);
-            oIdMap[this.cSld.spTree[i].Id] = _copy.Id;
-            copy.shapeAdd(copy.cSld.spTree.length, _copy);
-            copy.cSld.spTree[copy.cSld.spTree.length - 1].setParent2(copy);
-        }
+
+	    this.cSld.forEachSp(function(oSp) {
+		    let oSpCopy = oSp.copy(oPr);
+		    oIdMap[oSp.Id] = oSpCopy.Id;
+		    copy.shapeAdd(copy.cSld.spTree.length, oSpCopy);
+	    });
 
         if(this.clrMap)
         {
@@ -327,16 +325,17 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
         return copy;
     };
     Slide.prototype.handleAllContents = function(fCallback){
-        var sp_tree = this.cSld.spTree;
-        for(var i = 0; i < sp_tree.length; ++i){
-            if (sp_tree[i].handleAllContents){
-                sp_tree[i].handleAllContents(fCallback);
-            }
-        }
+        this.cSld.handleAllContents(fCallback);
         if(this.notesShape){
             this.notesShape.handleAllContents(fCallback);
         }
     };
+	Slide.prototype.refreshAllContentsFields = function() {
+		this.cSld.refreshAllContentsFields();
+		if(this.notesShape){
+			this.notesShape.handleAllContents(AscFormat.RefreshContentAllFields);
+		}
+	};
     Slide.prototype.Search = function(Engine, Type ){
         var sp_tree = this.cSld.spTree;
         for(var i = 0; i < sp_tree.length; ++i){
@@ -569,10 +568,9 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
     Slide.prototype.recalcText = function()
     {
         this.recalcInfo.recalculateSpTree = true;
-        for(var i = 0; i < this.cSld.spTree.length; ++i)
-        {
-            this.cSld.spTree[i].recalcText && this.cSld.spTree[i].recalcText();
-        }
+		this.cSld.forEachSp(function(oSp) {
+			oSp.recalcText();
+		});
     };
     Slide.prototype.addComment = function(comment)
     {
@@ -768,7 +766,7 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
         }
         for (var j = 0; j < layout.cSld.spTree.length; ++j) {
             if (layout.cSld.spTree[j].isPlaceholder()) {
-                var _ph_type = layout.cSld.spTree[j].getPhType();
+                var _ph_type = layout.cSld.spTree[j].getPlaceholderType();
                 var hf = layout.Master.hf;
                 var bIsSpecialPh = _ph_type === AscFormat.phType_dt || _ph_type === AscFormat.phType_ftr || _ph_type === AscFormat.phType_hdr || _ph_type === AscFormat.phType_sldNum;
                 if (!bIsSpecialPh || hf && ((_ph_type === AscFormat.phType_dt && (hf.dt !== false)) ||
@@ -860,12 +858,12 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
         //     }
         // }
     };
-    Slide.prototype.addAnimation = function(nPresetClass, nPresetId, nPresetSubtype, bReplace) {
+    Slide.prototype.addAnimation = function(nPresetClass, nPresetId, nPresetSubtype, oColor, bReplace) {
         this.checkNeedCopyTimingBeforeEdit();
         if(!this.timing) {
             this.setTiming(new AscFormat.CTiming());
         }
-        return this.timing.addAnimation(nPresetClass, nPresetId, nPresetSubtype, bReplace);
+        return this.timing.addAnimation(nPresetClass, nPresetId, nPresetSubtype, oColor, bReplace);
     };
     Slide.prototype.setAnimationProperties = function(oPr) {
         if(!this.timing) {
@@ -937,7 +935,7 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
             var oSp = this.cSld.spTree[pos];
             History.Add(new AscDFH.CChangesDrawingsContentPresentation(this, AscDFH.historyitem_SlideRemoveFromSpTree, pos, [oSp], false));
             this.cSld.spTree.splice(pos, 1);
-            if(this.timing) {
+            if(this.timing && !AscCommon.IsChangingDrawingZIndex) {
                 this.checkNeedCopyTimingBeforeEdit();
                 this.timing.onRemoveObject(oSp.Get_Id());
             }
@@ -1007,11 +1005,9 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
 
     Slide.prototype.getAllFonts = function(fonts)
     {
-        for(var i = 0; i < this.cSld.spTree.length; ++i)
-        {
-            if(typeof  this.cSld.spTree[i].getAllFonts === "function")
-                this.cSld.spTree[i].getAllFonts(fonts);
-        }
+	    this.cSld.forEachSp(function(oSp) {
+		    oSp.getAllFonts(fonts);
+	    });
     };
 
     Slide.prototype.getParentObjects = function()
@@ -1061,52 +1057,31 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
         }
     };
 
-    Slide.prototype.Get_AllImageUrls = function(images)
-    {
-        if(this.cSld.Bg && this.cSld.Bg.bgPr && this.cSld.Bg.bgPr.Fill && this.cSld.Bg.bgPr.Fill.fill instanceof  AscFormat.CBlipFill && typeof this.cSld.Bg.bgPr.Fill.fill.RasterImageId === "string" )
-        {
-            images[AscCommon.getFullImageSrc2(this.cSld.Bg.bgPr.Fill.fill.RasterImageId)] = true;
+    Slide.prototype.getAllRasterImages = function(images) {
+		let oBgPr = this.cSld.Bg && this.cSld.Bg.bgPr;
+        if(oBgPr) {
+	        oBgPr.checkBlipFillRasterImage(images);
         }
-        for(var i = 0; i < this.cSld.spTree.length; ++i)
-        {
-            if(typeof this.cSld.spTree[i].getAllImages === "function")
-            {
-                this.cSld.spTree[i].getAllImages(images);
-            }
-        }
-    };
-
-    Slide.prototype.getAllRasterImages = function(images){
-        if(this.cSld.Bg && this.cSld.Bg.bgPr && this.cSld.Bg.bgPr.Fill && this.cSld.Bg.bgPr.Fill.fill instanceof  AscFormat.CBlipFill && typeof this.cSld.Bg.bgPr.Fill.fill.RasterImageId === "string" )
-        {
-            images.push(AscCommon.getFullImageSrc2(this.cSld.Bg.bgPr.Fill.fill.RasterImageId));
-        }
-        for(var i = 0; i < this.cSld.spTree.length; ++i)
-        {
-            if(typeof this.cSld.spTree[i].getAllRasterImages === "function")
-            {
-                this.cSld.spTree[i].getAllRasterImages(images);
-            }
-        }
+		this.cSld.forEachSp(function(oSp) {
+			oSp.getAllRasterImages(images);
+		});
     };
 
     Slide.prototype.changeSize = function(width, height)
     {
         var kw = width/this.Width, kh = height/this.Height;
         this.setSlideSize(width, height);
-        for(var i = 0; i < this.cSld.spTree.length; ++i)
-        {
-            this.cSld.spTree[i].changeSize(kw, kh);
-        }
+	    this.cSld.forEachSp(function(oSp) {
+		    oSp.changeSize(kw, kh);
+	    });
     };
 
     Slide.prototype.checkSlideSize = function()
     {
         this.recalcInfo.recalculateSpTree = true;
-        for(var i = 0; i < this.cSld.spTree.length; ++i)
-        {
-            this.cSld.spTree[i].handleUpdateExtents();
-        }
+	    this.cSld.forEachSp(function(oSp) {
+		    oSp.handleUpdateExtents();
+	    });
     };
 
     Slide.prototype.checkSlideTheme = function()
@@ -1115,21 +1090,19 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
         this.bChangeLayout = undefined;
         this.recalcInfo.recalculateSpTree = true;
         this.recalcInfo.recalculateBackground = true;
-        for(var i = 0; i < this.cSld.spTree.length; ++i)
-        {
-            this.cSld.spTree[i].handleUpdateTheme();
-        }
+		this.cSld.forEachSp(function(oSp) {
+			oSp.handleUpdateTheme();
+		});
     };
 
     Slide.prototype.checkSlideColorScheme = function()
     {
         this.recalcInfo.recalculateSpTree = true;
         this.recalcInfo.recalculateBackground = true;
-        for(var i = 0; i < this.cSld.spTree.length; ++i)
-        {
-            this.cSld.spTree[i].handleUpdateFill();
-            this.cSld.spTree[i].handleUpdateLn();
-        }
+	    this.cSld.forEachSp(function(oSp) {
+		    oSp.handleUpdateFill();
+		    oSp.handleUpdateLn();
+	    });
     };
     Slide.prototype.Get_ColorMap = function()
     {
@@ -1297,31 +1270,36 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
     };
 
     Slide.prototype.needMasterSpDraw = function() {
-        if(this.showMasterSp === true) {
-            return true;
-        }
-        if(this.showMasterSp === false){
+			return this.showMasterSp ? this.Layout.showMasterSp : false;
+    };
+
+    Slide.prototype.needLayoutSpDraw = function() {
+			return this.showMasterSp;
+    };
+
+    Slide.prototype.isEqualBgMasterAndLayout = function(oSlide) {
+        if(!(this.backgroundFill === oSlide.backgroundFill ||
+            this.backgroundFill && this.backgroundFill.isEqual(oSlide.backgroundFill))) {
             return false;
         }
-        if(this.Layout.showMasterSp === false) {
+        if(this.needMasterSpDraw() && !oSlide.needMasterSpDraw() || oSlide.needMasterSpDraw() && !this.needMasterSpDraw()) {
             return false;
+        }
+        if(this.needMasterSpDraw()) {
+            if(this.Layout.Master !== oSlide.Layout.Master) {
+               return false;
+            }
+        }
+        if(this.needLayoutSpDraw()) {
+            if(this.Layout !== oSlide.Layout) {
+                return false;
+            }
         }
         return true;
     };
 
-    Slide.prototype.needLayoutSpDraw = function() {
-        return this.showMasterSp !== false;
-    };
-
-    Slide.prototype.draw = function(graphics) {
-        let bCheckBounds = graphics.IsSlideBoundsCheckerType;
-        let bSlideShow = this.graphicObjects.isSlideShow();
-        let bClipBySlide = !this.graphicObjects.canEdit();
-        if (bCheckBounds && (bSlideShow || bClipBySlide)) {
-            graphics.rect(0, 0, this.Width, this.Height);
-            return;
-        }
-        let _bounds, i;
+    Slide.prototype.drawBgMasterAndLayout = function(graphics, bClipBySlide, bCheckBounds) {
+        let _bounds;
         DrawBackground(graphics, this.backgroundFill, this.Width, this.Height);
         if(bClipBySlide) {
             graphics.SaveGrState();
@@ -1345,12 +1323,26 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
                 this.Layout.draw(graphics, this);
             }
         }
+    };
+    Slide.prototype.draw = function(graphics) {
+        let bCheckBounds = graphics.IsSlideBoundsCheckerType;
+        let bSlideShow = this.graphicObjects.isSlideShow();
+        let bClipBySlide = !this.graphicObjects.canEdit();
+        if (bCheckBounds && (bSlideShow || bClipBySlide)) {
+            graphics.rect(0, 0, this.Width, this.Height);
+            return;
+        }
+        let _bounds, i;
+        this.drawBgMasterAndLayout(graphics, bClipBySlide, bCheckBounds);
         this.collaborativeMarks.Init_Drawing();
         let oCollColor;
         let fDist = 3;
         let oIdentityMtx = new AscCommon.CMatrix();
         for(i = 0; i < this.cSld.spTree.length; ++i) {
             let oSp = this.cSld.spTree[i];
+            if(AscCommon.IsHiddenObj(oSp)) {
+                continue;
+            }
             if(this.collaborativeMarks) {
                 oCollColor = this.collaborativeMarks.Check(i);
                 if(oCollColor) {
@@ -1754,7 +1746,32 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
 
     Slide.prototype.getColorMap = function()
     {
-
+        if(this.clrMap)
+        {
+            return this.clrMap;
+        }
+        else if(this.Layout)
+        {
+            if(this.Layout.clrMap)
+            {
+                return this.Layout.clrMap;
+            }
+            else if(this.Layout.Master)
+            {
+                if(this.Layout.Master.clrMap)
+                {
+                    return this.Layout.Master.clrMap;
+                }
+            }
+        }
+        else if(this.Master)
+        {
+            if(this.Master.clrMap)
+            {
+                return this.Master.clrMap;
+            }
+        }
+        return AscFormat.GetDefaultColorMap();
     };
 
 
@@ -1911,7 +1928,6 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
             {
                 if(sp.isPlaceholder && sp.isPlaceholder())
                 {
-                    sp.recalcInfo.recalculateShapeHierarchy = true;
                     var hierarchy = sp.getHierarchy();
                     for(var j = 0; j < hierarchy.length; ++j)
                     {

@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -885,7 +885,7 @@
 	 * Converts the specified JSON object into the Document Builder object of the corresponding type.
 	 * @memberof Api
 	 * @param {JSON} sMessage - The JSON object to convert.
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CPE"]
 	 */
 	Api.prototype.FromJSON = function(sMessage)
 	{
@@ -925,7 +925,7 @@
                 oCPres.attrAutoCompressPictures = oParsedObj["autoCompressPictures"];
                 oCPres.attrBookmarkIdSeed = oParsedObj["bookmarkIdSeed"];
                 oCPres.attrCompatMode = oParsedObj["compatMode"];
-                oCPres.attrConformance = oParsedObj["conformance"] === "strict" ? c_oAscConformanceType.Strict : c_oAscConformanceType.Transitional;
+                oCPres.attrConformance = oParsedObj["conformance"] === "strict" ? Asc.c_oAscConformanceType.Strict : Asc.c_oAscConformanceType.Transitional;
                 oCPres.attrEmbedTrueTypeFonts = oParsedObj["embedTrueTypeFonts"];
                 oCPres.attrFirstSlideNum = oParsedObj["firstSlideNum"];
                 oCPres.attrRemovePersonalInfoOnSave = oParsedObj["removePersonalInfoOnSave"];
@@ -1034,6 +1034,7 @@
 
     /**
 	 * Subscribes to the specified event and calls the callback function when the event fires.
+     * @function
 	 * @memberof Api
 	 * @typeofeditors ["CPE"]
 	 * @param {string} eventName - The event name.
@@ -1043,6 +1044,7 @@
 
 	/**
 	 * Unsubscribes from the specified event.
+     * @function
 	 * @memberof Api
 	 * @typeofeditors ["CPE"]
 	 * @param {string} eventName - The event name.
@@ -1285,7 +1287,7 @@
      */
      ApiPresentation.prototype.GetWidth = function() {
         if(this.Presentation){
-            this.Presentation.GetWidthEMU();
+            return this.Presentation.GetWidthEMU();
         }
     };
 
@@ -1297,7 +1299,7 @@
      */
     ApiPresentation.prototype.GetHeight = function() {
         if(this.Presentation){
-            this.Presentation.GetHeightEMU();
+            return this.Presentation.GetHeightEMU();
         }
     };
 
@@ -1358,7 +1360,24 @@
         }
     };
 
-    //------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Returns all comments from the current presentation.
+	 * @memberof ApiPresentation
+	 * @typeofeditors ["CPE"]
+	 * @returns {ApiComment[]}
+	 */
+	ApiPresentation.prototype.GetAllComments = function()
+	{
+		let aCommentsData = this.Presentation.GetAllComments();
+		let aApiComments = [];
+		for(let nComment = 0; nComment < aCommentsData.length; ++nComment) {
+			aApiComments.push(private_GetApi().private_CreateApiComment(aCommentsData[nComment].comment));
+		}
+		return aApiComments;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------
     //
     // ApiMaster
     //
@@ -2664,6 +2683,35 @@
             bg.bgPr.Fill = oApiFill.UniFill;
             this.Slide.changeBackground(bg);
             this.Slide.recalculateBackground();
+            return true;
+        }
+        return false;
+    };
+
+
+    /**
+     * Returns the visibility of the current presentation slide.
+     * @memberOf ApiSlide
+     * @typeofeditors ["CPE"]
+     * @returns {boolean}
+     * */
+    ApiSlide.prototype.GetVisible = function(){
+        if(this.Slide){
+            return this.Slide.isVisible();
+        }
+        return false;
+    };
+
+    /**
+     * Sets the visibility to the current presentation slide.
+     * @memberOf ApiSlide
+     * @typeofeditors ["CPE"]
+     * @param {boolean} value - Slide visibility.
+     * @returns {boolean}
+     * */
+    ApiSlide.prototype.SetVisible = function(value){
+        if(this.Slide){
+            this.Slide.setShow(value);
             return true;
         }
         return false;
@@ -4851,6 +4899,7 @@
     ApiPresentation.prototype["SetLanguage"]              = ApiPresentation.prototype.SetLanguage;
     ApiPresentation.prototype["GetWidth"]                 = ApiPresentation.prototype.GetWidth;
     ApiPresentation.prototype["GetHeight"]                = ApiPresentation.prototype.GetHeight;
+    ApiPresentation.prototype["GetAllComments"]           = ApiPresentation.prototype.GetAllComments;
 
     ApiPresentation.prototype["SlidesToJSON"]             = ApiPresentation.prototype.SlidesToJSON;
     ApiPresentation.prototype["ToJSON"]                   = ApiPresentation.prototype.ToJSON;
@@ -4933,6 +4982,8 @@
     ApiSlide.prototype["AddObject"]                       = ApiSlide.prototype.AddObject;
     ApiSlide.prototype["RemoveObject"]                    = ApiSlide.prototype.RemoveObject;
     ApiSlide.prototype["SetBackground"]                   = ApiSlide.prototype.SetBackground;
+    ApiSlide.prototype["GetVisible"]                      = ApiSlide.prototype.GetVisible;
+    ApiSlide.prototype["SetVisible"]                      = ApiSlide.prototype.SetVisible;
     ApiSlide.prototype["GetWidth"]                        = ApiSlide.prototype.GetWidth;
     ApiSlide.prototype["GetHeight"]                       = ApiSlide.prototype.GetHeight;
     ApiSlide.prototype["ApplyLayout"]                     = ApiSlide.prototype.ApplyLayout;

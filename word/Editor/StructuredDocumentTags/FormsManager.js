@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2022
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -282,65 +282,76 @@
 	};
 	/**
 	 * Получаем данные всех форм
-	 * @returns {object}
+	 * @returns {array}
 	 */
 	CFormsManager.prototype.GetAllFormsData = function()
 	{
-		let data = {};
+		let data = [];
+
 		let allForms = this.GetAllForms();
-		let passedRadioGroups = {};
+		let passedKeys = {};
 		for (let index = 0, count = allForms.length; index < count; ++index)
 		{
 			let form = allForms[index];
 			let key  = form.GetFormKey();
-
+			let type = form.GetSpecificType();
+			
 			if (form.IsRadioButton())
-			{
-				key = form.GetRadioButtonGroupKey();
-				if (passedRadioGroups[key])
-					continue;
-
-				passedRadioGroups[key] = true;
-			}
-
-			if (!key)
+				key = form.GetCheckBoxPr().GetGroupKey();
+			
+			if (!key || (passedKeys[key] && passedKeys[key][type]))
 				continue;
-
-			let val = {
+			
+			if (!passedKeys[key])
+				passedKeys[key] = {};
+			
+			passedKeys[key][type] = form;
+			
+			let stringType = Asc.c_oAscContentControlSpecificType.toString(type);
+			if (form.IsRadioButton())
+				stringType = "radio";
+			
+			data.push({
 				"key"   : key,
 				"tag"   : form.GetTag(),
 				"value" : this.GetFormValue(form),
-				"type"  : "text"
-			};
-
-			if (data[key])
+				"type"  : stringType
+			});
+		}
+		
+		return data;
+	};
+	CFormsManager.prototype.SetAllFormsData = function(data)
+	{
+		if (!data || !Array.isArray(data))
+			return;
+		
+		for (let index = 0, count = data.length; index < count; ++index)
+		{
+			let key   = data[index]["key"];
+			let value = data[index]["value"];
+			let type  = data[index]["type"];
+			
+			if (undefined !== type && null !== type)
+				type = Asc.c_oAscContentControlSpecificType.fromString(type);
+			
+			let forms = this.GetAllFormsByKey(key, type);
+			let form  = forms[0];
+			if (!form)
 			{
-				let oldVal = data[key];
-				if (Array.isArray(oldVal))
-					oldVal.push(oldVal);
-				else
-					data[key] = [oldVal, val];
+				let radioGroup = this.GetRadioButtons(key);
+				if (!radioGroup.length)
+					continue;
+				
+				this.SetRadioGroupValue(key, value);
 			}
 			else
 			{
-				data[key] = val;
+				form.SetFormValue(value);
 			}
-
-			if (form.IsComplexForm())
-				val["type"] = "complex";
-			else if (form.IsRadioButton())
-				val["type"] = "radioButton";
-			else if (form.IsCheckBox())
-				val["type"] = "checkBox";
-			else if (form.IsDropDownList())
-				val["type"] = "dropDownList";
-			else if (form.IsComboBox())
-				val["type"] = "comboBox";
-			else if (form.IsPicture())
-				val["type"] = "picture";
+			
+			this.OnChange(form);
 		}
-
-		return data;
 	};
 	CFormsManager.prototype.GetFormValue = function(form)
 	{
@@ -429,6 +440,9 @@
 
 		if (oForm.IsRadioButton())
 		{
+			if (!oForm.GetCheckBoxPr().GetChecked())
+				return;
+			
 			let sKey = oForm.GetCheckBoxPr().GetGroupKey();
 			for (let nIndex = 0, nCount = arrForms.length; nIndex < nCount; ++nIndex)
 			{
@@ -568,6 +582,20 @@
 				return radioButton.GetFormKey();
 		}
 
+		return "";
+	};
+	CFormsManager.prototype.SetRadioGroupValue = function(groupKey, value)
+	{
+		let group = this.GetRadioButtons(groupKey);
+		for (let index = 0, count = group.length; index < count; ++index)
+		{
+			let radioButton = group[index];
+			if (radioButton.GetFormKey() !== value)
+				radioButton.SetCheckBoxChecked(false);
+			else
+				radioButton.SetCheckBoxChecked(true);
+		}
+		
 		return "";
 	};
 	CFormsManager.prototype.GetUserMasterByForm = function(form)

@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -32,21 +32,21 @@
 
 "use strict";
 
-(function(window, undefined)
-{
-    /**
-     * Base class.
-     * @global
-     * @class
-     * @name Api
-     */
+(function (window, undefined) {
+	/**
+	 * Base class.
+	 * @global
+	 * @class
+	 * @name Api
+	 */
 
-    var Api = window["Asc"]["spreadsheet_api"];
+	var Api = window["Asc"]["spreadsheet_api"];
 
-    /**
+	/**
 	 * @typedef {Object} CommentData
 	 * The comment data.
 	 * @property {string} UserName - The comment author.
+	 * @property {string} QuoteText - The quote comment text.
 	 * @property {string} Text - The comment text.
 	 * @property {string} Time - The time when the comment was posted (in milliseconds).
 	 * @property {boolean} Solved - Specifies if the comment is resolved (**true**) or not (**false**).
@@ -62,12 +62,11 @@
 	 * @return {string | null} - The comment ID in the string format or null if the comment cannot be added.
 	 * @since 7.3.0
 	 */
-	Api.prototype["pluginMethod_AddComment"] = function(oCommentData)
-	{
-        if (!oCommentData)
-            return null;
-            
-        let oAscCD = new Asc.asc_CCommentData();
+	Api.prototype["pluginMethod_AddComment"] = function (oCommentData) {
+		if (!oCommentData)
+			return null;
+
+		let oAscCD = new Asc.asc_CCommentData();
 		oAscCD.ReadFromSimpleObject(oCommentData);
 
 		this.asc_addComment(oAscCD);
@@ -88,8 +87,7 @@
 	 * @return {boolean}
 	 * @since 7.3.0
 	 */
-	Api.prototype["pluginMethod_ChangeComment"] = function(sId, oCommentData)
-	{
+	Api.prototype["pluginMethod_ChangeComment"] = function (sId, oCommentData) {
 		if (!oCommentData)
 			return false;
 		var oSourceComm = this.wb.cellCommentator.findComment(sId);
@@ -111,10 +109,13 @@
 	 * @alias RemoveComments
 	 * @since 7.3.0
 	 */
-	Api.prototype["pluginMethod_RemoveComments"] = function(arrIds)
-	{
-		for (let comm of arrIds)
-			this.asc_removeComment(comm);
+	Api.prototype["pluginMethod_RemoveComments"] = function (arrIds) {
+		for (let comm in arrIds) {
+			if (arrIds.hasOwnProperty(comm)) {
+				this.asc_removeComment(arrIds[comm]);
+			}
+		}
+
 	};
 
 })(window);

@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -195,6 +195,22 @@
 			|| sFontName === 'Source Code Pro';
 	}
 
+	function private_CheckDrawingOnAdd(oApiDrawing) {
+		if(window.g_asc_plugins)
+		{
+			let oDrawing = oApiDrawing.Drawing;
+			if(oDrawing)
+			{
+				if(oDrawing.GraphicObj &&
+					oDrawing.GraphicObj.getObjectType() === AscDFH.historyitem_type_OleObject)
+				{
+					let oData = oDrawing.GraphicObj.getDataObject();
+					window.g_asc_plugins.onPluginEvent("onInsertOleObjects", [oData]);
+				}
+			}
+		}
+	}
+
 	/**
 	 * Class representing a container for paragraphs and tables.
 	 * @param Document
@@ -337,8 +353,6 @@
 					arrSelectedContent.push(new ApiParagraph(oTempElm));
 				else if (oTempElm instanceof ParaRun)
 					arrSelectedContent.push(new ApiRun(oTempElm));
-				else if (oTempElm instanceof ParaRun)
-					arrSelectedContent.push(new ApiRun(oTempElm));
 			}
 
 			for (nElm = 0; nElm < arrSelectedContent.length; nElm ++)
@@ -389,8 +403,9 @@
 		}
 
 		// рендер html тагов
-		if (!this.Config.renderHTMLTags)
-			sOutputText = sOutputText.replace(/</gi, '&lt;');
+		if (!this.Config.renderHTMLTags) {
+			sOutputText = sOutputText.replace(/</gi, '&lt;').replace(/>/gi, '&gt;');
+		}
 
 		return sOutputText;
 	};
@@ -538,7 +553,7 @@
 					break;
 			}
 
-			if (nHeadingLvl)
+			if (nHeadingLvl !== -1)
 			{
 				// понижаем уровень заголовка, если указано в конфиге (h1 -> h2)
 				if (oCMarkdownConverter.Config.demoteHeadings && nHeadingLvl === 0)
@@ -638,15 +653,14 @@
 			return sOutputText;
 		}
 
-		if (!oPara.Next && oPara.GetText().trim() === '')
+		if (!oPara.Next && oPara.Paragraph.IsEmpty())
 		{
 			if (HaveSepLine(oPara.Paragraph) && this.Config.convertType === "html")
 				return "<hr>";
 			return '';
 		}
 			
-		if (oPara.Paragraph.IsTableCellContent())
-			this.isTableCellContent = true;
+		this.isTableCellContent = oPara.Paragraph.IsTableCellContent();
 
 		var oDocument  = private_GetLogicDocument();
 		var sNumId     = null;
@@ -719,7 +733,8 @@
 		if (HaveSepLine(oPara.Paragraph) && this.Config.convertType === "html")
 			sOutputText += "\n<hr>"
 
-		return sOutputText + '\n';
+		// Add \n\n for correct parsing
+		return sOutputText + '\n\n';
 	};
 	CMarkdownConverter.prototype.HandleHyperlink = function(oHyperlink, sType)
 	{
@@ -1141,7 +1156,8 @@
 			sOutputText += this.HandleChildElement(oTable.GetRow(nRow), this.Config.convertType);
 		}
 
-		sOutputText += '</table>\n';
+		// Add \n\n for correct parsing
+		sOutputText += '</table>\n\n';
 		return sOutputText;
 	};
 	CMarkdownConverter.prototype.HandleTableRow = function(oTableRow)
@@ -1158,7 +1174,10 @@
 	};
 	CMarkdownConverter.prototype.HandleTableCell = function(oTableCell)
 	{
-		var sOutputText = '   <td>\n';
+		// Add 'th' for the firs row
+		let symbol = (oTableCell.GetRowIndex() === 0) ? 'td' : 'td';
+		// Add \n\n for correct parsing
+		var sOutputText = '   <' + symbol + '>\n\n';
 		var apiCellContent = oTableCell.GetContent();
 
 		for (var nElm = 0, nElmsCount = apiCellContent.GetElementsCount(); nElm < nElmsCount; nElm++)
@@ -1166,7 +1185,7 @@
 			sOutputText += this.HandleChildElement(apiCellContent.GetElement(nElm), this.Config.convertType);
 		}
 
-		sOutputText += '</td>\n';
+		sOutputText += '</' + symbol + '>\n';
 		return sOutputText;
 	};
 	/**
@@ -1221,7 +1240,7 @@
 			
 			for (var nPos = 0; nPos < nCurPos; ++nPos)
 			{
-				if (para_Text === oRun.Content[nPos].Type || para_Space === oRun.Content[nPos].Type || para_Tab === oRun.Content[nPos].Type)
+				if (para_Text === oRun.Content[nPos].Type || para_Space === oRun.Content[nPos].Type || para_Tab === oRun.Content[nPos].Type || para_NewLine === oRun.Content[nPos].Type || para_End === oRun.Content[nPos].Type)
 					nRangePos++;
 			}
 
@@ -1229,12 +1248,13 @@
 				charsCount += nRangePos;
 		}
 
-		if (Start > End)
+		if (typeof(Start) == "number" && typeof(End) == "number" && Start > End)
 		{
 			var temp	= Start;
 			Start		= End;
 			End			= temp;
 		}
+		
 		if (Start === undefined)
 			this.Start = 0;
 		else if (typeof(Start) === "number")
@@ -1250,8 +1270,6 @@
 			this.Element.CheckRunContent(calcSumChars);
 			
 			this.End = charsCount;
-			if (this.End > 0)
-				this.End--;
 		}
 		else if (typeof(End) === "number")
 			this.End = End;
@@ -1274,15 +1292,13 @@
 
 		function callback(oRun)
 		{
-			var nRangePos = 0;
-
 			var nCurPos = oRun.Content.length;
 			for (var nPos = 0; nPos < nCurPos; ++nPos)
 			{
-				if (para_Text === oRun.Content[nPos].Type || para_Space === oRun.Content[nPos].Type || para_Tab === oRun.Content[nPos].Type)
-					nRangePos++;
+				if (para_Text === oRun.Content[nPos].Type || para_Space === oRun.Content[nPos].Type || para_Tab === oRun.Content[nPos].Type || para_NewLine === oRun.Content[nPos].Type || para_End === oRun.Content[nPos].Type)
+					charsCount++;
 
-				if (StartChar - charsCount === nRangePos - 1 && !isStartDocPosFinded)
+				if (StartChar - (charsCount - 1) === 0 && !isStartDocPosFinded)
 				{
 					DocPosInRun =
 					{
@@ -1299,7 +1315,7 @@
 					isStartDocPosFinded = true;
 				}
 				
-				if (EndChar - charsCount === nRangePos - 1 && !isEndDocPosFinded)
+				if (EndChar - charsCount === 0 && !isEndDocPosFinded)
 				{
 					DocPosInRun =
 					{
@@ -1316,9 +1332,6 @@
 					isEndDocPosFinded = true;
 				}
 			}
-
-			if (nRangePos !== 0)
-				charsCount += nRangePos;
 		}
 
 		if (this.Element instanceof CDocument || this.Element instanceof CDocumentContent || this.Element instanceof CTable || this.Element instanceof CBlockLevelSdt)
@@ -1551,11 +1564,35 @@
 	/**
 	 * Returns a text from the specified range.
 	 * @memberof ApiRange
+	 * @param {object} oPr - The resulting string display properties.
+     * @param {boolean} [oPr.NewLineParagraph=false] - Defines if the resulting string will include paragraph line boundaries or not.
+     * @param {boolean} [oPr.Numbering=false] - Defines if the resulting string will include numbering or not.
+     * @param {boolean} [oPr.Math=false] - Defines if the resulting string will include mathematical expressions or not.
+	 * @param {string} [oPr.NewLineSeparator='\r'] - Defines how the line separator will be specified in the resulting string.
+     * @param {string} [oPr.TableCellSeparator='\t'] - Defines how the table cell separator will be specified in the resulting string.
+     * @param {string} [oPr.TableRowSeparator='\r\n'] - Defines how the table row separator will be specified in the resulting string.
+     * @param {string} [oPr.ParaSeparator='\r\n'] - Defines how the paragraph separator will be specified in the resulting string.
+	 * @param {string} [oPr.TabSymbol='\t'] - Defines how the tab will be specified in the resulting string (does not apply to numbering)
 	 * @typeofeditors ["CDE"]
 	 * @returns {String} - returns "" if range is empty.
-	 */	
-	ApiRange.prototype.GetText = function()
+	 */
+	ApiRange.prototype.GetText = function(oPr)
 	{
+		if (!oPr) {
+			oPr = {};
+		}
+		
+		let oProp = {
+			NewLineSeparator:	(oPr.hasOwnProperty("NewLineSeparator")) ? oPr["NewLineSeparator"] : "\r",
+			NewLineParagraph:	(oPr.hasOwnProperty("NewLineParagraph")) ? oPr["NewLineParagraph"] : true,
+			Numbering:			(oPr.hasOwnProperty("Numbering")) ? oPr["Numbering"] : true,
+			Math:				(oPr.hasOwnProperty("Math")) ? oPr["Math"] : true,
+			TableCellSeparator:	oPr["TableCellSeparator"],
+			TableRowSeparator:	oPr["TableRowSeparator"],
+			ParaSeparator:		oPr["ParaSeparator"],
+			TabSymbol:			oPr["TabSymbol"]
+		}
+
 		private_RefreshRangesPosition();
 		private_RemoveEmptyRanges();
 
@@ -1570,7 +1607,7 @@
 		}
 		private_TrackRangesPositions();
 
-		var Text = this.Controller.GetSelectedText(false); 
+		var Text = this.Controller.GetSelectedText(false, oProp); 
 		Document.LoadDocumentState(oldSelectionInfo);
 		Document.UpdateSelection();
 
@@ -2759,36 +2796,32 @@
 	 * @memberof ApiRange
 	 * @typeofeditors ["CDE"]
 	 * @param {string} sText - The comment text (required).
-	 * @param {string} sAutor - The author's name (optional).
-	 * @returns {ApiComment?} - Returns null if the comment was not added.
+	 * @param {string} sAuthor - The author's name (optional).
+	 * @param {string} sUserId - The user ID of the comment author (optional).
+	 * @returns {?ApiComment} - Returns null if the comment was not added.
 	 */
-	ApiRange.prototype.AddComment = function(sText, sAutor)
+	ApiRange.prototype.AddComment = function(sText, sAuthor, sUserId)
 	{
 		let oDocument = private_GetLogicDocument();
 
 		if (typeof(sText) !== "string" || sText.trim() === "")
 			return null;
-		if (typeof(sAutor) !== "string")
-			sAutor = "";
+		if (typeof(sAuthor) !== "string")
+			sAuthor = "";
 		
-		var CommentData = new AscCommon.CCommentData();
-		CommentData.SetText(sText);
-		if (sAutor !== "")
-			CommentData.SetUserName(sAutor);
+		let CommentData = private_CreateCommentData({
+			text: sText,
+			author: sAuthor,
+			userId: sUserId
+		});
 
 		var documentState = oDocument.SaveDocumentState();
 		this.Select();
 
-		var oComment = oDocument.AddComment(CommentData, false);
+		let comment = AddCommentToDocument(oDocument, CommentData);
 		oDocument.LoadDocumentState(documentState);
 		oDocument.UpdateSelection();
-
-		if (null !== oComment)
-			editor.sync_AddComment(oComment.Get_Id(), CommentData);
-		else
-			return null;
-
-		return new ApiComment(oComment);
+		return comment;
 	};
 
 	/**
@@ -2860,7 +2893,8 @@
 
 			for (; nPos < nLenght; ++nPos)
 			{
-				if (para_Text === oRun.Content[nPos].Type || para_Space === oRun.Content[nPos].Type || para_Tab === oRun.Content[nPos].Type) {
+				if (para_Text === oRun.Content[nPos].Type || para_Space === oRun.Content[nPos].Type || para_Tab === oRun.Content[nPos].Type || para_NewLine === oRun.Content[nPos].Type || para_End === oRun.Content[nPos].Type)
+				{
 					nRangePos++;
 					tempCharsCount++;
 				}
@@ -2883,7 +2917,7 @@
 					tempCharsCount = 1; // теперь считаем кол-во символов от стартового в Range. Конец Range будет через nCharsNewRange символов.
 				}
 				
-				if (isEndDocPosFinded == false && nCharsNewRange == tempCharsCount)
+				if (isStartDocPosFinded == true && isEndDocPosFinded == false && nCharsNewRange == tempCharsCount)
 				{
 					let DocPosInRun =
 					{
@@ -3028,7 +3062,7 @@
 	function ApiComment(oComment)
 	{
 		this.Comment = oComment;
-	};
+	}
 
 	/**
 	 * Class representing a comment reply.
@@ -3038,7 +3072,7 @@
 	{
 		this.Comment = oParentComm;
 		this.Data = oCommentReply;
-	};
+	}
 
 	/**
 	 * Class representing a Paragraph hyperlink.
@@ -3074,7 +3108,7 @@
 	{
 		this.Sdt = oSdt;
 	}
-
+	
 	/**
 	 * Class representing a document text field.
 	 * @constructor
@@ -3493,7 +3527,7 @@
 	ApiImage.prototype.constructor = ApiImage;
 
 	/**
-	 * Class representing an Ole-object.
+	 * Class representing an Ole object.
 	 * @constructor
 	 */
 	function ApiOleObject(OleObject)
@@ -3634,6 +3668,28 @@
 	}
 
 	/**
+	 * Class representing a list of values of the combo box / dropdown list content control.
+	 * @constructor
+	 */
+	function ApiContentControlList(Parent)
+	{
+		this.Sdt    = Parent.Sdt;
+		this.Parent = Parent;
+	}
+
+	/**
+	 * Class representing an entry of the combo box / dropdown list content control.
+	 * @constructor
+	 */
+	function ApiContentControlListEntry(Sdt, Parent, Text, Value)
+	{
+		this.Sdt    = Sdt;
+		this.Parent = Parent;
+		this.Text   = Text;
+		this.Value  = Value;
+	}
+
+	/**
 	 * Class representing a container for the document content.
 	 * @constructor
 	 */
@@ -3641,6 +3697,16 @@
 	{
 		this.Sdt = Sdt;
 	}
+
+	/**
+	 * Class representing the settings which are used to create a watermark.
+	 * @constructor
+	 */
+	function ApiWatermarkSettings(oSettings)
+	{
+		this.Settings = oSettings;
+	}
+
 
 	/**
 	 * Twentieths of a point (equivalent to 1/1440th of an inch).
@@ -4067,11 +4133,22 @@
 	 * */
 
 	/**
+	 * The watermark type.
+	 * @typedef {("none" | "text" | "image")} WatermarkType
+	 */
+
+	/**
+	 * The watermark direction.
+	 * @typedef {("horizontal" | "clockwise45" | "counterclockwise45")} WatermarkDirection
+	 */
+
+	/**
 	 * Returns the main document.
 	 * @memberof Api
 	 * @typeofeditors ["CDE"]
 	 * @returns {ApiDocument}
 	 */
+
 	Api.prototype.GetDocument = function()
 	{
 		return new ApiDocument(this.WordControl.m_oLogicDocument);
@@ -4858,7 +4935,12 @@
 				oResult = new ApiSection(oReader.SectPrFromJSON(oParsedObj));
 				break;
 			case "numbering":
-				oResult = new ApiNumbering(oReader.NumberingFromJSON(oParsedObj));
+				oReader.parsedNumbering = oParsedObj;
+				let sNumId		= Object.keys(oParsedObj["num"])[0];
+				let sAddedNumId	= oReader.NumberingFromJSON(sNumId);
+				let oNum		= oDocument.Document.GetNumbering().GetNum(sAddedNumId);
+
+				oResult = new ApiNumbering(oNum);
 				break;
 			case "textPr":
 				oResult = oParsedObj["bFromDocument"] ? new ApiTextPr(null, oReader.TextPrFromJSON(oParsedObj)) : new ApiTextPr(null, oReader.TextPrDrawingFromJSON(oParsedObj));
@@ -4942,16 +5024,17 @@
 	 * @typeofeditors ["CDE"]
 	 * @param {ApiRun[] | DocumentElement} oElement - The element where the comment will be added. It may be applied to any element which has the *AddComment* method.
 	 * @param {string} sText - The comment text (required).
-	 * @param {string} sAutor - The author's name (optional).
+	 * @param {string} sAuthor - The author's name (optional).
+	 * @param {string} sUserId - The user ID of the comment author (optional).
 	 * @returns {ApiComment?} - Returns null if the comment was not added.
 	 */
-	Api.prototype.AddComment = function(oElement, sText, sAutor)
+	Api.prototype.AddComment = function(oElement, sText, sAuthor, sUserId)
 	{
 		if (!sText || typeof(sText) !== "string")
 			return null;
 	
-		if (typeof(sAutor) !== "string")
-			sAutor = "";
+		if (typeof(sAuthor) !== "string")
+			sAuthor = "";
 		
 		// Если oElement не является массивом, определяем параграф это или документ
 		if (!Array.isArray(oElement))
@@ -4960,7 +5043,7 @@
 				oElement instanceof ApiBlockLvlSdt || oElement instanceof ApiInlineLvlSdt || oElement instanceof ApiTable ||
 				oElement instanceof ApiRun)
 				{
-					return oElement.AddComment(sText, sAutor);
+					return oElement.AddComment(sText, sAuthor);
 				}
 		}
 		// Проверка на массив с ранами
@@ -4983,9 +5066,11 @@
 			
 			var oDocument = private_GetLogicDocument();
 
-			var CommentData = new AscCommon.CCommentData();
-			CommentData.SetText(sText);
-			CommentData.SetUserName(sAutor);
+			let CommentData = private_CreateCommentData({
+				text: sText,
+				author: sAuthor,
+				userId: sUserId
+			});
 
 			var oStartRun = private_GetFirstRunInArray(oElement); 
 			var oStartPos = oStartRun.Run.GetDocumentPositionFromObject();
@@ -5002,6 +5087,7 @@
 			CommentData.Set_QuoteText(sQuotedText);
 
 			var oComment = new AscCommon.CComment(oDocument.Comments, CommentData);
+			oComment.GenerateDurableId();
 			oDocument.Comments.Add(oComment);
 			oDocument.RemoveSelection();
 
@@ -5032,6 +5118,7 @@
 
 	/**
 	 * Subscribes to the specified event and calls the callback function when the event fires.
+	 * @function
 	 * @memberof Api
 	 * @typeofeditors ["CDE"]
 	 * @param {string} eventName - The event name.
@@ -5041,6 +5128,7 @@
 
 	/**
 	 * Unsubscribes from the specified event.
+	 * @function
 	 * @memberof Api
 	 * @typeofeditors ["CDE"]
 	 * @param {string} eventName - The event name.
@@ -5310,7 +5398,7 @@
 		return arrApiOleObjects;
 	};
 	/**
-	 * Returns an array of all paragraphs from the current document content
+	 * Returns an array of all paragraphs from the current document content.
 	 * @memberof ApiDocumentContent
 	 * @typeofeditors ["CDE"]
 	 * @return {ApiParagraph[]}
@@ -5325,7 +5413,7 @@
 		return result;
 	};
 	/**
-	 * Returns an array of all tables from the current document content
+	 * Returns an array of all tables from the current document content.
 	 * @memberof ApiDocumentContent
 	 * @typeofeditors ["CDE"]
 	 * @return {ApiParagraph[]}
@@ -5430,7 +5518,7 @@
 		else if ("table" === sStyleType)
 			return new ApiStyle(oStyles.Get(oStyles.Get_Default_Table()));
 		else if ("run" === sStyleType)
-			return new ApiStyle(oStyles.Get(oStyles.Get_Default_Character()));
+			return new ApiStyle(oStyles.Get(oStyles.GetDefaultCharacter()));
 		else if ("numbering" === sStyleType)
 			return new ApiStyle(oStyles.Get(oStyles.Get_Default_Numbering()));
 
@@ -5475,14 +5563,18 @@
 	 * @typeofeditors ["CDE"]
 	 * @param {ApiParagraph} oParagraph - The paragraph after which a new document section will be inserted.
 	 * Paragraph must be in a document.
-	 * @returns {ApiSection}
+	 * @returns {ApiSection | null} Returns null if parametr is invalid.
 	 */
 	ApiDocument.prototype.CreateSection = function(oParagraph)
 	{
-		if (!(oParagraph instanceof ApiParagraph))
-			return new Error('Parameter is invalid.');
-		if (!oParagraph.Paragraph.CanAddSectionPr())
-			return new Error('Paragraph must be in a document.');
+		if (!(oParagraph instanceof ApiParagraph)) {
+			logError(new Error('Parameter is invalid.'));
+			return null;
+		}
+		if (!oParagraph.Paragraph.CanAddSectionPr()) {
+			logError(new Error('Paragraph must be in a document.'));
+			return null;
+		}
 
 		var oSectPr = new CSectionPr(this.Document);
 
@@ -5553,6 +5645,10 @@
 				if (oElm.IsUseInDocument())
 					continue;
 
+				if (oElm.Parent != null) {
+					oElm.SetParent(private_GetLogicDocument());
+				}
+
 				oSelectedContent.Add(new AscCommonWord.CSelectedElement(oElm, true));
 			}
 		}
@@ -5564,7 +5660,7 @@
 		if (this.Document.IsSelectionUse())
 		{
 			this.Document.Start_SilentMode();
-			this.Document.Remove(1, false, false, isInline);
+			this.Document.Remove(1, false, false, true);
 			this.Document.End_SilentMode();
 			this.Document.RemoveSelection(true);
 		}
@@ -5603,12 +5699,37 @@
 		oParagraph.Clear_NearestPosArray();
 		return true;
 	};
-
+	
+	/**
+	 * Record of one comment.
+	 * @typedef {Object} CommentReportRecord
+	 * @property {boolean} [IsAnswer=false] - Specifies whether this is an initial comment or a reply to another comment.
+	 * @property {string} CommentMessage - The text of the current comment.
+	 * @property {number} Date - The time when this change was made in local time.
+	 * @property {number} DateUTC - The time when this change was made in UTC.
+	 * @property {string} [QuoteText=undefined] - The text to which this comment is related.
+	 */
+	
+	/**
+	 * Report on all comments.
+	 * This is a dictionary where the keys are usernames.
+	 * @typedef {Object.<string, Array.<CommentReportRecord>>} CommentReport
+	 * @example
+	 *  {
+	 *    "John Smith" : [{IsAnswer: false, CommentMessage: 'Good text', Date: 1688588002698, DateUTC: 1688570002698, QuoteText: 'Some text'},
+	 *      {IsAnswer: true, CommentMessage: "I don't think so", Date: 1688588012661, DateUTC: 1688570012661}],
+	 *
+	 *    "Mark Pottato" : [{IsAnswer: false, CommentMessage: 'Need to change this part', Date: 1688587967245, DateUTC: 1688569967245, QuoteText: 'The quick brown fox jumps over the lazy dog'},
+	 *      {IsAnswer: false, CommentMessage: 'We need to add a link', Date: 1688587967245, DateUTC: 1688569967245, QuoteText: 'OnlyOffice'}]
+	 *  }
+	 */
+	
+	
 	/**
 	 * Returns a report about all the comments added to the document.
 	 * @memberof ApiDocument
 	 * @typeofeditors ["CDE"]
-	 * @returns {object}
+	 * @returns {CommentReport}
 	 */
 	ApiDocument.prototype.GetCommentsReport = function()
 	{
@@ -5653,12 +5774,38 @@
 
 		return oResult;
 	};
-
+	
+	/**
+	 * Review record type.
+	 * @typedef {("TextAdd" | "TextRem" | "ParaAdd" | "ParaRem" | "TextPr" | "ParaPr" | "Unknown")} ReviewReportRecordType
+	 */
+	
+	/**
+	 * Record of one review change.
+	 * @typedef {Object} ReviewReportRecord
+	 * @property {ReviewReportRecordType} Type - Review record type.
+	 * @property {string} [Value=undefined] - Review change value that is set for the "TextAdd" and "TextRem" types only.
+	 * @property {number} Date - The time when this change was made.
+	 */
+	
+	/**
+	 * Report on all review changes.
+	 * This is a dictionary where the keys are usernames.
+	 * @typedef {Object.<string, Array.<ReviewReportRecord>>} ReviewReport
+	 * @example
+	 * 	{
+	 * 	  "John Smith" : [{Type: 'TextRem', Value: 'Hello, Mark!', Date: 1679941734161},
+	 * 	                {Type: 'TextAdd', Value: 'Dear Mr. Pottato.', Date: 1679941736189}],
+	 * 	  "Mark Pottato" : [{Type: 'ParaRem', Date: 1679941755942},
+	 * 	                  {Type: 'TextPr', Date: 1679941757832}]
+	 * 	}
+	 */
+	
 	/**
 	 * Returns a report about every change which was made to the document in the review mode.
 	 * @memberof ApiDocument
 	 * @typeofeditors ["CDE"]
-	 * @returns {object}
+	 * @returns {ReviewReport}
 	 */
 	ApiDocument.prototype.GetReviewReport = function()
 	{
@@ -5747,6 +5894,17 @@
 			return;
 
 		var sReplace = oProperties["replaceString"];
+		
+		sReplace = sReplace.replaceAll('\t', "^t");
+		sReplace = sReplace.replaceAll('\v', "^l");
+		sReplace = sReplace.replaceAll('\f', "^m");
+		// TODO: ^p пока не поддерживается для замены
+		//sReplace = sReplace.replaceAll('\r', "^p");
+		sReplace = sReplace.replaceAll('\x0e', "^n");
+		sReplace = sReplace.replaceAll('\x1e', "^~");
+		// TODO: Сделать поддержку softHyphen
+		//sReplace = sReplace.replaceAll('\x1f', "");
+		
 		this.Document.ReplaceSearchElement(sReplace, true, null, false);
 	};
 	/**
@@ -5868,7 +6026,51 @@
 
 		return arrResult;
 	};
-
+	/**
+	 * The specific form type.
+	 * @typedef {("text" | "checkBox" | "picture" | "comboBox" | "dropDownList" | "dateTime" | "radio")} FormSpecificType
+	 */
+	/**
+	 * Form data.
+	 * @typedef {Object} FormData
+	 * @property {string} key - The form key. If the current form is a radio button, then this field contains the group key.
+	 * @property {string | boolean} value - The current field value.
+	 * @property {string} tag - The form tag.
+	 * @property {FormSpecificType} type - The form type.
+	 * @example
+	 * 	{
+	 * 	  "key" : "CompanyName",
+	 * 	  "tag" : "companyName",
+	 * 	  "value" : "ONLYOFFICE",
+	 * 	  "type" : "text"
+	 * 	}
+	 */
+	/**
+	 * Returns the data from all forms present in the current document.
+	 * If a form was created and not assigned to any part of the document, it won't appear in this list.
+	 * @memberof ApiDocument
+	 * @typeofeditors ["CDE"]
+	 * @returns {Array.<FormData>}
+	 * @since 8.0.0
+	 */
+	ApiDocument.prototype.GetFormsData = function()
+	{
+		return this.Document.GetFormsManager().GetAllFormsData();
+	};
+	/**
+	 * Sets the data to the specified forms.
+	 * @memberof ApiDocument
+	 * @typeofeditors ["CDE"]
+	 * @param {Array.<FormData>} arrData - An array of form data to set to the specified forms.
+	 * @since 8.0.0
+	 */
+	ApiDocument.prototype.SetFormsData = function(arrData)
+	{
+		if (!arrData || !Array.isArray(arrData))
+			return;
+		
+		this.Document.GetFormsManager().SetAllFormsData(arrData);
+	};
 	/**
 	 * Sets the change tracking mode.
 	 * @memberof ApiDocument
@@ -5968,29 +6170,25 @@
 	 * @memberof ApiDocument
 	 * @typeofeditors ["CDE"]
 	 * @param {string} sText - The comment text (required).
-	 * @param {string} sAutor - The author's name (optional).
+	 * @param {string} sAuthor - The author's name (optional).
+	 * @param {string} sUserId - The user ID of the comment author (optional).
 	 * @returns {ApiComment?} - Returns null if the comment was not added.
 	 */
-	ApiDocument.prototype.AddComment = function(sText, sAutor)
+	ApiDocument.prototype.AddComment = function(sText, sAuthor, sUserId)
 	{
 		if (!sText || typeof(sText) !== "string")
 			return null;
 	
-		if (typeof(sAutor) !== "string")
-			sAutor = "";
+		if (typeof(sAuthor) !== "string")
+			sAuthor = "";
 		
-		var CommentData = new AscCommon.CCommentData();
-		CommentData.SetText(sText);
-		CommentData.SetUserName(sAutor);
+		let CommentData = private_CreateCommentData({
+			text: sText,
+			author: sAuthor,
+			userId: sUserId
+		});
 
-		var oComment = this.Document.AddComment(CommentData, true);
-
-		if (null !== oComment)
-			editor.sync_AddComment(oComment.Get_Id(), CommentData);
-		else
-			return null;
-
-		return new ApiComment(oComment);
+		return AddGlobalCommentToDocument(this.Document, CommentData);
 	};
 	/**
 	 * Returns a bookmark range.
@@ -6056,6 +6254,40 @@
 		}
 
 		return arrApiAllTables;
+	};
+	/**
+	 * Adds a shape to the specified page.
+	 * <note>This method can be a little bit slow, because it runs the document calculation
+	 * process to arrange tables on the specified page.</note>
+	 * @memberof ApiDocument
+	 * @typeofeditors ["CDE"]
+	 * @param oDrawing {ApiDrawing} - A shape to add to the page.
+	 * @param nPage {number} - The page number.
+	 * @param x {EMU} - The X coordinate in English measure units.
+	 * @param y {EMU} - The Y coordinate in English measure units.
+	 * @return {boolean}
+	 */
+	ApiDocument.prototype.AddDrawingToPage = function(oDrawing, nPage, x, y)
+	{
+		if (!(oDrawing instanceof ApiDrawing) || oDrawing.Drawing.IsUseInDocument())
+			return false;
+		
+		this.ForceRecalculate(nPage + 1);
+		if (this.Document.GetPagesCount() <= nPage)
+			return false;
+		
+		this.Document.RemoveSelection();
+		this.Document.GoToPage(nPage);
+		let paragraph = this.Document.GetCurrentParagraph();
+		if (!paragraph)
+			return false;
+		
+		let drawing = oDrawing.Drawing;
+		drawing.Set_PositionH(Asc.c_oAscRelativeFromH.Page, false, private_EMU2MM(x), false);
+		drawing.Set_PositionV(Asc.c_oAscRelativeFromV.Page, false, private_EMU2MM(y), false);
+		drawing.Set_DrawingType(drawing_Anchor);
+		paragraph.AddToParagraph(drawing);
+		return true;
 	};
 	/**
 	 * Removes the current selection.
@@ -6149,7 +6381,8 @@
 	 * @memberof ApiDocument
 	 * @typeofeditors ["CDE"]
 	 * @param {?string} [sText="WATERMARK"] - Watermark text.
-	 * @param {?boolean} [bIsDiagonal=true] - Specifies if the watermark is placed diagonally (true) or horizontally (false).
+	 * @param {?boolean} [bIsDiagonal=false] - Specifies if the watermark is placed diagonally (true) or horizontally (false).
+	 * @returns {?ApiDrawing} - The object which represents the inserted watermark. Returns null if the watermark type is "none".
 	 */
 	ApiDocument.prototype.InsertWatermark = function(sText, bIsDiagonal){
 		var oSectPrMap = {};
@@ -6189,6 +6422,57 @@
 				privateInsertWatermarkToContent(this.Document.Api, oHeadersMap[sId], sText, bIsDiagonal);
 			}
 		}
+	};
+
+
+	/**
+	 * Returns the watermark settings in the current document.
+	 * @memberof ApiDocument
+	 * @typeofeditors ["CDE"]
+	 * @returns {ApiWatermarkSettings} - The object which represents the watermark settings.
+	 */
+	ApiDocument.prototype.GetWatermarkSettings = function()
+	{
+		return new ApiWatermarkSettings(this.Document.GetWatermarkProps());
+	};
+
+
+	/**
+	 * Sets the watermark settings in the current document.
+	 * @memberof ApiDocument
+	 * @typeofeditors ["CDE"]
+	 * @param {ApiWatermarkSettings} Settings - The object which represents the watermark settings.
+	 * @returns {?ApiDrawing} - The object which represents the watermark drawing if the watermark type in Settings is not "none".
+	 */
+	ApiDocument.prototype.SetWatermarkSettings = function(Settings)
+	{
+		let oDrawing = this.Document.SetWatermarkPropsAction(Settings.Settings);
+		if(oDrawing && oDrawing.GraphicObj)
+		{
+			const oGraphic = oDrawing.GraphicObj;
+			if(oGraphic.isImage())
+			{
+				return new ApiImage(oGraphic);
+			}
+			else if(oGraphic.isShape())
+			{
+				return new ApiShape(oGraphic);
+			}
+
+		}
+		return null;
+	};
+
+	/**
+	 * Removes a watermark from the current document.
+	 * @memberof ApiDocument
+	 * @typeofeditors ["CDE"]
+	 */
+	ApiDocument.prototype.RemoveWatermark = function()
+	{
+		let Settings = new Asc.CAscWatermarkProperties();
+		Settings.put_Type(Asc.c_oAscWatermarkType.None);
+		this.Document.SetWatermarkPropsAction(Settings);
 	};
 
 	/**
@@ -6231,7 +6515,7 @@
 
 					for (var nParaIndex = 0, nParasCount = arrParagraphs.length; nParaIndex < nParasCount; ++nParaIndex)
 					{
-						var arrPageNumbers = arrParagraphs[nParaIndex].GetComplexFieldsArrayByType(AscCommonWord.fieldtype_PAGEREF);
+						var arrPageNumbers = arrParagraphs[nParaIndex].GetComplexFieldsArrayByType(AscWord.fieldtype_PAGEREF);
 						for (var nRefIndex = 0, nRefsCount = arrPageNumbers.length; nRefIndex < nRefsCount; ++nRefIndex)
 						{
 							arrPageNumbers[nRefIndex].Update();
@@ -6287,7 +6571,7 @@
 
 				for (var nParaIndex = 0, nParasCount = arrParagraphs.length; nParaIndex < nParasCount; ++nParaIndex)
 				{
-					var arrPageNumbers = arrParagraphs[nParaIndex].GetComplexFieldsArrayByType(AscCommonWord.fieldtype_PAGEREF);
+					var arrPageNumbers = arrParagraphs[nParaIndex].GetComplexFieldsArrayByType(AscWord.fieldtype_PAGEREF);
 					for (var nRefIndex = 0, nRefsCount = arrPageNumbers.length; nRefIndex < nRefsCount; ++nRefIndex)
 					{
 						arrPageNumbers[nRefIndex].Update();
@@ -6403,16 +6687,16 @@
 	 * @memberof ApiDocument
 	 * @typeofeditors ["CDE"]
 	 * @param {string} sId - The comment ID.
-	 * @returns {ApiComment?}
+	 * @returns {?ApiComment}
 	 */
 	ApiDocument.prototype.GetCommentById = function(sId) 
 	{
-		let oCommManager = this.Document.GetCommentsManager();
-		let oComment = oCommManager.Get_ById(sId);
-		if (oComment)
-			return new ApiComment(oComment);
+		let manager = this.Document.GetCommentsManager();
+		let comment = manager.GetByDurableId(sId);
+		if (!comment)
+			comment = manager.GetById(sId);
 
-		return null;
+		return comment ? new ApiComment(comment) : null;
 	};
 
 	/**
@@ -6924,7 +7208,7 @@
         oLogicDocument.Statistics.SymbolsWOSpaces = 0;
         oLogicDocument.Statistics.SymbolsWhSpaces = 0;
 
-		oLogicDocument.Statistics.Update_Pages(this.Pages.length);
+		oLogicDocument.Statistics.Update_Pages(oLogicDocument.Pages.length);
 		for (let CurPage = 0, PagesCount = oLogicDocument.Pages.length; CurPage < PagesCount; ++CurPage)
 		{
 			oLogicDocument.DrawingObjects.documentStatistics(CurPage, oLogicDocument.Statistics);
@@ -6946,8 +7230,8 @@
         }
 	};
 	/**
-	 * Returns the number of pages in a document
-	 * <note>This method can be slow for large documents, because it runs the document calculation
+	 * Returns a number of pages in the current document.
+	 * <note>This method can be slow for large documents because it runs the document calculation
 	 * process before the full recalculation.</note>
 	 * @memberof ApiDocument
 	 * @typeofeditors ["CDE"]
@@ -6957,6 +7241,23 @@
 	{
 		this.ForceRecalculate();
 		return this.Document.GetPagesCount();
+	};
+	/**
+	 * Returns all styles of the current document.
+	 * @memberof ApiDocument
+	 * @typeofeditors ["CDE"]
+	 * @returns {ApiStyle[]}
+	 */
+	ApiDocument.prototype.GetAllStyles = function()
+	{
+		let aApiStyles = [];
+		var aStyles  = this.Document.Get_Styles().Style;
+		
+		aStyles.forEach(function(style) {
+			aApiStyles.push(new ApiStyle(style));
+		});
+
+		return aApiStyles;
 	};
 	//------------------------------------------------------------------------------------------------------------------
 	//
@@ -7035,7 +7336,6 @@
 	};
 	/**
 	 * Inserts a number of the current document page into the paragraph.
-	 * <note>This method works for the paragraphs in the document header/footer only.</note>
 	 * @memberof ApiParagraph
 	 * @typeofeditors ["CDE"]
 	 * @returns {ApiRun}
@@ -7049,7 +7349,6 @@
 	};
 	/**
 	 * Inserts a number of pages in the current document into the paragraph.
-	 * <note>This method works for the paragraphs in the document header/footer only.</note>
 	 * @memberof ApiParagraph
 	 * @typeofeditors ["CDE"]
 	 * @returns {ApiRun}
@@ -7302,7 +7601,7 @@
 		oRun.Add_ToContent(0, oDrawing.Drawing);
 		private_PushElementToParagraph(this.Paragraph, oRun);
 		oDrawing.Drawing.Set_Parent(oRun);
-
+		private_CheckDrawingOnAdd(oDrawing);
 		return new ApiRun(oRun);
 	};
 
@@ -7331,15 +7630,16 @@
 	 * @memberof ApiParagraph
 	 * @typeofeditors ["CDE"]
 	 * @param {string} sText - The comment text (required).
-	 * @param {string} sAutor - The author's name (optional).
+	 * @param {string} sAuthor - The author's name (optional).
+	 * @param {string} sUserId - The user ID of the comment author (optional).
 	 * @returns {ApiComment?} - Returns null if the comment was not added.
 	 */
-	ApiParagraph.prototype.AddComment = function(sText, sAutor)
+	ApiParagraph.prototype.AddComment = function(sText, sAuthor, sUserId)
 	{
 		if (!sText || typeof(sText) !== "string")
 			return null;
-		if (typeof(sAutor) !== "string")
-			sAutor = "";
+		if (typeof(sAuthor) !== "string")
+			sAuthor = "";
 
 		if (!this.Paragraph.IsUseInDocument())
 			return null;
@@ -7347,12 +7647,15 @@
 		var oDocument = private_GetLogicDocument();
 
 		var sQuotedText = this.GetText();
-		var CommentData = new AscCommon.CCommentData();
-		CommentData.Set_QuoteText(sQuotedText);
-		CommentData.SetText(sText);
-		CommentData.SetUserName(sAutor);
+		let CommentData = private_CreateCommentData({
+			text: sText,
+			author: sAuthor,
+			userId: sUserId,
+			quoteText: sQuotedText
+		});
 
 		var oComment = new AscCommon.CComment(oDocument.Comments, CommentData);
+		oComment.GenerateDurableId();
 		oDocument.Comments.Add(oComment);
 		this.Paragraph.SetApplyToAll(true);
 		this.Paragraph.AddComment(oComment, true, true);
@@ -7605,10 +7908,16 @@
 	 */
 	ApiParagraph.prototype.GetFontNames = function()
 	{
-		var fontMap = {};
-		var arrFonts = [];
-		this.Paragraph.Document_Get_AllFontNames(fontMap);
-		for (var key in fontMap)
+		let fontMap = {};
+		let arrFonts = [];
+		// this.Paragraph.Document_Get_AllFontNames(fontMap);
+		this.Paragraph.Get_CompiledPr().TextPr.Document_Get_AllFontNames(fontMap);
+		for (let i = 0; i < this.Paragraph.Content.length; i++)
+		{
+			let element = this.Paragraph.Content[i];
+			element.Get_CompiledTextPr().Document_Get_AllFontNames(fontMap);
+		}
+		for (let key in fontMap)
 		{
 			arrFonts.push(key);
 		}
@@ -7638,8 +7947,8 @@
 	 */
 	ApiParagraph.prototype.SetHighlight = function(sColor)
 	{
-		if (!editor || Asc.editor)
-			return this;
+		if (!editor && Asc.editor)
+		 	return this;
 
 		this.Paragraph.SetApplyToAll(true);
 		if ("none" === sColor)
@@ -7889,7 +8198,7 @@
 
 		for (var Index = 0; Index < arrAllDrawing.length; Index++)
 		{
-			if (arrAllDrawing[Index].GraphicObj instanceof CImageShape)
+			if (arrAllDrawing[Index].GraphicObj instanceof AscFormat.CImageShape)
 				arrApiImages.push(new ApiImage(arrAllDrawing[Index].GraphicObj));
 		}
 
@@ -7908,7 +8217,7 @@
 
 		for (var Index = 0; Index < arrAllDrawing.length; Index++)
 		{
-			if (arrAllDrawing[Index].GraphicObj instanceof CChartSpace)
+			if (arrAllDrawing[Index].GraphicObj instanceof AscFormat.CChartSpace)
 				arrApiCharts.push(new ApiChart(arrAllDrawing[Index].GraphicObj));
 		}
 
@@ -7993,12 +8302,29 @@
 	/**
 	 * Returns the paragraph text.
 	 * @memberof ApiParagraph
+	 * @param {object} oPr - The resulting string display properties.
+     * @param {boolean} [oPr.Numbering=false] - Defines if the resulting string will include numbering or not.
+     * @param {boolean} [oPr.Math=false] - Defines if the resulting string will include mathematical expressions or not.
+	 * @param {string} [oPr.NewLineSeparator='\r'] - Defines how the line separator will be specified in the resulting string.
+	 * @param {string} [oPr.TabSymbol='\t'] - Defines how the tab will be specified in the resulting string (does not apply to numbering).
 	 * @typeofeditors ["CDE"]
-	 * @return {string}  
+	 * @return {string}
 	 */
-	ApiParagraph.prototype.GetText = function()
+	ApiParagraph.prototype.GetText = function(oPr)
 	{
-		return this.Paragraph.GetText({ParaEndToSpace: false});
+		if (!oPr) {
+			oPr = {};
+		}
+
+		let oProp =	{
+			NewLineSeparator:	(oPr.hasOwnProperty("NewLineSeparator")) ? oPr["NewLineSeparator"] : "\r",
+			Numbering:			(oPr.hasOwnProperty("Numbering")) ? oPr["Numbering"] : true,
+			Math:				(oPr.hasOwnProperty("Math")) ? oPr["Math"] : true,
+			TabSymbol:			oPr["TabSymbol"],
+			ParaEndToSpace:		false
+		}
+
+		return this.Paragraph.GetText(oProp);
 	};
 	/**
 	 * Returns the paragraph text properties.
@@ -8200,7 +8526,7 @@
 	{
 		var oDocument = private_GetLogicDocument();
 		var fieldName = this.GetText();
-		var oField    = new ParaField(fieldtype_MERGEFIELD, [fieldName], []);
+		var oField    = new ParaField(AscWord.fieldtype_MERGEFIELD, [fieldName], []);
 		
 		var leftQuote  = new ParaRun();
 		var rightQuote = new ParaRun();
@@ -8739,7 +9065,7 @@
 	};
 
 	/**
-     * Gets the section of paragraph.
+     * Returns the paragraph section.
      * @memberof ApiParagraph
      * @typeofeditors ["CDE"]
      * @returns {ApiSection}
@@ -8753,10 +9079,10 @@
 		return new ApiSection(oSectPr);
 	};
 	/**
-     * Sets the specified section to paragraph.
+     * Sets the specified section to the current paragraph.
      * @memberof ApiParagraph
      * @typeofeditors ["CDE"]
-     * @param {ApiSection} oSection - the section which will setted to the paragraph.
+     * @param {ApiSection} oSection - The section which will be set to the paragraph.
      * @returns {boolean}
      */
 	ApiParagraph.prototype.SetSection = function(oSection)
@@ -8764,8 +9090,10 @@
 		if (typeof(oSection) != "object" || !(oSection instanceof ApiSection))
 			return false;
 
-		if (!this.Paragraph.CanAddSectionPr())
-			return new Error('Paragraph must be in a document.');
+		if (!this.Paragraph.CanAddSectionPr()) {
+			logError(new Error('Paragraph must be in a document.'));
+			return false;
+		}
 
 		let oDoc = private_GetLogicDocument();
 		if (!oDoc)
@@ -8806,7 +9134,7 @@
 	 */
 	ApiRun.prototype.GetTextPr = function()
 	{
-		return new ApiTextPr(this, this.Run.Pr.Copy());
+		return new ApiTextPr(this, this.TextPr);
 	};
 	/**
 	 * Clears the content from the current run.
@@ -8907,7 +9235,7 @@
 
 		this.Run.Add_ToContent(this.Run.Content.length, oDrawing.Drawing);
 		oDrawing.Drawing.Set_Parent(this.Run);
-
+		private_CheckDrawingOnAdd(oDrawing);
 		return true;
 	};
 	/**
@@ -9216,10 +9544,11 @@
 	 */
 	ApiRun.prototype.GetFontNames = function()
 	{
-		var fontMap = {};
-		var arrFonts = [];
-		this.Run.Get_AllFontNames(fontMap);
-		for (var key in fontMap)
+		let fontMap = {};
+		let arrFonts = [];
+		// this.Run.Get_AllFontNames(fontMap);
+		this.Run.Get_CompiledTextPr().Document_Get_AllFontNames(fontMap);
+		for (let key in fontMap)
 		{
 			arrFonts.push(key);
 		}
@@ -9414,7 +9743,7 @@
 	{
 		var oDocument = private_GetLogicDocument();
 		var fieldName = this.Run.GetText();
-		var oField    = new ParaField(fieldtype_MERGEFIELD, [fieldName], []);
+		var oField    = new ParaField(AscWord.fieldtype_MERGEFIELD, [fieldName], []);
 		var runParent = this.Run.GetParent();
 
 		var leftQuote  = new ParaRun();
@@ -9458,39 +9787,59 @@
 	 * @memberof ApiRun
 	 * @typeofeditors ["CDE"]
 	 * @param {string} sText - The comment text (required).
-	 * @param {string} sAutor - The author's name (optional).
+	 * @param {string} sAuthor - The author's name (optional).
+	 * @param {string} sUserId - The user ID of the comment author (optional).
 	 * @returns {ApiComment?} - Returns null if the comment was not added.
 	 */
-	ApiRun.prototype.AddComment = function(sText, sAutor)
+	ApiRun.prototype.AddComment = function(sText, sAuthor, sUserId)
 	{
 		if (!sText || typeof(sText) !== "string")
 			return null;
-		if (typeof(sAutor) !== "string")
-			sAutor = "";
+		if (typeof(sAuthor) !== "string")
+			sAuthor = "";
 
 		if (!this.Run.IsUseInDocument())
 			return null;
 
 		var oDocument = private_GetLogicDocument();
-		var CommentData = new AscCommon.CCommentData();
-
-		CommentData.SetText(sText);
-		if (sAutor !== "")
-			CommentData.SetUserName(sAutor);
+		let CommentData = private_CreateCommentData({
+			text: sText,
+			author: sAuthor,
+			userId: sUserId
+		});
 
 		var oDocumentState = oDocument.SaveDocumentState();
 		this.Run.SelectThisElement();
 
-		var oComment = oDocument.AddComment(CommentData, false);
+		let comment = AddCommentToDocument(oDocument, CommentData);
 		oDocument.LoadDocumentState(oDocumentState);
 		oDocument.UpdateSelection();
+		return comment;
+	};
 
-		if (null != oComment)
-			editor.sync_AddComment(oComment.Get_Id(), CommentData);
-		else
-			return null;
+	/**
+	 * Returns a text from the text run.
+	 * @memberof ApiRun
+	 * @param {object} oPr - The resulting string display properties.
+     * @param {string} [oPr.NewLineSeparator='\r'] - Defines how the line separator will be specified in the resulting string.
+	 * @param {string} [oPr.TabSymbol='\t'] - Defines how the tab will be specified in the resulting string.
+	 * @typeofeditors ["CDE"]
+	 * @returns {string}
+	 */	
+	ApiRun.prototype.GetText = function(oPr)
+	{
+		if (!oPr) {
+			oPr = {};
+		}
 
-		return new ApiComment(oComment)
+		let oProp = {
+			Text: "",
+			NewLineSeparator:	(oPr.hasOwnProperty("NewLineSeparator")) ? oPr["NewLineSeparator"] : "\r",
+			TabSymbol:			oPr["TabSymbol"],
+			ParaSeparator:		oPr["ParaSeparator"]
+		}
+
+		return this.Run.GetText(oProp);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -9591,6 +9940,27 @@
 		this.Section.SetPageSize(private_Twips2MM(nWidth), private_Twips2MM(nHeight));
 		this.Section.SetOrientation(false === isPortrait ? Asc.c_oAscPageOrientation.PageLandscape : Asc.c_oAscPageOrientation.PagePortrait, false);
 	};
+	/**
+	 * Gets page height for current section.
+	 * @memberof ApiSection
+	 * @typeofeditors ["CDE"]
+	 * @returns {twips}
+	 */
+	ApiSection.prototype.GetPageHeight = function()
+	{
+		return private_MM2Twips(this.Section.GetPageHeight());
+	};
+	/**
+	 * Gets page width for current section.
+	 * @memberof ApiSection
+	 * @typeofeditors ["CDE"]
+	 * @returns {twips}
+	 */
+	ApiSection.prototype.GetPageWidth = function()
+	{
+		return private_MM2Twips(this.Section.GetPageWidth());
+	};
+
 	/**
 	 * Specifies the page margins for all the pages in this section.
 	 * @memberof ApiSection
@@ -10727,44 +11097,39 @@
 	 * @memberof ApiTable
 	 * @typeofeditors ["CDE"]
 	 * @param {string} sText - The comment text (required).
-	 * @param {string} sAutor - The author's name (optional).
+	 * @param {string} sAuthor - The author's name (optional).
+	 * @param {string} sUserId - The user ID of the comment author (optional).
 	 * @returns {ApiComment?} - Returns null if the comment was not added.
 	 */
-	ApiTable.prototype.AddComment = function(sText, sAutor)
+	ApiTable.prototype.AddComment = function(sText, sAuthor, sUserId)
 	{
 		if (!sText || typeof(sText) !== "string")
 			return null;
-		if (typeof(sAutor) !== "string")
-			sAutor = "";
+		if (typeof(sAuthor) !== "string")
+			sAuthor = "";
 
 		if (!this.Table.IsUseInDocument())
 			return null;
 
 		var oDocument = private_GetLogicDocument();
-		var CommentData = new AscCommon.CCommentData();
-
-		CommentData.SetText(sText);
-		if (sAutor !== "")
-			CommentData.SetUserName(sAutor);
+		let CommentData = private_CreateCommentData({
+			text: sText,
+			author: sAuthor,
+			userId: sUserId
+		});
 
 		var oDocumentState = oDocument.SaveDocumentState();
 		this.Table.SelectAll();
 		this.Table.Document_SetThisElementCurrent(true);
 
-		var oComment = oDocument.AddComment(CommentData, false);
+		let comment = AddCommentToDocument(oDocument, CommentData);
 		oDocument.LoadDocumentState(oDocumentState);
 		oDocument.UpdateSelection();
-
-		if (null != oComment)
-			editor.sync_AddComment(oComment.Get_Id(), CommentData);
-		else
-			return null;
-
-		return new ApiComment(oComment)
+		return new ApiComment(comment)
 	};
 
 	/**
-     * Adds a caption table after (or before) the current table.
+     * Adds a caption paragraph after (or before) the current table.
 	 * <note>Please note that the current table must be in the document (not in the footer/header).
 	 * And if the current table is placed in a shape, then a caption is added after (or before) the parent shape.</note>
      * @memberof ApiTable
@@ -11888,8 +12253,8 @@
 	 */
 	ApiTextPr.prototype.SetHighlight = function(sColor)
 	{
-		if (!editor || Asc.editor)
-			return this;
+		if (!editor && Asc.editor)
+		 	return this;
 
 		if ("none" === sColor)
 		{
@@ -12073,7 +12438,7 @@
 		let oJSON = bFromDocument ? oWriter.SerTextPr(this.TextPr) : oWriter.SerTextPrDrawing(this.TextPr);
 		if (bWriteStyles)
 			oJSON["styles"] = oWriter.SerWordStylesForWrite();
-		return JSON.stringify();
+		return JSON.stringify(oJSON);
 	};
 
 
@@ -12747,7 +13112,9 @@
 	ApiNumbering.prototype.ToJSON = function()
 	{
 		var oWriter = new AscJsonConverter.WriterToJSON();
-		return JSON.stringify(oWriter.SerNumbering(this.Num));
+		oWriter.SerNumbering(this.Num);
+
+		return JSON.stringify(oWriter.jsonWordNumberings);
 	};
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -14254,7 +14621,7 @@
 	};
 	/**
      * Returns the lock value for the specified lock type of the current drawing.
-     * @typeofeditors ["CPE"]
+     * @typeofeditors ["CDE"]
 	 * @param {"noGrp" | "noUngrp" | "noSelect" | "noRot" | "noChangeAspect" | "noMove" | "noResize" | "noEditPoints" | "noAdjustHandles"
 	 * 	| "noChangeArrowheads" | "noChangeShapeType" | "noDrilldown" | "noTextEdit" | "noCrop" | "txBox"} sType - Lock type in the string format.
      * @returns {bool}
@@ -14274,7 +14641,7 @@
 
 	/**
      * Sets the lock value to the specified lock type of the current drawing.
-     * @typeofeditors ["CPE"]
+     * @typeofeditors ["CDE"]
 	 * @param {"noGrp" | "noUngrp" | "noSelect" | "noRot" | "noChangeAspect" | "noMove" | "noResize" | "noEditPoints" | "noAdjustHandles"
 	 * 	| "noChangeArrowheads" | "noChangeShapeType" | "noDrilldown" | "noTextEdit" | "noCrop" | "txBox"} sType - Lock type in the string format.
      * @param {bool} bValue - Specifies if the specified lock is applied to the current drawing.
@@ -16056,40 +16423,390 @@
 	 * @memberof ApiInlineLvlSdt
 	 * @typeofeditors ["CDE"]
 	 * @param {string} sText - The comment text (required).
-	 * @param {string} sAutor - The author's name (optional).
+	 * @param {string} sAuthor - The author's name (optional).
+	 * @param {string} sUserId - The user ID of the comment author (optional).
 	 * @returns {ApiComment?} - Returns null if the comment was not added.
 	 */
-	ApiInlineLvlSdt.prototype.AddComment = function(sText, sAutor)
+	ApiInlineLvlSdt.prototype.AddComment = function(sText, sAuthor, sUserId)
 	{
 		if (!sText || typeof(sText) !== "string")
 			return null;
-		if (typeof(sAutor) !== "string")
-			sAutor = "";
+		if (typeof(sAuthor) !== "string")
+			sAuthor = "";
 
 		if (!this.Sdt.IsUseInDocument())
 			return null;
 
 		var oDocument = private_GetLogicDocument();
-		var CommentData = new AscCommon.CCommentData();
-
-		CommentData.SetText(sText);
-		if (sAutor !== "")
-			CommentData.SetUserName(sAutor);
+		let CommentData = private_CreateCommentData({
+			text: sText,
+			author: sAuthor,
+			userId: sUserId
+		});
 
 		var oDocumentState = oDocument.SaveDocumentState();
 		this.Sdt.SelectContentControl();
 
-		var oComment = oDocument.AddComment(CommentData, false);
+		let comment = AddCommentToDocument(oDocument, CommentData);
 		oDocument.LoadDocumentState(oDocumentState);
 		oDocument.UpdateSelection();
-
-		if (null != oComment)
-			editor.sync_AddComment(oComment.Get_Id(), CommentData);
-		else
-			return null;
-
-		return new ApiComment(oComment)
+		return new ApiComment(comment)
 	};
+
+	/**
+	 * Returns a list of values of the combo box / dropdown list content control.
+	 * @memberof ApiInlineLvlSdt
+	 * @typeofeditors ["CDE"]
+	 * @returns {ApiContentControlList}
+	 */
+	ApiInlineLvlSdt.prototype.GetDropdownList = function()
+	{
+		if (!this.Sdt.IsComboBox() && !this.Sdt.IsDropDownList())
+			throwException(new Error("Not a drop down content control"));
+		
+		return new ApiContentControlList(this);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------
+	//
+	// ApiContentControlList
+	//
+	//------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Returns a type of the ApiContentControlList class.
+	 * @memberof ApiContentControlList
+	 * @typeofeditors ["CDE"]
+	 * @returns {"contentControlList"}
+	 */
+	ApiContentControlList.prototype.GetClassType = function()
+	{
+		return "contentControlList";
+	};
+
+	/**
+	 * Returns a collection of items (the ApiContentControlListEntry objects) of the combo box / dropdown list content control.
+	 * @memberof ApiContentControlList
+	 * @typeofeditors ["CDE"]
+	 * @returns {ApiContentControlListEntry[]}
+	 */
+	ApiContentControlList.prototype.GetAllItems = function()
+	{
+		let nCount	= this.GetElementsCount();
+		let aResult	= [];
+		
+		for (let i = 0; i < nCount; ++i)
+		{
+			aResult.push(this.GetItem(i));
+		}
+		
+		return aResult;
+	};
+
+	/**
+	 * Returns a number of items of the combo box / dropdown list content control.
+	 * @memberof ApiContentControlList
+	 * @typeofeditors ["CDE"]
+	 * @returns {number}
+	 */
+	ApiContentControlList.prototype.GetElementsCount = function()
+	{
+		return this.GetListPr().GetItemsCount();
+	};
+
+	/**
+	 * Returns a parent of the combo box / dropdown list content control.
+	 * @memberof ApiContentControlList
+	 * @typeofeditors ["CDE"]
+	 * @returns {ApiInlineLvlSdt | ApiBlockLvlSdt}
+	 */
+	ApiContentControlList.prototype.GetParent = function()
+	{
+		return this.Parent;
+	};
+
+	/**
+	 * Adds a new value to the combo box / dropdown list content control.
+	 * @memberof ApiContentControlList
+	 * @param {string} sText - The display text for the list item.
+	 * @param {string} [sValue=sText] - The list item value.
+	 * @param {number} [nIndex=this.GetElementsCount()] - A position where a new value will be added.
+	 * @typeofeditors ["CDE"]
+	 * @returns {boolean}
+	 */
+	ApiContentControlList.prototype.Add = function(sText, sValue, nIndex)
+	{
+		let nItemsCount = this.GetElementsCount();
+		
+		sText = AscBuilder.GetStringParameter(sText, null);
+		if (!sText)
+			return false;
+		
+		sValue = AscBuilder.GetStringParameter(sValue, sText);
+		nIndex = AscBuilder.GetNumberParameter(nIndex, nItemsCount);
+		if (nIndex < 0 || nIndex > nItemsCount)
+			nIndex = nItemsCount;
+
+		let listPr = this.GetListPr().Copy();
+		if (!listPr.AddItem(sText, sValue, nIndex))
+			return false;
+		
+		this.SetListPr(listPr);
+		return true;
+	};
+
+	/**
+	 * Clears a list of values of the combo box / dropdown list content control.
+	 * @memberof ApiContentControlList
+	 * @typeofeditors ["CDE"]
+	 */
+	ApiContentControlList.prototype.Clear = function()
+	{
+		let listPr = this.GetListPr().Copy();
+		listPr.Clear();
+		this.SetListPr(listPr)
+		this.Sdt.SelectListItem("");
+	};
+
+	/**
+	 * Returns an item of the combo box / dropdown list content control by the position specified in the request.
+	 * @memberof ApiContentControlList
+	 * @param {number} nIndex - Item position.
+	 * @typeofeditors ["CDE"]
+	 * @returns {ApiContentControlListEntry}
+	 */
+	ApiContentControlList.prototype.GetItem = function(nIndex)
+	{
+		let listPr = this.GetListPr();
+		
+		nIndex = AscBuilder.GetNumberParameter(nIndex, null);
+		if (null === nIndex)
+			throwException(new Error("Index must be a number"));
+		else if (nIndex < 0 || nIndex >= listPr.GetItemsCount())
+			throwException(new Error("Index out of list range"));
+		
+		return new ApiContentControlListEntry(this.Sdt, this, listPr.GetItemDisplayText(nIndex), listPr.GetItemValue(nIndex));
+	};
+
+	//------------------------------------------------------------------------------------------------------------------
+	//
+	// ApiContentControlListEntry
+	//
+	//------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Returns a type of the ApiContentControlListEntry class.
+	 * @memberof ApiContentControlListEntry
+	 * @typeofeditors ["CDE"]
+	 * @returns {"contentControlList"}
+	 */
+	ApiContentControlListEntry.prototype.GetClassType = function()
+	{
+		return "contentControlListEntry";
+	};
+
+	/**
+	 * Returns a parent of the content control list item in the combo box / dropdown list content control.
+	 * @memberof ApiContentControlListEntry
+	 * @typeofeditors ["CDE"]
+	 * @returns {ApiContentControlList}
+	 */
+	ApiContentControlListEntry.prototype.GetParent = function()
+	{
+		if (-1 === this.GetIndex())
+			return null;
+		
+		return this.Parent;
+	};
+
+	/**
+	 * Selects the list entry in the combo box / dropdown list content control and sets the text of the content control to the selected item value.
+	 * @memberof ApiContentControlListEntry
+	 * @typeofeditors ["CDE"]
+	 * @returns {boolean}
+	 */
+	ApiContentControlListEntry.prototype.Select = function()
+	{
+		if (-1 === this.GetIndex())
+			return false;
+		
+		this.Sdt.SelectListItem(this.GetValue());
+		return true;
+	};
+
+	/**
+	 * Moves the current item in the parent combo box / dropdown list content control up one element.
+	 * @memberof ApiContentControlListEntry
+	 * @typeofeditors ["CDE"]
+	 * @returns {boolean}
+	 */
+	ApiContentControlListEntry.prototype.MoveUp = function()
+	{
+		let nCurIndex = this.GetIndex();
+		if (-1 === nCurIndex || 0 === nCurIndex)
+			return false;
+		
+		return this.SetIndex(nCurIndex - 1);
+	};
+
+	/**
+	 * Moves the current item in the parent combo box / dropdown list content control down one element, so that it is after the item that originally followed it.
+	 * @memberof ApiContentControlListEntry
+	 * @typeofeditors ["CDE"]
+	 * @returns {boolean}
+	 */
+	ApiContentControlListEntry.prototype.MoveDown = function()
+	{
+		let nCurIndex = this.GetIndex();
+		let nItemsCount = this.Parent.GetListPr().GetItemsCount();
+		if (-1 === nCurIndex || nCurIndex >= nItemsCount - 1)
+			return false;
+		
+		return this.SetIndex(nCurIndex + 1);
+	};
+
+	/**
+	 * Returns an index of the content control list item in the combo box / dropdown list content control.
+	 * @memberof ApiContentControlListEntry
+	 * @typeofeditors ["CDE"]
+	 * @returns {number}
+	 */
+	ApiContentControlListEntry.prototype.GetIndex = function()
+	{
+		let listPr = this.Parent.GetListPr();
+		return listPr.GetIndex(this.Value);
+	};
+
+	/**
+	 * Sets an index to the content control list item in the combo box / dropdown list content control.
+	 * @memberof ApiContentControlListEntry
+	 * @param {number} nIndex - An index of the content control list item.
+	 * @typeofeditors ["CDE"]
+	 * @returns {boolean}
+	 */
+	ApiContentControlListEntry.prototype.SetIndex = function(nIndex)
+	{
+		let nCurIndex = this.GetIndex();
+		if (-1 === nCurIndex)
+			return false;
+		else if (nIndex === nCurIndex)
+			return true;
+		
+		let listPr = this.Parent.GetListPr().Copy();
+		listPr.RemoveItem(nCurIndex);
+		listPr.AddItem(this.Text, this.Value, nIndex);
+		this.Parent.SetListPr(listPr);
+		
+		return true;
+	};
+
+	/**
+	 * Deletes the specified item in the combo box / dropdown list content control.
+	 * @memberof ApiContentControlListEntry
+	 * @typeofeditors ["CDE"]
+	 * @returns {boolean}
+	 */
+	ApiContentControlListEntry.prototype.Delete = function()
+	{
+		let nCurIndex = this.GetIndex();
+		if (nCurIndex === -1)
+			return false;
+		
+		let listPr = this.Parent.GetListPr().Copy();
+		listPr.RemoveItem(nCurIndex);
+		this.Parent.SetListPr(listPr);
+		
+		if (listPr.GetItemsCount())
+		{
+			this.Parent.GetItem(0).Select();
+		}
+		else
+		{
+			this.Sdt.SetShowingPlcHdr(true)
+			this.Sdt.ReplaceContentWithPlaceHolder();
+		}
+		
+		return true;
+	};
+
+	/**
+	 * Returns a String that represents the display text of a list item for the combo box / dropdown list content control.
+	 * @memberof ApiContentControlListEntry
+	 * @typeofeditors ["CDE"]
+	 * @returns {string}
+	 */
+	ApiContentControlListEntry.prototype.GetText = function()
+	{
+		return this.Text;
+	};
+
+	/**
+	 * Sets a String that represents the display text of a list item for the combo box / dropdown list content control.
+	 * @memberof ApiContentControlListEntry
+	 * @typeofeditors ["CDE"]
+	 * @param {string} sText - The display text of a list item.
+	 * @returns {boolean}
+	 */
+	ApiContentControlListEntry.prototype.SetText = function(sText)
+	{
+		let nCurIndex = this.GetIndex();
+		if (this.GetValue() === "" || -1 === nCurIndex)
+			return false;
+		
+		sText = AscBuilder.GetStringParameter(sText, null);
+		if (null === sText)
+			return false;
+		
+		this.Text = sText;
+		
+		let listPr = this.Parent.GetListPr().Copy();
+		listPr.RemoveItem(nCurIndex);
+		listPr.AddItem(this.Text, this.Value, nCurIndex);
+		this.Parent.SetListPr(listPr);
+		this.Select();
+		return true;
+	};
+
+	/**
+	 * Returns a String that represents the value of a list item for the combo box / dropdown list content control.
+	 * @memberof ApiContentControlListEntry
+	 * @typeofeditors ["CDE"]
+	 * @returns {string}
+	 */
+	ApiContentControlListEntry.prototype.GetValue = function()
+	{
+		return this.Value;
+	};
+
+	/**
+	 * Sets a String that represents the value of a list item for the combo box / dropdown list content control.
+	 * @memberof ApiContentControlListEntry
+	 * @typeofeditors ["CDE"]
+	 * @param {string} sValue - The value of a list item.
+	 * @returns {boolean}
+	 */
+	ApiContentControlListEntry.prototype.SetValue = function(sValue)
+	{
+		let nCurIndex = this.GetIndex();
+		sValue = AscBuilder.GetStringParameter(sValue, null);
+		
+		if (null === sValue
+			|| this.GetValue() === ""
+			|| this.GetValue() === sValue
+			|| -1 === nCurIndex
+			|| -1 !== this.Parent.GetListPr().GetIndex(sValue))
+			return false;
+		
+		this.Value = sValue;
+		
+		let listPr = this.Parent.GetListPr().Copy();
+		listPr.RemoveItem(nCurIndex);
+		listPr.AddItem(this.Text, this.Value, nCurIndex);
+		this.Parent.SetListPr(listPr);
+		this.Select();
+		return true;
+	};
+	
 	//------------------------------------------------------------------------------------------------------------------
 	//
 	// ApiBlockLvlSdt
@@ -16646,89 +17363,39 @@
 	 * @memberof ApiBlockLvlSdt
 	 * @typeofeditors ["CDE"]
 	 * @param {string} sText - The comment text (required).
-	 * @param {string} sAutor - The author's name (optional).
-	 * @returns {ApiComment?} - Returns null if the comment was not added.
+	 * @param {string} sAuthor - The author's name (optional).
+	 * @param {string} sUserId - The user ID of the comment author (optional).
+	 * @returns {?ApiComment} - Returns null if the comment was not added.
 	 */
-	ApiBlockLvlSdt.prototype.AddComment = function(sText, sAutor)
+	ApiBlockLvlSdt.prototype.AddComment = function(sText, sAuthor, sUserId)
 	{
 		if (!sText || typeof(sText) !== "string")
 			return null;
-		if (typeof(sAutor) !== "string")
-			sAutor = "";
+		if (typeof(sAuthor) !== "string")
+			sAuthor = "";
 
 		if (!this.Sdt.IsUseInDocument())
 			return null;
 
 		var oDocument = private_GetLogicDocument();
-		var CommentData = new AscCommon.CCommentData();
-
-		CommentData.SetText(sText);
-		if (sAutor !== "")
-			CommentData.SetUserName(sAutor);
+		let CommentData = private_CreateCommentData({
+			text: sText,
+			author: sAuthor,
+			userId: sUserId
+		});
 
 		var oDocumentState = oDocument.SaveDocumentState();
 		this.Sdt.SelectContentControl();
 
-		var oComment = oDocument.AddComment(CommentData, false);
+		let comment = AddCommentToDocument(oDocument, CommentData);
 		oDocument.LoadDocumentState(oDocumentState);
 		oDocument.UpdateSelection();
-
-		if (null != oComment)
-			editor.sync_AddComment(oComment.Get_Id(), CommentData);
-		else
-			return null;
-
-		return new ApiComment(oComment)
-	};
-
-	/**
-	 * Sets the background color to the current block content control.
-	 * @memberof ApiBlockLvlSdt
-	 * @param {byte} r - Red color component value.
-	 * @param {byte} g - Green color component value.
-	 * @param {byte} b - Blue color component value.
-	 * @param {boolean} bNone - Defines that background color will not be set.
-	 * @typeofeditors ["CDE"]
-	 * @returns {boolean}
-	 */
-	ApiBlockLvlSdt.prototype.SetBackgroundColor = function(r, g, b, bNone)
-	{
-		var oFormPr = this.Sdt.GetFormPr().Copy();
 		
-		let oUnifill = new AscFormat.CUniFill();
-		oUnifill.setFill(new AscFormat.CSolidFill());
-		oUnifill.fill.setColor(new AscFormat.CUniColor());
-		oUnifill.fill.color.setColor(new AscFormat.CRGBColor());
-
-		if (r >=0 && g >=0 && b >=0)
-			oUnifill.fill.color.color.setColor(r, g, b);
-		else
-			return false;
-
-		oFormPr.Shd = new CDocumentShd();
-		oFormPr.Shd.Set_FromObject({
-			Value: bNone ? Asc.c_oAscShd.Clear : Asc.c_oAscShd.Clear,
-			Color: {
-				r: r,
-				g: g,
-				b: b,
-				Auto: false
-			},
-			Fill: {
-				r: r,
-				g: g,
-				b: b,
-				Auto: false
-			},
-			Unifill: oUnifill
-		});
-
-		this.Sdt.SetFormPr(oFormPr);
-		return true;
+		return comment;
 	};
 
 	/**
-     * Adds a caption content control after (or before) the current content control.
+     * Adds a caption paragraph after (or before) the current content control.
 	 * <note>Please note that the current content control must be in the document (not in the footer/header).
 	 * And if the current content control is placed in a shape, then a caption is added after (or before) the parent shape.</note>
      * @memberof ApiBlockLvlSdt
@@ -16820,7 +17487,20 @@
 		oDoc.AddCaption(oCapPr);
 		return true;
 	};
-
+	
+	/**
+	 * Returns a list of values of the combo box / dropdown list content control.
+	 * @memberof ApiBlockLvlSdt
+	 * @typeofeditors ["CDE"]
+	 * @returns {ApiContentControlList}
+	 */
+	ApiBlockLvlSdt.prototype.GetDropdownList = function()
+	{
+		if (!this.Sdt.IsComboBox() && !this.Sdt.IsDropDownList())
+			throwException(new Error("Not a drop down content control"));
+		
+		return new ApiContentControlList(this);
+	};
 	//------------------------------------------------------------------------------------------------------------------
 	//
 	// ApiFormBase
@@ -16891,7 +17571,7 @@
 		if (this.GetFormType() === "radioButtonForm")
 		{
 			sKey = sKey === "" ? "Group 1" : sKey;
-			Sdt.GetCheckBoxPr().SetGroupKey(sKey);
+			this.Sdt.GetCheckBoxPr().SetGroupKey(sKey);
 		}
 		else
 		{
@@ -17393,6 +18073,7 @@
 			return false;
 
 		this.Sdt.SetInnerText(_sText);
+		this.OnChangeValue();
 		return true;
 	};
 
@@ -17594,6 +18275,7 @@
 		if (oImg)
 		{
 			oImg.setBlipFill(AscFormat.CreateBlipFillRasterImageId(sImageSrc));
+			this.OnChangeValue();
 			return true;
 		}
 
@@ -17640,7 +18322,7 @@
 		let isComboBox = this.Sdt.IsComboBox();
 		let oSpecProps = isComboBox ? this.Sdt.GetComboBoxPr() : this.Sdt.GetDropDownListPr();
 		if (!oSpecProps)
-			return [];
+			return false;
 
 		oSpecProps = oSpecProps.Copy();
 		oSpecProps.Clear();
@@ -17673,10 +18355,11 @@
 		if (!oSpecProps)
 			return false;
 
-		if (!oSpecProps.GetTextByValue(sValue))
+		if (null == oSpecProps.GetTextByValue(sValue))
 			return false;
 
 		this.Sdt.SelectListItem(sValue);
+		this.OnChangeValue();
 		return true;
 	};
 	/**
@@ -17701,7 +18384,8 @@
 		let oRun = this.Sdt.MakeSingleRunElement();
 		oRun.ClearContent();
 		oRun.AddText(sText);
-
+		
+		this.OnChangeValue();
 		return true;
 	};
 	/**
@@ -17734,6 +18418,7 @@
 			return false;
 
 		this.Sdt.ToggleCheckBox(isChecked);
+		this.OnChangeValue();
 		return true;
 	};
 	/**
@@ -18195,7 +18880,10 @@
 		{
 			var oDocument = this.GetDocument();
 			arrSelectedParas = oDocument.Document.GetSelectedParagraphs();
-			
+			if(arrSelectedParas.length <= 0 )
+			{
+				return;
+			}
 			ReplaceInParas(arrSelectedParas);
 			
 			if (arrSelectedParas[0] && arrSelectedParas[0].Parent)
@@ -18295,6 +18983,21 @@
 		return new ApiDrawing(oDrawing);
 	};
 
+	/**
+	 * Returns the full name of the currently opened file.
+	 * @memberof Api
+	 * @typeofeditors ["CDE", "CPE", "CSE"]
+	 * @returns {string}
+	 */
+	Api.prototype.GetFullName = function () {
+		return this.DocInfo.Title;
+	};
+	Object.defineProperty(Api.prototype, "FullName", {
+		get: function () {
+			return this.GetFullName();
+		}
+	});
+
 	//------------------------------------------------------------------------------------------------------------------
 	//
 	// ApiComment
@@ -18304,17 +19007,33 @@
 	/**
 	 * Returns a type of the ApiComment class.
 	 * @memberof ApiComment
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @returns {"comment"}
 	 */
-	ApiComment.prototype.GetClassType = function () {
+	ApiComment.prototype.GetClassType = function ()
+	{
 		return "comment";
 	};
-
+	
+	/**
+	 * Returns the current comment ID. If the comment doesn't have an ID, null is returned.
+	 * @memberof ApiComment
+	 * @typeofeditors ["CDE"]
+	 * @returns {?string}
+	 */
+	ApiComment.prototype.GetId = function ()
+	{
+		let durableId = this.Comment.GetDurableId();
+		if (-1 === durableId || null === durableId)
+			return null;
+		
+		return ("" + durableId);
+	};
+	
 	/**
 	 * Returns the comment text.
 	 * @memberof ApiComment
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @returns {string}
 	 */
 	ApiComment.prototype.GetText = function () {
@@ -18324,7 +19043,7 @@
 	/**
 	 * Sets the comment text.
 	 * @memberof ApiComment
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @param {string} sText - The comment text.
 	 * @returns {ApiComment} - this
 	 */
@@ -18337,22 +19056,22 @@
 	/**
 	 * Returns the comment author's name.
 	 * @memberof ApiComment
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @returns {string}
 	 */
-	ApiComment.prototype.GetAutorName = function () {
+	ApiComment.prototype.GetAuthorName = function () {
 		return this.Comment.GetData().Get_Name();
 	};
 
 	/**
 	 * Sets the comment author's name.
 	 * @memberof ApiComment
-	 * @typeofeditors ["CDE"]
-	 * @param {string} sAutorName - The comment author's name.
+	 * @typeofeditors ["CDE", "CPE"]
+	 * @param {string} sAuthorName - The comment author's name.
 	 * @returns {ApiComment} - this
 	 */
-	ApiComment.prototype.SetAutorName = function (sAutorName) {
-		this.Comment.GetData().Set_Name(sAutorName);
+	ApiComment.prototype.SetAuthorName = function (sAuthorName) {
+		this.Comment.GetData().Set_Name(sAuthorName);
 		this.private_OnChange();
 		return this;
 	};
@@ -18370,7 +19089,7 @@
 	/**
 	 * Sets the user ID to the comment author.
 	 * @memberof ApiComment
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @param {string} sUserId - The user ID of the comment author.
 	 * @returns {ApiComment} - this
 	 */
@@ -18383,7 +19102,7 @@
 	/**
 	 * Checks if a comment is solved or not.
 	 * @memberof ApiComment
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @returns {boolean}
 	 */
 	ApiComment.prototype.IsSolved = function () {
@@ -18393,7 +19112,7 @@
 	/**
 	 * Marks a comment as solved.
 	 * @memberof ApiComment
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @param {boolean} bSolved - Specifies if a comment is solved or not.
 	 * @returns {ApiComment} - this
 	 */
@@ -18406,7 +19125,7 @@
 	/**
 	 * Returns the timestamp of the comment creation in UTC format.
 	 * @memberof ApiComment
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @returns {Number}
 	 */
 	ApiComment.prototype.GetTimeUTC = function () {
@@ -18419,7 +19138,7 @@
 	/**
 	 * Sets the timestamp of the comment creation in UTC format.
 	 * @memberof ApiComment
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @param {Number | String} nTimeStamp - The timestamp of the comment creation in UTC format.
 	 * @returns {ApiComment} - this
 	 */
@@ -18437,7 +19156,7 @@
 	/**
 	 * Returns the timestamp of the comment creation in the current time zone format.
 	 * @memberof ApiComment
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @returns {Number}
 	 */
 	 ApiComment.prototype.GetTime = function () {
@@ -18447,7 +19166,7 @@
 	/**
 	 * Sets the timestamp of the comment creation in the current time zone format.
 	 * @memberof ApiComment
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @param {Number | String} nTimeStamp - The timestamp of the comment creation in the current time zone format.
 	 * @returns {ApiComment} - this
 	 */
@@ -18465,7 +19184,7 @@
 	/**
 	 * Returns the quote text of the current comment.
 	 * @memberof ApiComment
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @returns {Number?}
 	 */
 	ApiComment.prototype.GetQuoteText = function () {
@@ -18475,7 +19194,7 @@
 	/**
 	 * Returns a number of the comment replies.
 	 * @memberof ApiComment
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @returns {Number?}
 	 */
 	ApiComment.prototype.GetRepliesCount = function () {
@@ -18503,27 +19222,25 @@
 	/**
 	 * Adds a reply to a comment.
 	 * @memberof ApiComment
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @param {String} sText - The comment reply text (required).
-	 * @param {String} sAutorName - The name of the comment reply author (optional).
+	 * @param {String} sAuthorName - The name of the comment reply author (optional).
 	 * @param {String} sUserId - The user ID of the comment reply author (optional).
 	 * @param {Number} [nPos=this.GetRepliesCount()] - The comment reply position.
 	 * @returns {ApiComment?} - this
 	 */
-	ApiComment.prototype.AddReply = function (sText, sAutorName, sUserId, nPos) {
+	ApiComment.prototype.AddReply = function (sText, sAuthorName, sUserId, nPos) {
 		if (typeof(sText) !== "string" || sText === "")
 			return null;
 		
 		if (typeof(nPos) !== "number" || nPos < 0 || nPos > this.GetRepliesCount())
 			nPos = this.GetRepliesCount();
 
-		var oReply = new AscCommon.CCommentData();
-
-		oReply.SetText(sText);
-		if (typeof(sAutorName) === "string" && sAutorName !== "")
-			oReply.SetUserName(sAutorName);
-		if (sUserId != undefined && typeof(sUserId) === "string" && sUserId !== "")
-			oReply.m_sUserId = sUserId;
+		let oReply = private_CreateCommentData({
+			text: sText,
+			author: sAuthorName,
+			userId: sUserId
+		});
 
 		this.Comment.Data.m_aReplies.splice(nPos, 0, oReply);
 		this.private_OnChange();
@@ -18533,7 +19250,7 @@
 	/**
 	 * Removes the specified comment replies.
 	 * @memberof ApiComment
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @param {Number} [nPos = 0] - The position of the first comment reply to remove.
 	 * @param {Number} [nCount = 1] - A number of comment replies to remove.
 	 * @param {boolean} [bRemoveAll = false] - Specifies whether to remove all comment replies or not.
@@ -18558,24 +19275,22 @@
 	/**
 	 * Deletes the current comment from the document.
 	 * @memberof ApiComment
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @returns {boolean}
 	 */
-	ApiComment.prototype.Delete = function () {
-		let oLogicDocument = editor.private_GetLogicDocument();
-		if (!oLogicDocument)
+	ApiComment.prototype.Delete = function ()
+	{
+		let logicDocument = private_GetLogicDocument();
+		if (!logicDocument)
 			return false;
-
-		let oCommManager = oLogicDocument.GetCommentsManager();
-		oCommManager.Remove_ById(this.Comment.GetId());
-
-		return true;
+		
+		return logicDocument.RemoveComment(this.Comment.GetId(), true);
 	};
 
 	/**
 	 * Returns a type of the ApiCommentReply class.
 	 * @memberof ApiCommentReply
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @returns {"commentReply"}
 	 */
 	ApiCommentReply.prototype.GetClassType = function () {
@@ -18585,7 +19300,7 @@
 	/**
 	 * Returns the comment reply text.
 	 * @memberof ApiCommentReply
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @returns {string}
 	 */
 	ApiCommentReply.prototype.GetText = function () {
@@ -18595,7 +19310,7 @@
 	/**
 	 * Sets the comment reply text.
 	 * @memberof ApiCommentReply
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @param {string} sText - The comment reply text.
 	 * @returns {ApiCommentReply} - this
 	 */
@@ -18608,22 +19323,22 @@
 	/**
 	 * Returns the comment reply author's name.
 	 * @memberof ApiCommentReply
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @returns {string}
 	 */
-	ApiCommentReply.prototype.GetAutorName = function () {
+	ApiCommentReply.prototype.GetAuthorName = function () {
 		return this.Data.Get_Name();
 	};
 
 	/**
 	 * Sets the comment reply author's name.
 	 * @memberof ApiCommentReply
-	 * @typeofeditors ["CDE"]
-	 * @param {string} sAutorName - The comment reply author's name.
+	 * @typeofeditors ["CDE", "CPE"]
+	 * @param {string} sAuthorName - The comment reply author's name.
 	 * @returns {ApiCommentReply} - this
 	 */
-	ApiCommentReply.prototype.SetAutorName = function (sAutorName) {
-		this.Data.Set_Name(sAutorName);
+	ApiCommentReply.prototype.SetAuthorName = function (sAuthorName) {
+		this.Data.Set_Name(sAuthorName);
 		this.private_OnChange();
 		return this;
 	};
@@ -18641,7 +19356,7 @@
 	/**
 	 * Sets the user ID to the comment reply author.
 	 * @memberof ApiCommentReply
-	 * @typeofeditors ["CDE"]
+	 * @typeofeditors ["CDE", "CPE"]
 	 * @param {string} sUserId - The user ID of the comment reply author.
 	 * @returns {ApiCommentReply} - this
 	 */
@@ -18650,6 +19365,250 @@
 		this.private_OnChange();
 		return this;
 	};
+
+
+	/**
+	 * Returns a type of the ApiWatermarkSettings class.
+	 * @memberof ApiWatermarkSettings
+	 * @typeofeditors ["CDE"]
+	 * @returns {"watermarkSettings"}
+	 */
+	ApiWatermarkSettings.prototype.GetClassType = function()
+	{
+		return "watermarkSettings";
+	};
+
+	/**
+	 * Sets the type of the watermark in the document.
+	 * @memberof ApiWatermarkSettings
+	 * @typeofeditors ["CDE"]
+	 * @param {WatermarkType} sType - The watermark type.
+	 */
+	ApiWatermarkSettings.prototype.SetType = function (sType)
+	{
+		let nType;
+		if(sType === "text")
+		{
+			nType = Asc.c_oAscWatermarkType.Text;
+		}
+		else if(sType === "image")
+		{
+			nType = Asc.c_oAscWatermarkType.Image;
+		}
+		else
+		{
+			nType = Asc.c_oAscWatermarkType.None;
+		}
+		this.Settings.put_Type(nType);
+	};
+
+	/**
+	 * Returns the type of the watermark in the document.
+	 * @memberof ApiWatermarkSettings
+	 * @typeofeditors ["CDE"]
+	 * @returns {WatermarkType}
+	 */
+	ApiWatermarkSettings.prototype.GetType = function ()
+	{
+		const nType = this.Settings.get_Type();
+		if(nType === Asc.c_oAscWatermarkType.Text)
+		{
+			return "text";
+		}
+		if(nType === Asc.c_oAscWatermarkType.Image)
+		{
+			return "image";
+		}
+		return "none";
+	};
+
+	/**
+	 * Sets the text of the watermark in the document.
+	 * @memberof ApiWatermarkSettings
+	 * @typeofeditors ["CDE"]
+	 * @param {string} sText - The watermark text.
+	 */
+	ApiWatermarkSettings.prototype.SetText = function (sText)
+	{
+		this.Settings.put_Text(sText);
+	};
+
+	/**
+	 * Returns the text of the watermark in the document.
+	 * @memberof ApiWatermarkSettings
+	 * @typeofeditors ["CDE"]
+	 * @returns {string | null}
+	 */
+	ApiWatermarkSettings.prototype.GetText = function ()
+	{
+		return this.Settings.get_Text();
+	};
+
+	/**
+	 * Sets the text properties of the watermark in the document.
+	 * @memberof ApiWatermarkSettings
+	 * @typeofeditors ["CDE"]
+	 * @param {ApiTextPr} oTextPr - The watermark text properties.
+	 */
+	ApiWatermarkSettings.prototype.SetTextPr = function (oTextPr)
+	{
+		this.Settings.put_TextPr(new Asc.CTextProp(oTextPr.TextPr));
+	};
+
+	/**
+	 * Returns the text properties of the watermark in the document.
+	 * @memberof ApiWatermarkSettings
+	 * @typeofeditors ["CDE"]
+	 * @returns {ApiTextPr}
+	 */
+	ApiWatermarkSettings.prototype.GetTextPr = function ()
+	{
+		const oTextPr = new CTextPr();
+		const oSettingsTextPr = this.Settings.get_TextPr();
+		if(oSettingsTextPr)
+		{
+			oTextPr.Set_FromObject(oSettingsTextPr);
+		}
+		else
+		{
+			oTextPr.Set_FromObject(new AscWord.CTextPr());
+		}
+		return private_GetLogicDocument().GetApi().private_CreateApiTextPr(oTextPr);
+	};
+
+	/**
+	 * Sets the opacity of the watermark in the document.
+	 * @memberof ApiWatermarkSettings
+	 * @typeofeditors ["CDE"]
+	 * @param {number} nOpacity - The watermark opacity. This value must be from 0 to 255.
+	 */
+	ApiWatermarkSettings.prototype.SetOpacity = function (nOpacity)
+	{
+		let nOpacityVal = Math.min(255, Math.max(0, nOpacity));
+		this.Settings.put_Opacity(nOpacityVal);
+	};
+
+	/**
+	 * Returns the opacity of the watermark in the document.
+	 * @memberof ApiWatermarkSettings
+	 * @typeofeditors ["CDE"]
+	 * @returns {number} - The watermark opacity. This value must be from 0 to 255.
+	 */
+	ApiWatermarkSettings.prototype.GetOpacity = function ()
+	{
+		return this.Settings.get_Opacity();
+	};
+
+
+
+	/**
+	 * Sets the direction of the watermark in the document.
+	 * @memberof ApiWatermarkSettings
+	 * @typeofeditors ["CDE"]
+	 * @param {WatermarkDirection} sDirection - The watermark direction.
+	 */
+	ApiWatermarkSettings.prototype.SetDirection = function (sDirection)
+	{
+		switch (sDirection)
+		{
+			case "horizontal":
+			{
+				this.Settings.put_Angle(0);
+				break;
+			}
+			case "clockwise45":
+			{
+				this.Settings.put_Angle(45);
+				break;
+			}
+			case "counterclockwise45":
+			{
+				this.Settings.put_Angle(-45);
+				break;
+			}
+		}
+	};
+	/**
+	 * Returns the direction of the watermark in the document.
+	 * @memberof ApiWatermarkSettings
+	 * @typeofeditors ["CDE"]
+	 * @returns {?WatermarkDirection} - The watermark direction.
+	 */
+	ApiWatermarkSettings.prototype.GetDirection = function ()
+	{
+		const nAngle = this.Settings.get_Angle();
+		if(AscFormat.fApproxEqual(0.0, nAngle))
+		{
+			return "horizontal";
+		}
+		else if(AscFormat.fApproxEqual(45.0, nAngle))
+		{
+			return "clockwise45";
+		}
+		else if(AscFormat.fApproxEqual(315, nAngle))
+		{
+			return "counterclockwise45";
+		}
+		return null;
+	};
+
+	/**
+	 * Sets the image URL of the watermark in the document.
+	 * @memberof ApiWatermarkSettings
+	 * @typeofeditors ["CDE"]
+	 * @param {string} sURL - The watermark image URL.
+	 */
+	ApiWatermarkSettings.prototype.SetImageURL = function (sURL)
+	{
+		this.Settings.put_ImageUrl2(sURL);
+	};
+
+	/**
+	 * Returns the image URL of the watermark in the document.
+	 * @memberof ApiWatermarkSettings
+	 * @typeofeditors ["CDE"]
+	 * @returns {string | null} - The watermark image URL.
+	 */
+	ApiWatermarkSettings.prototype.GetImageURL = function ()
+	{
+		return this.Settings.get_ImageUrl();
+	};
+
+	/**
+	 * Returns the width of the watermark image in the document.
+	 * @memberof ApiWatermarkSettings
+	 * @typeofeditors ["CDE"]
+	 * @returns {EMU | null} - The watermark image width in EMU.
+	 */
+	ApiWatermarkSettings.prototype.GetImageWidth = function ()
+	{
+		return this.Settings.get_ImageWidth();
+	};
+	/**
+	 * Returns the height of the watermark image in the document.
+	 * @memberof ApiWatermarkSettings
+	 * @typeofeditors ["CDE"]
+	 * @returns {EMU | null} - The watermark image height in EMU.
+	 */
+	ApiWatermarkSettings.prototype.GetImageHeight = function ()
+	{
+		return this.Settings.get_ImageHeight();
+	};
+
+
+	/**
+	 * Sets the size (width and height) of the watermark image in the document.
+	 * @memberof ApiWatermarkSettings
+	 * @typeofeditors ["CDE"]
+	 * @param {EMU} nWidth - The watermark image width.
+	 * @param {EMU} nHeight - The watermark image height.
+	 */
+	ApiWatermarkSettings.prototype.SetImageSize = function (nWidth, nHeight)
+	{
+		this.Settings.put_ImageSize(nWidth, nHeight);
+	};
+
+
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Export
@@ -18686,10 +19645,10 @@
 	Api.prototype["MailMerge"]                       = Api.prototype.MailMerge;
 	Api.prototype["ReplaceTextSmart"]				 = Api.prototype.ReplaceTextSmart;
 	Api.prototype["CoAuthoringChatSendMessage"]		 = Api.prototype.CoAuthoringChatSendMessage;
-	Api.prototype["ConvertDocument"]		         = Api.prototype.ConvertDocument;
 	Api.prototype["CreateTextPr"]		             = Api.prototype.CreateTextPr;
 	Api.prototype["CreateWordArt"]		             = Api.prototype.CreateWordArt;
 	Api.prototype["CreateOleObject"]		         = Api.prototype.CreateOleObject;
+	Api.prototype["GetFullName"]		             = Api.prototype.GetFullName;
 
 	Api.prototype["ConvertDocument"]		         = Api.prototype.ConvertDocument;
 	Api.prototype["FromJSON"]		                 = Api.prototype.FromJSON;
@@ -18715,7 +19674,7 @@
 	ApiDocumentContent.prototype["GetAllParagraphs"]     = ApiDocumentContent.prototype.GetAllParagraphs;
 	ApiDocumentContent.prototype["GetAllTables"]         = ApiDocumentContent.prototype.GetAllTables;
 
-	ApiRange.prototype["GetClassType"]               = ApiRange.prototype.GetClassType
+	ApiRange.prototype["GetClassType"]               = ApiRange.prototype.GetClassType;
 	ApiRange.prototype["GetParagraph"]               = ApiRange.prototype.GetParagraph;
 	ApiRange.prototype["AddText"]                    = ApiRange.prototype.AddText;
 	ApiRange.prototype["AddBookmark"]                = ApiRange.prototype.AddBookmark;
@@ -18762,12 +19721,17 @@
 	ApiDocument.prototype["GetCommentsReport"]           = ApiDocument.prototype.GetCommentsReport;
 	ApiDocument.prototype["GetReviewReport"]             = ApiDocument.prototype.GetReviewReport;
 	ApiDocument.prototype["InsertWatermark"]             = ApiDocument.prototype.InsertWatermark;
+	ApiDocument.prototype["GetWatermarkSettings"]        = ApiDocument.prototype.GetWatermarkSettings;
+	ApiDocument.prototype["SetWatermarkSettings"]        = ApiDocument.prototype.SetWatermarkSettings;
+	ApiDocument.prototype["RemoveWatermark"]             = ApiDocument.prototype.RemoveWatermark;
 	ApiDocument.prototype["SearchAndReplace"]            = ApiDocument.prototype.SearchAndReplace;
 	ApiDocument.prototype["GetAllContentControls"]       = ApiDocument.prototype.GetAllContentControls;
 	ApiDocument.prototype["GetTagsOfAllContentControls"] = ApiDocument.prototype.GetTagsOfAllContentControls;
 	ApiDocument.prototype["GetTagsOfAllForms"]           = ApiDocument.prototype.GetTagsOfAllForms;
 	ApiDocument.prototype["GetContentControlsByTag"]     = ApiDocument.prototype.GetContentControlsByTag;
 	ApiDocument.prototype["GetFormsByTag"]               = ApiDocument.prototype.GetFormsByTag;
+	ApiDocument.prototype["GetFormsData"]                = ApiDocument.prototype.GetFormsData;
+	ApiDocument.prototype["SetFormsData"]                = ApiDocument.prototype.SetFormsData;
 	ApiDocument.prototype["SetTrackRevisions"]           = ApiDocument.prototype.SetTrackRevisions;
 	ApiDocument.prototype["IsTrackRevisions"]            = ApiDocument.prototype.IsTrackRevisions;
 	ApiDocument.prototype["GetRange"]                    = ApiDocument.prototype.GetRange;
@@ -18779,6 +19743,7 @@
 	ApiDocument.prototype["GetBookmarkRange"]            = ApiDocument.prototype.GetBookmarkRange;
 	ApiDocument.prototype["GetSections"]                 = ApiDocument.prototype.GetSections;
 	ApiDocument.prototype["GetAllTablesOnPage"]          = ApiDocument.prototype.GetAllTablesOnPage;
+	ApiDocument.prototype["AddDrawingToPage"]            = ApiDocument.prototype.AddDrawingToPage;
 	ApiDocument.prototype["RemoveSelection"]             = ApiDocument.prototype.RemoveSelection;
 	ApiDocument.prototype["Search"]                      = ApiDocument.prototype.Search;
 	ApiDocument.prototype["ToMarkdown"]                  = ApiDocument.prototype.ToMarkdown;
@@ -18796,6 +19761,7 @@
 	ApiDocument.prototype["GetCommentById"]              = ApiDocument.prototype.GetCommentById;
 	ApiDocument.prototype["GetStatistics"]               = ApiDocument.prototype.GetStatistics;
 	ApiDocument.prototype["GetPageCount"]                = ApiDocument.prototype.GetPageCount;
+	ApiDocument.prototype["GetAllStyles"]                = ApiDocument.prototype.GetAllStyles;
 	
 	ApiDocument.prototype["GetSelectedDrawings"]         = ApiDocument.prototype.GetSelectedDrawings;
 	ApiDocument.prototype["ReplaceCurrentImage"]         = ApiDocument.prototype.ReplaceCurrentImage;
@@ -18930,6 +19896,7 @@
 	ApiRun.prototype["WrapInMailMergeField"]         = ApiRun.prototype.WrapInMailMergeField;
 	ApiRun.prototype["ToJSON"]                       = ApiRun.prototype.ToJSON;
 	ApiRun.prototype["AddComment"]                   = ApiRun.prototype.AddComment;
+	ApiRun.prototype["GetText"]                      = ApiRun.prototype.GetText;
 
 
 	ApiHyperlink.prototype["GetClassType"]           = ApiHyperlink.prototype.GetClassType;
@@ -18950,6 +19917,8 @@
 	ApiSection.prototype["SetEqualColumns"]          = ApiSection.prototype.SetEqualColumns;
 	ApiSection.prototype["SetNotEqualColumns"]       = ApiSection.prototype.SetNotEqualColumns;
 	ApiSection.prototype["SetPageSize"]              = ApiSection.prototype.SetPageSize;
+	ApiSection.prototype["GetPageHeight"]            = ApiSection.prototype.GetPageHeight;
+	ApiSection.prototype["GetPageWidth"]             = ApiSection.prototype.GetPageWidth;
 	ApiSection.prototype["SetPageMargins"]           = ApiSection.prototype.SetPageMargins;
 	ApiSection.prototype["SetHeaderDistance"]        = ApiSection.prototype.SetHeaderDistance;
 	ApiSection.prototype["SetFooterDistance"]        = ApiSection.prototype.SetFooterDistance;
@@ -19337,6 +20306,28 @@
 	ApiInlineLvlSdt.prototype["SetPlaceholderText"]     = ApiInlineLvlSdt.prototype.SetPlaceholderText;
 	ApiInlineLvlSdt.prototype["IsForm"]                 = ApiInlineLvlSdt.prototype.IsForm;
 	ApiInlineLvlSdt.prototype["GetForm"]                = ApiInlineLvlSdt.prototype.GetForm;
+	ApiInlineLvlSdt.prototype["GetDropdownList"]        = ApiInlineLvlSdt.prototype.GetDropdownList;
+
+	ApiContentControlList.prototype["GetClassType"]		= ApiContentControlList.prototype.GetClassType;
+	ApiContentControlList.prototype["GetAllItems"]		= ApiContentControlList.prototype.GetAllItems;
+	ApiContentControlList.prototype["GetElementsCount"]	= ApiContentControlList.prototype.GetElementsCount;
+	ApiContentControlList.prototype["GetParent"]		= ApiContentControlList.prototype.GetParent;
+	ApiContentControlList.prototype["Add"]				= ApiContentControlList.prototype.Add;
+	ApiContentControlList.prototype["Clear"]			= ApiContentControlList.prototype.Clear;
+	ApiContentControlList.prototype["GetItem"]			= ApiContentControlList.prototype.GetItem;
+
+	ApiContentControlListEntry.prototype["GetClassType"]	= ApiContentControlListEntry.prototype.GetClassType;
+	ApiContentControlListEntry.prototype["GetParent"]		= ApiContentControlListEntry.prototype.GetParent;
+	ApiContentControlListEntry.prototype["Select"]			= ApiContentControlListEntry.prototype.Select;
+	ApiContentControlListEntry.prototype["MoveUp"]			= ApiContentControlListEntry.prototype.MoveUp;
+	ApiContentControlListEntry.prototype["MoveDown"]		= ApiContentControlListEntry.prototype.MoveDown;
+	ApiContentControlListEntry.prototype["GetIndex"]		= ApiContentControlListEntry.prototype.GetIndex;
+	ApiContentControlListEntry.prototype["SetIndex"]		= ApiContentControlListEntry.prototype.SetIndex;
+	ApiContentControlListEntry.prototype["Delete"]			= ApiContentControlListEntry.prototype.Delete;
+	ApiContentControlListEntry.prototype["GetText"]			= ApiContentControlListEntry.prototype.GetText;
+	ApiContentControlListEntry.prototype["SetText"]			= ApiContentControlListEntry.prototype.SetText;
+	ApiContentControlListEntry.prototype["GetValue"]		= ApiContentControlListEntry.prototype.GetValue;
+	ApiContentControlListEntry.prototype["SetValue"]		= ApiContentControlListEntry.prototype.SetValue;
 
 	ApiBlockLvlSdt.prototype["GetClassType"]            = ApiBlockLvlSdt.prototype.GetClassType;
 	ApiBlockLvlSdt.prototype["SetLock"]                 = ApiBlockLvlSdt.prototype.SetLock;
@@ -19370,8 +20361,8 @@
 	ApiBlockLvlSdt.prototype["GetPosInParent"]          = ApiBlockLvlSdt.prototype.GetPosInParent;
 	ApiBlockLvlSdt.prototype["ReplaceByElement"]        = ApiBlockLvlSdt.prototype.ReplaceByElement;
 	ApiBlockLvlSdt.prototype["AddComment"]              = ApiBlockLvlSdt.prototype.AddComment;
-	ApiBlockLvlSdt.prototype["SetBackgroundColor"]      = ApiBlockLvlSdt.prototype.SetBackgroundColor;
 	ApiBlockLvlSdt.prototype["AddCaption"]              = ApiBlockLvlSdt.prototype.AddCaption;
+	ApiBlockLvlSdt.prototype["GetDropdownList"]         = ApiBlockLvlSdt.prototype.GetDropdownList;
 
 	ApiFormBase.prototype["GetClassType"]        = ApiFormBase.prototype.GetClassType;
 	ApiFormBase.prototype["GetFormType"]         = ApiFormBase.prototype.GetFormType;
@@ -19432,10 +20423,13 @@
 	ApiCheckBoxForm.prototype["Copy"]          = ApiCheckBoxForm.prototype.Copy;
 
 	ApiComment.prototype["GetClassType"]	= ApiComment.prototype.GetClassType;
+	ApiComment.prototype["GetId"]           = ApiComment.prototype.GetId;
 	ApiComment.prototype["GetText"]			= ApiComment.prototype.GetText;
 	ApiComment.prototype["SetText"]			= ApiComment.prototype.SetText;
-	ApiComment.prototype["GetAutorName"]	= ApiComment.prototype.GetAutorName;
-	ApiComment.prototype["SetAutorName"]	= ApiComment.prototype.SetAutorName;
+	ApiComment.prototype["GetAuthorName"]	= ApiComment.prototype.GetAuthorName;
+	ApiComment.prototype["SetAuthorName"]	= ApiComment.prototype.SetAuthorName;
+	ApiComment.prototype["GetAutorName"]	= ApiComment.prototype.GetAuthorName; // compatibility with a typo in the old name
+	ApiComment.prototype["SetAutorName"]	= ApiComment.prototype.SetAuthorName;
 	ApiComment.prototype["GetUserId"]		= ApiComment.prototype.GetUserId;
 	ApiComment.prototype["SetUserId"]		= ApiComment.prototype.SetUserId;
 	ApiComment.prototype["IsSolved"]		= ApiComment.prototype.IsSolved;
@@ -19454,10 +20448,31 @@
 	ApiCommentReply.prototype["GetClassType"]	= ApiCommentReply.prototype.GetClassType;
 	ApiCommentReply.prototype["GetText"]		= ApiCommentReply.prototype.GetText;
 	ApiCommentReply.prototype["SetText"]		= ApiCommentReply.prototype.SetText;
-	ApiCommentReply.prototype["GetAutorName"]	= ApiCommentReply.prototype.GetAutorName;
-	ApiCommentReply.prototype["SetAutorName"]	= ApiCommentReply.prototype.SetAutorName;
+	ApiCommentReply.prototype["GetAuthorName"]	= ApiCommentReply.prototype.GetAuthorName;
+	ApiCommentReply.prototype["SetAuthorName"]	= ApiCommentReply.prototype.SetAuthorName;
+	ApiCommentReply.prototype["GetAutorName"]	= ApiCommentReply.prototype.GetAuthorName; // compatibility with a typo in the old name
+	ApiCommentReply.prototype["SetAutorName"]	= ApiCommentReply.prototype.SetAuthorName;
 	ApiCommentReply.prototype["GetUserId"]		= ApiCommentReply.prototype.GetUserId;
 	ApiCommentReply.prototype["SetUserId"]		= ApiCommentReply.prototype.SetUserId;
+
+	ApiWatermarkSettings.prototype["GetClassType"]   =  ApiWatermarkSettings.prototype.GetClassType;
+	ApiWatermarkSettings.prototype["SetType"]        =  ApiWatermarkSettings.prototype.SetType;
+	ApiWatermarkSettings.prototype["GetType"]        =  ApiWatermarkSettings.prototype.GetType;
+	ApiWatermarkSettings.prototype["SetText"]        =  ApiWatermarkSettings.prototype.SetText;
+	ApiWatermarkSettings.prototype["GetText"]        =  ApiWatermarkSettings.prototype.GetText;
+	ApiWatermarkSettings.prototype["SetTextPr"]      =  ApiWatermarkSettings.prototype.SetTextPr;
+	ApiWatermarkSettings.prototype["GetTextPr"]      =  ApiWatermarkSettings.prototype.GetTextPr;
+	ApiWatermarkSettings.prototype["SetOpacity"]     =  ApiWatermarkSettings.prototype.SetOpacity;
+	ApiWatermarkSettings.prototype["GetOpacity"]     =  ApiWatermarkSettings.prototype.GetOpacity;
+	ApiWatermarkSettings.prototype["SetDirection"]   =  ApiWatermarkSettings.prototype.SetDirection;
+	ApiWatermarkSettings.prototype["GetDirection"]   =  ApiWatermarkSettings.prototype.GetDirection;
+	ApiWatermarkSettings.prototype["SetImageURL"]    =  ApiWatermarkSettings.prototype.SetImageURL;
+	ApiWatermarkSettings.prototype["GetImageURL"]    =  ApiWatermarkSettings.prototype.GetImageURL;
+	ApiWatermarkSettings.prototype["GetImageWidth"]  =  ApiWatermarkSettings.prototype.GetImageWidth;
+	ApiWatermarkSettings.prototype["GetImageHeight"] =  ApiWatermarkSettings.prototype.GetImageHeight;
+	ApiWatermarkSettings.prototype["SetImageSize"]   =  ApiWatermarkSettings.prototype.SetImageSize;
+
+
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Export for internal usage
@@ -19563,6 +20578,33 @@
 
 		return null;
 	}
+	function AddGlobalCommentToDocument(logicDocument, commentData)
+	{
+		return AddCommentToDocument(logicDocument, commentData, true);
+	}
+	function AddCommentToDocument(logicDocument, commentData, forceGlobal)
+	{
+		let comment = logicDocument.AddComment(commentData, !!forceGlobal);
+		if (!comment)
+			return null;
+
+		comment.GenerateDurableId();
+		logicDocument.GetApi().sync_AddComment(comment.GetId(), comment.GetData());
+		return new ApiComment(comment);
+	}
+
+	function private_CreateCommentData(oProps) {
+		let CommentData = new AscCommon.CCommentData();
+
+		CommentData.SetText(oProps.text);
+		CommentData.SetQuoteText(oProps.quoteText);
+		CommentData.SetUserName(oProps.author || AscCommon.UserInfoParser.getCurrentName());
+		CommentData.m_sUserId	= oProps.userId || Asc.editor.documentUserId;
+		CommentData.m_sTime		= ((new Date()).getTime() - (new Date()).getTimezoneOffset() * 60000).toString();
+		CommentData.m_sOOTime	= ((new Date()).getTime()).toString();
+		
+		return CommentData;
+	};
 
 	function private_GetDrawingDocument()
 	{
@@ -20029,6 +21071,19 @@
 		return oColor;
 	}
 
+	function logError(err) {
+		if (console.error)
+			console.error(err);
+		else
+			console.log(err);
+	};
+
+	function throwException(err) {
+		if (!console.error)
+			logError(err);
+		throw err;
+	};
+
 	ApiDocument.prototype.OnChangeParaPr = function(oApiParaPr)
 	{
 		var oStyles = this.Document.Get_Styles();
@@ -20334,6 +21389,20 @@
 	{
 		return this.Sdt;
 	};
+	ApiContentControlList.prototype.GetListPr = function()
+	{
+		if (this.Sdt.IsComboBox())
+			return this.Sdt.GetComboBoxPr();
+		else
+			return this.Sdt.GetDropDownListPr();
+	};
+	ApiContentControlList.prototype.SetListPr = function(newPr)
+	{
+		if (this.Sdt.IsComboBox())
+			return this.Sdt.SetComboBoxPr(newPr);
+		else
+			return this.Sdt.SetDropDownListPr(newPr);
+	};
 
 	ApiFormBase.prototype.private_GetImpl = function()
 	{
@@ -20352,7 +21421,16 @@
 		this.Sdt.Apply_TextPr(oApiTextPr.TextPr);
 		oApiTextPr.TextPr = this.Sdt.Pr.TextPr;
 	};
-
+	ApiFormBase.prototype.OnChangeValue = function()
+	{
+		let logicDocument = private_GetLogicDocument();
+		if (!logicDocument || !logicDocument.IsDocumentEditor())
+			return;
+		
+		logicDocument.ClearActionOnChangeForm();
+		logicDocument.GetFormsManager().OnChange(this.Sdt);
+	};
+	
 	ApiComment.prototype.private_OnChange = function()
 	{
 		let oLogicDocument = private_GetLogicDocument();
@@ -20518,8 +21596,8 @@
 	Api.prototype.private_CreateApiUniColor = function(oUniColor){
 		return new ApiUniColor(oUniColor);
 	};
+	Api.prototype.private_CreateApiComment = function(oComment){
+		return new ApiComment(oComment);
+	};
 
 }(window, null));
-
-
-

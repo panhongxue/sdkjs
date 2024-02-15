@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -216,7 +216,8 @@ var c_oSerProp_tblPrType = {
 	tblCaption: 17,
 	tblDescription: 18,
 	TableIndTwips: 19,
-	TableCellSpacingTwips: 20
+	TableCellSpacingTwips: 20,
+	tblOverlap: 21
 };
 var c_oSer_tblpPrType = {
     Page:0,
@@ -718,7 +719,11 @@ var c_oSer_SettingsType = {
 	BookFoldRevPrinting: 17,
 	SpecialFormsHighlight: 18,
 	DocumentProtection: 19,
-	WriteProtection: 20
+	WriteProtection: 20,
+	AutoHyphenation: 21,
+	HyphenationZone: 22,
+	DoNotHyphenateCaps: 23,
+	ConsecutiveHyphenLimit: 24
 };
 var c_oDocProtect = {
 	AlgorithmName: 0,
@@ -956,7 +961,8 @@ var c_oSer_FldSimpleType = {
 	Content: 0,
 	Instr: 1,
 	FFData: 2,
-	CharType: 3
+	CharType: 3,
+	PrivateData: 4
 };
 var c_oSerProp_RevisionType = {
     Author: 0,
@@ -1089,7 +1095,9 @@ var c_oSerSdt = {
 	FormPrLabel    : 46,
 	FormPrHelpText : 47,
 	FormPrRequired : 48,
-
+	
+	CheckboxGroupKey: 49,
+	
 	TextFormPr              : 50,
 	TextFormPrComb          : 51,
 	TextFormPrCombWidth     : 52,
@@ -1100,8 +1108,6 @@ var c_oSerSdt = {
 	TextFormPrAutoFit       : 57,
 	TextFormPrMultiLine     : 58,
 	TextFormPrFormat        : 59,
-
-	CheckboxGroupKey: 59,
 
 	PictureFormPr                : 60,
 	PictureFormPrScaleFlag       : 61,
@@ -1205,6 +1211,10 @@ var EHint = {
 var ETblLayoutType = {
 	tbllayouttypeAutofit: 1,
 	tbllayouttypeFixed: 2
+};
+let ETblOverlapType = {
+	tbloverlapNever   : 1,
+	tbloverlapOverlap : 2
 };
 var ESectionMark = {
 	sectionmarkContinuous: 0,
@@ -1403,16 +1413,10 @@ function CreateThemeUnifill(color, tint, shade){
 			ret.fill.color.setMods(new AscFormat.CColorModifiers());
 			var mod;
 			if(null != tint){
-				mod = new AscFormat.CColorMod();
-				mod.setName("wordTint");
-				mod.setVal(tint /** 100000.0 / 0xff*/);
-				ret.fill.color.Mods.addMod(mod);
+				ret.fill.color.Mods.addMod("wordTint", tint);
 			}
 			if(null != shade){
-				mod = new AscFormat.CColorMod();
-				mod.setName("wordShade");
-				mod.setVal(shade /** 100000.0 / 0xff*/);
-				ret.fill.color.Mods.addMod(mod);
+				ret.fill.color.Mods.addMod("wordShade", shade);
 			}
 		}
 	}
@@ -1532,7 +1536,7 @@ function ReadTrackRevision(type, length, stream, reviewInfo, options) {
         } else if(c_oSerProp_RevisionType.rPrChange == type) {
             res = options.brPrr.Read(length, options.rPr, null);
         } else if(c_oSerProp_RevisionType.pPrChange == type) {
-            res = options.bpPrr.Read(length, options.pPr, null);
+            res = options.bpPrr.Read(length, options.pPr, options.paragraph);
 		} else if(c_oSerProp_RevisionType.tblGridChange == type) {
 			res = options.btblPrr.bcr.Read2(length, function(t, l){
 				return options.btblPrr.Read_tblGrid(t,l, options.grid);
@@ -1674,10 +1678,14 @@ function readBookmarkStart(length, bcr, oReadResult, paragraphContent) {
 	if(typeof CParagraphBookmark === "undefined") {
 		return c_oSerConstants.ReadUnknown;
 	}
-	let bookmark = new CParagraphBookmark(true);
+	let bookmarkPr = {
+		BookmarkName : "",
+		BookmarkId   : ""
+	};
 	let res = bcr.Read1(length, function(t, l){
-		return bcr.ReadBookmark(t,l, bookmark);
+		return bcr.ReadBookmark(t,l, bookmarkPr);
 	});
+	let bookmark = new CParagraphBookmark(true, bookmarkPr.BookmarkId, bookmarkPr.BookmarkName);
 	oReadResult.addBookmarkStart(paragraphContent, bookmark, true);
 	return res;
 }
@@ -1685,10 +1693,14 @@ function readBookmarkEnd(length, bcr, oReadResult, paragraphContent) {
 	if(typeof CParagraphBookmark === "undefined") {
 		return c_oSerConstants.ReadUnknown;
 	}
-	let bookmark = new CParagraphBookmark(false);
+	let bookmarkPr = {
+		BookmarkName : "",
+		BookmarkId   : ""
+	};
 	let res = bcr.Read1(length, function(t, l){
-		return bcr.ReadBookmark(t,l, bookmark);
+		return bcr.ReadBookmark(t,l, bookmarkPr);
 	});
+	let bookmark = new CParagraphBookmark(false, bookmarkPr.BookmarkId, bookmarkPr.BookmarkName);
 	oReadResult.addBookmarkEnd(paragraphContent, bookmark, true);
 	return res;
 }
@@ -2468,7 +2480,7 @@ function Binary_pPrWriter(memory, oNumIdMap, oBinaryHeaderFooterTableWriter, sav
         //Line
         if(null != Spacing.Line)
         {
-            var line = Asc.linerule_Auto === Spacing.LineRule ? Math.round(Spacing.Line * 240) : (this.bs.mmToTwips(Spacing.Line));
+            var line = Asc.linerule_Exact === Spacing.LineRule || Asc.linerule_AtLeast === Spacing.LineRule ? (this.bs.mmToTwips(Spacing.Line)) : Math.round(Spacing.Line * 240);
             this.memory.WriteByte(c_oSerProp_pPrType.Spacing_LineTwips);
             this.memory.WriteByte(c_oSerPropLenType.Long);
             this.memory.WriteLong(line);
@@ -3232,7 +3244,17 @@ function Binary_rPrWriter(memory, saveParams)
 		{
 			this.memory.WriteByte(c_oSerProp_rPrType.TextOutline);
             this.memory.WriteByte(c_oSerPropLenType.Variable);
+
+			let oFill = rPr.TextOutline.Fill;
+			if(oFill && null != oFill.transparent)
+			{
+				oFill.transparent = 255 - oFill.transparent;
+			}
 			this.bs.WriteItemWithLength(function () { pptx_content_writer.WriteSpPr(_this.memory, rPr.TextOutline, 0); });
+			if(oFill && null != oFill.transparent)
+			{
+				oFill.transparent = 255 - oFill.transparent;
+			}
 		}
 		if(null != rPr.TextFill)
 		{
@@ -4457,6 +4479,10 @@ Binary_tblPrWriter.prototype =
 		if (tblPr.PrChange && tblPr.ReviewInfo) {
 			this.bs.WriteItem(c_oSerProp_tblPrType.tblPrChange, function(){WriteTrackRevision(oThis.bs, oThis.saveParams.trackRevisionId++, tblPr.ReviewInfo, {btw: oThis, tblPr: tblPr.PrChange});});
 		}
+		if (table && false === table.Get_AllowOverlap())
+		{
+			this.bs.WriteItem(c_oSerProp_tblPrType.tblOverlap, function(){oThis.memory.WriteByte(ETblOverlapType.tbloverlapNever);});
+		}
     },
     WriteCellMar: function(cellMar)
     {
@@ -5334,7 +5360,7 @@ function BinaryDocumentTableWriter(memory, doc, oMapCommentId, oNumIdMap, copyPa
                     break;
 				case para_Field:
 					let Instr = item.GetInstructionLine();
-					var oFFData = fieldtype_FORMTEXT === item.Get_FieldType() ? {} : null;
+					var oFFData = AscWord.fieldtype_FORMTEXT === item.Get_FieldType() ? {} : null;
 					if (Instr) {
 						if(this.saveParams && this.saveParams.bMailMergeDocx)
 							oThis.WriteParagraphContent(item, bUseSelection, false);
@@ -5639,6 +5665,11 @@ function BinaryDocumentTableWriter(memory, doc, oMapCommentId, oNumIdMap, copyPa
 		this.bs.WriteItem(c_oSer_FldSimpleType.CharType, function() {
 			oThis.memory.WriteByte(fldChar.CharType);
 		});
+		if (null !== fldChar.fldData) {
+			this.bs.WriteItem(c_oSer_FldSimpleType.PrivateData, function () {
+				oThis.memory.WriteString3(fldChar.fldData);
+			});
+		}
 	};
 	this.WriteFldSimple = function (Instr, oFFData, fWriteContent)
     {
@@ -6965,6 +6996,11 @@ function BinarySettingsTableWriter(memory, doc, saveParams)
 				oThis.saveParams.endnotesIndex = index;
 			}
 		});
+		
+		let settings = oThis.Document.Settings;
+		if (!settings)
+			return;
+		
 		if (oThis.Document.Settings && oThis.Document.Settings.DecimalSymbol) {
 			this.bs.WriteItem(c_oSer_SettingsType.DecimalSymbol, function() {oThis.memory.WriteString3(oThis.Document.Settings.DecimalSymbol);});
 		}
@@ -6985,6 +7021,15 @@ function BinarySettingsTableWriter(memory, doc, saveParams)
 		{
 			this.bs.WriteItem(c_oSer_SettingsType.WriteProtection, function(){oThis.WriteWriteProtect();});
 		}
+		if (true === settings.autoHyphenation)
+			this.bs.WriteItem(c_oSer_SettingsType.AutoHyphenation, function() {oThis.memory.WriteBool(true);});
+		if (undefined !== settings.hyphenationZone)
+			this.bs.WriteItem(c_oSer_SettingsType.HyphenationZone, function() {oThis.memory.WriteLong(settings.hyphenationZone);});
+		if (true === settings.doNotHyphenateCaps)
+			this.bs.WriteItem(c_oSer_SettingsType.DoNotHyphenateCaps, function() {oThis.memory.WriteBool(true);});
+		if (undefined !== settings.consecutiveHyphenLimit)
+			this.bs.WriteItem(c_oSer_SettingsType.ConsecutiveHyphenLimit, function() {oThis.memory.WriteLong(settings.consecutiveHyphenLimit);});
+		
 		// if (oThis.Document.Settings && null != oThis.Document.Settings.PrintTwoOnOne) {
 		// 	this.bs.WriteItem(c_oSer_SettingsType.PrintTwoOnOne, function() {oThis.memory.WriteBool(oThis.Document.Settings.PrintTwoOnOne);});
 		// }
@@ -7903,15 +7948,8 @@ function BinaryFileReader(doc, openParams)
 		let api = this.Document.DrawingDocument && this.Document.DrawingDocument.m_oWordControl && this.Document.DrawingDocument.m_oWordControl.m_oApi;
 		this.Document.UpdateDefaultsDependingOnCompatibility();
 		//списки
-		for(var i = 0, length = this.oReadResult.paraNumPrs.length; i < length; ++i)
-		{
-			var numPr = this.oReadResult.paraNumPrs[i];
-			var oNumClass = this.oReadResult.numToNumClass[numPr.NumId];
-			if(null != oNumClass && 0 !== numPr.NumId)
-				numPr.NumId = oNumClass.Get_Id();
-			else
-				numPr.NumId = "0";
-		}
+		this.oReadResult.updateNumPrLinks();
+		
 		var oDocStyle = this.Document.Styles;
 		var styles = this.Document.Styles.Style;
         var stDefault = this.Document.Styles.Default;
@@ -8133,36 +8171,18 @@ function BinaryFileReader(doc, openParams)
 				stDefault.Caption = sNewStyleId;
 			oDocStyle.Add(oNewStyle);
 		}
-		var oStyleTypes = {par: 1, table: 2, lvl: 3, run: 4, styleLink: 5, numStyleLink: 6};
-		var fParseStyle = function(aStyles, oDocumentStyles, nStyleType)
+		var fParseStyle = function(aStyles, oDocumentStyles)
 		{
-			for(var i = 0, length = aStyles.length; i < length; ++i)
-			{
+			for (var i = 0, length = aStyles.length; i < length; ++i) {
 				var elem = aStyles[i];
 				var sStyleId = oIdMap[elem.style];
-				if(null != sStyleId && null != oDocumentStyles[sStyleId])
-				{
-					if(oStyleTypes.run == nStyleType)
-						elem.pPr.RStyle = sStyleId;
-					else if(oStyleTypes.par == nStyleType)
-						elem.pPr.PStyle = sStyleId;
-					else if(oStyleTypes.table == nStyleType)
-						elem.pPr.TableStyle = sStyleId;
-					else if(oStyleTypes.styleLink == nStyleType)
-						elem.pPr.StyleLink = sStyleId;
-					else if(oStyleTypes.numStyleLink == nStyleType)
-						elem.pPr.NumStyleLink = sStyleId;
-					else
-						elem.pPr.PStyle = sStyleId;
+				if (null != sStyleId && null != oDocumentStyles[sStyleId]) {
+					elem.setStyle(sStyleId);
 				}
 			}
 		}
-		fParseStyle(this.oReadResult.runStyles, styles, oStyleTypes.run);
-		fParseStyle(this.oReadResult.paraStyles, styles, oStyleTypes.par);
-		fParseStyle(this.oReadResult.tableStyles, styles, oStyleTypes.table);
-		fParseStyle(this.oReadResult.lvlStyles, styles, oStyleTypes.lvl);
-		fParseStyle(this.oReadResult.styleLinks, styles, oStyleTypes.styleLink);
-		fParseStyle(this.oReadResult.numStyleLinks, styles, oStyleTypes.numStyleLink);
+		fParseStyle(this.oReadResult.styleLinks, styles);
+
 		if (null == stDefault.Character) {
 			if (!characterNameId) {
 				var oNewStyle = new CStyle("Default Paragraph Font", null, null, styletype_Character );
@@ -8407,8 +8427,6 @@ function BinaryFileReader(doc, openParams)
 		if (this.oReadResult.DocumentContent.length > 0) {
 			this.Document.ReplaceContent(this.oReadResult.DocumentContent);
 		}
-		// for(var i = 0, length = this.oReadResult.aPostOpenStyleNumCallbacks.length; i < length; ++i)
-			// this.oReadResult.aPostOpenStyleNumCallbacks[i].call();
 		if(null !== this.oReadResult.defaultTabStop && this.oReadResult.defaultTabStop > 0) {
 			AscCommonWord.Default_Tab_Stop = this.oReadResult.defaultTabStop;
 		}
@@ -8457,19 +8475,11 @@ function BinaryFileReader(doc, openParams)
         var oReadResult = this.oReadResult;
 
         //обрабатываем списки
-        for (var i = 0, length = oReadResult.paraNumPrs.length; i < length; ++i) {
-            var numPr = oReadResult.paraNumPrs[i];
-            var oNumClass = oReadResult.numToNumClass[numPr.NumId];
-            if (null != oNumClass)
-                numPr.NumId = oNumClass.Get_Id();
-            else
-                numPr.NumId = "0";
-        }
+		oReadResult.updateNumPrLinks();
 
         //обрабатываем стили
-		var oStyleTypes = {par: 1, table: 2, lvl: 3, run: 4, styleLink: 5, numStyleLink: 6};
 		var addNewStyles = false;
-		var fParseStyle = function (aStyles, oDocumentStyles, oReadResult, nStyleType) {
+		var fParseStyle = function (aStyles, oDocumentStyles, oReadResult) {
 			if (aStyles == null) {
 				return;
 			}
@@ -8480,7 +8490,13 @@ function BinaryFileReader(doc, openParams)
 				}
 				var _elem = oReadResult.styles[_style.style];
 				if (_elem && _elem.style && _elem.style.BasedOn) {
-					var basedOnObj = {pPr: null, style: _elem.style.BasedOn};
+					
+					// TODO: Скорее всего pPr: null уже не нужно, и следует снаследовать данный объект от BinaryStyleUpdaterBase
+					var basedOnObj = {
+						pPr: null,
+						style: _elem.style.BasedOn,
+						setStyle: function(styleId) {}
+					};
 					container.push(basedOnObj);
 					putBasedOn(basedOnObj, container);
 				}
@@ -8511,26 +8527,10 @@ function BinaryFileReader(doc, openParams)
 			};
 
 			var putStyle = function (_elem, _styleId, putDefaultStyle) {
-				if (!_elem.pPr) {
+				if (!_elem)
 					return;
-				}
-				if (nStyleType === oStyleTypes.par || nStyleType === oStyleTypes.lvl) {
-					_elem.pPr.PStyle = _styleId;
-				} else if (nStyleType === oStyleTypes.table) {
-					_elem.pPr.Set_TableStyle2(_styleId);
-				} else if (nStyleType === oStyleTypes.run) {
-					if (_elem.run) {
-						_elem.run.Set_RStyle(_styleId);
-					} else {
-						_elem.pPr.RStyle = _styleId;
-					}
-				} else if (nStyleType === oStyleTypes.styleLink) {
-					_elem.pPr.StyleLink = _styleId;
-				} else if (nStyleType === oStyleTypes.numStyleLink) {
-					_elem.pPr.SetNumStyleLink(_styleId);
-				} else if (putDefaultStyle) {
-					_elem.pPr.PStyle = j;
-				}
+
+				_elem.setStyle(_styleId);
 			};
 
 			var tryAddStyle = function (_stylePaste, _elem, _basedOnElems) {
@@ -8608,10 +8608,8 @@ function BinaryFileReader(doc, openParams)
 				if (null != stylePaste && null != stylePaste.style && oDocumentStyles) {
 					//1. ищем родительсие стили стили
 					var basedOnElems = [];
-					if (nStyleType === oStyleTypes.par || nStyleType === oStyleTypes.lvl) {
-						if (elem.pPr) {
-							putBasedOn(elem, basedOnElems);
-						}
+					if (elem.isParagraphStyle() || elem.isNumLvlStyle()) {
+						putBasedOn(elem, basedOnElems);
 					}
 
 					//2. передаём основной стиль и родительские
@@ -8640,29 +8638,19 @@ function BinaryFileReader(doc, openParams)
 					}
 				}
 			}
-
+			
 			//подменяем у всех элементов basedOn
-			if (nStyleType === oStyleTypes.par || nStyleType === oStyleTypes.lvl) {
-				for (i = 0, length = allAddedStylesIds.length; i < length; ++i) {
-					var addedStyle = oDocumentStyles.Style[allAddedStylesIds[i]];
-					if (addedStyle && addedStyle.BasedOn != null && mapStylesIds[addedStyle.BasedOn]) {
-						addedStyle.Set_BasedOn(mapStylesIds[addedStyle.BasedOn]);
-					}
+			for (i = 0, length = allAddedStylesIds.length; i < length; ++i) {
+				var addedStyle = oDocumentStyles.Style[allAddedStylesIds[i]];
+				if (addedStyle && addedStyle.BasedOn != null && mapStylesIds[addedStyle.BasedOn]) {
+					addedStyle.Set_BasedOn(mapStylesIds[addedStyle.BasedOn]);
 				}
 			}
-
 		};
-
-		fParseStyle(this.oReadResult.runStyles, this.Document.Styles, this.oReadResult, oStyleTypes.run);
-        fParseStyle(this.oReadResult.paraStyles, this.Document.Styles, this.oReadResult, oStyleTypes.par);
-        fParseStyle(this.oReadResult.tableStyles, this.Document.Styles, this.oReadResult, oStyleTypes.table);
-        fParseStyle(this.oReadResult.lvlStyles, this.Document.Styles, this.oReadResult, oStyleTypes.lvl);
-        fParseStyle(this.oReadResult.styleLinks, this.Document.Styles, this.oReadResult, oStyleTypes.styleLink);
-		fParseStyle(this.oReadResult.numStyleLinks, this.Document.Styles, this.oReadResult, oStyleTypes.numStyleLink);
+		
+		fParseStyle(this.oReadResult.styleLinks, this.Document.Styles, this.oReadResult);
 
         var aContent = this.oReadResult.DocumentContent;
-        for (var i = 0, length = this.oReadResult.aPostOpenStyleNumCallbacks.length; i < length; ++i)
-            this.oReadResult.aPostOpenStyleNumCallbacks[i].call();
         var bInBlock;
         if (oReadResult.bLastRun)
             bInBlock = false;
@@ -8693,7 +8681,7 @@ function BinaryFileReader(doc, openParams)
 		AscFormat.checkThemeFonts(AllFonts, fontScheme);
 
         for (var i in AllFonts)
-            aPrepeareFonts.push(new AscFonts.CFont(i, 0, "", 0));
+            aPrepeareFonts.push(new AscFonts.CFont(i));
         //создаем список используемых картинок
         var oPastedImagesUnique = {};
         var aPastedImages = pptx_content_loader.End_UseFullUrl();
@@ -8873,7 +8861,7 @@ function BinaryStyleTableReader(doc, oReadResult, stream)
         else if(c_oSer_st.DefpPr == type)
         {
             var ParaPr = new CParaPr();
-            res = this.bpPrr.Read(length, ParaPr);
+            res = this.bpPrr.Read(length, ParaPr, null);
 			this.oReadResult.DefpPr = ParaPr;
         }
         else if(c_oSer_st.DefrPr == type)
@@ -8953,11 +8941,8 @@ function BinaryStyleTableReader(doc, oReadResult, stream)
         else if(c_oSer_sts.Style_ParaPr == type)
         {
 			var oNewParaPr = new CParaPr();
-            res = this.bpPrr.Read(length, oNewParaPr, null);
-			style.ParaPr = oNewParaPr;
-			this.oReadResult.aPostOpenStyleNumCallbacks.push(function(){
-				style.Set_ParaPr(oNewParaPr);
-			});
+            res = this.bpPrr.Read(length, oNewParaPr, null, style);
+			style.SetParaPr(oNewParaPr);
         }
 		else if(c_oSer_sts.Style_TablePr == type)
         {
@@ -9036,42 +9021,21 @@ function BinaryStyleTableReader(doc, oReadResult, stream)
 			{
 				switch(oRes.nType)
 				{
-					case ETblStyleOverrideType.tblstyleoverridetypeBand1Horz: style.TableBand1Horz = oNewTableStylePr;break;
-					case ETblStyleOverrideType.tblstyleoverridetypeBand1Vert: style.TableBand1Vert = oNewTableStylePr;break;
-					case ETblStyleOverrideType.tblstyleoverridetypeBand2Horz: style.TableBand2Horz = oNewTableStylePr;break;
-					case ETblStyleOverrideType.tblstyleoverridetypeBand2Vert: style.TableBand2Vert = oNewTableStylePr;break;
-					case ETblStyleOverrideType.tblstyleoverridetypeFirstCol: style.TableFirstCol = oNewTableStylePr;break;
-					case ETblStyleOverrideType.tblstyleoverridetypeFirstRow: style.TableFirstRow = oNewTableStylePr;break;
-					case ETblStyleOverrideType.tblstyleoverridetypeLastCol: style.TableLastCol = oNewTableStylePr;break;
-					case ETblStyleOverrideType.tblstyleoverridetypeLastRow: style.TableLastRow = oNewTableStylePr;break;
-					case ETblStyleOverrideType.tblstyleoverridetypeNeCell: style.TableTRCell = oNewTableStylePr;break;
-					case ETblStyleOverrideType.tblstyleoverridetypeNwCell: style.TableTLCell = oNewTableStylePr;break;
-					case ETblStyleOverrideType.tblstyleoverridetypeSeCell: style.TableBRCell = oNewTableStylePr;break;
-					case ETblStyleOverrideType.tblstyleoverridetypeSwCell: style.TableBLCell = oNewTableStylePr;break;
-					case ETblStyleOverrideType.tblstyleoverridetypeWholeTable: style.TableWholeTable = oNewTableStylePr;break;
+					case ETblStyleOverrideType.tblstyleoverridetypeBand1Horz: style.Set_TableBand1Horz(oNewTableStylePr);break;
+					case ETblStyleOverrideType.tblstyleoverridetypeBand1Vert: style.Set_TableBand1Vert(oNewTableStylePr);break;
+					case ETblStyleOverrideType.tblstyleoverridetypeBand2Horz: style.Set_TableBand2Horz(oNewTableStylePr);break;
+					case ETblStyleOverrideType.tblstyleoverridetypeBand2Vert: style.Set_TableBand2Vert(oNewTableStylePr);break;
+					case ETblStyleOverrideType.tblstyleoverridetypeFirstCol: style.Set_TableFirstCol(oNewTableStylePr);break;
+					case ETblStyleOverrideType.tblstyleoverridetypeFirstRow: style.Set_TableFirstRow(oNewTableStylePr);break;
+					case ETblStyleOverrideType.tblstyleoverridetypeLastCol: style.Set_TableLastCol(oNewTableStylePr);break;
+					case ETblStyleOverrideType.tblstyleoverridetypeLastRow: style.Set_TableLastRow(oNewTableStylePr);break;
+					case ETblStyleOverrideType.tblstyleoverridetypeNeCell: style.Set_TableTRCell(oNewTableStylePr);break;
+					case ETblStyleOverrideType.tblstyleoverridetypeNwCell: style.Set_TableTLCell(oNewTableStylePr);break;
+					case ETblStyleOverrideType.tblstyleoverridetypeSeCell: style.Set_TableBRCell(oNewTableStylePr);break;
+					case ETblStyleOverrideType.tblstyleoverridetypeSwCell: style.Set_TableBLCell(oNewTableStylePr);break;
+					case ETblStyleOverrideType.tblstyleoverridetypeWholeTable: style.Set_TableWholeTable(oNewTableStylePr);break;
 				}
 			}
-			this.oReadResult.aPostOpenStyleNumCallbacks.push(function(){
-				if(null != oRes.nType)
-				{
-					switch(oRes.nType)
-					{
-						case ETblStyleOverrideType.tblstyleoverridetypeBand1Horz: style.Set_TableBand1Horz(oNewTableStylePr);break;
-						case ETblStyleOverrideType.tblstyleoverridetypeBand1Vert: style.Set_TableBand1Vert(oNewTableStylePr);break;
-						case ETblStyleOverrideType.tblstyleoverridetypeBand2Horz: style.Set_TableBand2Horz(oNewTableStylePr);break;
-						case ETblStyleOverrideType.tblstyleoverridetypeBand2Vert: style.Set_TableBand2Vert(oNewTableStylePr);break;
-						case ETblStyleOverrideType.tblstyleoverridetypeFirstCol: style.Set_TableFirstCol(oNewTableStylePr);break;
-						case ETblStyleOverrideType.tblstyleoverridetypeFirstRow: style.Set_TableFirstRow(oNewTableStylePr);break;
-						case ETblStyleOverrideType.tblstyleoverridetypeLastCol: style.Set_TableLastCol(oNewTableStylePr);break;
-						case ETblStyleOverrideType.tblstyleoverridetypeLastRow: style.Set_TableLastRow(oNewTableStylePr);break;
-						case ETblStyleOverrideType.tblstyleoverridetypeNeCell: style.Set_TableTRCell(oNewTableStylePr);break;
-						case ETblStyleOverrideType.tblstyleoverridetypeNwCell: style.Set_TableTLCell(oNewTableStylePr);break;
-						case ETblStyleOverrideType.tblstyleoverridetypeSeCell: style.Set_TableBRCell(oNewTableStylePr);break;
-						case ETblStyleOverrideType.tblstyleoverridetypeSwCell: style.Set_TableBLCell(oNewTableStylePr);break;
-						case ETblStyleOverrideType.tblstyleoverridetypeWholeTable: style.Set_TableWholeTable(oNewTableStylePr);break;
-					}
-				}
-			});
 			if(c_oSerConstants.ReadOk != res)
 				return res;
 		}
@@ -9116,6 +9080,118 @@ function BinaryStyleTableReader(doc, oReadResult, stream)
         return res;
 	};
 };
+//----------------------------------------------------------------------------------------------------------------------
+// Классы для обновления ссылок на стили
+//----------------------------------------------------------------------------------------------------------------------
+function BinaryStyleUpdaterBase(element, style)
+{
+	this.element = element;
+	this.style   = style;
+}
+BinaryStyleUpdaterBase.prototype.setStyle = function(styleId) {
+};
+BinaryStyleUpdaterBase.prototype.isParagraphStyle = function() {
+	return false;
+};
+BinaryStyleUpdaterBase.prototype.isNumLvlStyle = function() {
+	return false;
+};
+function InheritBinaryStyleUpdater(inheritedClass, setFunction)
+{
+	inheritedClass.prototype             = Object.create(BinaryStyleUpdaterBase.prototype);
+	inheritedClass.prototype.constructor = inheritedClass;
+	inheritedClass.prototype.setStyle    = setFunction;
+}
+function BinaryRunStyleUpdater()
+{
+	BinaryStyleUpdaterBase.apply(this, arguments);
+}
+InheritBinaryStyleUpdater(BinaryRunStyleUpdater,
+	function(styleId)
+	{
+		if (!this.element)
+			return;
+
+		this.element.SetRStyle(styleId);
+	}
+);
+function BinaryParagraphStyleUpdater(element, style, isPrChange)
+{
+	this.isPrChange = !!isPrChange;
+	BinaryStyleUpdaterBase.call(this, element, style);
+}
+InheritBinaryStyleUpdater(BinaryParagraphStyleUpdater,
+	function(styleId)
+	{
+		if (!this.element)
+			return;
+
+		if (!this.isPrChange)
+			this.element.SetPStyle(styleId);
+		else if (this.element.HavePrChange())
+			this.element.SetPStyleToPrChange(styleId);
+	}
+);
+BinaryParagraphStyleUpdater.prototype.isParagraphStyle = function() {
+	return true;
+};
+function BinaryTableStyleUpdater()
+{
+	BinaryStyleUpdaterBase.apply(this, arguments);
+}
+InheritBinaryStyleUpdater(BinaryTableStyleUpdater,
+	function(styleId)
+	{
+		if (!this.element)
+			return;
+
+		this.element.SetTableStyle(styleId);
+	}
+);
+function BinaryAbstractNumStyleLinkUpdater()
+{
+	BinaryStyleUpdaterBase.apply(this, arguments);
+}
+InheritBinaryStyleUpdater(BinaryAbstractNumStyleLinkUpdater,
+	function(styleId)
+	{
+		if (!this.element)
+			return;
+
+		this.element.SetStyleLink(styleId);
+	}
+);
+function BinaryAbstractNumNumStyleLinkUpdater()
+{
+	BinaryStyleUpdaterBase.apply(this, arguments);
+}
+InheritBinaryStyleUpdater(BinaryAbstractNumNumStyleLinkUpdater,
+	function(styleId)
+	{
+		if (!this.element)
+			return;
+
+		this.element.SetNumStyleLink(styleId);
+	}
+);
+function BinaryNumLvlStyleUpdater()
+{
+	BinaryStyleUpdaterBase.apply(this, arguments);
+}
+InheritBinaryStyleUpdater(BinaryNumLvlStyleUpdater,
+	function(styleId)
+	{
+		if (!this.element)
+			return;
+		
+		this.element.SetPStyle(styleId);
+	}
+);
+BinaryNumLvlStyleUpdater.prototype.isNumLvlStyle = function() {
+	return true;
+};
+//----------------------------------------------------------------------------------------------------------------------
+
 function Binary_pPrReader(doc, oReadResult, stream)
 {
     this.Document = doc;
@@ -9123,12 +9199,15 @@ function Binary_pPrReader(doc, oReadResult, stream)
     this.stream = stream;
     this.pPr;
     this.paragraph;
+	this.style;
+	this.isPrChange = false;
     this.bcr = new Binary_CommonReader(this.stream);
     this.brPrr = new Binary_rPrReader(this.Document, this.oReadResult, this.stream);
-    this.Read = function(stLen, pPr, par)
+    this.Read = function(stLen, pPr, par, style)
     {
         this.pPr = pPr;
         this.paragraph = par;
+		this.style = style;
         var oThis = this;
         return this.bcr.Read2(stLen, function(type, length){
                 return oThis.ReadContent(type, length);
@@ -9183,7 +9262,8 @@ function Binary_pPrReader(doc, oReadResult, stream)
                 break;
             case c_oSerProp_pPrType.ParaStyle:
                 var ParaStyle = this.stream.GetString2LE(length);
-				this.oReadResult.paraStyles.push({pPr: pPr, style: ParaStyle});
+				if (this.paragraph)
+					this.oReadResult.styleLinks.push(new BinaryParagraphStyleUpdater(this.paragraph, ParaStyle, this.isPrChange));
                 break;
             case c_oSerProp_pPrType.numPr:
                 var numPr = new CNumPr();
@@ -9191,12 +9271,9 @@ function Binary_pPrReader(doc, oReadResult, stream)
                 res = this.bcr.Read2(length, function(t, l){
                     return oThis.ReadNumPr(t, l, numPr);
                 });
-                if(null != numPr.NumId || null != numPr.Lvl)
-                {
-					if(null != numPr.NumId)
-						this.oReadResult.paraNumPrs.push(numPr);
-					pPr.NumPr = numPr;
-                }
+                if ((null != numPr.NumId || null != numPr.Lvl) && (this.paragraph || this.style)) {
+					this.oReadResult.paraNumPrs.push({elem : this.paragraph || this.style, numPr : numPr, isPrChange: this.paragraph && this.isPrChange});
+				}
                 break;
             case c_oSerProp_pPrType.pBdr:
                 res = this.bcr.Read1(length, function(t, l){
@@ -9206,13 +9283,11 @@ function Binary_pPrReader(doc, oReadResult, stream)
             case c_oSerProp_pPrType.pPr_rPr:
                 if(null != this.paragraph)
 				{
-                    var EndRun = this.paragraph.GetParaEndRun();
+                    var endRun = this.paragraph.GetParaEndRun();
                     var rPr = new CTextPr();
-                    res = this.brPrr.Read(length, rPr, EndRun);
-					this.paragraph.TextPr.Value = rPr;
-					this.oReadResult.aPostOpenStyleNumCallbacks.push(function(){
-						oThis.paragraph.TextPr.Apply_TextPr(rPr);
-					});
+                    res = this.brPrr.Read(length, rPr, endRun, this.paragraph.TextPr);
+					endRun.SetPr(rPr);
+					this.paragraph.TextPr.SetPr(rPr);
 				}
 				else
 					res = c_oSerConstants.ReadUnknown;
@@ -9240,14 +9315,15 @@ function Binary_pPrReader(doc, oReadResult, stream)
                 res = c_oSerConstants.ReadUnknown;//todo
                 break;
             case c_oSerProp_pPrType.pPrChange:
-                if(null != this.paragraph && this.oReadResult.checkReadRevisions() && (!this.oReadResult.bCopyPaste || this.oReadResult.isDocumentPasting())) {
+                if(null != this.paragraph && !this.isPrChange && this.oReadResult.checkReadRevisions() && (!this.oReadResult.bCopyPaste || this.oReadResult.isDocumentPasting())) {
                     var pPrChange = new CParaPr();
                     var reviewInfo = new CReviewInfo();
                     var bpPrr = new Binary_pPrReader(this.Document, this.oReadResult, this.stream);
+					bpPrr.isPrChange = true;
                     res = this.bcr.Read1(length, function(t, l){
-                        return ReadTrackRevision(t, l, oThis.stream, reviewInfo, {bpPrr: bpPrr, pPr: pPrChange});
+                        return ReadTrackRevision(t, l, oThis.stream, reviewInfo, {bpPrr: bpPrr, pPr: pPrChange, paragraph: oThis.paragraph});
                     });
-                    this.paragraph.SetPrChange(pPrChange, reviewInfo);
+					this.pPr.SetPrChange(pPrChange, reviewInfo);
                 } else {
                     res = c_oSerConstants.ReadUnknown;
                 }
@@ -9969,17 +10045,17 @@ function Binary_rPrReader(doc, oReadResult, stream)
     this.stream = stream;
     this.rPr;
     this.bcr = new Binary_CommonReader(this.stream);
-    this.Read = function(stLen, rPr, run)
+    this.Read = function(stLen, rPr, run, paraRPr)
     {
         this.rPr = rPr;
         var oThis = this;
         var res = c_oSerConstants.ReadOk;
         res = this.bcr.Read2(stLen, function(type, length){
-                return oThis.ReadContent(type, length, run);
+                return oThis.ReadContent(type, length, run, paraRPr);
             });
         return res;
     };
-    this.ReadContent = function(type, length, run)
+    this.ReadContent = function(type, length, run, paraRPr)
     {
         var res = c_oSerConstants.ReadOk;
 		var oThis = this;
@@ -10049,7 +10125,10 @@ function Binary_rPrReader(doc, oReadResult, stream)
                 break;
 			case c_oSerProp_rPrType.RStyle:
 				var RunStyle = this.stream.GetString2LE(length);
-				this.oReadResult.runStyles.push({pPr: rPr, style: RunStyle, run: run});
+				this.oReadResult.styleLinks.push(new BinaryRunStyleUpdater(run, RunStyle));
+				if (paraRPr)
+					this.oReadResult.styleLinks.push(new BinaryRunStyleUpdater(paraRPr, RunStyle));
+				
                 break;
 			case c_oSerProp_rPrType.Spacing:
 				rPr.Spacing = this.bcr.ReadDouble();
@@ -10130,8 +10209,15 @@ function Binary_rPrReader(doc, oReadResult, stream)
 			case c_oSerProp_rPrType.TextOutline:
 				if(length > 0){
 					var TextOutline = pptx_content_loader.ReadShapeProperty(this.stream, 0);
-					if(null != TextOutline)
+					if(null != TextOutline) {
 						rPr.TextOutline = TextOutline;
+						let oFill = TextOutline.Fill;
+						if(null != oFill){
+							if(null != oFill.transparent){
+								oFill.transparent = 255 - oFill.transparent;
+							}
+						}
+					}
 				}
 				else
 					res = c_oSerConstants.ReadUnknown;
@@ -10312,6 +10398,15 @@ Binary_tblPrReader.prototype =
 			});
 			Pr.SetPrChange(tblPrChange, reviewInfo);
 		}
+		else if (c_oSerProp_tblPrType.tblOverlap === type && table)
+		{
+			 let overlapType = this.stream.GetUChar();
+			switch(overlapType)
+			{
+				case ETblOverlapType.tbloverlapNever: table.setAllowOverlap(false);break;
+				case ETblOverlapType.tbloverlapOverlap: table.setAllowOverlap(true);break;
+			}
+		}
 		else if(null != table)
 		{
 			if( c_oSerProp_tblPrType.tblpPr === type )
@@ -10360,7 +10455,7 @@ Binary_tblPrReader.prototype =
 				table.Set_TableLook(new AscCommon.CTableLook(bFC, bFR, bLC, bLR, !bBH, !bBV));
 			}
 			else if( c_oSerProp_tblPrType.Style === type )
-				this.oReadResult.tableStyles.push({pPr: table, style: this.stream.GetString2LE(length)});
+				this.oReadResult.styleLinks.push(new BinaryTableStyleUpdater(table, this.stream.GetString2LE(length)));
 			else
 				res = c_oSerConstants.ReadUnknown;
 		}
@@ -10909,10 +11004,10 @@ function Binary_NumberingTableReader(doc, oReadResult, stream)
             });
         }
 		else if ( c_oSerNumTypes.NumStyleLink === type ) {
-			this.oReadResult.numStyleLinks.push({pPr: oNewNum, style: this.stream.GetString2LE(length)});
+			this.oReadResult.styleLinks.push(new BinaryAbstractNumNumStyleLinkUpdater(oNewNum, this.stream.GetString2LE(length)));
 		}
 		else if ( c_oSerNumTypes.StyleLink === type ) {
-			this.oReadResult.styleLinks.push({pPr: oNewNum, style: this.stream.GetString2LE(length)});
+			this.oReadResult.styleLinks.push(new BinaryAbstractNumStyleLinkUpdater(oNewNum, this.stream.GetString2LE(length)));
 		}
         else if ( c_oSerNumTypes.AbstractNum_Id === type )
         {
@@ -10931,19 +11026,12 @@ function Binary_NumberingTableReader(doc, oReadResult, stream)
         {
 			if(nLevelNum < oNewNum.Lvl.length)
 			{
-				var oOldLvl = oNewNum.Lvl[nLevelNum];
-				var oNewLvl = oOldLvl.Copy();
-				//сбрасываем свойства
-				oNewLvl.ParaPr = new CParaPr();
-				oNewLvl.TextPr = new CTextPr();
+				var oNewLvl = new CNumberingLvl();
 				var tmp = {nLevelNum: nLevelNum};
 				res = this.bcr.Read2(length, function(t, l){
 					return oThis.ReadLevel(t, l, oNewLvl, tmp);
 				});
-				oNewNum.Lvl[tmp.nLevelNum] = oNewLvl;
-				this.oReadResult.aPostOpenStyleNumCallbacks.push(function(){
-					oNewNum.SetLvl(tmp.nLevelNum, oNewLvl);
-				});
+				oNewNum.SetLvl(tmp.nLevelNum, oNewLvl);
 			}
 			else
 				res = c_oSerConstants.ReadUnknown;
@@ -11006,7 +11094,7 @@ function Binary_NumberingTableReader(doc, oReadResult, stream)
         }
 		else if ( c_oSerNumTypes.lvl_PStyle === type )
         {
-			this.oReadResult.lvlStyles.push({pPr: oNewLvl, style: this.stream.GetString2LE(length)});
+			this.oReadResult.styleLinks.push(new BinaryNumLvlStyleUpdater(oNewLvl, this.stream.GetString2LE(length)));
         }
         else if ( c_oSerNumTypes.lvl_ParaPr === type )
         {
@@ -11427,10 +11515,7 @@ function Binary_DocumentTableReader(doc, oReadResult, openParams, stream, curNot
         {
 			var paraPr = new CParaPr();
             res = this.bpPrr.Read(length, paraPr, paragraph);
-			paragraph.Pr = paraPr;
-			this.oReadResult.aPostOpenStyleNumCallbacks.push(function(){
-				paragraph.Set_Pr(paraPr);
-			});
+			paragraph.SetPr(paraPr);
         }
         else if ( c_oSerParType.Content === type )
         {
@@ -11646,10 +11731,12 @@ function Binary_DocumentTableReader(doc, oReadResult, openParams, stream, curNot
 		for (let commentId in this.oCurComments)
 			this.oCurComments[commentId] += text;
 	};
-	this.ReadFldChar = function (type, length, run) {
+	this.ReadFldChar = function (type, length, paraField) {
 		var res = c_oSerConstants.ReadOk;
 		if (c_oSer_FldSimpleType.CharType === type) {
-			run.AddToContentToEnd(new ParaFieldChar(this.stream.GetUChar(), this.oReadResult.logicDocument));
+			paraField.Init(this.stream.GetUChar(), paraField.LogicDocument);
+		} else if (c_oSer_FldSimpleType.PrivateData === type) {
+			paraField.fldData = this.stream.GetString2LE(length);
 		} else
 			res = c_oSerConstants.ReadUnknown;
 		return res;
@@ -11660,12 +11747,12 @@ function Binary_DocumentTableReader(doc, oReadResult, openParams, stream, curNot
 		let paragraph = paragraphContent.GetParagraph();
         if (c_oSer_FldSimpleType.Instr === type) {
 			var Instr = this.stream.GetString2LE(length);
-			let elem = new ParaField(fieldtype_UNKNOWN);
+			let elem = new ParaField(AscWord.fieldtype_UNKNOWN);
 			elem.SetParagraph(paragraph);
 			let oParser = new CFieldInstructionParser();
 			let Instruction = oParser.GetInstructionClass(Instr);
 			oParser.InitParaFieldArguments(Instruction.Type, Instr, elem);
-			if (fieldtype_UNKNOWN !== elem.FieldType) {
+			if (AscWord.fieldtype_UNKNOWN !== elem.FieldType) {
 				oFldSimpleObj.ParaField = elem;
 			} else {
 				this.ConcatContent(elem.Content);
@@ -11676,6 +11763,8 @@ function Binary_DocumentTableReader(doc, oReadResult, openParams, stream, curNot
 		// 		return oThis.ReadFFData(t, l, FFData);
 		// 	});
 		// 	oFldSimpleObj.ParaField.FFData = FFData;
+		// } else  if (c_oSer_FldSimpleType.PrivateData === type) {
+		// 	oFldSimpleObj.ParaField.fldData = this.stream.GetString2LE(length);
 		} else if (c_oSer_FldSimpleType.Content === type) {
 			if(null != oFldSimpleObj.ParaField) {
 				res = this.bcr.Read1(length, function (t, l) {
@@ -11986,9 +12075,11 @@ function Binary_DocumentTableReader(doc, oReadResult, openParams, stream, curNot
         }
 		else if(c_oSerRunType.fldChar === type)
 		{
+			let paraField = new ParaFieldChar(undefined, this.oReadResult.logicDocument)
 			res = this.bcr.Read1(length, function(t, l){
-				return oThis.ReadFldChar(t,l,run);
+				return oThis.ReadFldChar(t,l,paraField);
 			});
+			run.AddToContentToEnd(paraField);
 		}
 		else if(c_oSerRunType.instrText === type || c_oSerRunType.delInstrText === type)
 		{
@@ -12729,10 +12820,7 @@ function Binary_DocumentTableReader(doc, oReadResult, openParams, stream, curNot
             res = this.bcr.Read1(length, function(t, l){
                 return oThis.btblPrr.Read_tblPr(t,l, oNewTablePr, table);
             });
-			table.Pr = oNewTablePr;
-			this.oReadResult.aPostOpenStyleNumCallbacks.push(function(){
-				table.Set_Pr(oNewTablePr);
-			});
+			table.SetPr(oNewTablePr);
         }
         else if( c_oSerDocTableType.tblGrid === type )
         {
@@ -16260,7 +16348,7 @@ function Binary_SettingsTableReader(doc, oReadResult, stream)
 		}
 		else if ( c_oSer_SettingsType.MathPr === type )
         {			
-			var props = new CMathPropertiesSettings();
+			var props = new AscWord.MathPr();
             res = this.bcr.Read1(length, function(t, l){
                 return oThis.ReadMathPr(t,l,props);
             });
@@ -16361,7 +16449,7 @@ function Binary_SettingsTableReader(doc, oReadResult, stream)
 		}
 		else if ( c_oSer_SettingsType.DocumentProtection === type )
 		{
-			var oDocProtect = new CDocProtect();
+			var oDocProtect = new AscCommonWord.CDocProtect();
 			res = this.bcr.Read1(length, function(t, l){
 				return oThis.ReadDocProtect(t,l,oDocProtect);
 			});
@@ -16369,7 +16457,7 @@ function Binary_SettingsTableReader(doc, oReadResult, stream)
 		}
 		else if ( c_oSer_SettingsType.WriteProtection === type )
 		{
-			var oWriteProtect = new CDocProtect();
+			var oWriteProtect = new AscCommonWord.CDocProtect();
 			res = this.bcr.Read1(length, function(t, l){
 				return oThis.ReadWriteProtect(t,l,oWriteProtect);
 			});
@@ -16391,6 +16479,22 @@ function Binary_SettingsTableReader(doc, oReadResult, stream)
 		// {
 		// 	editor.WordControl.m_oLogicDocument.Settings.BookFoldRevPrinting = this.stream.GetBool();
 		// }
+		else if (c_oSer_SettingsType.AutoHyphenation === type)
+		{
+			Settings.setAutoHyphenation(this.stream.GetBool());
+		}
+		else if (c_oSer_SettingsType.HyphenationZone === type)
+		{
+			Settings.setHyphenationZone(this.stream.GetLong());
+		}
+		else if (c_oSer_SettingsType.ConsecutiveHyphenLimit === type)
+		{
+			Settings.setConsecutiveHyphenLimit(this.stream.GetLong());
+		}
+		else if (c_oSer_SettingsType.DoNotHyphenateCaps === type)
+		{
+			Settings.setHyphenateCaps(!this.stream.GetBool());
+		}
         else
             res = c_oSerConstants.ReadUnknown;
         return res;
@@ -17173,7 +17277,7 @@ CFontsCharMap.prototype =
                 _find.Name = family;
                 _find.Id = _id.id;
                 _find.FaceIndex = _id.faceIndex;
-                _find.IsEmbedded = (font_info.type == AscFonts.FONT_TYPE_EMBEDDED);
+                _find.IsEmbedded = false;
 
                 this.CurrentFontInfo = _find;
                 this.map_fonts[_find_index] = _find;
@@ -17245,17 +17349,11 @@ function DocReadResult(doc) {
 	this.numToNumClass = {};
 	this.paraNumPrs = [];
 	this.styles = [];
-	this.runStyles = [];
-	this.paraStyles = [];
-	this.tableStyles = [];
-	this.lvlStyles = [];
 	this.styleLinks = [];
-	this.numStyleLinks = [];
 	this.DefpPr = null;
 	this.DefrPr = null;
 	this.DocumentContent = [];
 	this.bLastRun = null;
-	this.aPostOpenStyleNumCallbacks = [];
 	this.headers = [];
 	this.footers = [];
 	this.hasRevisions = false;
@@ -17411,6 +17509,26 @@ DocReadResult.prototype = {
 				elem.SetReviewTypeWithInfo(type, reviewInfo, false);
 			}
 		}
+	},
+	updateNumPrLinks: function() {
+		for(let i = 0, count = this.paraNumPrs.length; i < count; ++i) {
+			let numPr = this.paraNumPrs[i].numPr;
+			let elem  = this.paraNumPrs[i].elem;
+			if (!elem || !numPr || null === numPr.NumId)
+				continue;
+			
+			let numId = undefined;
+			let iLvl  = numPr.Lvl;
+			if (undefined !== numPr.NumId) {
+				let num = this.numToNumClass[numPr.NumId];
+				numId   = num && 0 !== numPr.NumId ? num.GetId() : "0";
+			}
+			
+			if (this.paraNumPrs[i].isPrChange)
+				elem.SetNumPrToPrChange(numId, iLvl);
+			else
+				elem.SetNumPr(numId, iLvl);
+		}
 	}
 };
 //---------------------------------------------------------export---------------------------------------------------
@@ -17423,3 +17541,9 @@ window["AscCommonWord"].DocReadResult = DocReadResult;
 window["AscCommonWord"].DocSaveParams = DocSaveParams;
 window["AscCommonWord"].CreateThemeUnifill = CreateThemeUnifill;
 window["AscCommonWord"].CreateFromThemeUnifill = CreateFromThemeUnifill;
+window["AscCommonWord"].BinaryRunStyleUpdater = BinaryRunStyleUpdater;
+window["AscCommonWord"].BinaryParagraphStyleUpdater = BinaryParagraphStyleUpdater;
+window["AscCommonWord"].BinaryTableStyleUpdater = BinaryTableStyleUpdater;
+window["AscCommonWord"].BinaryAbstractNumStyleLinkUpdater = BinaryAbstractNumStyleLinkUpdater;
+window["AscCommonWord"].BinaryAbstractNumNumStyleLinkUpdater = BinaryAbstractNumNumStyleLinkUpdater;
+window["AscCommonWord"].BinaryNumLvlStyleUpdater = BinaryNumLvlStyleUpdater;

@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -107,7 +107,7 @@
 		let oThis = this;
 		oParagraph.CheckRunContent(function(oRun, nStartPos, nEndPos)
 		{
-			oThis.ShapeRun(oRun, nStartPos, nEndPos);
+			oThis.HandleRun(oRun, nStartPos, nEndPos);
 		});
 		this.FlushWord();
 	};
@@ -117,11 +117,17 @@
 		let oThis = this;
 		oParagraph.CheckRunContent(function(oRun, nStartPos, nEndPos)
 		{
-			oThis.ShapeRun(oRun, nStartPos, nEndPos);
+			oThis.HandleRun(oRun, nStartPos, nEndPos);
 		}, oStart, oEnd);
 		this.FlushWord();
 	};
-	CParagraphTextShaper.prototype.ShapeRun = function(oRun, nStartPos, nEndPos)
+	CParagraphTextShaper.prototype.ShapeRun = function(run)
+	{
+		this.Init(false);
+		this.HandleRun(run, 0, run.GetElementsCount());
+		this.FlushWord();
+	};
+	CParagraphTextShaper.prototype.HandleRun = function(oRun, nStartPos, nEndPos)
 	{
 		this.private_CheckRun(oRun);
 
@@ -148,17 +154,50 @@
 	};
 	CParagraphTextShaper.prototype.FlushGrapheme = function(nGrapheme, nWidth, nCodePointsCount, isLigature)
 	{
-		if (this.BufferIndex + nCodePointsCount - 1 >= this.Buffer.length)
+		if (nCodePointsCount <= 0)
 			return;
-
-		let _isLigature = isLigature && nCodePointsCount > 1;
-
-		let _nWidth = (nWidth + (this.Spacing / this.FontSize)) / nCodePointsCount;
-		this.private_HandleItem(this.Buffer[this.BufferIndex++], nGrapheme, _nWidth, this.FontSize, this.FontSlot, _isLigature ? CODEPOINT_TYPE.LIGATURE : CODEPOINT_TYPE.BASE);
-
-		for (let nIndex = 1; nIndex < nCodePointsCount; ++nIndex)
+		
+		let curIndex = 0;
+		
+		if (this.IsRtlDirection())
 		{
-			this.private_HandleItem(this.Buffer[this.BufferIndex++], AscFonts.NO_GRAPHEME, _nWidth, this.FontSize, AscWord.fontslot_ASCII, _isLigature ? CODEPOINT_TYPE.LIGATURE_CONTINUE : CODEPOINT_TYPE.COMBINING_MARK);
+			if (this.BufferIndex - nCodePointsCount < 0)
+				return;
+			
+			this.BufferIndex -= nCodePointsCount;
+			curIndex = this.BufferIndex;
+		}
+		else
+		{
+			if (this.BufferIndex + nCodePointsCount - 1 >= this.Buffer.length)
+				return;
+			
+			curIndex = this.BufferIndex;
+			this.BufferIndex += nCodePointsCount;
+		}
+		
+		let _nWidth = (nWidth + (this.Spacing / this.FontSize)) / nCodePointsCount;
+		if (1 === nCodePointsCount)
+		{
+			this.private_HandleItem(this.Buffer[curIndex], nGrapheme, _nWidth, this.FontSize, this.FontSlot, CODEPOINT_TYPE.BASE);
+		}
+		else
+		{
+			if (this.IsRtlDirection())
+			{
+				this.private_HandleItem(this.Buffer[curIndex], AscFonts.NO_GRAPHEME, _nWidth, this.FontSize, this.FontSlot, isLigature ? CODEPOINT_TYPE.LIGATURE : CODEPOINT_TYPE.BASE);
+				this.private_HandleItem(this.Buffer[curIndex + nCodePointsCount - 1], nGrapheme, _nWidth, this.FontSize, this.FontSlot, isLigature ? CODEPOINT_TYPE.LIGATURE_CONTINUE : CODEPOINT_TYPE.COMBINING_MARK);
+			}
+			else
+			{
+				this.private_HandleItem(this.Buffer[curIndex], nGrapheme, _nWidth, this.FontSize, this.FontSlot, isLigature ? CODEPOINT_TYPE.LIGATURE : CODEPOINT_TYPE.BASE);
+				this.private_HandleItem(this.Buffer[curIndex + nCodePointsCount - 1], AscFonts.NO_GRAPHEME, _nWidth, this.FontSize, this.FontSlot, isLigature ? CODEPOINT_TYPE.LIGATURE_CONTINUE : CODEPOINT_TYPE.COMBINING_MARK);
+			}
+			
+			for (let nIndex = 1; nIndex < nCodePointsCount - 1; ++nIndex)
+			{
+				this.private_HandleItem(this.Buffer[++curIndex], AscFonts.NO_GRAPHEME, _nWidth, this.FontSize, AscWord.fontslot_ASCII, isLigature ? CODEPOINT_TYPE.LIGATURE_CONTINUE : CODEPOINT_TYPE.COMBINING_MARK);
+			}
 		}
 	};
 	CParagraphTextShaper.prototype.private_CheckRun = function(oRun)
@@ -241,6 +280,7 @@
 
 		return script;
 	};
+	
 	//--------------------------------------------------------export----------------------------------------------------
 	window['AscWord'] = window['AscWord'] || {};
 	window['AscWord'].CODEPOINT_TYPE      = CODEPOINT_TYPE;

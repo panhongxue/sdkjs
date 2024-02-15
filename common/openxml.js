@@ -1,5 +1,5 @@
 ﻿/*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -494,7 +494,7 @@
 	openXml.OpenXmlPart.prototype.getRelationshipsByRelationshipType = function(relationshipType) {
 		var rels = this.getRelationships();
 		return rels.filter(function (rel) {
-			return rel.relationshipType === relationshipType;
+			return openXml.IsEqualRelationshipType(rel.relationshipType, relationshipType);
 		});
 	}
 
@@ -768,6 +768,8 @@
 		ctrlProp: {dir: "../ctrlProps", filename: "ctrlProp[N].xml", contentType: "application/vnd.ms-excel.controlproperties+xml", relationType: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/ctrlProp"},
 		namedSheetViews: {dir: "../namedSheetViews", filename: "namedSheetView[N].xml", contentType: "application/vnd.ms-excel.namedsheetviews+xml", relationType: "http://schemas.microsoft.com/office/2019/04/relationships/namedSheetView"},
 		workbookComment: {dir: "", filename: "workbookComments.bin", contentType: "application/octet-stream", relationType: "http://schemas.onlyoffice.com/workbookComments"},
+		timelines: {dir: "../timelines", filename: "timeline[N].xml", contentType: "application/vnd.ms-excel.timeline+xml", relationType: "http://schemas.microsoft.com/office/2011/relationships/timeline"},
+		timelineCaches: {dir: "timelineCaches", filename: "timelineCache[N].xml", contentType: "application/vnd.ms-excel.timelineCache+xml", relationType: "http://schemas.microsoft.com/office/2011/relationships/timelineCache"},
 
 		jsaProject: {dir: "", filename: "jsaProject.bin", contentType: "application/octet-stream", relationType: "http://schemas.onlyoffice.com/jsaProject"},
 		vbaProject: {dir: "", filename: "vbaProject.bin", contentType: "application/octet-stream", relationType: "http://schemas.microsoft.com/office/2006/relationships/vbaProject"},
@@ -793,7 +795,18 @@
 		internal: "Internal",
 		external: "External"
 	};
+	openXml.IsEqualRelationshipType = function(relationshipType1, relationshipType2) {
+		//https://github.com/ONLYOFFICE/core/blob/7a822494aabb1edce441a12e44aa05c3a6501766/OOXML/DocxFormat/FileType.h#L95
+		//RelationType
+		//http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument
+		//http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument
+		//is valid and equal so compare tail
 
+		//docs: If either or both of the arguments are negative or NaN, the substring() method treats them as if they were 0.
+		const tail1 = relationshipType1.substring(relationshipType1.lastIndexOf("/") + 1);
+		const tail2 = relationshipType2.substring(relationshipType2.lastIndexOf("/") + 1);
+		return tail1 === tail2;
+	};
 	//----------------------------------------------------------export----------------------------------------------------
 	var prot;
 	window['AscCommon'] = window['AscCommon'] || {};

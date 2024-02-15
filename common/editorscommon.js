@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -198,6 +198,10 @@
 			return;
 		}
 		var result = [];
+		if (number === 0)
+		{
+			return [0];
+		}
 		while (number > 0) {
 			var remainder = number % base;
 			if (remainder === 0) {
@@ -385,49 +389,231 @@
 				}
 			}
 			return res;
+		},
+
+		isThemeUrl: function(sUrl) {
+			return sUrl && (0 === sUrl.indexOf('theme'));
 		}
 	};
 	var g_oDocumentUrls = new DocumentUrls();
 
+	function CHTMLCursorItemBase(_name, _hotspot, _default)
+	{
+		this.name = _name;
+		this.hotspot = _hotspot;
+		this.default = _default;
+	}
+	CHTMLCursorItemBase.prototype.baseUrl = "../../../../sdkjs/common/Images/cursors/";
+	CHTMLCursorItemBase.prototype.getValue = function() { return this.default; };
+
+	/**
+	 * @extends {CHTMLCursorItemBase}
+	 */
+	function CHTMLCursorCur()
+	{
+		CHTMLCursorItemBase.apply(this, arguments);
+	}
+	CHTMLCursorCur.prototype = Object.create(CHTMLCursorItemBase.prototype);
+	CHTMLCursorCur.prototype.getValue = function(globalCursors)
+	{
+		if (AscCommon.AscBrowser.isCustomScalingAbove2())
+			return "url(" + this.baseUrl + this.name + "_2x.cur), " + this.default;
+		return "url(" + this.baseUrl + this.name + ".cur), " + this.default;
+	}
+
+	/**
+	 * @extends {CHTMLCursorItemBase}
+	 */
+	function CHTMLCursorSvgExternal()
+	{
+		CHTMLCursorItemBase.apply(this, arguments);
+	}
+	CHTMLCursorSvgExternal.prototype = Object.create(CHTMLCursorItemBase.prototype);
+	CHTMLCursorSvgExternal.prototype.getValue = function(globalCursors)
+	{
+		return "url(" + this.baseUrl + this.name + ".svg) " + this.hotspot + ", " + this.default;
+	}
+
+	/**
+	 * @extends {CHTMLCursorItemBase}
+	 */
+	function CHTMLCursorPng()
+	{
+		CHTMLCursorItemBase.apply(this, arguments);
+	}
+	CHTMLCursorPng.prototype = Object.create(CHTMLCursorItemBase.prototype);
+	CHTMLCursorPng.prototype.getValue = function(globalCursors)
+	{
+		return "-webkit-image-set(url(" + this.baseUrl + this.name + ".png) 1x," + " url(" + this.baseUrl + this.name + "_2x.png) 2x) " + this.hotspot + ", " + this.default;
+	}
+
+	/**
+	 * @extends {CHTMLCursorItemBase}
+	 */
+	function CHTMLCursorModern()
+	{
+		CHTMLCursorItemBase.apply(this, arguments);
+	}
+	CHTMLCursorModern.prototype = Object.create(CHTMLCursorItemBase.prototype);
+	CHTMLCursorModern.prototype.getValue = function(globalCursors)
+	{
+		if (1.2 > AscCommon.AscBrowser.retinaPixelRatio)
+			return "url(" + this.baseUrl + this.name + ".png) " + this.hotspot + ", " + this.default;
+
+		if (globalCursors.mapSvg && globalCursors.mapSvg[this.name])
+		{
+			return "url(\"data:image/svg+xml;utf8," + globalCursors.mapSvg[this.name] + "\") " + this.hotspot + ", " + this.default;
+		}
+
+		if (!AscCommon.AscBrowser.isChrome && !AscCommon.AscBrowser.isSafari)
+		{
+			return "url(" + this.baseUrl + this.name + ".svg) " + this.hotspot + ", " + "url(" + this.baseUrl + this.name + ".png) " + this.hotspot + ", " + this.default;
+		}
+
+		return "-webkit-image-set(url(" + this.baseUrl + this.name + ".png) 1x," + " url(" + this.baseUrl + this.name + "_2x.png) 2x) " + this.hotspot + ", " + this.default;
+	}
+
+	var Cursors = {
+		MarkerFormat        : "marker-format",
+
+		SelectTableRow      : "select-table-row",
+		SelectTableColumn   : "select-table-column",
+		SelectTableCell     : "select-table-cell",
+		SelectTableContent  : "select-table-content",
+
+		TableEraser         : "table-eraser",
+		TablePen            : "table-pen",
+
+		Grab                : "grab",
+		Grabbing            : "grabbing",
+
+		MoveBorderHor       : "move-border-horizontally",
+		MoveBorderVer       : "move-border-vertically",
+
+		CellCur             : "plus",
+		CellFormatPainter   : "plus-copy",
+
+		TextCopy            : "text-copy",
+		ShapeCopy           : "shape-copy",
+		Eyedropper          : "eyedropper"
+	};
+
 	function CHTMLCursor()
 	{
-		this.map = {};
-		this.mapRetina = {};
+		this.cursors = {};
+		this.mapSvg = null;
 
 		this.value = function(param)
 		{
-			var ret = this.map[param];
-			if (AscCommon.AscBrowser.isCustomScalingAbove2() && this.mapRetina[param])
-				ret = this.mapRetina[param];
-			return ret ? ret : param;
+			if (this.cursors[param])
+				return this.cursors[param].getValue(this);
+			return param;
 		};
 
-		this.register = function(type, name, target, default_css_value)
+		this.register = function(type, target, default_css_value)
 		{
 			if (AscBrowser.isIE || AscBrowser.isIeEdge)
 			{
-				this.map[type] = ("url(../../../../sdkjs/common/Images/cursors/" + name + ".cur), " + default_css_value);
-				this.mapRetina[type] = ("url(../../../../sdkjs/common/Images/cursors/" + name + "_2x.cur), " + default_css_value);
+				this.cursors[type] = new CHTMLCursorCur(type, target, default_css_value);
 			}
 			else if (window.opera)
 			{
-				this.map[type] = default_css_value;
+				this.cursors[type] = new CHTMLCursorItemBase(type, target, default_css_value);
 			}
 			else
 			{
-				if (!AscCommon.AscBrowser.isChrome && !AscCommon.AscBrowser.isSafari)
-				{
-					this.map[type] = "url('../../../../sdkjs/common/Images/cursors/" + name + ".svg') " + target +
-						", url('../../../../sdkjs/common/Images/cursors/" + name + ".png') " + target + ", " + default_css_value;
-				}
-				else
-				{
-					this.map[type] = "-webkit-image-set(url(../../../../sdkjs/common/Images/cursors/" + name + ".png) 1x," +
-						" url(../../../../sdkjs/common/Images/cursors/" + name + "_2x.png) 2x) " + target + ", " + default_css_value;
-				}
+				this.cursors[type] = new CHTMLCursorModern(type, target, default_css_value);
 			}
 		};
+
+		this.loadAllSvg = function()
+		{
+			try
+			{
+				var xhr = new XMLHttpRequest();
+				xhr.open("GET", "../../../../sdkjs/common/Images/cursors/svg.json", true);
+				var t = this;
+				xhr.onload = function()
+				{
+					if (this.status === 200 || location.href.indexOf("file:") === 0)
+					{
+						try
+						{
+							t.mapSvg = JSON.parse(this.responseText);
+						}
+						catch (err) {}
+					}
+				};
+				xhr.send('');
+			}
+			catch (e) {}
+		};
+
+		this.getDrawCursor = function(ln)
+		{
+			if (!ln.Fill)
+				return "default";
+			let color = ln.Fill.fill.color.RGBA;
+			let w = (ln.w == null) ? 12700 : ln.w;
+
+			var scale = 1;
+			switch (Asc.editor.editorId)
+			{
+				case AscCommon.c_oEditorId.Word:
+				case AscCommon.c_oEditorId.Presentation:
+				{
+					scale = Asc.editor.WordControl.m_nZoomValue / 100;
+					break;
+				}
+				case AscCommon.c_oEditorId.Spreadsheet:
+				{
+					scale = Asc.editor.asc_getZoom();
+					break;
+				}
+				default:
+					break;
+			}
+
+			w = (scale * w / 9525) >> 0;
+			if (w < 4) w = 4;
+			if (w & 0x01) w += 1;
+
+			if (ln && ln.Fill && ln.Fill.transparent !== null)
+				color.A = ln.Fill.transparent;
+
+			let isRect = (254 < color.A) ? false : true;
+			let h = w;
+
+			if (isRect)
+				w = 10;
+
+			let url = "<svg width='" + w + "' height='" + h + "' viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'>";
+			if (!isRect)
+			{
+				url = url + "<circle cx='5' cy='5' r='5' stroke='none' fill='rgb(" +
+					color.R + "," + color.G + "," + color.B + ")'/></svg>";
+			}
+			else
+			{
+				url = url + "<rect x='0' y='0' width='10' height='10' stroke='none' fill='rgb(" +
+					color.R + "," + color.G + "," + color.B + ")'/></svg>";
+			}
+			//console.log(url);
+
+			return "url(\"data:image/svg+xml;utf8," + url + "\") " + (w >> 1) + " " + (h >> 1) + ", default";
+		}
+
+		this.loadAllSvg();
 	}
+
+	var g_oHtmlCursor = new CHTMLCursor();
+
+	AscCommon.g_oHtmlCursor = g_oHtmlCursor;
+	AscCommon.Cursors = Cursors;
+
+	g_oHtmlCursor.register(AscCommon.Cursors.TextCopy, "2 2", "pointer");
+	g_oHtmlCursor.register(AscCommon.Cursors.ShapeCopy, "1 1", "pointer");
+	g_oHtmlCursor.register(AscCommon.Cursors.Eyedropper, "1 17", "pointer");
 
 	function OpenFileResult()
 	{
@@ -591,7 +777,7 @@
 	}
 	function getEditorByBinSignature(stream, Signature) {
 		if (stream.length > 4) {
-			let signature = AscCommon.UTF8ArrayToString(stream, 0, 4);
+			let signature = typeof stream === 'string' ? stream.slice(0, 4) : AscCommon.UTF8ArrayToString(stream, 0, 4);
 			switch(signature) {
 				case "DOCY":
 					return AscCommon.c_oEditorId.Word;
@@ -766,9 +952,12 @@
 			return;
 		}
 		rdata["userconnectionid"] = editor.CoAuthoringApi.getUserConnectionId();
+		let url = sDownloadServiceLocalUrl + '/' + rdata["id"];
+		url += '?cmd=' + encodeURIComponent(JSON.stringify(rdata));
+		url += '&' + Asc.c_sShardKeyName + '=' + encodeURIComponent(editor.documentShardKey);
 		asc_ajax({
 			type:        'POST',
-			url:         sDownloadServiceLocalUrl + '/' + rdata["id"] + '?cmd=' + encodeURIComponent(JSON.stringify(rdata)),
+			url:         url,
 			data:        dataContainer.part || dataContainer.data,
 			contentType: "application/octet-stream",
 			error:       function (httpRequest, statusText, status)
@@ -788,12 +977,15 @@
 		});
 	}
 
-	function sendSaveFile(docId, userId, title, jwt, data, fError, fsuccess)
+	function sendSaveFile(docId, userId, title, jwt, shardKey, data, fError, fsuccess)
 	{
-		var cmd = {'id': docId, "userid": userId, "tokenSession": jwt, 'outputpath': title};
+		let cmd = {'id': docId, "userid": userId, "tokenSession": jwt, 'outputpath': title};
+		let url =sSaveFileLocalUrl + '/' + docId;
+		url += '?cmd=' + encodeURIComponent(JSON.stringify(cmd));
+		url += '&' + Asc.c_sShardKeyName + '=' + encodeURIComponent(shardKey);
 		asc_ajax({
 			type:        'POST',
-			url:         sSaveFileLocalUrl + '/' + docId + '?cmd=' + encodeURIComponent(JSON.stringify(cmd)),
+			url:         url,
 			data:        data,
 			contentType: "application/octet-stream",
 			error:       fError,
@@ -1205,6 +1397,14 @@
 		return this;
 	}
 
+	function test_rx_protectedRangeName() {
+		var nameRangeRE = new RegExp("(^([" + str_namedRanges + " _])([" + str_namedRanges + " _0-9]*)$)", "i");
+		this.test = function (str)
+		{
+			return nameRangeRE.test(str);
+		};
+	}
+
 	var cStrucTableReservedWords = {
 		all: "#All", data: "#Data", headers: "#Headers", totals: "#Totals", thisrow: "#This Row", at: "@"
 	};
@@ -1229,15 +1429,18 @@
 		"num": "#NUM!",
 		"na": "#N\/A",
 		"getdata": "#GETTING_DATA",
-		"uf": "#UNSUPPORTED_FUNCTION!"
+		"uf": "#UNSUPPORTED_FUNCTION!",
+		"calc": "#CALC!"
 	};
 	var cErrorLocal = {};
+	let cCellFunctionLocal = {};
 
 	function build_local_rx(data)
 	{
 		rx_table_local = build_rx_table(data ? data["StructureTables"] : null);
 		rx_bool_local = build_rx_bool((data && data["CONST_TRUE_FALSE"]) || cBoolOrigin);
 		rx_error_local = build_rx_error(data ? data["CONST_ERROR"] : null);
+		rx_cell_func_local = build_rx_cell_func(data ? data["CELL_FUNCTION_INFO_TYPE"] : null);
 	}
 
 	function build_rx_table(local)
@@ -1264,7 +1467,22 @@
 			structured_tables_userColumn     = new XRegExp('(?:\'\\[|\'\\]|[^[\\]])+'),
 			structured_tables_reservedColumn = new XRegExp('\\#(?:' + loc_all + '|' + loc_headers + '|' + loc_totals + '|' + loc_data + '|' + loc_this_row + ')|@');
 
-		return XRegExp.build('^(?<tableName>{{tableName}})\\[(?<columnName>{{columnName}})?\\]', {
+
+		//Table4[[#Data];[#Totals]]
+		//Table1[[#Headers],[#Data],[Column1]]
+		//Table4[[#Headers];[Column1]:[Column2]]
+		//Table1[[#Data],[#Totals],[Column1]]
+		//Table4[[#Totals];[Column1]:[Column2]]
+
+		//Table1[[#All];[Column1]:[Column2]]
+
+		//Table1[[#Data],[#Totals]]
+		//Table1[[#Headers],[#Data]]
+
+		//Table1[[#Headers],[#Data],[Column1]:[Column2]]
+
+		let argsSeparator = FormulaSeparators.functionArgumentSeparator;
+		return XRegExp.build('^(?<tableName>{{tableName}})\\[(?<columnName1>{{columnName}})?\\]', {
 			"tableName":  new XRegExp("^(:?[" + str_namedRanges + "][" + str_namedRanges + "\\d.]*)"),
 			"columnName": XRegExp.build('(?<reservedColumn>{{reservedColumn}})|(?<oneColumn>{{userColumn}})|(?<columnRange>{{userColumnRange}})|(?<hdtcc>{{hdtcc}})', {
 				"userColumn":      structured_tables_userColumn,
@@ -1272,7 +1490,10 @@
 				"userColumnRange": XRegExp.build('\\[(?<colStart>{{uc}})\\]\\:\\[(?<colEnd>{{uc}})\\]', {
 					"uc": structured_tables_userColumn
 				}),
-				"hdtcc":           XRegExp.build('(?<hdt>\\[{{rc}}\\]|{{hd}}|{{dt}})(?:\\' + FormulaSeparators.functionArgumentSeparator + '(?:\\[(?<hdtcstart>{{uc}})\\])(?:\\:(?:\\[(?<hdtcend>{{uc}})\\]))?)?', {
+				//fixed: added [{{rc}}\\]' + argsSeparator + '\\[{{rc}}\\] for:
+				//Table1[[#Data],[#Totals]]
+				//Table1[[#Headers],[#Data]]
+				"hdtcc":           XRegExp.build('(?<hdt>\\[{{rc}}\\]' + argsSeparator + '\\[{{rc}}\\]|\\[{{rc}}\\]|{{hd}}|{{dt}})(?:\\' + argsSeparator + '(?:\\[(?<hdtcstart>{{uc}})\\])(?:\\:(?:\\[(?<hdtcend>{{uc}})\\]))?)?', {
 					"rc": structured_tables_reservedColumn,
 					"hd": structured_tables_headata,
 					"dt": structured_tables_datals,
@@ -1302,7 +1523,8 @@
 			"num":     "#NUM!",
 			"na":      "#N\/A",
 			"getdata": "#GETTING_DATA",
-			"uf":      "#UNSUPPORTED_FUNCTION!"
+			"uf":      "#UNSUPPORTED_FUNCTION!",
+			"calc":    "#CALC!"
 		};
 		cErrorLocal['nil'] = local['nil'];
 		cErrorLocal['div'] = local['div'];
@@ -1313,6 +1535,7 @@
 		cErrorLocal['na'] = local['na'];
 		cErrorLocal['getdata'] = local['getdata'];
 		cErrorLocal['uf'] = local['uf'];
+		cErrorLocal['calc'] = local['calc'];
 
 		return new RegExp("^(" + cErrorLocal["nil"] + "|" +
 			cErrorLocal["div"] + "|" +
@@ -1322,7 +1545,52 @@
 			cErrorLocal["num"] + "|" +
 			cErrorLocal["na"] + "|" +
 			cErrorLocal["getdata"] + "|" +
-			cErrorLocal["uf"] + ")", "i");
+			cErrorLocal["uf"] + "|" +
+			cErrorLocal["calc"] + ")", "i");
+	}
+
+	function build_rx_cell_func(local)
+	{
+		// ToDo переделать на более правильную реализацию. Не особо правильное копирование
+		local = local ? local : {
+			"address": "address",
+			"col": "col",
+			"color": "color",
+			"contents": "contents",
+			"filename": "filename",
+			"format": "format",
+			"parentheses": "parentheses",
+			"prefix": "prefix",
+			"protect": "protect",
+			"row": "row",
+			"type": "type",
+			"width": "width"
+		};
+		cCellFunctionLocal['address'] = local['address'];
+		cCellFunctionLocal['col'] = local['col'];
+		cCellFunctionLocal['color'] = local['color'];
+		cCellFunctionLocal['contents'] = local['contents'];
+		cCellFunctionLocal['filename'] = local['filename'];
+		cCellFunctionLocal['format'] = local['format'];
+		cCellFunctionLocal['parentheses'] = local['parentheses'];
+		cCellFunctionLocal['prefix'] = local['prefix'];
+		cCellFunctionLocal['protect'] = local['protect'];
+		cCellFunctionLocal['row'] = local['row'];
+		cCellFunctionLocal['type'] = local['type'];
+		cCellFunctionLocal['width'] = local['width'];
+
+		return new RegExp("^(" + cCellFunctionLocal["address"] + "|" +
+			cCellFunctionLocal["col"] + "|" +
+			cCellFunctionLocal["color"] + "|" +
+			cCellFunctionLocal["contents"] + "|" +
+			cCellFunctionLocal["filename"] + "|" +
+			cCellFunctionLocal["format"] + "|" +
+			cCellFunctionLocal["parentheses"] + "|" +
+			cCellFunctionLocal["prefix"] + "|" +
+			cCellFunctionLocal["protect"] +
+			cCellFunctionLocal["row"] +
+			cCellFunctionLocal["type"] +
+			cCellFunctionLocal["width"] + ")", "i");
 	}
 
 	var PostMessageType = {
@@ -1384,7 +1652,7 @@
 	//todo get from server config
 	var c_oAscImageUploadProp = {//Не все браузеры позволяют получить информацию о файле до загрузки(например ie9), меняя параметры здесь надо поменять аналогичные параметры в web.common
 		MaxFileSize:      25000000, //25 mb
-		SupportedFormats: ["jpg", "jpeg", "jpe", "png", "gif", "bmp"]
+		SupportedFormats: ["jpg", "jpeg", "jpe", "png", "gif", "bmp", "svg"]
 	};
 
 	var c_oAscDocumentUploadProp = {
@@ -1678,21 +1946,6 @@
 							if (!window.g_asc_plugins.api.licenseResult || !window.g_asc_plugins.api.licenseResult['advancedApi'])
 								return;
 
-							if (data["subType"] === "internalCommand")
-							{
-								// такие команды перечисляем здесь и считаем их функционалом
-								switch (data.data.type)
-								{
-									case "onbeforedrop":
-									case "ondrop":
-									{
-										window.g_asc_plugins.api["plugin_Method_OnDropEvent"](data.data);
-										return;
-									}
-									default:
-										break;
-								}
-							}
 							if (data["subType"] === "connector")
 							{
 								window.g_asc_plugins.externalConnectorMessage(data["data"]);
@@ -1769,22 +2022,41 @@
 				}
 				else
 				{
-					callback(Asc.c_oAscError.ID.Unknown);
+					if (e.canceled == true)
+					{
+						if (Asc.editor.isPdfEditor())
+							callback(e);
+					}
+					else
+						callback(Asc.c_oAscError.ID.Unknown);
 				}
 			});
-			fileName.click();
+
+			if (Asc.editor.isPdfEditor()) {
+				let oViewer = Asc.editor.getDocumentRenderer();
+				let oDoc = oViewer.doc;
+				let oActionsQueue = oDoc.GetActionsQueue();
+				if (oActionsQueue.IsInProgress()) {
+					Asc.editor.sendEvent("asc_onOpenFilePdfForm", fileName.click.bind(fileName), oActionsQueue.Continue.bind(oActionsQueue));
+				}
+				else 
+					fileName.click();
+			}
+			else
+				fileName.click();
 		}
 		else
 		{
 			return false;
 		}
 	}
-	function ShowImageFileDialog(documentId, documentUserId, jwt, callback, callbackOld)
+	function ShowImageFileDialog(documentId, documentUserId, jwt, shardKey, callback, callbackOld)
 	{
 		if (false === _ShowFileDialog(getAcceptByArray(c_oAscImageUploadProp.SupportedFormats), true, true, ValidateUploadImage, callback)) {
 			//todo remove this compatibility
 			var frameWindow = GetUploadIFrame();
-			var url = sUploadServiceLocalUrlOld + '/' + documentId;
+			let url = sUploadServiceLocalUrlOld + '/' + documentId;
+			url += '?' + Asc.c_sShardKeyName + '=' + encodeURIComponent(shardKey);
 			if (jwt)
 			{
 				url += '?token=' + encodeURIComponent(jwt);
@@ -1929,13 +2201,15 @@
 	}
 
 	function DownloadOriginalFile(documentId, url, urlPathInToken, token, fError, fSuccess) {
+		let data = JSON.stringify({
+			"url": url,
+			"token": token
+		});
 		asc_ajax({
 			url: sDownloadFileLocalUrl + '/' + documentId,
+			type: "POST",
 			responseType: "arraybuffer",
-			headers: {
-				'Authorization': 'Bearer ' + token,
-				'x-url': url
-			},
+			data: data,
 			success: function(resp) {
 				fSuccess(AscCommon.initStreamFromResponse(resp));
 			},
@@ -1994,12 +2268,12 @@
 		callback(nError, [file], obj);
 	}
 
-	function UploadImageFiles(files, documentId, documentUserId, jwt, callback)
+	function UploadImageFiles(files, documentId, documentUserId, jwt, shardKey, callback)
 	{
 		if (files.length > 0)
 		{
-			var url = sUploadServiceLocalUrl + '/' + documentId;
-
+			let url = sUploadServiceLocalUrl + '/' + documentId;
+			url += '?' + Asc.c_sShardKeyName + '=' + encodeURIComponent(shardKey);
 			var aFiles = [];
 			for(var i = files.length - 1;  i > - 1; --i){
                 aFiles.push(files[i]);
@@ -2027,17 +2301,18 @@
                             file = aFiles.pop();
                             var xhr = new XMLHttpRequest();
 
-                            url = sUploadServiceLocalUrl + '/' + documentId;
-
                             xhr.open('POST', url, true);
                             xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
                             xhr.setRequestHeader('Authorization', 'Bearer ' + jwt);
                             xhr.onreadystatechange = fOnReadyChnageState;
                             xhr.send(file);
                         }
-                    }
-                    else if(this.status === 403){
+                    } else if(this.status === 403) {
 						callback(Asc.c_oAscError.ID.VKeyEncrypt);
+					} else if(this.status === 413) {
+						callback(Asc.c_oAscError.ID.UplImageSize);
+					} else if(this.status === 415) {
+						callback(Asc.c_oAscError.ID.UplImageExt);
 					} else {
 						callback(Asc.c_oAscError.ID.UplImageUrl);
 					}
@@ -2057,12 +2332,12 @@
 		}
 	}
 
-    function UploadImageUrls(files, documentId, documentUserId, jwt, callback)
+    function UploadImageUrls(files, documentId, documentUserId, jwt, shardKey, callback)
     {
         if (files.length > 0)
         {
-            var url = sUploadServiceLocalUrl + '/' + documentId;
-
+            let url = sUploadServiceLocalUrl + '/' + documentId;
+			url += '?' + Asc.c_sShardKeyName + '=' + encodeURIComponent(shardKey);
             var aFiles = [];
             for(var i = files.length - 1;  i > - 1; --i){
                 aFiles.push(files[i]);
@@ -2094,8 +2369,6 @@
 						{
                             file = aFiles.pop();
                             var xhr = new XMLHttpRequest();
-
-                            url = sUploadServiceLocalUrl + '/' + documentId;
 
                             xhr.open('POST', url, true);
                             xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
@@ -2269,11 +2542,66 @@
 		input.setAttribute('type', 'file');
 		input.setAttribute('accept', accept);
 		input.setAttribute('style', 'position:absolute;left:-2px;top:-2px;width:1px;height:1px;z-index:-1000;cursor:pointer;');
+		
 		if (allowMultiple) {
 			input.setAttribute('multiple', true);
 		}
-		input.onchange = onchange;
 		document.body.appendChild(input);
+
+		function addDialogClosedListener(input, callback) {
+			var id = null;
+			var active = false;
+			var wrapper = function() {
+				if (active) {
+					active = false;
+					callback(input);
+
+					// remove handlers
+					window.removeEventListener('focus', onFocus);
+					window.removeEventListener('blur', onBlur);
+				}
+			};
+			var cleanup = function() {
+				clearTimeout(id);
+			};
+			var shedule = function(delay) {
+				id = setTimeout(wrapper, delay);
+			};
+			var onFocus = function() {
+				cleanup();
+				shedule(1000);
+			};
+			var onBlur = function() {
+				cleanup();
+			};
+			var onClick = function() {
+				window.addEventListener('focus', onFocus);
+				window.addEventListener('blur', onBlur);
+
+				cleanup();
+				active = true;
+			};
+			var onChange = function() {
+				cleanup();
+				shedule(0);
+			};
+			input.addEventListener('click', onClick);
+			input.addEventListener('change', onChange);
+		}
+
+		addDialogClosedListener(input, checkCanceled);
+
+		function checkCanceled(input) {
+			let e = {};
+			if (input.files.length === 0) {
+				e.canceled = true;
+			}
+			else {
+				e.target = input;
+			}
+			onchange(e);
+		}
+	
 		return input;
 	}
 
@@ -2328,6 +2656,7 @@
 
 		rx_error              = build_rx_error(null),
 		rx_error_local        = build_rx_error(null),
+		rx_cell_func_local    = build_rx_cell_func(null),
 
 		rx_bool               = build_rx_bool(cBoolOrigin),
 		rx_bool_local         = rx_bool,
@@ -2339,6 +2668,7 @@
 		rg_str_allLang        = /[A-Za-z\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0345\u0370-\u0374\u0376\u0377\u037A-\u037D\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u0527\u0531-\u0556\u0559\u0561-\u0587\u05B0-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u05D0-\u05EA\u05F0-\u05F2\u0610-\u061A\u0620-\u0657\u0659-\u065F\u066E-\u06D3\u06D5-\u06DC\u06E1-\u06E8\u06ED-\u06EF\u06FA-\u06FC\u06FF\u0710-\u073F\u074D-\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0817\u081A-\u082C\u0840-\u0858\u08A0\u08A2-\u08AC\u08E4-\u08E9\u08F0-\u08FE\u0900-\u093B\u093D-\u094C\u094E-\u0950\u0955-\u0963\u0971-\u0977\u0979-\u097F\u0981-\u0983\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD-\u09C4\u09C7\u09C8\u09CB\u09CC\u09CE\u09D7\u09DC\u09DD\u09DF-\u09E3\u09F0\u09F1\u0A01-\u0A03\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A3E-\u0A42\u0A47\u0A48\u0A4B\u0A4C\u0A51\u0A59-\u0A5C\u0A5E\u0A70-\u0A75\u0A81-\u0A83\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD-\u0AC5\u0AC7-\u0AC9\u0ACB\u0ACC\u0AD0\u0AE0-\u0AE3\u0B01-\u0B03\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D-\u0B44\u0B47\u0B48\u0B4B\u0B4C\u0B56\u0B57\u0B5C\u0B5D\u0B5F-\u0B63\u0B71\u0B82\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCC\u0BD0\u0BD7\u0C01-\u0C03\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C33\u0C35-\u0C39\u0C3D-\u0C44\u0C46-\u0C48\u0C4A-\u0C4C\u0C55\u0C56\u0C58\u0C59\u0C60-\u0C63\u0C82\u0C83\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCC\u0CD5\u0CD6\u0CDE\u0CE0-\u0CE3\u0CF1\u0CF2\u0D02\u0D03\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D-\u0D44\u0D46-\u0D48\u0D4A-\u0D4C\u0D4E\u0D57\u0D60-\u0D63\u0D7A-\u0D7F\u0D82\u0D83\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DF2\u0DF3\u0E01-\u0E3A\u0E40-\u0E46\u0E4D\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB9\u0EBB-\u0EBD\u0EC0-\u0EC4\u0EC6\u0ECD\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F71-\u0F81\u0F88-\u0F97\u0F99-\u0FBC\u1000-\u1036\u1038\u103B-\u103F\u1050-\u1062\u1065-\u1068\u106E-\u1086\u108E\u109C\u109D\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u135F\u1380-\u138F\u13A0-\u13F4\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F0\u1700-\u170C\u170E-\u1713\u1720-\u1733\u1740-\u1753\u1760-\u176C\u176E-\u1770\u1772\u1773\u1780-\u17B3\u17B6-\u17C8\u17D7\u17DC\u1820-\u1877\u1880-\u18AA\u18B0-\u18F5\u1900-\u191C\u1920-\u192B\u1930-\u1938\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A1B\u1A20-\u1A5E\u1A61-\u1A74\u1AA7\u1B00-\u1B33\u1B35-\u1B43\u1B45-\u1B4B\u1B80-\u1BA9\u1BAC-\u1BAF\u1BBA-\u1BE5\u1BE7-\u1BF1\u1C00-\u1C35\u1C4D-\u1C4F\u1C5A-\u1C7D\u1CE9-\u1CEC\u1CEE-\u1CF3\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2188\u24B6-\u24E9\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2DE0-\u2DFF\u2E2F\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FCC\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA674-\uA67B\uA67F-\uA697\uA69F-\uA6EF\uA717-\uA71F\uA722-\uA788\uA78B-\uA78E\uA790-\uA793\uA7A0-\uA7AA\uA7F8-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA827\uA840-\uA873\uA880-\uA8C3\uA8F2-\uA8F7\uA8FB\uA90A-\uA92A\uA930-\uA952\uA960-\uA97C\uA980-\uA9B2\uA9B4-\uA9BF\uA9CF\uAA00-\uAA36\uAA40-\uAA4D\uAA60-\uAA76\uAA7A\uAA80-\uAABE\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEF\uAAF2-\uAAF5\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uABC0-\uABEA\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]/,
 		rx_name               = new XRegExp("^(?<name>" + "[" + str_namedRanges + "][" + str_namedRanges + "\\d.]*)([-+*\\/^&%<=>: ;/\n/),]|$)"),
 		rx_defName            = new test_defName(),
+		rx_protectedRangeName = new test_rx_protectedRangeName(),
 		rx_arraySeparatorsDef = /^ *[,;] */,
 		rx_numberDef          = /^ *[+-]?\d*(\d|\.)\d*([eE][+-]?\d+)?/,
 		rx_CommaDef           = /^ *[,;] */,
@@ -2363,6 +2693,7 @@
 
 		//'path/[name]Sheet1'!A1
 		var path, name, startLink, i;
+		url = url && url.split(FormulaSeparators.functionArgumentSeparator)[0];
 		if (url && url[0] === "'"/*url.match(/('[^\[]*\[[^\]]+\]([^'])+'!)/g)*/) {
 			for (i = url.length - 1; i >= 0; i--) {
 				if (url[i] === "!" && url[i - 1] === "'") {
@@ -2846,7 +3177,7 @@
 			this.operand_str = match[1];
 			return [true, match["name_from"] ? match["name_from"].replace(/''/g, "'") : null, match["name_to"] ? match["name_to"].replace(/''/g, "'") : null, external];
 		}
-		return [false, null, null];
+		return [false, null, null, external, externalLength];
 	};
 	parserHelper.prototype.isNextPtg = function (formula, start_pos, digitDelim)
 	{
@@ -3254,8 +3585,9 @@
 	 */
 	parserHelper.prototype.checkDataRange = function (model, wb, dialogType, dataRange, fullCheck, isRows, subType)
 	{
-		var result, range, sheetModel, checkChangeRange;
-		if (Asc.c_oAscSelectionDialogType.Chart === dialogType)
+		let result, range, sheetModel, checkChangeRange;
+		let cDialogType = Asc.c_oAscSelectionDialogType;
+		if (cDialogType.Chart === dialogType)
 		{
 			if(dataRange)
 			{
@@ -3265,7 +3597,7 @@
 				}
 			}
 		}
-		else if(Asc.c_oAscSelectionDialogType.PivotTableData === dialogType || Asc.c_oAscSelectionDialogType.PivotTableReport === dialogType || Asc.c_oAscSelectionDialogType.ImportXml === dialogType)
+		else if(cDialogType.PivotTableData === dialogType || cDialogType.PivotTableReport === dialogType || cDialogType.ImportXml === dialogType)
 		{
 			result = parserHelp.parse3DRef(dataRange);
 			if (result)
@@ -3275,7 +3607,7 @@
 				{
 					range = AscCommonExcel.g_oRangeCache.getAscRange(result.range);
 				}
-			} else if (Asc.c_oAscSelectionDialogType.PivotTableReport === dialogType || Asc.c_oAscSelectionDialogType.ImportXml === dialogType) {
+			} else if (cDialogType.PivotTableReport === dialogType || cDialogType.ImportXml === dialogType) {
 				range = AscCommonExcel.g_oRangeCache.getAscRange(dataRange);
 			}
 			if (!range) {
@@ -3285,7 +3617,7 @@
 				range = parserHelp.isTable(dataRange, 0, true);
 			}
 		}
-		else if(Asc.c_oAscSelectionDialogType.PrintTitles === dialogType)
+		else if(cDialogType.PrintTitles === dialogType)
 		{
 			if(dataRange === "")
 			{
@@ -3296,7 +3628,7 @@
 				range = AscCommonExcel.g_oRangeCache.getAscRange(dataRange);
 			}
 		}
-		else if (Asc.c_oAscSelectionDialogType.DataValidation === dialogType)
+		else if (cDialogType.DataValidation === dialogType)
 		{
 			if (dataRange === null || dataRange === "") {
 				return Asc.c_oAscError.ID.DataValidateMustEnterValue;
@@ -3317,19 +3649,20 @@
 			range = AscCommonExcel.g_oRangeCache.getAscRange(dataRange);
 		}
 
-		if (!range && Asc.c_oAscSelectionDialogType.DataValidation !== dialogType && Asc.c_oAscSelectionDialogType.ConditionalFormattingRule !== dialogType)
+		if (!range && cDialogType.DataValidation !== dialogType && cDialogType.ConditionalFormattingRule !== dialogType && cDialogType.GoalSeek_Cell !== dialogType &&
+			cDialogType.GoalSeek_ChangingCell !== dialogType)
 		{
 			return Asc.c_oAscError.ID.DataRangeError;
 		}
 
 		if (fullCheck)
 		{
-			if (Asc.c_oAscSelectionDialogType.Chart === dialogType)
+			if (cDialogType.Chart === dialogType)
 			{
 				var oDataRefs = new AscFormat.CChartDataRefs(null);
 				return oDataRefs.checkDataRange(dataRange, isRows, subType);
 			}
-			else if (Asc.c_oAscSelectionDialogType.FormatTable === dialogType)
+			else if (cDialogType.FormatTable === dialogType)
 			{
 				// ToDo убрать эту проверку, заменить на более грамотную после правки функции _searchFilters
 				if (true === wb.getWorksheet().model.autoFilters.isRangeIntersectionTableOrFilter(range)) {
@@ -3340,26 +3673,26 @@
 					return Asc.c_oAscError.ID.LargeRangeWarning;
 				}
 			}
-			else if (Asc.c_oAscSelectionDialogType.FormatTableChangeRange === dialogType)
+			else if (cDialogType.FormatTableChangeRange === dialogType)
 			{
 				// ToDo убрать эту проверку, заменить на более грамотную после правки функции _searchFilters
 				checkChangeRange = wb.getWorksheet().af_checkChangeRange(range);
 				if (null !== checkChangeRange)
 					return checkChangeRange;
 			}
-			else if(Asc.c_oAscSelectionDialogType.CustomSort === dialogType)
+			else if(cDialogType.CustomSort === dialogType)
 			{
 				checkChangeRange = wb.getWorksheet().checkCustomSortRange(range, isRows);
 				if (null !== checkChangeRange)
 					return checkChangeRange;
 			}
-			else if (Asc.c_oAscSelectionDialogType.PivotTableData === dialogType)
+			else if (cDialogType.PivotTableData === dialogType)
 			{
 				if (!Asc.CT_pivotTableDefinition.prototype.isValidDataRef(dataRange)) {
 					return Asc.c_oAscError.ID.PivotLabledColumns;
 				}
 			}
-			else if (Asc.c_oAscSelectionDialogType.PivotTableReport === dialogType || Asc.c_oAscSelectionDialogType.ImportXml === dialogType)
+			else if (cDialogType.PivotTableReport === dialogType || cDialogType.ImportXml === dialogType)
 			{
 				var location = Asc.CT_pivotTableDefinition.prototype.parseDataRef(dataRange);
 				if (location) {
@@ -3367,7 +3700,7 @@
 					if (!sheetModel) {
 						sheetModel = model.getActiveWs();
 					}
-					if (Asc.c_oAscSelectionDialogType.ImportXml === dialogType) {
+					if (cDialogType.ImportXml === dialogType) {
 						return sheetModel.checkImportXmlLocationForError([location.bbox]);
 					} else {
 						var newRange = new Asc.Range(location.bbox.c1, location.bbox.r1, location.bbox.c1 + AscCommonExcel.NEW_PIVOT_LAST_COL_OFFSET, location.bbox.r1 + AscCommonExcel.NEW_PIVOT_LAST_ROW_OFFSET);
@@ -3377,7 +3710,7 @@
 					return Asc.c_oAscError.ID.DataRangeError;
 				}
 			}
-			else if (Asc.c_oAscSelectionDialogType.DataValidation === dialogType)
+			else if (cDialogType.DataValidation === dialogType)
 			{
 				var dataValidaionTest = AscCommonExcel.CDataValidation.prototype.isValidDataRef(model.getActiveWs(), dataRange, subType);
 				if (null !== dataValidaionTest)
@@ -3385,7 +3718,7 @@
 					return dataValidaionTest;
 				}
 			}
-			else if (Asc.c_oAscSelectionDialogType.ConditionalFormattingRule === dialogType)
+			else if (cDialogType.ConditionalFormattingRule === dialogType)
 			{
 
 				if (dataRange === null || dataRange === "")
@@ -3412,7 +3745,25 @@
 					}
 				}
 			}
+			else if (cDialogType.GoalSeek_Cell === dialogType || cDialogType.GoalSeek_ChangingCell === dialogType)
+			{
+				result = parserHelp.parse3DRef(dataRange);
+				if (result)
+				{
+					sheetModel = model.getWorksheetByName(result.sheet);
+					if (sheetModel)
+					{
+						range = AscCommonExcel.g_oRangeCache.getAscRange(result.range);
+					}
+				}
+
+				if (!sheetModel) {
+					sheetModel = model.getActiveWs();
+				}
+				return AscCommonExcel.CGoalSeek.prototype.isValidDataRef(sheetModel, range, dialogType);
+			}
 		}
+
 		return Asc.c_oAscError.ID.No;
 	};
 	parserHelper.prototype.setDigitSeparator = function (sep)
@@ -3520,12 +3871,6 @@
 	};
 
 	var parserHelp = new parserHelper();
-
-	var g_oHtmlCursor = new CHTMLCursor();
-	var kCurFormatPainterWord = 'de-formatpainter';
-	g_oHtmlCursor.register(kCurFormatPainterWord, "text_copy", "2 11", "pointer");
-	var kCurFormatPainterDrawing = 'drawing-formatpainter';
-	g_oHtmlCursor.register(kCurFormatPainterDrawing, "shape_copy", "2 11", "pointer");
 
 	function asc_ajax(obj)
 	{
@@ -3997,11 +4342,17 @@
 	/**
 	 * Конвертируем миллиметры в ближайшее целое значение твипсов
 	 * @param mm - значение в миллиметрах
+	 * @param [mode=0]
 	 * @returns {number}
 	 */
-	function MMToTwips(mm)
+	function MMToTwips(mm, mode)
 	{
-		return (((mm * 20 * 72 / 25.4) + 0.5) | 0);
+		if (!mode)
+			return Math.trunc((mm * 20 * 72 / 25.4) + 0.5);
+		else if (-1 === mode)
+			return Math.floor((mm * 20 * 72 / 25.4) + 0.5);
+		else
+			return Math.ceil((mm * 20 * 72 / 25.4) + 0.5);
 	}
 
 	/**
@@ -4071,6 +4422,44 @@
 		return (nFirstCharCode - 64) + 26 * (nLen - 1);
 	}
 
+	function RussianNumberingToInt(sLetters)
+	{
+		sLetters = sLetters.toUpperCase();
+
+		if (sLetters.length <= 0)
+			return NaN;
+
+		const nLen = sLetters.length;
+		const nFirstCharCode = sLetters[0].charCodeAt(0);
+		let nSub;
+		if (1040 <= nFirstCharCode && nFirstCharCode <= 1048)
+		{
+			nSub = 1039;
+		}
+		else if (1050 <= nFirstCharCode && nFirstCharCode <= 1065)
+		{
+			nSub = 1040;
+		}
+		else if (1069 <= nFirstCharCode && nFirstCharCode <= 1071)
+		{
+			nSub = 1042;
+		}
+		else if (nFirstCharCode === 1067)
+		{
+			nSub = 1041;
+		}
+
+		if (!nSub)
+			return NaN;
+
+		for (let nPos = 1; nPos < nLen; ++nPos)
+		{
+			if (sLetters.charCodeAt(nPos) !== nFirstCharCode)
+				return NaN;
+		}
+		return nFirstCharCode - nSub + 29 * (nLen - 1);
+	}
+
 	function repeatNumberingLvl(num, nLastTrueSymbol)
 	{
 		return ((num - 1) % nLastTrueSymbol) + 1;
@@ -4083,6 +4472,7 @@
 		{
 			case "bg-BG":
 				alphaBet = {
+					0: ['нулевят'],
 					1:
 						{
 						'един': 'първият',
@@ -4111,6 +4501,7 @@
 				break;
 			case "cs-CZ":
 				alphaBet = {
+					'nula': 'nultý',
 					'jedna': 'první',
 					'dva': 'druhý',
 					'tři': 'třetí',
@@ -4153,6 +4544,7 @@
 				break;
 			case "de-DE":
 				alphaBet = {
+					'null': 'nullte',
 					'eins': 'erste',
 					'zwei': 'zweite',
 					'drei': 'dritte',
@@ -4176,6 +4568,7 @@
 				break;
 			case "el-GR":
 				alphaBet = {
+					0: ['μηδενικό'],
 					1: [
 						'πρώτο',
 						'δεύτερο',
@@ -4244,6 +4637,7 @@
 				break;
 			case "es-ES":
 				alphaBet = {
+					'cero': 'cero',
 					'uno': 'primero',
 					'dos': 'segundo',
 					'tres': 'tercero',
@@ -4291,6 +4685,7 @@
 				break;
 			case "it-IT":
 				alphaBet = {
+					'zero': 'zero',
 					'uno': 'primo',
 					'due': 'secondo',
 					'tre': 'terzo',
@@ -4305,6 +4700,7 @@
 				break;
 			case "lv-LV":
 				alphaBet = {
+					'nulle': 'nultais',
 					'viens': 'pirmais',
 					'divi': 'otrais',
 					'trīs': 'trešais',
@@ -4345,6 +4741,7 @@
 					},
 					'numbers':
 					{
+						'zero': 'zerowy',
 						'jeden': 'pierwszy',
 						'dwa': 'drugi',
 						'trzy': 'trzeci',
@@ -4433,6 +4830,7 @@
 			case "pt-BR":
 			case "pt-PT":
 				alphaBet = {
+					'zero': 'zero',
 					'um': 'primeiro',
 					'dois': 'segundo',
 					'três': 'terceiro',
@@ -4477,6 +4875,7 @@
 				alphaBet = {
 					'numbers':
 					{
+						'ноль': 'нулевой',
 						'один': 'первый',
 						'два': 'второй',
 						'три': 'третий',
@@ -4565,6 +4964,7 @@
 				break;
 			case "sk-SK":
 				alphaBet = {
+					'nula': 'nultý',
 					'jeden': 'prvý',
 					'dva': 'druhý',
 					'tri': 'tretí',
@@ -4629,6 +5029,7 @@
 				break;
 			case "sv-SE":
 				alphaBet = {
+					'noll': 'nollte',
 					'ett': 'första',
 					'två': 'andra',
 					'tre': 'tredje',
@@ -4647,6 +5048,7 @@
 				alphaBet = {
 					'numbers':
 					{
+						"нуль": "нульовий",
 						"один": "перший",
 						"два": "другий",
 						"три": "третій",
@@ -4767,6 +5169,7 @@
 		{
 			case"bg-BG":
 				alphaBet = {
+					0: ['нула'],
 					1: [
 						'един',
 						'два',
@@ -4822,6 +5225,7 @@
 				break;
 			case"cs-CZ":
 				alphaBet = {
+					0: ['nula'],
 					1: [
 						'jedna',
 						'dva',
@@ -4877,6 +5281,7 @@
 				break;
 			case"de-DE":
 				alphaBet = {
+					0: ['null'],
 					1: [
 						'eins',
 						'zwei',
@@ -4912,6 +5317,7 @@
 				break;
 			case"el-GR":
 				alphaBet = {
+					0: ['μηδέν'],
 					1: [
 						'ένα',
 						'δύο',
@@ -4967,6 +5373,7 @@
 				break;
 			case"es-ES":
 				alphaBet = {
+					0: ['cero'],
 					1: [
 						'uno',
 						'dos',
@@ -5019,6 +5426,7 @@
 				break;
 			case"fr-FR":
 				alphaBet = {
+					0: ['zéro'],
 					1: [
 						'un',
 						'deux',
@@ -5054,6 +5462,7 @@
 				break;
 			case"it-IT":
 				alphaBet = {
+					0: ['zero'],
 					1: [
 						'uno',
 						'due',
@@ -5089,6 +5498,7 @@
 				break;
 			case"lv-LV":
 				alphaBet = {
+					0: ['nulle'],
 					1: [
 						'viens',
 						'divi',
@@ -5144,6 +5554,7 @@
 				break;
 			case"nl-NL":
 				alphaBet = {
+					0: ['nul'],
 					1: [
 						'één',
 						'twee',
@@ -5179,6 +5590,7 @@
 				break;
 			case"pl-PL":
 				alphaBet = {
+					0: ['zero'],
 					1: [
 						'jeden',
 						'dwa',
@@ -5235,6 +5647,7 @@
 			case"pt-BR":
 			case"pt-PT":
 				alphaBet = {
+					0: ['zero'],
 					1: [
 						'um',
 						'dois',
@@ -5281,6 +5694,7 @@
 				break;
 			case"ru-RU":
 				alphaBet = {
+					0: ['ноль'],
 					1: [
 						'один',
 						'два',
@@ -5336,6 +5750,7 @@
 				break;
 			case"sk-SK":
 				alphaBet = {
+					0: ['nula'],
 					1: [
 						'jeden',
 						'dva',
@@ -5371,6 +5786,7 @@
 				break;
 			case"sv-SE":
 				alphaBet = {
+					0: ['noll'],
 					1: [
 						'ett',
 						'två',
@@ -5406,6 +5822,7 @@
 				break;
 			case"uk-UA":
 				alphaBet = {
+					0: ['нуль'],
 					1: [
 						"один",
 						"два",
@@ -5468,6 +5885,7 @@
 			case 'ko-KR':
 			default:
 				alphaBet = {
+					0: ['zero'],
 					1: [
 						'one',
 						'two',
@@ -5512,6 +5930,11 @@
 		var getConcatStringByRule = function (array)
 		{
 			return array.join(' ');
+		}
+
+		if (nValue === 0)
+		{
+			return {arrAnswer: [alphaBet[0][0]], getConcatStringByRule: getConcatStringByRule};
 		}
 
 		switch (lang)
@@ -6517,6 +6940,10 @@
 		var addFirstDegreeSymbol = true;
 		if (nFormat === Asc.c_oAscNumberingFormat.KoreanCounting)
 		{
+			if (nValue === 0)
+			{
+				return String.fromCharCode(0xC601);
+			}
 			addFirstDegreeSymbol = false;
 			var digits = [
 				String.fromCharCode(0xC77C),
@@ -6537,6 +6964,10 @@
 			];
 		} else if (nFormat === Asc.c_oAscNumberingFormat.JapaneseLegal)
 		{
+			if (nValue === 0)
+			{
+				return String.fromCharCode(0x3007);
+			}
 			digits = [
 				String.fromCharCode(0x58F1),
 				String.fromCharCode(0x5F10),
@@ -6556,6 +6987,10 @@
 			];
 		} else if (nFormat === Asc.c_oAscNumberingFormat.JapaneseCounting)
 		{
+			if (nValue === 0)
+			{
+				return String.fromCharCode(0x3007);
+			}
 			addFirstDegreeSymbol = false;
 			digits = [
 				String.fromCharCode(0x4E00),
@@ -6707,6 +7142,10 @@
 
 	function IntToAiueo(nValue)
 	{
+		if (nValue === 0)
+		{
+			return '0';
+		}
 		var sResult = '';
 		var count = 1, numberOfLetters = 46;
 		nValue = repeatNumberingLvl(nValue, 46);
@@ -6734,34 +7173,47 @@
 			++count;
 			nValue -= numberOfLetters;
 		}
-		if (nValue >= 1 && nValue <= 5)
+		if (nValue === 0)
+		{
+			letter = 0x0030;
+		}
+		else if (nValue >= 1 && nValue <= 5)
 		{
 			letter = 0x30A2 + (nValue - 1) * 2;
-		} else if (nValue >= 6 && nValue <= 17)
+		}
+		else if (nValue >= 6 && nValue <= 17)
 		{
 			letter = 0x30AB + (nValue - 6) * 2;
-		} else if (nValue >= 18 && nValue <= 21)
+		}
+		else if (nValue >= 18 && nValue <= 21)
 		{
 			letter = 0x30C4 + (nValue - 18) * 2;
-		} else if (nValue >= 22 && nValue <= 26)
+		}
+		else if (nValue >= 22 && nValue <= 26)
 		{
 			letter = 0x30CB + nValue - 22;
-		} else if (nValue >= 27 && nValue <= 31)
+		}
+		else if (nValue >= 27 && nValue <= 31)
 		{
 			letter = 0x30D2 + (nValue - 27) * 3;
-		} else if (nValue >= 32 && nValue <= 35)
+		}
+		else if (nValue >= 32 && nValue <= 35)
 		{
 			letter = 0x30DF + nValue - 32;
-		} else if (nValue >= 36 && nValue <= 38)
+		}
+		else if (nValue >= 36 && nValue <= 38)
 		{
 			letter = 0x30E4 + nValue - 36;
-		} else if (nValue >= 39 && nValue <= 43)
+		}
+		else if (nValue >= 39 && nValue <= 43)
 		{
 			letter = 0x30E9 + nValue - 39;
-		} else if (nValue === 44)
+		}
+		else if (nValue === 44)
 		{
 			letter = 0x30EF + nValue - 44;
-		} else if (nValue >= 45 && nValue <= 46)
+		}
+		else if (nValue >= 45 && nValue <= 46)
 		{
 			letter = 0x30F2 + nValue - 45;
 		}
@@ -6807,6 +7259,10 @@
 			charArr = [0x002A, 0x2020, 0x2021, 0x00A7]
 		} else if(nFormat === Asc.c_oAscNumberingFormat.Chosung)
 		{
+			if (nValue === 0)
+			{
+				return '0';
+			}
 			nValue = repeatNumberingLvl(nValue, 14);
 			charArr = [
 				0x3131, 0x3134, 0x3137, 0x3139,
@@ -6816,6 +7272,10 @@
 			]
 		} else if (nFormat === Asc.c_oAscNumberingFormat.Ganada)
 		{
+			if (nValue === 0)
+			{
+				return '0';
+			}
 			nValue = repeatNumberingLvl(nValue, 14);
 			charArr = [
 				0xAC00, 0xB098, 0xB2E4, 0xB77C,
@@ -6975,12 +7435,16 @@
 				0x7533, 0x9149, 0x620C, 0x4EA5
 			];
 
-		sResult += nValue <= digits.length ? String.fromCharCode(digits[nValue - 1]) : nValue;
+		sResult += (nValue >= 1 && nValue <= digits.length) ? String.fromCharCode(digits[nValue - 1]) : nValue;
 		return sResult;
 	}
 
 	function IntToIdeographZodiacTraditional(nValue)
 	{
+		if (nValue === 0)
+		{
+			return '0';
+		}
 		var sResult = '';
 		var digits = [
 			0x7532, 0x5B50, 0x4E59, 0x4E11, 0x4E19, 0x5BC5,
@@ -7016,6 +7480,10 @@
 
 	function IntToIroha(nValue, nFormat)
 	{
+		if (nValue === 0)
+		{
+			return '0';
+		}
 		var sResult = '';
 		var digits = [];
 		if (nFormat === Asc.c_oAscNumberingFormat.Iroha)
@@ -7127,7 +7595,11 @@
 			1000  : String.fromCharCode(0x5343),
 			10000 : String.fromCharCode(0x4E07)
 		};
-		if (nValue < 1000000)
+		if (nValue === 0)
+		{
+			sResult += arrChinese[0];
+		}
+		else if (nValue < 1000000)
 		{
 			var nRemValue = nValue;
 
@@ -7252,7 +7724,11 @@
 			1000  : String.fromCharCode(0x4EDF),
 			10000 : String.fromCharCode(0x842C)
 		};
-		if (nValue < 1000000)
+		if (nValue === 0)
+		{
+			sResult += arrChinese[0];
+		}
+		else if (nValue < 1000000)
 		{
 			var nRemValue = nValue;
 
@@ -7432,7 +7908,11 @@
 			'拾'
 		];
 
-		if (nValue < 10000)
+		if (nValue === 0)
+		{
+			sResult = String.fromCharCode(0x96F6);
+		}
+		else if (nValue < 10000)
 		{
 			sResult = IdeographLegalTraditionalSplitting(digits, degrees, nValue).join('');
 		} else {
@@ -7521,7 +8001,7 @@
 			String.fromCharCode(0x4E5D)
 		];
 		var conv = decimalNumberConversion(nValue, digits.length);
-		if(nValue >= digits.length * 10)
+		if(nValue >= digits.length * 10 || nValue === 0)
 		{
 			digits[0] = String.fromCharCode(0x25CB);
 			sResult = conv.map(function (num)
@@ -7672,7 +8152,7 @@
 				if (nValue === 1)
 				{
 					sResult += 'er';
-				} else {
+				} else if (nValue !== 0) {
 					sResult += 'e';
 				}
 				break;
@@ -7844,8 +8324,11 @@
 			'百',
 			'十'
 		];
-
-		if (nValue < 100000)
+		if (nValue === 0)
+		{
+			return String.fromCharCode(0x96F6);
+		}
+		else if (nValue < 100000)
 		{
 			sResult = taiwaneseCountingSplitting(digits, degrees, nValue).join('');
 		} else if (nValue >= 100000 && nValue < 1000000)
@@ -7858,7 +8341,11 @@
 	function IntToKoreanLegal(nValue, nFormat)
 	{
 		var sResult = '';
-		if (nValue < 100)
+		if (nValue === 0)
+		{
+			return '0';
+		}
+		else if (nValue < 100)
 		{
 			var answer = [];
 			var digits = {
@@ -7903,8 +8390,15 @@
 	function IntToOrdinalText(nValue, nLang)
 	{
 		var textLang = languages[nLang];
-		var ordinalText = getCardinalTextFromValue(textLang, nValue);
 		var alphaBet = getAlphaBetForOrdinalText(textLang);
+		if (nValue === 0)
+		{
+			if (alphaBet[0] && alphaBet[0][0])
+			{
+				return alphaBet[0][0].sentenceCase();
+			}
+		}
+		var ordinalText = getCardinalTextFromValue(textLang, nValue);
 		switch (textLang)
 		{
 			case 'de-DE':
@@ -8048,7 +8542,7 @@
 					{
 						switchingValue[switchingValue.length - 1] = lastWord.slice(0, lastWord.length - 1);
 					}
-					if (switchingValue[switchingValue.length - 1] !== 'premier')
+					if (lastWord !== 'premier' && lastWord !== 'zéro')
 					{
 						switchingValue[switchingValue.length - 1] += 'ième';
 					}
@@ -8384,6 +8878,10 @@
 
 	function IntToHindiCounting(nValue)
 	{
+		if (nValue === 0)
+		{
+			return "शून्य";
+		}
 		var alphaBet = [
 			"एक","दो","तीन","चार","पांच","छह","सात","आठ","नौ","दस","ग्यारह",
 			"बारह","तेरह","चौदह","पंद्रह","सोलह","सत्रह","अठारह","उन्नीस","बीस",
@@ -8457,7 +8955,7 @@
 
 	function splitThaiCounting(num, digits)
 	{
-		if (num >= 1000000000)
+		if (num >= 1000000000 || num === 0)
 		{
 			return ['ศูนย์'];
 		}
@@ -8587,6 +9085,10 @@
 
 	function IntToVietnameseCounting(nValue)
 	{
+		if (nValue === 0)
+		{
+			return 'không';
+		}
 		var digits = ['một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín', 'mười'];
 
 		return vietnameseCounting(nValue, digits).join(' ');
@@ -8616,6 +9118,67 @@
 
 		return sResult.join('');
 	}
+	
+	function IsLessMinimumNumberingFormat(nFormat, nValue)
+	{
+		switch (nFormat)
+		{
+			case Asc.c_oAscNumberingFormat.Decimal:
+			case Asc.c_oAscNumberingFormat.CustomDecimalFourZero:
+			case Asc.c_oAscNumberingFormat.CustomDecimalThreeZero:
+			case Asc.c_oAscNumberingFormat.CustomDecimalTwoZero:
+			case Asc.c_oAscNumberingFormat.DecimalZero:
+			case Asc.c_oAscNumberingFormat.DecimalEnclosedCircleChinese:
+			case Asc.c_oAscNumberingFormat.DecimalEnclosedCircle:
+			case Asc.c_oAscNumberingFormat.Aiueo:
+			case Asc.c_oAscNumberingFormat.AiueoFullWidth:
+			case Asc.c_oAscNumberingFormat.Chosung:
+			case Asc.c_oAscNumberingFormat.Ganada:
+			case Asc.c_oAscNumberingFormat.DecimalEnclosedFullstop:
+			case Asc.c_oAscNumberingFormat.DecimalEnclosedParen:
+			case Asc.c_oAscNumberingFormat.DecimalFullWidth:
+			case Asc.c_oAscNumberingFormat.DecimalFullWidth2:
+			case Asc.c_oAscNumberingFormat.DecimalHalfWidth:
+			case Asc.c_oAscNumberingFormat.Hex:
+			case Asc.c_oAscNumberingFormat.HindiNumbers:
+			case Asc.c_oAscNumberingFormat.IdeographDigital:
+			case Asc.c_oAscNumberingFormat.JapaneseDigitalTenThousand:
+			case Asc.c_oAscNumberingFormat.IdeographEnclosedCircle:
+			case Asc.c_oAscNumberingFormat.IdeographTraditional:
+			case Asc.c_oAscNumberingFormat.IdeographZodiac:
+			case Asc.c_oAscNumberingFormat.IdeographZodiacTraditional:
+			case Asc.c_oAscNumberingFormat.Iroha:
+			case Asc.c_oAscNumberingFormat.IrohaFullWidth:
+			case Asc.c_oAscNumberingFormat.ChineseCounting:
+			case Asc.c_oAscNumberingFormat.ChineseCountingThousand:
+			case Asc.c_oAscNumberingFormat.ChineseLegalSimplified:
+			case Asc.c_oAscNumberingFormat.IdeographLegalTraditional:
+			case Asc.c_oAscNumberingFormat.JapaneseLegal:
+			case Asc.c_oAscNumberingFormat.KoreanCounting:
+			case Asc.c_oAscNumberingFormat.JapaneseCounting:
+			case Asc.c_oAscNumberingFormat.KoreanDigital:
+			case Asc.c_oAscNumberingFormat.ThaiNumbers:
+			case Asc.c_oAscNumberingFormat.KoreanDigital2:
+			case Asc.c_oAscNumberingFormat.TaiwaneseDigital:
+			case Asc.c_oAscNumberingFormat.None:
+			case Asc.c_oAscNumberingFormat.NumberInDash:
+			case Asc.c_oAscNumberingFormat.TaiwaneseCounting:
+			case Asc.c_oAscNumberingFormat.CardinalText:
+			case Asc.c_oAscNumberingFormat.Custom:
+			case Asc.c_oAscNumberingFormat.Ordinal:
+			case Asc.c_oAscNumberingFormat.TaiwaneseCountingThousand:
+			case Asc.c_oAscNumberingFormat.KoreanLegal:
+			case Asc.c_oAscNumberingFormat.OrdinalText:
+			case Asc.c_oAscNumberingFormat.HindiCounting:
+			case Asc.c_oAscNumberingFormat.ThaiCounting:
+			case Asc.c_oAscNumberingFormat.DollarText:
+			case Asc.c_oAscNumberingFormat.BahtText:
+			case Asc.c_oAscNumberingFormat.VietnameseCounting:
+				return nValue < 0;
+			default:
+				return nValue < 1;
+		}
+	}
 
 	/**
 	 * Переводим числовое значение в строку с заданным форматом нумерации
@@ -8639,6 +9202,10 @@
 			}
 		}
 		var sResult = "";
+		if (IsLessMinimumNumberingFormat(nFormat, nValue))
+		{
+			return sResult;
+		}
 
 		switch (nFormat)
 		{
@@ -8691,7 +9258,7 @@
 
 			case Asc.c_oAscNumberingFormat.DecimalEnclosedCircleChinese:
 			{
-				if (nValue <= 10)
+				if (nValue >= 1 && nValue <= 10)
 				{
 					sResult = String.fromCharCode(0x2460 + nValue - 1);
 				}
@@ -8704,7 +9271,7 @@
 
 			case Asc.c_oAscNumberingFormat.DecimalEnclosedCircle:
 			{
-				if (nValue <= 20)
+				if (nValue >= 1 && nValue <= 20)
 				{
 					sResult = String.fromCharCode(0x2460 + nValue - 1);
 				}
@@ -8775,11 +9342,11 @@
 			case Asc.c_oAscNumberingFormat.DecimalFullWidth2:
 			case Asc.c_oAscNumberingFormat.DecimalHalfWidth:
 			{
-				var zeroInHex = nFormat === Asc.c_oAscNumberingFormat.DecimalFullWidth ? 0xFF10 : 0x0030;
+				var zero = (nFormat === Asc.c_oAscNumberingFormat.DecimalFullWidth || nFormat === Asc.c_oAscNumberingFormat.DecimalFullWidth2) ? 0xFF10 : 0x0030;
 				var strValue = String(nValue);
 				for(var i = 0; i < strValue.length; i++)
 				{
-					sResult += String.fromCharCode(zeroInHex + parseInt(strValue[i]));
+					sResult += String.fromCharCode(zero + parseInt(strValue[i]));
 				}
 				break;
 			}
@@ -8792,7 +9359,11 @@
 
 			case Asc.c_oAscNumberingFormat.Hex:
 			{
-				if (nValue <= 0xFFFF)
+				if (nValue === 0)
+				{
+					sResult = '0';
+				}
+				else if (nValue <= 0xFFFF)
 				{
 					sResult = (nValue+0x10000).toString(16).substr(-4).toUpperCase();
 					sResult = sResult.replace(/^0+/, '');
@@ -8822,7 +9393,7 @@
 
 			case Asc.c_oAscNumberingFormat.IdeographEnclosedCircle:
 			{
-				sResult += nValue <= 10 ? String.fromCharCode(0x3220 + nValue - 1) : nValue;
+				sResult += (nValue >= 1 && nValue <= 10) ? String.fromCharCode(0x3220 + nValue - 1) : nValue;
 				break;
 			}
 
@@ -9091,7 +9662,7 @@
 				|| 0x2611 === nUnicode
 				|| 0x2610 === nUnicode));
 	}
-
+	
 	function ExecuteNoHistory(f, oLogicDocument, oThis, args)
 	{
 		// TODO: Надо перевести все редакторы на StartNoHistoryMode/EndNoHistoryMode
@@ -9126,6 +9697,27 @@
 		}
 
 		return result;
+	}
+	
+	function executeNoRevisions(f, logicDocument, t, args)
+	{
+		if (!logicDocument
+			|| !logicDocument.IsDocumentEditor
+			|| !logicDocument.IsDocumentEditor()
+			|| !logicDocument.IsTrackRevisions())
+			return f.apply(t, args);
+		
+		let localFlag = logicDocument.GetLocalTrackRevisions();
+		logicDocument.SetLocalTrackRevisions(false);
+		let result = f.apply(t, args);
+		logicDocument.SetLocalTrackRevisions(localFlag);
+		return result;
+	}
+	
+	function AddAndExecuteChange(change)
+	{
+		AscCommon.History.Add(change);
+		change.Redo();
 	}
 
 	/**
@@ -9624,7 +10216,7 @@
 
 	function loadScript(url, onSuccess, onError)
 	{
-		if (window["NATIVE_EDITOR_ENJINE"] === true || window["Native"] !== undefined)
+		if (window["NATIVE_EDITOR_ENJINE"] === true || window["native"] !== undefined)
 		{
 			onSuccess();
 			return;
@@ -9684,34 +10276,6 @@
 
 	function loadChartStyles(onSuccess, onError) {
 		loadScript('../../../../sdkjs/common/Charts/ChartStyles.js', onSuccess, onError);
-	}
-
-	function loadSmartArtBinary(fOnError) {
-		if (window["NATIVE_EDITOR_ENJINE"]) {
-			return;
-		}
-		loadFileContent('../../../../sdkjs/common/SmartArts/SmartArts.bin', function (httpRequest) {
-			if (httpRequest && httpRequest.response) {
-				const arrStream = AscCommon.initStreamFromResponse(httpRequest);
-
-				AscCommon.g_oBinarySmartArts = {
-					shifts: {},
-					stream: arrStream
-				}
-
-				const oFileStream = new AscCommon.FileStream(arrStream, arrStream.length);
-				oFileStream.GetUChar();
-				const nLength = oFileStream.GetULong();
-				while (nLength + 4 > oFileStream.cur) {
-					const nType = oFileStream.GetUChar();
-					const nPosition = oFileStream.GetULong();
-					AscCommon.g_oBinarySmartArts.shifts[nType] = nPosition;
-				}
-			} else {
-				fOnError(httpRequest);
-			}
-
-		}, 'arraybuffer');
 	}
 
 	function getAltGr(e)
@@ -10071,1153 +10635,6 @@
 		this.listeningElement = listeningElement;
 		this.useCapture = useCapture;
 	}
-
-	const asc_PreviewBulletType = {
-		text: 0,
-		char: 1,
-		image: 2,
-		number: 3,
-		multiLevel: 4
-	}
-	window["Asc"].asc_PreviewBulletType = window["Asc"]["asc_PreviewBulletType"] = asc_PreviewBulletType;
-	asc_PreviewBulletType["text"] = asc_PreviewBulletType.text;
-	asc_PreviewBulletType["char"] = asc_PreviewBulletType.char;
-	asc_PreviewBulletType["image"] = asc_PreviewBulletType.image;
-	asc_PreviewBulletType["number"] = asc_PreviewBulletType.number;
-	asc_PreviewBulletType["multiLevel"] = asc_PreviewBulletType.multiLevel;
-	function CBulletPreviewDrawerBase()
-	{
-		this.m_arrNumberingLvl = [];
-		this.m_oApi = editor || Asc.editor || window["Asc"]["editor"];
-		this.m_oLogicDocument = this.m_oApi.WordControl && this.m_oApi.WordControl.m_oLogicDocument;
-		this.m_oDrawingDocument = this.m_oLogicDocument && this.m_oLogicDocument.DrawingDocument;
-		this.m_oLang = this.m_oApi.asc_GetPossibleNumberingLanguage();
-
-		this.m_oPrimaryTextColor = new AscCommonWord.CDocumentColor(0, 0, 0);
-		// для словесного текста используем цвет контрастнее
-		this.m_oSecondaryTextColor = new AscCommonWord.CDocumentColor(121, 121, 121);
-		this.m_oSecondaryLineTextColor = new AscCommonWord.CDocumentColor(203, 203, 203);
-		this.m_oBackgroundColor = new AscCommonWord.CDocumentColor(255, 255, 255);
-
-		this.m_nAmountOfLvls = 9;
-	}
-
-	CBulletPreviewDrawerBase.prototype.cleanTextPr = function (oTextPr)
-	{
-		oTextPr.VertAlign  = undefined;
-		oTextPr.RStyle     = undefined;
-		oTextPr.Position   = undefined; // Смещение по Y
-
-		oTextPr.BoldCS     = undefined;
-		oTextPr.ItalicCS   = undefined;
-		oTextPr.FontSizeCS = undefined;
-		oTextPr.CS         = undefined;
-		oTextPr.RTL        = undefined;
-		oTextPr.FontRef    = undefined;
-		oTextPr.Shd        = undefined;
-		oTextPr.Vanish     = undefined;
-		oTextPr.Ligatures  = undefined;
-		oTextPr.TextOutline    = undefined;
-		oTextPr.TextFill       = undefined;
-		oTextPr.PrChange       = undefined;
-		oTextPr.ReviewInfo     = undefined;
-	};
-	CBulletPreviewDrawerBase.prototype.drawImageBulletsWithLine = function (oImageInfo, nX, nY, nLineHeight, oGraphics, oStyleTextOptions, oTextPr) {
-		const oImage = oImageInfo.image;
-		if (oImage)
-		{
-			const sFullImageSrc = oImage.src;
-			const oSizes = AscCommon.getSourceImageSize(sFullImageSrc);
-			const nImageHeight = oSizes.height;
-			const nImageWidth = oSizes.width;
-			const nAdaptImageHeight = nLineHeight;
-			const nAdaptImageWidth = (nImageWidth * nAdaptImageHeight / (nImageHeight ? nImageHeight : 1));
-
-			for (let i = 0; i < oImageInfo.amount; i += 1)
-			{
-				this.cleanParagraphField(oGraphics, nX * AscCommon.g_dKoef_pix_to_mm, (nY - nLineHeight) * AscCommon.g_dKoef_pix_to_mm, (nAdaptImageWidth + 2) * AscCommon.g_dKoef_pix_to_mm, (nLineHeight + (nLineHeight >> 1)) * AscCommon.g_dKoef_pix_to_mm);
-				oGraphics.drawImage(sFullImageSrc, nX * AscCommon.g_dKoef_pix_to_mm, (nY - nAdaptImageHeight * (0.85)) * AscCommon.g_dKoef_pix_to_mm, nAdaptImageWidth * AscCommon.g_dKoef_pix_to_mm, nAdaptImageHeight * AscCommon.g_dKoef_pix_to_mm);
-				nX += nAdaptImageWidth;
-			}
-			this.drawStyleText(oGraphics, oStyleTextOptions, nX, nY, nLineHeight, oTextPr);
-		}
-	};
-
-	CBulletPreviewDrawerBase.prototype.getFirstLineIndent = function (oLvl, nCustomNumberPosition, nCustomIndentSize, nCustomStopTab)
-	{
-		const nSuff = oLvl.GetSuff();
-		const nNumberPosition = AscFormat.isRealNumber(nCustomNumberPosition) ? nCustomNumberPosition : oLvl.GetNumberPosition();
-		let nXPositionOfLine;
-		if (nSuff === Asc.c_oAscNumberingSuff.Tab)
-		{
-			const nStopTab = AscFormat.isRealNumber(nCustomStopTab) || nCustomStopTab === null ? nCustomStopTab : oLvl.GetStopTab();
-			const nIndentSize = AscFormat.isRealNumber(nCustomIndentSize) ? nCustomIndentSize : oLvl.GetIndentSize();
-			if (AscFormat.isRealNumber(nStopTab))
-			{
-				nXPositionOfLine = Math.max(nStopTab, nNumberPosition);
-			}
-			else
-			{
-				nXPositionOfLine =  Math.max(nNumberPosition, nIndentSize);
-			}
-
-		}
-		else
-		{
-			nXPositionOfLine = nNumberPosition;
-		}
-
-		return nXPositionOfLine;
-	}
-
-	CBulletPreviewDrawerBase.prototype.getFontSizeByLineHeight = function (nLineHeight)
-	{
-		return ((2 * nLineHeight * 72 / 96) >> 0) / 2;
-	};
-
-	CBulletPreviewDrawerBase.prototype.getLvlTextWidth = function (sText, oTextPr)
-	{
-		const oParagraph = this.getParagraphWithText(sText, oTextPr);
-
-
-		oParagraph.Reset(0, 0, 1000, 1000, 0, 0, 1);
-		oParagraph.Recalculate_Page(0);
-		oParagraph.LineNumbersInfo = null;
-
-		return oParagraph.Lines[0].Ranges[0].W * AscCommon.g_dKoef_mm_to_pix;
-	};
-
-	CBulletPreviewDrawerBase.prototype.getHeadingTextInformation = function (oLvl, nTextXPosition, nTextYPosition, oColor)
-	{
-		if (!this.m_oLogicDocument) return null;
-
-		const oStyles = this.m_oLogicDocument.Get_Styles();
-		const oStyle = oStyles.Get(oLvl.GetPStyle());
-		if (oStyle)
-		{
-			const sName = oStyle.Get_Name();
-			const sParagraphText = " " + AscCommon.translateManager.getValue(sName);
-			return {addingText: sParagraphText, startPositionX: nTextXPosition, startPositionY: nTextYPosition, color: oColor.Copy()};
-		}
-		return null;
-	};
-
-	CBulletPreviewDrawerBase.prototype.convertAscToNumberingLvl = function (arrAscLvl)
-	{
-		const arrResult = [];
-		for (let i = 0; i < arrAscLvl.length; i += 1)
-		{
-			let oLvl;
-			if (arrAscLvl[i] instanceof  Asc.CAscNumberingLvl)
-			{
-				oLvl = new AscCommonWord.CNumberingLvl();
-				oLvl.FillFromAscNumberingLvl(arrAscLvl[i]);
-			}
-			else
-			{
-				oLvl = arrAscLvl[i].Copy();
-			}
-
-			arrResult.push(oLvl);
-		}
-		return arrResult;
-	}
-
-	CBulletPreviewDrawerBase.prototype.getCanvas = function (sDivId)
-	{
-		if (!sDivId) return;
-		const oDivElement = document.getElementById(sDivId);
-		const nWidth_px = oDivElement.clientWidth;
-		const nHeight_px = oDivElement.clientHeight;
-
-		let oCanvas = oDivElement.firstChild;
-		if (!oCanvas)
-		{
-			oCanvas = document.createElement('canvas');
-			oCanvas.style.cssText = "padding:0;margin:0;user-select:none;";
-			oCanvas.style.width = nWidth_px + "px";
-			oCanvas.style.height = nHeight_px + "px";
-			if (nWidth_px > 0 && nHeight_px > 0)
-			{
-				oDivElement.appendChild(oCanvas);
-			}
-		}
-
-		oCanvas.width = AscCommon.AscBrowser.convertToRetinaValue(nWidth_px, true);
-		oCanvas.height = AscCommon.AscBrowser.convertToRetinaValue(nHeight_px, true);
-		return oCanvas;
-	}
-
-	CBulletPreviewDrawerBase.prototype.getGraphics = function (oCanvas)
-	{
-		if (!oCanvas) return;
-		const nHeight_px = oCanvas.clientHeight;
-		const nWidth_px = oCanvas.clientWidth;
-		const nRetinaWidth = oCanvas.width;
-		const nRetinaHeight = oCanvas.height;
-		const oContext = oCanvas.getContext("2d");
-
-		const oGraphics = new AscCommon.CGraphics();
-		oGraphics.init(oContext,
-			nRetinaWidth,
-			nRetinaHeight,
-			nWidth_px * AscCommon.g_dKoef_pix_to_mm,
-			nHeight_px * AscCommon.g_dKoef_pix_to_mm);
-		oGraphics.m_oFontManager = AscCommon.g_fontManager;
-
-		oGraphics.SetIntegerGrid(true);
-		oGraphics.transform(1, 0, 0, 1, 0, 0);
-
-		if (this.m_oApi && this.m_oApi.isDarkMode)
-		{
-			oGraphics.darkModeOverride3();
-		}
-
-		oGraphics.b_color1(this.m_oBackgroundColor.r, this.m_oBackgroundColor.g, this.m_oBackgroundColor.b, 255);
-		oGraphics.rect(0, 0, nWidth_px * AscCommon.g_dKoef_pix_to_mm, nHeight_px * AscCommon.g_dKoef_pix_to_mm);
-		oGraphics.df();
-
-		return oGraphics;
-	};
-
-	CBulletPreviewDrawerBase.prototype.getParagraphWithText = function (sText, oTextPr)
-	{
-		const oLogicDocument = this.m_oLogicDocument;
-
-		const oShape = new AscFormat.CShape();
-		oShape.createTextBody();
-		const oParagraph = oShape.txBody.content.GetAllParagraphs()[0];
-		oParagraph.MoveCursorToStartPos();
-
-		const oStyles = oLogicDocument && oLogicDocument.Get_Styles();
-		if (oStyles && oStyles.Default && oStyles.Default.ParaPr)
-		{
-			oParagraph.Pr = oStyles.Default.ParaPr.Copy();
-		}
-		else
-		{
-			oParagraph.Pr = new AscCommonWord.CParaPr();
-		}
-		const oParaRun = new AscCommonWord.ParaRun(oParagraph);
-		oParaRun.Set_Pr(oTextPr);
-		oParaRun.AddText(sText);
-		oParagraph.AddToContent(0, oParaRun);
-
-		return oParagraph;
-	}
-
-
-	CBulletPreviewDrawerBase.prototype.drawTextWithLvlInformation = function(sText, oLvl, nX, nY, nLineHeight, oGraphics, oParagraphTextOptions)
-	{
-		const oTextPr = oLvl.GetTextPr().Copy();
-
-		const nSuff = oLvl.GetSuff();
-		const nAlign = oLvl.GetJc();
-		oTextPr.FontSize = oTextPr.FontSizeCS = oTextPr.FontSize || this.getFontSizeByLineHeight(nLineHeight);
-
-		let oParagraph = this.getParagraphWithText(sText, oTextPr);
-		if (!oParagraph) return null;
-
-		oParagraph.Reset(0, 0, 1000, 1000, 0, 0, 1);
-		oParagraph.Recalculate_Page(0);
-		oParagraph.LineNumbersInfo = null;
-
-		const nNumberingTextWidth = oParagraph.Lines[0].Ranges[0].W * AscCommon.g_dKoef_mm_to_pix;
-		const nBaseLineOffset = oParagraph.Lines[0].Y;
-		const nYOffset = nY - ((nBaseLineOffset * AscCommon.g_dKoef_mm_to_pix) >> 0);
-		let nXOffset = nX;
-
-		if (nAlign === AscCommon.align_Right) {
-			nXOffset -= nNumberingTextWidth;
-		} else if (nAlign === AscCommon.align_Center) {
-			nXOffset -= (nNumberingTextWidth >> 1);
-		}
-
-		let nBackTextWidth = nNumberingTextWidth + 4; // 4 - чтобы линия никогда не была 'совсем рядом'
-		if (nSuff === Asc.c_oAscNumberingSuff.Space ||
-			nSuff === Asc.c_oAscNumberingSuff.None)
-		{
-			nBackTextWidth += 4;
-		}
-
-		this.cleanParagraphField(oGraphics, nXOffset * AscCommon.g_dKoef_pix_to_mm, (nY - nLineHeight) * AscCommon.g_dKoef_pix_to_mm, nBackTextWidth * AscCommon.g_dKoef_pix_to_mm, (nLineHeight + (nLineHeight >> 1)) * AscCommon.g_dKoef_pix_to_mm);
-		this.drawParagraph(oGraphics, oParagraph, nXOffset, nYOffset);
-
-		// рисуем текст вместо черты текста
-		this.drawStyleText(oGraphics, oParagraphTextOptions, nXOffset + nBackTextWidth, nY, nLineHeight, oTextPr);
-	};
-
-	CBulletPreviewDrawerBase.prototype.drawStyleText = function (oGraphics, oParagraphTextOptions, nXEndPositionOfNumbering, nY, nLineHeight, oNumberingTextPr)
-	{
-		if (oParagraphTextOptions)
-		{
-			const sParagraphText = oParagraphTextOptions.addingText;
-			const oHeadingTextPr = new AscCommonWord.CTextPr();
-			oHeadingTextPr.RFonts.SetAll("Arial");
-			oHeadingTextPr.FontSize = oHeadingTextPr.FontSizeCS = oNumberingTextPr.FontSize * 0.8;
-			oHeadingTextPr.Color = oParagraphTextOptions.color.Copy();
-
-			const oParagraph = this.getParagraphWithText(sParagraphText, oHeadingTextPr);
-			if (!oParagraph) return;
-
-			oParagraph.Reset(0, 0, 1000, 1000, 0, 0, 1);
-			oParagraph.Recalculate_Page(0);
-			oParagraph.LineNumbersInfo = null;
-
-			const nParagraphTextWidth = oParagraph.Lines[0].Ranges[0].W * AscCommon.g_dKoef_mm_to_pix;
-			const nBaseLineOffset = oParagraph.Lines[0].Y;
-
-			const nYOffset = nY - ((nBaseLineOffset * AscCommon.g_dKoef_mm_to_pix) >> 0);
-			const nTextXOffset = Math.max(nXEndPositionOfNumbering, oParagraphTextOptions.startPositionX);
-
-			this.cleanParagraphField(oGraphics, nTextXOffset * AscCommon.g_dKoef_pix_to_mm, (nY - nLineHeight) * AscCommon.g_dKoef_pix_to_mm, (nParagraphTextWidth + 2) * AscCommon.g_dKoef_pix_to_mm, (nLineHeight + (nLineHeight >> 1)) * AscCommon.g_dKoef_pix_to_mm);
-			this.drawParagraph(oGraphics, oParagraph, nTextXOffset, nYOffset);
-		}
-	}
-
-	CBulletPreviewDrawerBase.prototype.cleanParagraphField = function (oGraphics, nX, nY, nWidth, nHeight)
-	{
-		oGraphics._s();
-		oGraphics.b_color1(this.m_oBackgroundColor.r, this.m_oBackgroundColor.g, this.m_oBackgroundColor.b, 255);
-		oGraphics.rect(nX, nY, nWidth, nHeight);
-		oGraphics.df();
-		oGraphics._e();
-	};
-
-	CBulletPreviewDrawerBase.prototype.drawParagraph = function (oGraphics, oParagraph, nXOffset, nYOffset)
-	{
-		const oApi = this.m_oApi;
-
-		oGraphics._s();
-		oGraphics.save();
-		oGraphics.SetIntegerGrid(true);
-
-		oGraphics.m_oCoordTransform.tx = AscCommon.AscBrowser.convertToRetinaValue(nXOffset, true);
-		oGraphics.m_oCoordTransform.ty = AscCommon.AscBrowser.convertToRetinaValue(nYOffset, true);
-
-		const bOldViewMode = oApi.isViewMode;
-		const bOldMarks = oApi.ShowParaMarks;
-		oApi.isViewMode = true;
-		oApi.ShowParaMarks = false;
-
-		oGraphics.transform(1, 0, 0, 1, 0, 0);
-		oParagraph.Draw(0, oGraphics);
-
-		oApi.isViewMode = bOldViewMode;
-		oApi.ShowParaMarks = bOldMarks;
-
-		oGraphics.m_oCoordTransform.tx = 0;
-		oGraphics.m_oCoordTransform.ty = 0;
-		oGraphics.transform(1, 0, 0, 1, 0, 0);
-
-		oGraphics.restore();
-	};
-
-	CBulletPreviewDrawerBase.prototype.checkEachLvl = function (callback)
-	{
-		for (let i = 0; i < this.m_arrNumberingLvl.length; i += 1)
-		{
-			if (Array.isArray(this.m_arrNumberingLvl[i]))
-			{
-				for (let j = 0; j < this.m_arrNumberingLvl[i].length; j += 1)
-				{
-					callback(this.m_arrNumberingLvl[i][j], j, this.m_arrNumberingLvl[i]);
-				}
-			}
-			else
-			{
-				callback(this.m_arrNumberingLvl[i], i, this.m_arrNumberingLvl);
-			}
-		}
-	};
-
-	CBulletPreviewDrawerBase.prototype.checkFonts = function (fCallback)
-	{
-		const oApi = this.m_oApi;
-		const oFontsDict = {};
-		const oThis = this;
-		this.checkEachLvl(function (oLvl) {
-			const sText = oLvl.GetSymbols();
-			if (sText)
-			{
-				AscFonts.FontPickerByCharacter.checkTextLight(sText);
-			}
-			const oTextPr = oLvl.GetTextPr();
-			oThis.cleanTextPr(oTextPr);
-			if (oTextPr && oTextPr.RFonts)
-			{
-				if (oTextPr.RFonts.Ascii) oFontsDict[oTextPr.RFonts.Ascii.Name] = true;
-				if (oTextPr.RFonts.EastAsia) oFontsDict[oTextPr.RFonts.EastAsia.Name] = true;
-				if (oTextPr.RFonts.HAnsi) oFontsDict[oTextPr.RFonts.HAnsi.Name] = true;
-				if (oTextPr.RFonts.CS) oFontsDict[oTextPr.RFonts.CS.Name] = true;
-			}
-		});
-
-		const arrFonts = [];
-		for (let sFamilyName in oFontsDict)
-		{
-			arrFonts.push(new AscFonts.CFont(AscFonts.g_fontApplication.GetFontInfoName(sFamilyName), 0, "", 0, null));
-		}
-		AscFonts.FontPickerByCharacter.extendFonts(arrFonts);
-
-		if (false === AscCommon.g_font_loader.CheckFontsNeedLoading(arrFonts))
-		{
-			return fCallback();
-		}
-
-		const oLoader = new AscCommon.CGlobalFontLoader();
-		oLoader.put_Api(oApi);
-		oLoader.LoadDocumentFonts2(arrFonts, Asc.c_oAscAsyncActionType.Information, fCallback);
-	};
-
-	CBulletPreviewDrawerBase.prototype.draw = function () {};
-
-	CBulletPreviewDrawerBase.prototype.checkFontsAndDraw = function ()
-	{
-		const oThis = this;
-		this.checkFonts(function ()
-		{
-			oThis.draw();
-		});
-	};
-
-
-	function CBulletPreviewDrawer(arrLvlInfo, nType)
-	{
-		CBulletPreviewDrawerBase.call(this);
-		this.m_nType = nType;
-		this.m_nCountOfLines = 3;
-		this.m_oApi = editor || Asc.editor || window["Asc"]["editor"];
-		this.m_arrNumberingLvl = arrLvlInfo.map(function (oDrawingInfo) {return oDrawingInfo.arrLvls});
-		this.m_arrNumberingInfo = arrLvlInfo;
-		this.m_nSingleBulletFontSizeCoefficient = 0.6;
-		this.m_nSingleBulletNoneFontSizeCoefficient = 0.225;
-		this.m_nLvlWithLinesNoneFontSizeCoefficient = 0.1375;
-
-		this.m_nMultiLvlIndentCoefficient = 1 / AscCommon.AscBrowser.retinaPixelRatio;
-	}
-	CBulletPreviewDrawer.prototype = Object.create(CBulletPreviewDrawerBase.prototype);
-	CBulletPreviewDrawer.prototype.constructor = CBulletPreviewDrawer;
-
-	CBulletPreviewDrawer.prototype.drawSingleBullet = function (sDivId, arrLvls)
-	{
-		const oCanvas = this.getCanvas(sDivId);
-		if (!oCanvas) return;
-
-		const oGraphics = this.getGraphics(oCanvas);
-		const oLvl = arrLvls[0];
-		const nHeight_px = oCanvas.clientHeight;
-		const nWidth_px = oCanvas.clientWidth;
-		const drawingContent = oLvl.GetDrawingContent([oLvl], 0, undefined, this.m_oLang);
-		if (typeof drawingContent !== "string")
-		{
-			const oImage = drawingContent.image;
-			if (oImage)
-			{
-				const oFormatBullet = new AscFormat.CBullet();
-				oFormatBullet.fillBulletImage(oImage.src);
-				oFormatBullet.drawSquareImage(sDivId, 0.125);
-			}
-		}
-		else
-		{
-			const nMaxFontSize = nHeight_px * this.m_nSingleBulletFontSizeCoefficient;
-			// для буллетов решено не уменьшать их превью, как и в word
-			//const oFitInformation = this.getInformationWithFitFontSize(oLvl, nWidth_px * AscCommon.g_dKoef_pix_to_mm, nHeight_px * AscCommon.g_dKoef_pix_to_mm, nMaxFontSize, nMaxFontSize);
-			//const oFitTextPr = oFitInformation.textPr;
-			const oTextPr = oLvl.GetTextPr();
-			oTextPr.FontSize = oTextPr.FontSizeCS = nMaxFontSize;
-			oLvl.SetJc(AscCommon.align_Left);
-			const oCalculationPosition = this.getXYForCenterPosition(oLvl, nWidth_px, nHeight_px);
-			const nX = oCalculationPosition.nX;
-			const nY = oCalculationPosition.nY;
-			const nLineHeight = oCalculationPosition.nLineHeight;
-			const sText = drawingContent;
-			this.drawTextWithLvlInformation(sText, oLvl, nX, nY, nLineHeight, oGraphics);
-		}
-	};
-
-	CBulletPreviewDrawer.prototype.getInformationWithFitFontSize = function (oLvl, nMaxWidth, nMaxHeight, nMinFontSize, nMaxFontSize)
-	{
-		const sText = oLvl.GetDrawingContent([oLvl], 0, undefined, this.m_oLang);
-		if (typeof sText !== "string") return;
-		const oNewShape = new AscFormat.CShape();
-		oNewShape.createTextBody();
-		oNewShape.extX = nMaxWidth;
-		oNewShape.extY = nMaxHeight;
-		oNewShape.contentWidth = oNewShape.extX;
-		oNewShape.setPaddings({Left: 0, Top: 0, Right: 0, Bottom: 0});
-
-		const oParagraph = oNewShape.txBody.content.GetAllParagraphs()[0];
-		oParagraph.MoveCursorToStartPos();
-
-		const oLogicDocument = this.m_oLogicDocument;
-
-		const oStyles = oLogicDocument && oLogicDocument.Get_Styles();
-		if (oStyles && oStyles.Default && oStyles.Default.ParaPr)
-		{
-			oParagraph.Pr = oStyles.Default.ParaPr.Copy();
-		}
-		else
-		{
-			oParagraph.Pr = new AscCommonWord.CParaPr();
-		}
-
-		const oParaRun = new AscCommonWord.ParaRun(oParagraph);
-		const oTextPr = oLvl.GetTextPr().Copy();
-		oParaRun.Set_Pr(oTextPr);
-		oParaRun.AddText(sText);
-		oParagraph.AddToContent(0, oParaRun);
-
-		oTextPr.FontSize = nMaxFontSize;
-
-		oParagraph.TextPr.SetFontSize(oTextPr.FontSize);
-		// TODO: add function after merge, add set new font size
-		let nParagraphWidth = oParagraph.RecalculateMinMaxContentWidth().Max;
-		if (nParagraphWidth > oNewShape.contentWidth) {
-			const nNewFontSize = oNewShape.findFitFontSize(nMinFontSize, nMaxFontSize, true);
-			if (nNewFontSize !== null)
-			{
-				oNewShape.setFontSizeInSmartArt(nNewFontSize);
-			}
-		}
-
-		return oTextPr;
-	};
-
-
-	CBulletPreviewDrawer.prototype.getWidthHeightGlyphs = function (sText, oTextPr)
-	{
-		AscCommon.g_oTextMeasurer.SetTextPr(oTextPr);
-		const oSumInformation = {Width: 0, rasterOffsetX: 0, Height: 0, Ascent: 0, rasterOffsetY: 0};
-		let bFirstGlyphSymbol = false;
-		let nRemoveRightOffset = 0;
-		for (const oIterator = sText.getUnicodeIterator(); oIterator.check(); oIterator.next())
-		{
-			const nValue = oIterator.value();
-			const nFontSlot = AscWord.GetFontSlotByTextPr(nValue, oTextPr);
-			AscCommon.g_oTextMeasurer.SetFontSlot(nFontSlot, 1);
-			const oInfo = AscCommon.g_oTextMeasurer.Measure2Code(nValue);
-
-			// в ворде крайние пробелы в превью буллетов прижимаются к глифу, а не к ширине символа
-			if (!bFirstGlyphSymbol)
-			{
-				if (oInfo.WidthG)
-				{
-					oSumInformation.rasterOffsetX = oInfo.rasterOffsetX;
-					const nWidthWithRightOffset = oInfo.Width - oInfo.rasterOffsetX;
-					oSumInformation.Width += nWidthWithRightOffset;
-					nRemoveRightOffset = nWidthWithRightOffset - oInfo.WidthG;
-					bFirstGlyphSymbol = true;
-				}
-				else
-				{
-					oSumInformation.Width += oInfo.Width;
-				}
-
-			}
-			else
-			{
-				oSumInformation.Width += oInfo.Width;
-				if (oInfo.WidthG)
-				{
-					nRemoveRightOffset = oInfo.Width - oInfo.rasterOffsetX - oInfo.WidthG;
-				}
-			}
-
-			if (oSumInformation.Ascent + oSumInformation.rasterOffsetY < oInfo.Ascent + oInfo.rasterOffsetY)
-			{
-				oSumInformation.rasterOffsetY = oInfo.rasterOffsetY;
-				oSumInformation.Ascent = oInfo.Ascent;
-				oSumInformation.Height = oInfo.Height;
-			}
-		}
-		oSumInformation.Width -= nRemoveRightOffset;
-		return oSumInformation;
-	};
-
-	CBulletPreviewDrawer.prototype.getXYForCenterPosition = function (oLvl, nWidth, nHeight)
-	{
-		// Здесь будем считать позицию отрисовки
-		const sText = oLvl.GetDrawingContent([oLvl], 0, undefined, this.m_oLang);
-		if (typeof sText !== 'string') return;
-		const oTextPr = oLvl.GetTextPr().Copy();
-		const oSumInformation = this.getWidthHeightGlyphs(sText, oTextPr);
-
-		 const nX = (nWidth >> 1) - Math.round((oSumInformation.Width / 2 + oSumInformation.rasterOffsetX) * AscCommon.g_dKoef_mm_to_pix);
-		 const nY = (nHeight >> 1) + Math.round((oSumInformation.Height / 2 + (oSumInformation.Ascent - oSumInformation.Height + oSumInformation.rasterOffsetY)) * AscCommon.g_dKoef_mm_to_pix);
-		return {nX: nX, nY: nY, nLineHeight: oSumInformation.Height};
-	};
-
-	CBulletPreviewDrawer.prototype.drawSingleLvlWithLines = function (sDivId, arrLvls)
-	{
-		const nCountOfLines = this.m_nCountOfLines;
-		const oCanvas = this.getCanvas(sDivId);
-		if (!oCanvas) return;
-
-		const oGraphics = this.getGraphics(oCanvas);
-		oGraphics.p_color(this.m_oSecondaryLineTextColor.r, this.m_oSecondaryLineTextColor.g, this.m_oSecondaryLineTextColor.b, 255);
-
-		const oLvl = arrLvls[0];
-		oLvl.SetJc(AscCommon.align_Left);
-
-		const oTextPr = oLvl.GetTextPr();
-
-		const nWidth_px = oCanvas.clientWidth;
-		const nHeight_px = oCanvas.clientHeight;
-		const oContext = oCanvas.getContext("2d");
-		oContext.beginPath();
-
-		const nOffsetBase = 4;
-		const nLineWidth = 2;
-		// считаем расстояние между линиями
-		const nLineDistance = Math.floor(((nHeight_px - (nOffsetBase << 2)) - nLineWidth * nCountOfLines) / nCountOfLines);
-		// убираем погрешность в offset
-		const nOffset = (nHeight_px - (nLineWidth * nCountOfLines + nLineDistance * nCountOfLines)) >> 1;
-
-		const nTextBaseOffsetX = nOffset + Math.floor(2.25 * AscCommon.g_dKoef_mm_to_pix);
-
-		let nY = nOffset + 11;
-		for (let j = 0; j < nCountOfLines; j += 1)
-		{
-			const nYmm = Math.round(nY) * AscCommon.g_dKoef_pix_to_mm;
-			const nTextBaseXmm = Math.round(nTextBaseOffsetX) * AscCommon.g_dKoef_pix_to_mm;
-			const nWidthmm = Math.round((nWidth_px - nOffsetBase)) * AscCommon.g_dKoef_pix_to_mm;
-			const nWidthLinemm = 2 * AscCommon.g_dKoef_pix_to_mm;
-
-			oGraphics.drawHorLine(AscCommon.c_oAscLineDrawingRule.Center, nYmm, nTextBaseXmm, nWidthmm, nWidthLinemm);
-			const nTextYx =  nTextBaseOffsetX - Math.floor(3.25 * AscCommon.g_dKoef_mm_to_pix);
-			const nTextYy = nY + (nLineWidth * 2.5);
-			const nLineHeight = nLineDistance - 4;
-			oTextPr.FontSize = this.getFontSizeByLineHeight(nLineHeight);
-			const drawingContent = oLvl.GetDrawingContent([oLvl], 0, j + 1, this.m_oLang);
-			if (typeof drawingContent !== "string")
-			{
-				this.drawImageBulletsWithLine(drawingContent, nTextYx, nTextYy, nLineHeight, oGraphics);
-			}
-			else
-			{
-				this.drawTextWithLvlInformation(drawingContent, oLvl, nTextYx, nTextYy, nLineHeight, oGraphics);
-			}
-			nY += (nLineWidth + nLineDistance);
-		}
-		this.cleanParagraphField(oGraphics, (nWidth_px - nOffsetBase) * AscCommon.g_dKoef_pix_to_mm, 0, nWidth_px * AscCommon.g_dKoef_pix_to_mm, nHeight_px * AscCommon.g_dKoef_pix_to_mm);
-	};
-
-	CBulletPreviewDrawer.prototype.drawNoneTextPreview = function (sDivId, arrLvls, nFontSizeCoefficient)
-	{
-		const oCanvas = this.getCanvas(sDivId);
-		if (!oCanvas) return;
-		const oGraphics = this.getGraphics(oCanvas);
-
-		const oLvl = arrLvls[0];
-		const sText = oLvl.GetDrawingContent([oLvl], 0, undefined, this.m_oLang);
-		if (typeof sText !== 'string') return;
-		const nHeight_px = oCanvas.clientHeight;
-		const nWidth_px = oCanvas.clientWidth;
-		const nMaxFontSize = nWidth_px * nFontSizeCoefficient;
-
-		const oFitTextPr = this.getInformationWithFitFontSize(oLvl, nWidth_px * AscCommon.g_dKoef_pix_to_mm, nHeight_px * AscCommon.g_dKoef_pix_to_mm, 5, nMaxFontSize);
-		oLvl.SetTextPr(oFitTextPr);
-		const oCalculationPosition = this.getXYForCenterPosition(oLvl, nWidth_px, nHeight_px);
-		const nX = oCalculationPosition.nX;
-		const nY = oCalculationPosition.nY;
-		const nLineHeight = oCalculationPosition.nLineHeight;
-
-		this.drawTextWithLvlInformation(sText, oLvl, nX, nY, nLineHeight, oGraphics);
-	};
-
-	CBulletPreviewDrawer.prototype.getHeadingTextInformation = function (oLvl, nTextXPosition, nTextYPosition)
-	{
-		return CBulletPreviewDrawerBase.prototype.getHeadingTextInformation.call(this, oLvl, nTextXPosition, nTextYPosition, this.m_oSecondaryTextColor.Copy());
-	};
-
-	CBulletPreviewDrawer.prototype.drawMultiLevelBullet = function (sDivId, arrLvls)
-	{
-		const nCountOfLines = this.m_nCountOfLines;
-		const oCanvas = this.getCanvas(sDivId);
-		if (!oCanvas) return;
-
-		const oGraphics = this.getGraphics(oCanvas);
-		oGraphics.p_color(this.m_oSecondaryLineTextColor.r, this.m_oSecondaryLineTextColor.g, this.m_oSecondaryLineTextColor.b, 255);
-
-		const nHeight_px = oCanvas.clientHeight;
-		const nWidth_px = oCanvas.clientWidth;
-
-		const nOffsetBase = 4;
-		const nLineWidth = 2;
-		const nLineDistance = Math.floor(((nHeight_px - (nOffsetBase << 2)) - nLineWidth * nCountOfLines) / nCountOfLines);
-		const nLineHeight = nLineDistance - 4;
-		const nOffset = (nHeight_px - (nLineWidth * nCountOfLines + nLineDistance * nCountOfLines)) >> 1;
-		let nY = nOffset + 11;
-
-		for (let i = 0; i < nCountOfLines; i += 1)
-		{
-			const oLvl = arrLvls[i];
-			oLvl.SetJc(AscCommon.align_Left);
-			const oTextPr = oLvl.GetTextPr();
-			oTextPr.FontSize = this.getFontSizeByLineHeight(nLineHeight);
-			const nNumberPosition = oLvl.GetNumberPosition();
-			const nTextYx =  nOffsetBase + (nNumberPosition) * this.m_nMultiLvlIndentCoefficient;
-			const nTextYy = nY + (nLineWidth * 2.5);
-			const nXPositionOfLine = nOffsetBase + (this.getFirstLineIndent(oLvl) * this.m_nMultiLvlIndentCoefficient) << 0;
-
-			oGraphics.drawHorLine(AscCommon.c_oAscLineDrawingRule.Center, nY * AscCommon.g_dKoef_pix_to_mm, nXPositionOfLine * AscCommon.g_dKoef_pix_to_mm, (nWidth_px - nOffsetBase) * AscCommon.g_dKoef_pix_to_mm, nLineWidth * AscCommon.g_dKoef_pix_to_mm);
-
-			const drawingContent = oLvl.GetDrawingContent(arrLvls, i, 1, this.m_oLang);
-			const oParagraphTextOptions = this.getHeadingTextInformation(oLvl, nXPositionOfLine, nTextYy);
-			if (typeof drawingContent !== 'string')
-			{
-				this.drawImageBulletsWithLine(drawingContent, nTextYx, nTextYy, nLineHeight, oGraphics, oParagraphTextOptions, oTextPr);
-			}
-			else
-			{
-				this.drawTextWithLvlInformation(drawingContent, oLvl, nTextYx, nTextYy, nLineHeight, oGraphics, oParagraphTextOptions);
-			}
-			nY += (nLineWidth + nLineDistance);
-		}
-		this.cleanParagraphField(oGraphics, (nWidth_px - nOffsetBase) * AscCommon.g_dKoef_pix_to_mm, 0, nWidth_px * AscCommon.g_dKoef_pix_to_mm, nHeight_px * AscCommon.g_dKoef_pix_to_mm);
-	};
-
-	CBulletPreviewDrawer.prototype.draw = function ()
-	{
-		AscFormat.ExecuteNoHistory(function () {
-			for (let i = 0; i < this.m_arrNumberingInfo.length; i++)
-			{
-				const oDrawingInfo = this.m_arrNumberingInfo[i];
-				const sId = oDrawingInfo.divId;
-				const arrLvls = oDrawingInfo.arrLvls;
-
-				if (this.m_nType === 0)
-				{
-					if (oDrawingInfo.isRemoving)
-					{
-						this.drawNoneTextPreview(sId, arrLvls, this.m_nSingleBulletNoneFontSizeCoefficient);
-					}
-					else
-					{
-						this.drawSingleBullet(sId, arrLvls);
-					}
-				}
-				else if (this.m_nType === 1)
-				{
-					if (oDrawingInfo.isRemoving)
-					{
-						this.drawNoneTextPreview(sId, arrLvls, this.m_nLvlWithLinesNoneFontSizeCoefficient);
-					}
-					else
-					{
-						this.drawSingleLvlWithLines(sId, arrLvls);
-					}
-				}
-				else if (this.m_nType === 2)
-				{
-					if (oDrawingInfo.isRemoving)
-					{
-						this.drawNoneTextPreview(sId, arrLvls, this.m_nLvlWithLinesNoneFontSizeCoefficient);
-					}
-					else
-					{
-						this.drawMultiLevelBullet(sId, arrLvls);
-					}
-				}
-			}
-		}, this, []);
-
-
-	};
-
-	function CBulletPreviewDrawerChangeList(arrId, arrAscLvl) {
-		CBulletPreviewDrawerBase.call(this);
-		this.m_arrNumberingLvl = this.convertAscToNumberingLvl(arrAscLvl.Lvl);
-		this.m_arrId = arrId;
-	}
-	CBulletPreviewDrawerChangeList.prototype = Object.create(CBulletPreviewDrawerBase.prototype);
-	CBulletPreviewDrawerChangeList.prototype.constructor = CBulletPreviewDrawerChangeList;
-
-	CBulletPreviewDrawerChangeList.prototype.getHeadingTextInformation = function (oLvl, nTextXPosition, nTextYPosition)
-	{
-		return CBulletPreviewDrawerBase.prototype.getHeadingTextInformation.call(this, oLvl, nTextXPosition, nTextYPosition, this.m_oSecondaryTextColor.Copy());
-	};
-
-	CBulletPreviewDrawerChangeList.prototype.getScaleCoefficientForMultiLevel = function (arrLvl, nWorkspaceWidth)
-	{
-		let nMaxNumberPosition = arrLvl[0].GetNumberPosition();
-		for (let i = 1; i < arrLvl.length; i += 1)
-		{
-			const oLvl = arrLvl[i];
-			const nNumberPosition = oLvl.GetNumberPosition();
-			if (nMaxNumberPosition < nNumberPosition)
-			{
-				nMaxNumberPosition = nNumberPosition;
-			}
-		}
-
-		const nNumberPositionScale = nWorkspaceWidth / (nMaxNumberPosition * AscCommon.g_dKoef_mm_to_pix);
-		const nThresholdScaleCoefficient = 0.3 / AscBrowser.retinaPixelRatio;
-		if (nNumberPositionScale < nThresholdScaleCoefficient)
-		{
-			return nNumberPositionScale;
-		}
-		return nThresholdScaleCoefficient;
-	};
-	CBulletPreviewDrawerChangeList.prototype.draw = function ()
-	{
-		AscFormat.ExecuteNoHistory(function ()
-		{
-			const nAmountOfPreview = Math.min(this.m_arrNumberingLvl.length, this.m_arrId.length);
-			const nOffsetBase = 5;
-			const nLineWidth = 2;
-
-			// посчитаем нужные переменные для одного canvas
-			let sDivId = this.m_arrId[0];
-			let oCanvas = this.getCanvas(sDivId);
-			const nHeight_px = oCanvas.clientHeight;
-			const nWidth_px = oCanvas.clientWidth;
-
-			const nY = (nHeight_px >> 1) - (nLineWidth >> 1);
-			const nLineHeight = (nHeight_px >> 1);
-			const nScaleCoefficient = this.getScaleCoefficientForMultiLevel(this.m_arrNumberingLvl, nWidth_px - nOffsetBase * 6);
-
-			for (let i = 0; i < nAmountOfPreview; i += 1)
-			{
-				const oLvl = this.m_arrNumberingLvl[i];
-				oLvl.Jc = AscCommon.align_Left;
-				const drawingContent = oLvl.GetDrawingContent(this.m_arrNumberingLvl, i, 1, this.m_oLang);
-				sDivId = this.m_arrId[i];
-				oCanvas = this.getCanvas(sDivId);
-				if (!oCanvas) return;
-				const oGraphics = this.getGraphics(oCanvas);
-				oGraphics.p_color(this.m_oSecondaryLineTextColor.r, this.m_oSecondaryLineTextColor.g, this.m_oSecondaryLineTextColor.b, 255);
-
-				const oTextPr = oLvl.GetTextPr();
-				oTextPr.FontSize = oTextPr.FontSizeCS = this.getFontSizeByLineHeight(nLineHeight);
-
-				const nNumberPosition = oLvl.GetNumberPosition();
-				const nXLinePosition = nOffsetBase + (this.getFirstLineIndent(oLvl) * AscCommon.g_dKoef_mm_to_pix * nScaleCoefficient) << 0;
-				const nTextYx = nOffsetBase + nNumberPosition * AscCommon.g_dKoef_mm_to_pix * nScaleCoefficient;
-				const nTextYy = nY + (nLineWidth << 1);
-				oGraphics.drawHorLine(AscCommon.c_oAscLineDrawingRule.Center, nY * AscCommon.g_dKoef_pix_to_mm, nXLinePosition * AscCommon.g_dKoef_pix_to_mm, (nWidth_px - nOffsetBase) * AscCommon.g_dKoef_pix_to_mm, nLineWidth * AscCommon.g_dKoef_pix_to_mm);
-				const oParagraphTextOptions = this.getHeadingTextInformation(oLvl, nXLinePosition, nTextYy);
-				if (typeof drawingContent === "string")
-				{
-					this.drawTextWithLvlInformation(drawingContent, oLvl, nTextYx, nTextYy, (nHeight_px >> 1), oGraphics, oParagraphTextOptions);
-				}
-				else
-				{
-					if (drawingContent.image)
-					{
-						this.drawImageBulletsWithLine(drawingContent, nTextYx, nTextYy, (nHeight_px >> 1), oGraphics, oParagraphTextOptions, oTextPr);
-					}
-				}
-
-				this.cleanParagraphField(oGraphics, (nWidth_px - nOffsetBase) * AscCommon.g_dKoef_pix_to_mm, 0, nWidth_px * AscCommon.g_dKoef_pix_to_mm, nHeight_px * AscCommon.g_dKoef_pix_to_mm);
-			}
-		}, this, []);
-
-	};
-
-	function CBulletPreviewDrawerAdvancedOptions(sDivId, props, nLvl, bIsMultiLvlAdvanceOptions)
-	{
-		CBulletPreviewDrawerBase.call(this);
-		this.m_sId = sDivId;
-		this.m_arrNumberingLvl = this.convertAscToNumberingLvl(props.Lvl);
-		this.m_nCurrentLvl = nLvl;
-		this.m_bIsMultiLvl = bIsMultiLvlAdvanceOptions;
-		this.m_oCanvas = this.getCanvas(this.m_sId);
-		this.m_oGraphics = this.getGraphics(this.m_oCanvas);
-		this.m_nScaleIndentsCoefficient = 0.55;
-	}
-	CBulletPreviewDrawerAdvancedOptions.prototype = Object.create(CBulletPreviewDrawerBase.prototype);
-	CBulletPreviewDrawerAdvancedOptions.prototype.constructor = CBulletPreviewDrawerAdvancedOptions;
-
-	CBulletPreviewDrawerAdvancedOptions.prototype.addControlMultiLvl = function ()
-	{
-		if (!this.m_bIsMultiLvl || !this.m_oCanvas) return;
-		const oThis = this;
-		AscCommon.addMouseEvent(this.m_oCanvas, "down", function(e) {
-			AscCommon.stopEvent(e);
-			const nOffsetBase = 10;
-			const nLineWidth = 4;
-			const nHeight = parseInt(this.style.height, 10);
-			const nLineDistance = Math.floor(((nHeight - (nOffsetBase << 1)) - nLineWidth * 10) / 9);
-			const nOffset = (nHeight - (nLineWidth * 10 + nLineDistance * 9)) >> 1;
-			const nCurrentLvl = oThis.m_nCurrentLvl;
-
-			let nYPos = e.pageY;
-			if (!AscFormat.isRealNumber(nYPos))
-			{
-				nYPos = e.clientY;
-			}
-			nYPos = (nYPos * AscCommon.AscBrowser.zoom);
-			const oClientRect = this.getBoundingClientRect();
-
-			if (AscFormat.isRealNumber(oClientRect.y))
-			{
-				nYPos -= oClientRect.y;
-			}
-			else if (AscFormat.isRealNumber(oClientRect.top))
-			{
-				nYPos -= oClientRect.top;
-			}
-
-			let nChangedCurrentLvl = 8;
-			let nY = nOffset + 2;
-			for (let i = 0; i < oThis.m_arrNumberingLvl.length; i++)
-			{
-				nY += (nLineWidth + nLineDistance);
-				if (i === nCurrentLvl)
-				{
-					nY += (nLineWidth + nLineDistance);
-				}
-
-				if (nYPos < (nY - ((nLineWidth + nLineDistance) >> 1)))
-				{
-					nChangedCurrentLvl = i;
-					break;
-				}
-			}
-			oThis.m_oApi.sendEvent("asc_onPreviewLevelChange", nChangedCurrentLvl);
-		});
-	};
-
-	CBulletPreviewDrawerAdvancedOptions.prototype.getHeadingTextInformation = function (oLvl, nTextXPosition, nTextYPosition)
-	{
-		return CBulletPreviewDrawerBase.prototype.getHeadingTextInformation.call(this, oLvl, nTextXPosition, nTextYPosition, this.m_oPrimaryTextColor.Copy());
-	};
-
-	CBulletPreviewDrawerAdvancedOptions.prototype.drawMultiLvlAdvancedOptions = function ()
-	{
-		const oCanvas = this.m_oCanvas;
-		if (!oCanvas) return;
-
-		const oGraphics = this.m_oGraphics;
-		const nHeight_px = oCanvas.clientHeight;
-		const nWidth_px = oCanvas.clientWidth;
-
-		const nOffsetBase = 10;
-		const nLineWidth = 4;
-		// считаем расстояние между линиями
-		const nLineDistance = Math.floor(((nHeight_px - (nOffsetBase << 1)) - nLineWidth * 10) / 9);
-		// убираем погрешность в offset
-		const nOffset = (nHeight_px - (nLineWidth * 10 + nLineDistance * 9)) >> 1;
-		const nCurrentLvl = this.m_nCurrentLvl;
-
-		oGraphics.p_color(this.m_oSecondaryLineTextColor.r, this.m_oSecondaryLineTextColor.g, this.m_oSecondaryLineTextColor.b, 255);
-
-		let nY = nOffset + 2;
-		for (let i = 0; i < this.m_arrNumberingLvl.length; i += 1)
-		{
-			const oLvl = this.m_arrNumberingLvl[i];
-			const oTextPr = oLvl.GetTextPr();
-			oTextPr.FontSize = this.getFontSizeByLineHeight(nLineDistance);
-			const nNumberPosition = oLvl.GetNumberPosition();
-			const nTextYx = (nOffsetBase + nNumberPosition * AscCommon.g_dKoef_mm_to_pix * this.m_nScaleIndentsCoefficient) >> 0;
-			const nIndentSize = (nOffsetBase + oLvl.GetIndentSize() * AscCommon.g_dKoef_mm_to_pix * this.m_nScaleIndentsCoefficient) >> 0;
-			const nTextYy = nY + nLineWidth;
-			const nOffsetText = nOffsetBase + (this.getFirstLineIndent(oLvl) * AscCommon.g_dKoef_mm_to_pix * this.m_nScaleIndentsCoefficient) >> 0;
-
-			if (i === nCurrentLvl)
-			{
-				oGraphics.p_color(this.m_oPrimaryTextColor.r, this.m_oPrimaryTextColor.g, this.m_oPrimaryTextColor.b, 255);
-
-				oGraphics.drawHorLine(AscCommon.c_oAscLineDrawingRule.Center, nY * AscCommon.g_dKoef_pix_to_mm, nOffsetText * AscCommon.g_dKoef_pix_to_mm, (nWidth_px - nOffsetBase) * AscCommon.g_dKoef_pix_to_mm, nLineWidth * AscCommon.g_dKoef_pix_to_mm);
-				nY += (nLineWidth + nLineDistance);
-				oGraphics.drawHorLine(AscCommon.c_oAscLineDrawingRule.Center, nY * AscCommon.g_dKoef_pix_to_mm, nIndentSize * AscCommon.g_dKoef_pix_to_mm, (nWidth_px - nOffsetBase) * AscCommon.g_dKoef_pix_to_mm, nLineWidth * AscCommon.g_dKoef_pix_to_mm);
-
-				oGraphics.p_color(this.m_oSecondaryLineTextColor.r, this.m_oSecondaryLineTextColor.g, this.m_oSecondaryLineTextColor.b, 255);
-			}
-			else
-			{
-				oGraphics.drawHorLine(AscCommon.c_oAscLineDrawingRule.Center, nY * AscCommon.g_dKoef_pix_to_mm, nOffsetText * AscCommon.g_dKoef_pix_to_mm, (nWidth_px - nOffsetBase) * AscCommon.g_dKoef_pix_to_mm, nLineWidth * AscCommon.g_dKoef_pix_to_mm);
-			}
-
-			const oParagraphTextOptions = this.getHeadingTextInformation(oLvl, nOffsetText, nTextYy);
-			const drawingContent = oLvl.GetDrawingContent(this.m_arrNumberingLvl, i, 1, this.m_oLang);
-			if (typeof drawingContent === "string")
-			{
-				this.drawTextWithLvlInformation(drawingContent, oLvl, nTextYx,  nTextYy, nLineDistance, oGraphics, oParagraphTextOptions);
-			}
-			else
-			{
-				if (drawingContent.image)
-				{
-					this.drawImageBulletsWithLine(drawingContent, nTextYx, nTextYy, nLineDistance, oGraphics, oParagraphTextOptions, oTextPr);
-				}
-			}
-
-			nY += (nLineWidth + nLineDistance);
-		}
-		this.cleanParagraphField(oGraphics, (nWidth_px - nOffsetBase) * AscCommon.g_dKoef_pix_to_mm, 0, nWidth_px * AscCommon.g_dKoef_pix_to_mm, nHeight_px * AscCommon.g_dKoef_pix_to_mm);
-
-	};
-	CBulletPreviewDrawerAdvancedOptions.prototype.getScaleCoefficientForSingleLevel = function (nWorkspaceWidth)
-	{
-		const nCurrentLvl = this.m_nCurrentLvl;
-		const oCurrentLvl = this.m_arrNumberingLvl[nCurrentLvl];
-
-		const nNumberPosition = Math.round(oCurrentLvl.GetNumberPosition() * AscCommon.g_dKoef_mm_to_pix);
-		const nIndentSize = Math.round(oCurrentLvl.GetIndentSize() * AscCommon.g_dKoef_mm_to_pix);
-		const nTabSize = Math.round(oCurrentLvl.GetStopTab() * AscCommon.g_dKoef_mm_to_pix);
-
-		const nNumberPositionScaleCoefficient = nWorkspaceWidth / nNumberPosition;
-		const nIndentSizeScaleCoefficient = nWorkspaceWidth / nIndentSize;
-		const nTabSizeScaleCoefficient = nWorkspaceWidth / nTabSize;
-		const nScaleCoefficient = Math.min(nNumberPositionScaleCoefficient, nIndentSizeScaleCoefficient, nTabSizeScaleCoefficient);
-		if (nScaleCoefficient < 1)
-		{
-			return nScaleCoefficient;
-		}
-		return 1;
-	};
-	CBulletPreviewDrawerAdvancedOptions.prototype.drawSingleLvlAdvancedOptions = function ()
-	{
-		const oCanvas = this.m_oCanvas;
-		if (!oCanvas) return;
-		const oGraphics = this.m_oGraphics;
-		const nHeight_px = oCanvas.clientHeight;
-		const nWidth_px = oCanvas.clientWidth;
-
-		const nOffsetBase = 10;
-		const nLineWidth = 4;
-		const nCurrentLvl = this.m_nCurrentLvl;
-		const oCurrentLvl = this.m_arrNumberingLvl[nCurrentLvl];
-		const oTextPr = oCurrentLvl.GetTextPr();
-
-		const nLineDistance = (((nHeight_px - (nOffsetBase << 1)) - nLineWidth * 10) / 9) << 0;
-		oTextPr.FontSize = oTextPr.FontSizeCS = this.getFontSizeByLineHeight(nLineDistance);
-		let nMaxTextWidth = 0;
-		for (let i = 0; i < 3; i += 1)
-		{
-			const drawingContent = oCurrentLvl.GetDrawingContent(this.m_arrNumberingLvl, nCurrentLvl, i + 1, this.m_oLang);
-			if (typeof drawingContent === 'string')
-			{
-				const nTextWidth = this.getLvlTextWidth(drawingContent, oTextPr);
-				if (nMaxTextWidth < nTextWidth)
-				{
-					nMaxTextWidth = nTextWidth;
-				}
-			}
-			else
-			{
-				if (drawingContent.image)
-				{
-					const sFullImageSrc = drawingContent.image.src;
-					const oSizes = AscCommon.getSourceImageSize(sFullImageSrc);
-					const nImageHeight = oSizes.height;
-					const nImageWidth = oSizes.width;
-					nMaxTextWidth = (nImageWidth * nLineDistance / (nImageHeight ? nImageHeight : 1)) * drawingContent.amount;
-					break;
-				}
-			}
-
-		}
-		nMaxTextWidth = nMaxTextWidth >> 0;
-		const nOffset = (nHeight_px - (nLineWidth * 10 + nLineDistance * 9)) >> 1;
-
-		oGraphics.p_color(this.m_oSecondaryLineTextColor.r, this.m_oSecondaryLineTextColor.g, this.m_oSecondaryLineTextColor.b, 255);
-
-		let nY = nOffset + 2 + 2 * (nLineWidth + nLineDistance);
-
-		const arrTextYy = [];
-		arrTextYy.push(nY + nLineWidth); nY += 2 * (nLineWidth + nLineDistance);
-		arrTextYy.push(nY + nLineWidth); nY += 2 * (nLineWidth + nLineDistance);
-		arrTextYy.push(nY + nLineWidth);
-
-		nY = nOffset + 2;
-		const nRightOffset = nWidth_px - nOffsetBase;
-		const nYDist = nLineWidth + nLineDistance;
-
-		const nLeftOffset2 = nOffsetBase;
-		const nRightOffset2 = nWidth_px - nOffsetBase;
-
-		// Здесь получаем коэффициент, чтобы при открытии всегда видеть отступ текста
-		const nScaleCoefficient = this.getScaleCoefficientForSingleLevel(nWidth_px - nOffsetBase * 5);
-		let nNumberPosition = nOffsetBase + ((oCurrentLvl.GetNumberPosition() * AscCommon.g_dKoef_mm_to_pix * nScaleCoefficient) << 0);
-		let nIndentSize = nOffsetBase + ((oCurrentLvl.GetIndentSize() * AscCommon.g_dKoef_mm_to_pix * nScaleCoefficient) << 0);
-		const nRawTabSize = oCurrentLvl.GetStopTab();
-		let nTabSize;
-		if (AscFormat.isRealNumber(nRawTabSize))
-		{
-			nTabSize = nOffsetBase + ((nRawTabSize * AscCommon.g_dKoef_mm_to_pix * nScaleCoefficient) << 0);
-		}
-
-		oGraphics.drawHorLine(AscCommon.c_oAscLineDrawingRule.Center, nY * AscCommon.g_dKoef_pix_to_mm, nLeftOffset2 * AscCommon.g_dKoef_pix_to_mm, nRightOffset2 * AscCommon.g_dKoef_pix_to_mm, nLineWidth * AscCommon.g_dKoef_pix_to_mm); nY += nYDist;
-		oGraphics.drawHorLine(AscCommon.c_oAscLineDrawingRule.Center, nY * AscCommon.g_dKoef_pix_to_mm, nLeftOffset2 * AscCommon.g_dKoef_pix_to_mm, nRightOffset2 * AscCommon.g_dKoef_pix_to_mm, nLineWidth * AscCommon.g_dKoef_pix_to_mm); nY += nYDist;
-
-		oGraphics.p_color(this.m_oPrimaryTextColor.r, this.m_oPrimaryTextColor.g, this.m_oPrimaryTextColor.b, 255);
-		let nTextYx = nNumberPosition;
-		let nOffsetTextX;
-		// если при прилегании к правому краю левый край текста упирается в оффсет, то линии текста должны двигаться вправо(это относится ко всем типам прилегания)
-		if ((nTextYx - nMaxTextWidth) < nLeftOffset2)
-		{
-			nTextYx = nLeftOffset2 + nMaxTextWidth;
-			nIndentSize += (nTextYx - nNumberPosition);
-			nIndentSize = nIndentSize >> 0;
-
-			nOffsetTextX = this.getFirstLineIndent(oCurrentLvl, nTextYx * AscCommon.g_dKoef_pix_to_mm, nIndentSize * AscCommon.g_dKoef_pix_to_mm, AscFormat.isRealNumber(nTabSize) ? (nTabSize + (nTextYx - nNumberPosition)) * AscCommon.g_dKoef_pix_to_mm : null);
-
-			const nCurrentAlign = oCurrentLvl.Jc;
-			oCurrentLvl.Jc = AscCommon.align_Left;
-			// считаем позицию отдельно, чтобы нумерация по горизонтали начиналась с одного и того же места
-			if (nCurrentAlign === AscCommon.align_Right)
-			{
-				nTextYx -= nMaxTextWidth;
-			}
-			else if (nCurrentAlign === AscCommon.align_Center)
-			{
-				nTextYx -= nMaxTextWidth >> 1;
-			}
-		}
-		else
-		{
-			nOffsetTextX = this.getFirstLineIndent(oCurrentLvl, nTextYx * AscCommon.g_dKoef_pix_to_mm, nIndentSize * AscCommon.g_dKoef_pix_to_mm, AscFormat.isRealNumber(nTabSize) ? nTabSize * AscCommon.g_dKoef_pix_to_mm : null);
-		}
-
-		for (let i = 0; i < 3; i += 1)
-		{
-			oGraphics.drawHorLine(AscCommon.c_oAscLineDrawingRule.Center, nY * AscCommon.g_dKoef_pix_to_mm, nOffsetTextX, nRightOffset * AscCommon.g_dKoef_pix_to_mm, nLineWidth * AscCommon.g_dKoef_pix_to_mm); nY += nYDist;
-			oGraphics.drawHorLine(AscCommon.c_oAscLineDrawingRule.Center, nY * AscCommon.g_dKoef_pix_to_mm, nIndentSize * AscCommon.g_dKoef_pix_to_mm, nRightOffset * AscCommon.g_dKoef_pix_to_mm, nLineWidth * AscCommon.g_dKoef_pix_to_mm); nY += nYDist;
-		}
-
-		oGraphics.p_color(this.m_oSecondaryLineTextColor.r, this.m_oSecondaryLineTextColor.g, this.m_oSecondaryLineTextColor.b, 255);
-
-		oGraphics.drawHorLine(AscCommon.c_oAscLineDrawingRule.Center, nY * AscCommon.g_dKoef_pix_to_mm, nLeftOffset2 * AscCommon.g_dKoef_pix_to_mm, nRightOffset2 * AscCommon.g_dKoef_pix_to_mm, nLineWidth * AscCommon.g_dKoef_pix_to_mm); nY += nYDist;
-		oGraphics.drawHorLine(AscCommon.c_oAscLineDrawingRule.Center, nY * AscCommon.g_dKoef_pix_to_mm, nLeftOffset2 * AscCommon.g_dKoef_pix_to_mm, nRightOffset2 * AscCommon.g_dKoef_pix_to_mm, nLineWidth * AscCommon.g_dKoef_pix_to_mm);
-
-		for (let i = 0; i < arrTextYy.length; i += 1)
-		{
-			const drawingContent = oCurrentLvl.GetDrawingContent(this.m_arrNumberingLvl, nCurrentLvl, i + 1, this.m_oLang);
-			const nTextYy = arrTextYy[i];
-			if (typeof drawingContent === "string")
-			{
-				this.drawTextWithLvlInformation(drawingContent, oCurrentLvl, nTextYx, nTextYy, nLineDistance, oGraphics);
-			}
-			else
-			{
-				if (drawingContent.image)
-				{
-					this.drawImageBulletsWithLine(drawingContent, nTextYx, nTextYy, nLineDistance, oGraphics);
-				}
-			}
-		}
-		this.cleanParagraphField(oGraphics, nRightOffset2 * AscCommon.g_dKoef_pix_to_mm, 0, nWidth_px * AscCommon.g_dKoef_pix_to_mm, nHeight_px * AscCommon.g_dKoef_pix_to_mm);
-	};
-	CBulletPreviewDrawerAdvancedOptions.prototype.draw = function ()
-	{
-		AscFormat.ExecuteNoHistory(function ()
-		{
-			if (this.m_bIsMultiLvl)
-			{
-				this.drawMultiLvlAdvancedOptions();
-				this.addControlMultiLvl();
-			}
-			else
-			{
-				this.drawSingleLvlAdvancedOptions();
-			}
-		}, this, []);
-	};
 
 	window.Asc.g_signature_drawer = null;
 	function CSignatureDrawer(id, api, w, h)
@@ -11789,7 +11206,7 @@
 						obj.options.callback(Asc.c_oAscError.ID.No, data);
 					else
 					{
-						AscCommon.UploadImageUrls(data, obj.options.api.documentId, obj.options.api.documentUserId, obj.options.api.CoAuthoringApi.get_jwt(), function(urls)
+						AscCommon.UploadImageUrls(data, obj.options.api.documentId, obj.options.api.documentUserId, obj.options.api.CoAuthoringApi.get_jwt(), obj.options.api.documentShardKey, function(urls)
                         {
                             obj.options.api.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.UploadImage);
 
@@ -13017,6 +12434,9 @@
 	CFormatPainter.prototype.isOff = function() {
 		return this.state === AscCommon.c_oAscFormatPainterState.kOff;
 	};
+	CFormatPainter.prototype.isMultiple = function() {
+		return this.state === AscCommon.c_oAscFormatPainterState.kMultiple;
+	};
 	CFormatPainter.prototype.toggle = function() {
 		if(this.isOn()) {
 			this.changeState(AscCommon.c_oAscFormatPainterState.kOff);
@@ -13061,88 +12481,237 @@
 		this.data = null;
 	};
 
-	function CFormatPainterDataBase() {
+	function CFormattingPasteDataBase() {
 
 	}
-	CFormatPainterDataBase.prototype.isDrawingData = function()
+	CFormattingPasteDataBase.prototype.isDrawingData = function()
 	{
 		return false;
 	};
-	CFormatPainterDataBase.prototype.getDocData = function()
+	CFormattingPasteDataBase.prototype.getDocData = function()
 	{
+		return null;
+	};
+	function CTextFormattingPasteData(textPr, paraPr)
+	{
+		CFormattingPasteDataBase.call();
+		this.TextPr = textPr;
+		this.ParaPr = paraPr;
+	}
+	CTextFormattingPasteData.prototype = Object.create(CFormattingPasteDataBase.prototype);
+	CTextFormattingPasteData.prototype.getDocData = function()
+	{
+		return this;
+	};
+	function CDrawingFormattingPasteData(drawing)
+	{
+		CFormattingPasteDataBase.call();
+		this.Drawing = drawing;
+	}
+	CDrawingFormattingPasteData.prototype = Object.create(CFormattingPasteDataBase.prototype);
+	CDrawingFormattingPasteData.prototype.isDrawingData = function()
+	{
+		return true;
+	};
+	CDrawingFormattingPasteData.prototype.getDocData = function()
+	{
+		return this;
+	};
+	
+
+	function CEyedropper(oAPI)
+	{
+		this.api = oAPI;
+		this.started = false;
+		this.imgData = null;
+		this.r = null;
+		this.g = null;
+		this.b = null;
+	}
+	CEyedropper.prototype.isStarted = function()
+	{
+		return this.started;
+	};
+	CEyedropper.prototype.setColor = function(r, g, b)
+	{
+		const fN = AscFormat.isRealNumber;
+		if(!fN(r) || !fN(g) || !fN(b)) {
+			this.r = null;
+			this.g = null;
+			this.b = null;
+		}
+		this.r = r;
+		this.g = g;
+		this.b = b;
+	};
+	CEyedropper.prototype.getColor = function()
+	{
+		const fN = AscFormat.isRealNumber;
+		if(!fN(this.r) || !fN(this.g) || !fN(this.b)) {
+			return null;
+		}
+		return new Asc.asc_CColor(this.r, this.g, this.b)
+	};
+	CEyedropper.prototype.clearColor = function()
+	{
+		this.setColor(null, null, null);
+	};
+	CEyedropper.prototype.start = function(fEndCallback)
+	{
+		this.started = true;
+		this.endCallback = fEndCallback;
+	};
+	CEyedropper.prototype.cancel = function()
+	{
+		this.end();
+	};
+	CEyedropper.prototype.end = function()
+	{
+		this.started = false;
+		this.endCallback = null;
+		this.api.sendEvent("asc_onHideEyedropper");
+		this.clearColor();
+		this.clearImageData();
+	};
+	CEyedropper.prototype.clearImageData = function()
+	{
+		if(this.imgData !== null)
+		{
+			this.imgData = null;
+		}
+	};
+	CEyedropper.prototype.finish = function()
+	{
+		if(!this.isStarted())
+		{
+			return;
+		}
+		if(this.r !== null && this.g !== null && this.b !== null && this.endCallback)
+		{
+			this.endCallback(this.r, this.g, this.b);
+		}
+		this.end();
+	};
+	CEyedropper.prototype.getImageData = function()
+	{
+		if(!this.imgData) {
+			this.imgData = this.api.getEyedropperImgData();
+		}
+		return this.imgData;
+	};
+	CEyedropper.prototype.checkColor = function(nX, nY)
+	{
+		if(!this.isStarted())
+		{
+			return;
+		}
+		const oImgData = this.getImageData();
+		if(!oImgData)
+		{
+			this.cancel();
+			return;
+		}
+		const nXFixed = nX + 0.5 >> 0;
+		const nYFixed = nY + 0.5 >> 0;
+		const nXImg = Math.max(0, Math.min(oImgData.width, nXFixed));
+		const nYImg = Math.max(0, Math.min(oImgData.height, nYFixed));
+		const nArrayPos = (nYImg * oImgData.width + nXImg) * 4;
+		const aPixels = oImgData.data;
+		const nR = aPixels[nArrayPos];
+		const nG = aPixels[nArrayPos + 1];
+		const nB = aPixels[nArrayPos + 2];
+		this.setColor(nR, nG, nB);
+		//console.log("Check Color r: " + nR + " g: " + nG + " b: " + nB);
+	};
+
+	const INK_DRAWER_STATE_OFF = 0;
+	const INK_DRAWER_STATE_DRAW = 1;
+	const INK_DRAWER_STATE_ERASE = 2;
+	function CInkDrawer(oApi) {
+		this.api = oApi;
+		this.state = INK_DRAWER_STATE_OFF;
+		this.pen = null;
+		this.silentMode = false;
+	}
+	CInkDrawer.prototype.setState = function(nState) {
+		const bChange = this.state !== nState;
+		if(bChange || this.isDraw()) {
+			this.state = nState;
+			this.api.onInkDrawerChangeState();
+		}
+		return bChange;
+	};
+	CInkDrawer.prototype.startDraw = function(oAscPen) {
+		this.pen = AscFormat.CorrectUniStroke(oAscPen);
+		if(!this.pen || !this.pen.Fill || !this.pen.Fill) {
+			this.pen = new AscFormat.CLn();
+			this.pen.w = 180000;
+			this.pen.Fill = AscFormat.CreateSolidFillRGB(255, 255, 0);
+			this.pen.Fill.transparent = 127;
+		}
+		this.pen.Fill.check(AscFormat.GetDefaultTheme(), AscFormat.GetDefaultColorMap());
+		this.setState(INK_DRAWER_STATE_DRAW);
+	};
+	CInkDrawer.prototype.startErase = function() {
+		this.pen = null;
+		this.setState(INK_DRAWER_STATE_ERASE);
+	};
+	CInkDrawer.prototype.startSilentMode = function() {
+		this.silentMode = true;
+	};
+	CInkDrawer.prototype.endSilentMode = function() {
+		this.silentMode = false;
+	};
+	CInkDrawer.prototype.isSilentMode = function() {
+		return this.silentMode;
+	};
+	CInkDrawer.prototype.turnOff = function() {
+		if(!this.isOn()) {
+			return;
+		}
+		if(this.isSilentMode()) {
+			return;
+		}
+		this.pen = null;
+		this.setState(INK_DRAWER_STATE_OFF);
+		this.api.sendEvent("asc_onInkDrawerStop");
+	};
+	CInkDrawer.prototype.isOn = function() {
+		return this.state !== INK_DRAWER_STATE_OFF;
+	};
+	CInkDrawer.prototype.isDraw = function() {
+		return this.state === INK_DRAWER_STATE_DRAW;
+	};
+	CInkDrawer.prototype.isErase = function() {
+		return this.state === INK_DRAWER_STATE_ERASE;
+	};
+	CInkDrawer.prototype.getPen = function() {
+		return this.pen;
+	};
+	CInkDrawer.prototype.getState = function() {
+		return {state: this.state, pen: this.pen, silentMode: this.silentMode};
+	};
+	CInkDrawer.prototype.restoreState = function(oState) {
+		if(!oState) {
+			return;
+		}
+		this.state = oState.state;
+		this.pen = oState.pen;
+		this.silentMode = oState.silentMode;
+	};
+	CInkDrawer.prototype.getCursorType = function() {
+		if(this.isOn()) {
+			if(this.isDraw()) {
+				return AscCommon.g_oHtmlCursor.getDrawCursor(this.getPen());
+			}
+			else if(this.isErase()) {
+				return "table-eraser";
+			}
+		}
 		return null;
 	};
 
 	//------------------------------------------------------------fill polyfill--------------------------------------------
-	if (!Array.prototype.findIndex) {
-		Object.defineProperty(Array.prototype, 'findIndex', {
-			value: function(predicate) {
-				if (this == null) {
-					throw new TypeError('Array.prototype.findIndex called on null or undefined');
-				}
-				if (typeof predicate !== 'function') {
-					throw new TypeError('predicate must be a function');
-				}
-				var list = Object(this);
-				var length = list.length >>> 0;
-				var thisArg = arguments[1];
-				var value;
-
-				for (var i = 0; i < length; i++) {
-					value = list[i];
-					if (predicate.call(thisArg, value, i, list)) {
-						return i;
-					}
-				}
-				return -1;
-			}
-		});
-	}
-	if (!Array.prototype.fill) {
-		Object.defineProperty(Array.prototype, 'fill', {
-			value: function(value) {
-
-				// Steps 1-2.
-				if (this == null) {
-					throw new TypeError('this is null or not defined');
-				}
-
-				var O = Object(this);
-
-				// Steps 3-5.
-				var len = O.length >>> 0;
-
-				// Steps 6-7.
-				var start = arguments[1];
-				var relativeStart = start >> 0;
-
-				// Step 8.
-				var k = relativeStart < 0 ?
-					Math.max(len + relativeStart, 0) :
-					Math.min(relativeStart, len);
-
-				// Steps 9-10.
-				var end = arguments[2];
-				var relativeEnd = end === undefined ?
-					len : end >> 0;
-
-				// Step 11.
-				var final = relativeEnd < 0 ?
-					Math.max(len + relativeEnd, 0) :
-					Math.min(relativeEnd, len);
-
-				// Step 12.
-				while (k < final) {
-					O[k] = value;
-					k++;
-				}
-
-				// Step 13.
-				return O;
-			}
-		});
-	}
-
 	if (!Object.values) {
 		Object.values = function (obj) {
 			return Object.keys(obj).map(function (e) {
@@ -13150,37 +12719,7 @@
 			});
 		}
 	}
-	if (typeof Int8Array !== 'undefined' && !Int8Array.prototype.fill) {
-		Int8Array.prototype.fill = Array.prototype.fill;
-	}
-	if (typeof Uint8Array !== 'undefined' && !Uint8Array.prototype.fill) {
-		Uint8Array.prototype.fill = Array.prototype.fill;
-	}
-	if (typeof Uint8ClampedArray !== 'undefined' && !Uint8ClampedArray.prototype.fill) {
-		Uint8ClampedArray.prototype.fill = Array.prototype.fill;
-	}
-	if (typeof Int16Array !== 'undefined' && !Int16Array.prototype.fill) {
-		Int16Array.prototype.fill = Array.prototype.fill;
-	}
-	if (typeof Uint16Array !== 'undefined' && !Uint16Array.prototype.fill) {
-		Uint16Array.prototype.fill = Array.prototype.fill;
-	}
-	if (typeof Int32Array !== 'undefined' && !Int32Array.prototype.fill) {
-		Int32Array.prototype.fill = Array.prototype.fill;
-	}
-	if (typeof Uint32Array !== 'undefined' && !Uint32Array.prototype.fill) {
-		Uint32Array.prototype.fill = Array.prototype.fill;
-	}
-	if (typeof Float32Array !== 'undefined' && !Float32Array.prototype.fill) {
-		Float32Array.prototype.fill = Array.prototype.fill;
-	}
-	if (typeof Float64Array !== 'undefined' && !Float64Array.prototype.fill) {
-		Float64Array.prototype.fill = Array.prototype.fill;
-	}
-	if (typeof Uint8Array !== 'undefined' && !Uint8Array.prototype.slice) {
-		Uint8Array.prototype.slice = Array.prototype.slice;
-	}
-
+	
 	function parseText(text, options, bTrimSpaces) {
 		var delimiterChar;
 		if (options.asc_getDelimiterChar()) {
@@ -13305,6 +12844,9 @@
 			} else if (-1 !== value.indexOf("pc")) {
 				oType = "pc";
 				oVal *= AscCommonWord.g_dKoef_pc_to_mm;
+			} else if (-1 !== value.indexOf("em")) {
+				oType = "em";
+				oVal *= AscCommonWord.g_dKoef_em_to_mm;
 			} else {
 				oType = "none";
 			}
@@ -13630,7 +13172,30 @@
 			return;
 		}
 
-		var rect = element.getBoundingClientRect();
+		
+		var rect;
+		if (!AscBrowser.isIE)
+			rect = element.getBoundingClientRect();
+		else {
+			function getCanvasBoundingClientRect(canvas) {
+				const offsetLeft	= canvas.offsetLeft;
+				const offsetTop		= canvas.offsetTop;
+				const offsetWidth	= canvas.offsetWidth;
+				const offsetHeight	= canvas.offsetHeight;
+			
+				return {
+					top:	offsetTop,
+					right:	offsetLeft + offsetWidth,
+					bottom:	offsetTop + offsetHeight,
+					left:	offsetLeft,
+					width:	offsetWidth,
+					height:	offsetHeight,
+				};
+			}
+
+			rect = getCanvasBoundingClientRect(element);
+		}
+
 		var isCorrectRect = (rect.width === 0 && rect.height === 0) ? false : true;
 		if (is_wait_correction || !isCorrectRect)
 		{
@@ -13926,7 +13491,7 @@
 			return "";
 		}
 		//https://gist.github.com/oryanmoshe/6b3ecd895c8a5eb9ae4ec4554f687737#file-window-performance-memory-1-js
-		return JSON.stringify(Object.getOwnPropertyNames(window.performance.memory.__proto__).reduce((acc,key) => {
+		return JSON.stringify(Object.getOwnPropertyNames(window.performance.memory.__proto__).reduce(function(acc,key) {
 				if (key !== 'constructor')
 					acc[key] = window.performance.memory[key];
 				return acc;
@@ -13946,6 +13511,9 @@
 	function sendClientLog(level, msg, api) {
 		if (!api) {
 			return;
+		}
+		if (api.documentOpenOptions && api.documentOpenOptions["debug"]) {
+			console.log("[speed]: "+ msg);
 		}
 		api.CoAuthoringApi.sendClientLog(level, msg);
 	}
@@ -14036,6 +13604,35 @@
 		return pages;
 	}
 
+
+	function CPluginCtxMenuInfo(sType, sOlePluginGuid) {
+		if(!sType) {
+			this["type"] = Asc.c_oPluginContextMenuTypes.None;
+		}
+		else {
+			this["type"] = sType;
+			this["guid"] = sOlePluginGuid;
+		}
+	}
+
+
+	function deg2rad(deg)
+	{
+		return deg * Math.PI / 180.0;
+	}
+
+	function rad2deg(rad)
+	{
+		return rad * 180.0 / Math.PI;
+	}
+
+	function trimMinMaxValue(value, min, max) {
+		if (value < min)
+			return min;
+		if (value > max)
+			return max;
+		return value;
+	}
 	//------------------------------------------------------------export---------------------------------------------------
 	window['AscCommon'] = window['AscCommon'] || {};
 	window["AscCommon"].getSockJs = getSockJs;
@@ -14106,9 +13703,10 @@
 	window["AscCommon"].CorrectMMToTwips = CorrectMMToTwips;
 	window["AscCommon"].TwipsToMM = TwipsToMM;
 	window["AscCommon"].MMToTwips = MMToTwips;
-	window["AscCommon"].RomanToInt = RomanToInt;
-	window["AscCommon"].LatinNumberingToInt = LatinNumberingToInt;
-	window["Asc"]["IntToNumberFormat"] = window["AscCommon"].IntToNumberFormat = IntToNumberFormat;
+	window["AscCommon"]["RomanToInt"] = window["AscCommon"].RomanToInt = RomanToInt;
+	window["AscCommon"]["LatinNumberingToInt"] = window["AscCommon"].LatinNumberingToInt = LatinNumberingToInt;
+	window["AscCommon"]["RussianNumberingToInt"] = window["AscCommon"].RussianNumberingToInt = RussianNumberingToInt;
+	window["AscCommon"]["IntToNumberFormat"] = window["AscCommon"].IntToNumberFormat = IntToNumberFormat;
 	window["AscCommon"].IsSpace = IsSpace;
 	window["AscCommon"].IntToHex = IntToHex;
 	window["AscCommon"].Int32ToHex = Int32ToHex;
@@ -14122,6 +13720,8 @@
 	window["AscCommon"].CorrectFontSize = CorrectFontSize;
 	window["AscCommon"].IsAscFontSupport = IsAscFontSupport;
 	window["AscCommon"].ExecuteNoHistory = ExecuteNoHistory;
+	window["AscCommon"].executeNoRevisions = executeNoRevisions;
+	window["AscCommon"].AddAndExecuteChange = AddAndExecuteChange;
 	window["AscCommon"].CompareStrings = CompareStrings;
 	window["AscCommon"].IsSupportAscFeature = IsSupportAscFeature;
 	window["AscCommon"].IsSupportOFormFeature = IsSupportOFormFeature;
@@ -14129,7 +13729,6 @@
 	window["AscCommon"].loadSdk = loadSdk;
     window["AscCommon"].loadScript = loadScript;
     window["AscCommon"].loadChartStyles = loadChartStyles;
-	window["AscCommon"].loadSmartArtBinary = loadSmartArtBinary;
 	window["AscCommon"].getAltGr = getAltGr;
 	window["AscCommon"].getColorSchemeByName = getColorSchemeByName;
 	window["AscCommon"].getColorSchemeByIdx = getColorSchemeByIdx;
@@ -14148,19 +13747,17 @@
 	window["AscCommon"].cBoolLocal = cBoolLocal;
 	window["AscCommon"].cErrorOrigin = cErrorOrigin;
 	window["AscCommon"].cErrorLocal = cErrorLocal;
+	window["AscCommon"].cCellFunctionLocal = cCellFunctionLocal;
 	window["AscCommon"].FormulaSeparators = FormulaSeparators;
 	window["AscCommon"].rx_space_g = rx_space_g;
 	window["AscCommon"].rx_space = rx_space;
 	window["AscCommon"].rx_defName = rx_defName;
+	window["AscCommon"].rx_protectedRangeName = rx_protectedRangeName;
 	window["AscCommon"].rx_r1c1DefError = rx_r1c1DefError;
 	window["AscCommon"].rx_allowedProtocols = rx_allowedProtocols;
 
-	window["AscCommon"].kCurFormatPainterWord = kCurFormatPainterWord;
-	window["AscCommon"].kCurFormatPainterDrawing = kCurFormatPainterDrawing;
 	window["AscCommon"].parserHelp = parserHelp;
 	window["AscCommon"].g_oIdCounter = g_oIdCounter;
-
-	window["AscCommon"].g_oHtmlCursor = g_oHtmlCursor;
 
 	window["AscCommon"].g_oBackoffDefaults = g_oBackoffDefaults;
 	window["AscCommon"].Backoff = Backoff;
@@ -14170,10 +13767,6 @@
 	window["AscCommon"].getSourceImageSize = getSourceImageSize;
 
 	window["AscCommon"].CEventListenerInfo = CEventListenerInfo;
-
-	window["AscCommon"].CBulletPreviewDrawer = window["AscCommon"]["CBulletPreviewDrawer"] = CBulletPreviewDrawer;
-	window["AscCommon"].CBulletPreviewDrawerChangeList = window["AscCommon"]["CBulletPreviewDrawerChangeList"] = CBulletPreviewDrawerChangeList;
-	window["AscCommon"].CBulletPreviewDrawerAdvancedOptions = window["AscCommon"]["CBulletPreviewDrawerAdvancedOptions"] = CBulletPreviewDrawerAdvancedOptions;
 
 	window["AscCommon"].CSignatureDrawer = window["AscCommon"]["CSignatureDrawer"] = CSignatureDrawer;
 	var prot = CSignatureDrawer.prototype;
@@ -14249,10 +13842,19 @@
 		word = word.replaceAll("\"", "&#34;");
 		word = word.replaceAll("\'", "&#39;");
 		return word;
-	}
+	};
 	window["AscCommon"].CFormatPainter = CFormatPainter;
-	window["AscCommon"].CFormatPainterDataBase = CFormatPainterDataBase;
-
+	window["AscCommon"].CFormattingPasteDataBase = CFormattingPasteDataBase;
+	window["AscCommon"].CTextFormattingPasteData = CTextFormattingPasteData;
+	window["AscCommon"].CDrawingFormattingPasteData = CDrawingFormattingPasteData;
+	window["AscCommon"].CEyedropper = CEyedropper;
+	window["AscCommon"].CInkDrawer = CInkDrawer;
+	window["AscCommon"].CPluginCtxMenuInfo = CPluginCtxMenuInfo;
+	window['AscCommon'].deg2rad = deg2rad;
+	window['AscCommon'].rad2deg = rad2deg;
+	window["AscCommon"].c_oAscImageUploadProp = c_oAscImageUploadProp;
+	window["AscCommon"].trimMinMaxValue = trimMinMaxValue;
+	window["AscCommon"].cStrucTableReservedWords = cStrucTableReservedWords;
 })(window);
 
 window["asc_initAdvancedOptions"] = function(_code, _file_hash, _docInfo)
@@ -14470,7 +14072,7 @@ window["buildCryptoFile_End"] = function(url, error, hash, password)
 					ext = ".docxf";
 			}
 
-			AscCommon.sendSaveFile(_editor.documentId, _editor.documentUserId, "output" + ext, _editor.asc_getSessionToken(), fileData, function(err) {
+			AscCommon.sendSaveFile(_editor.documentId, _editor.documentUserId, "output" + ext, _editor.asc_getSessionToken(), _editor.documentShardKey, fileData, function(err) {
 
                 _editor.sync_EndAction(Asc.c_oAscAsyncActionType.BlockInteraction, Asc.c_oAscAsyncAction.Save);
                 _editor.sendEvent("asc_onError", Asc.c_oAscError.ID.ConvertationSaveError, Asc.c_oAscError.Level.Critical);

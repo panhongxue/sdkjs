@@ -1,5 +1,5 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2019
+ * (c) Copyright Ascensio System SIA 2010-2023
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
@@ -12,7 +12,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
  * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-12 Ernesta Birznieka-Upisha
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
  * street, Riga, Latvia, EU, LV-1050.
  *
  * The  interactive user interfaces in modified source and object code versions
@@ -31,18 +31,13 @@
  */
 
 "use strict";
-/**
- * User: Ilja.Kirillov
- * Date: 08.05.2018
- * Time: 17:06
- */
 
 function CNumberingLvl()
 {
 	this.Jc      = AscCommon.align_Left;
 	this.Format  = Asc.c_oAscNumberingFormat.Bullet;
 	this.PStyle  = undefined;
-	this.Start   = 1;
+	this.Start   = 0;
 	this.Restart = -1; // -1 - делаем нумерацию сначала всегда, 0 - никогда не начинаем нумерацию заново
 	this.Suff    = Asc.c_oAscNumberingSuff.Tab;
 	this.TextPr  = new CTextPr();
@@ -218,6 +213,17 @@ CNumberingLvl.prototype.GetLegacyIndent = function()
 CNumberingLvl.prototype.IsLegalStyle = function()
 {
 	return this.IsLgl;
+};
+/**
+ * Выставляем значения по умолчанию для заданного уровня
+ * @param iLvl {number} 0..8
+ * @param type {c_oAscMultiLevelNumbering}
+ */
+CNumberingLvl.CreateDefault = function(iLvl, type)
+{
+	let numLvl = new CNumberingLvl();
+	numLvl.InitDefault(iLvl, type);
+	return numLvl;
 };
 /**
  * Выставляем значения по умолчанию для заданного уровня
@@ -1189,6 +1195,22 @@ CNumberingLvl.prototype.IsSimilar = function(oLvl)
 
 	return true;
 };
+CNumberingLvl.prototype.IsEqual = function(numLvl)
+{
+	// Формат и текст проверяются в IsSimilar
+	if (!this.IsSimilar(numLvl))
+		return false;
+	
+	return (this.Jc === numLvl.Jc
+		&& this.PStyle === numLvl.PStyle
+		&& this.Start === numLvl.Start
+		&& this.Restart === numLvl.Restart
+		&& this.Suff === numLvl.Suff
+		&& this.TextPr.IsEqual(numLvl.TextPr)
+		&& this.ParaPr.IsEqual(numLvl.ParaPr)
+		&& this.Legacy === numLvl.Legacy
+		&& this.IsLgl === numLvl.IsLgl);
+};
 /**
  * Заполняем специальный класс для работы с интерфейсом
  * @param oAscLvl {CAscNumberingLvl}
@@ -1528,7 +1550,7 @@ CNumberingLvl.prototype.private_ReadLvlTextFromBinary = function(oReader)
  */
 CNumberingLvl.prototype.IsBulleted = function()
 {
-	return this.GetFormat() === Asc.c_oAscNumberingFormat.Bullet;
+	return AscWord.IsBulletedNumbering(this.GetFormat());
 };
 /**
  * Проверяем является ли данный уровень нумерованным
@@ -1536,8 +1558,7 @@ CNumberingLvl.prototype.IsBulleted = function()
  */
 CNumberingLvl.prototype.IsNumbered = function()
 {
-	var nFormat = this.GetFormat();
-	return (nFormat !== Asc.c_oAscNumberingFormat.Bullet && nFormat !== Asc.c_oAscNumberingFormat.None);
+	return AscWord.IsNumberedNumbering(this.GetFormat());
 };
 /**
  * Получаем список связанных уровней с данным
@@ -1999,6 +2020,16 @@ CNumberingLvlTextString.prototype.Copy = function()
 {
 	return new CNumberingLvlTextString(this.Value);
 };
+CNumberingLvlTextString.prototype.IsEqual = function (oAnotherElement)
+{
+	if (this.Type !== oAnotherElement.Type)
+		return false;
+
+	if (this.Value !==  oAnotherElement.Value)
+		return false;
+
+	return true;
+};
 CNumberingLvlTextString.prototype.WriteToBinary = function(Writer)
 {
 	// Long   : numbering_lvltext_Text
@@ -2039,6 +2070,17 @@ CNumberingLvlTextNum.prototype.GetValue = function()
 CNumberingLvlTextNum.prototype.Copy = function()
 {
 	return new CNumberingLvlTextNum(this.Value);
+};
+CNumberingLvlTextNum.prototype.IsEqual = function (oAnotherElement, oPr)
+{
+	const bIsSingleLvlPreviewPresetEquals = oPr && oPr.isSingleLvlPreviewPreset;
+	if (this.Type !== oAnotherElement.Type)
+		return false;
+
+	if (!bIsSingleLvlPreviewPresetEquals && this.Value !==  oAnotherElement.Value)
+		return false;
+
+	return true;
 };
 CNumberingLvlTextNum.prototype.WriteToBinary = function(Writer)
 {

@@ -666,6 +666,11 @@ function CDrawingDocument()
 	this.SlideCurrent     = -1;
 	this.SlideCurrectRect = new CDrawingPage();
 
+
+	this.MasterCurrent = -1;
+	this.LayoutCurrent = -1;
+
+
 	this.isTabButtonShow = true;
 
 	// target
@@ -1566,7 +1571,7 @@ function CDrawingDocument()
 			this.m_oWordControl.m_oApi.checkLastWork();
 
 		this.m_oWordControl.Thumbnails.LockMainObjType = true;
-		this.SlidesCount                               = this.m_oLogicDocument.Slides.length;
+		this.SlidesCount = this.m_oLogicDocument.GetSlidesCount();
 		this.m_oWordControl.CalculateDocumentSize();
 		this.m_oWordControl.m_oApi.sync_countPagesCallback(this.SlidesCount);
 		this.m_oWordControl.Thumbnails.LockMainObjType = false;
@@ -3541,6 +3546,8 @@ function CThumbnailsManager()
 	this.m_nCurrentPage = -1;
 	this.m_bIsUpdate = false;
 	this.m_arrPages = [];
+	this.m_arrMasters = [];
+
 	this.m_lDrawingFirst = -1;
 	this.m_lDrawingEnd = -1;
 

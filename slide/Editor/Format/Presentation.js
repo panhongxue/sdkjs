@@ -4392,20 +4392,41 @@ CPresentation.prototype.GetDrawingDocument = function () {
 	return this.DrawingDocument;
 };
 
+
+
+CPresentation.prototype.GetSlides = function () {
+	return this.Slides;
+};
+CPresentation.prototype.GetAllSlides = function () {
+	if(this.Api.presentationViewMode === Asc.c_oAscPresentationViewMode.masterSlide) {
+		let aSlides = [];
+		for(let nMaster = 0; nMaster < this.slideMasters.length; ++nMaster) {
+			let oMaster = this.slideMasters[nMaster];
+			aSlides.push(oMaster);
+			let aLayouts = oMaster.sldLayoutLst;
+			for(let nLt = 0; nLt < aLayouts.length; ++nLt) {
+				aSlides.push(aLayouts[nLt]);
+			}
+		}
+		return aSlides;
+	}
+	return this.GetSlides();
+};
 CPresentation.prototype.GetSlide = function (nIndex) {
-	if (this.Slides[nIndex]) {
-		return this.Slides[nIndex];
+	let aSlides = this.GetAllSlides();
+	if (aSlides[nIndex]) {
+		return aSlides[nIndex];
 	}
 	return null;
 };
 CPresentation.prototype.GetSlidesCount = function () {
-	return this.Slides.length;
+	return this.GetAllSlides().length;
 };
 CPresentation.prototype.GetCurrentSlide = function () {
 	return this.GetSlide(this.CurPage);
 };
 CPresentation.prototype.GetCurrentController = function () {
-	var oCurSlide = this.Slides[this.CurPage];
+	var oCurSlide = this.GetCurrentSlide();
 	if (oCurSlide) {
 		if (this.FocusOnNotes) {
 			return oCurSlide.notes && oCurSlide.notes.graphicObjects;
@@ -4427,7 +4448,7 @@ CPresentation.prototype.Get_TargetDocContent = function () {
 };
 
 CPresentation.prototype.Begin_CompositeInput = function () {
-	var oCurSlide = this.Slides[this.CurPage];
+	let oCurSlide = this.GetCurrentSlide();
 	if (!this.FocusOnNotes && oCurSlide && oCurSlide.graphicObjects.selectedObjects.length === 0) {
 		var oTitle = oCurSlide.getMatchingShape(AscFormat.phType_title, null);
 		if (oTitle) {
@@ -5456,7 +5477,10 @@ CPresentation.prototype.Draw = function (nPageIndex, pGraphics) {
 	if (!pGraphics.IsSlideBoundsCheckerType) {
 		AscCommon.CollaborativeEditing.Update_ForeignCursorsPositions();
 	}
-	this.Slides[nPageIndex] && this.Slides[nPageIndex].draw(pGraphics);
+	let oSlide = this.GetSlide(nPageIndex);
+	if(oSlide) {
+		oSlide.draw(pGraphics);
+	}
 };
 
 CPresentation.prototype.AddNewParagraph = function (bRecalculate) {
@@ -12176,8 +12200,9 @@ CPresentation.prototype.AddTextWithPr = function (sText, oSettings) {
 };
 
 CPresentation.prototype.AddTextArt = function (nStyle) {
-	if (this.Slides[this.CurPage]) {
-		var oDrawingObjects = this.Slides[this.CurPage].graphicObjects;
+	let oSlide = this.GetCurrentSlide();
+	if (oSlide) {
+		var oDrawingObjects = oSlide.graphicObjects;
 		if (oDrawingObjects.checkTrackDrawings()) {
 			oDrawingObjects.endTrackNewShape();
 			this.Api.sync_EndAddShape();
@@ -12186,15 +12211,15 @@ CPresentation.prototype.AddTextArt = function (nStyle) {
 		this.SetThumbnailsFocusElement(FOCUS_OBJECT_MAIN);
 
 		History.Create_NewPoint(AscDFH.historydescription_Document_AddTextArt);
-		var oTextArt = this.Slides[this.CurPage].graphicObjects.createTextArt(nStyle, false);
+		var oTextArt = oDrawingObjects.createTextArt(nStyle, false);
 		oTextArt.addToDrawingObjects();
 		oTextArt.checkExtentsByDocContent();
 		oTextArt.spPr.xfrm.setOffX((this.GetWidthMM() - oTextArt.spPr.xfrm.extX) / 2);
 		oTextArt.spPr.xfrm.setOffY((this.GetHeightMM() - oTextArt.spPr.xfrm.extY) / 2);
-		this.Slides[this.CurPage].graphicObjects.resetSelection();
+		oDrawingObjects.resetSelection();
 
 		if (oTextArt.bSelectedText) {
-			this.Slides[this.CurPage].graphicObjects.selectObject(oTextArt, 0);
+			oDrawingObjects.selectObject(oTextArt, 0);
 		} else {
 			var oContent = oTextArt.getDocContent();
 			oContent.Content[0].Document_SetThisElementCurrent(false);
@@ -12207,15 +12232,16 @@ CPresentation.prototype.AddTextArt = function (nStyle) {
 
 
 CPresentation.prototype.AddSignatureLine = function (oPr, Width, Height, sImgUrl) {
-	if (this.Slides[this.CurPage]) {
+	let oSlide = this.GetCurrentSlide();
+	if (oSlide) {
 		History.Create_NewPoint(AscDFH.historydescription_Document_InsertSignatureLine);
 		var fPosX = (this.GetWidthMM() - Width) / 2;
 		var fPosY = (this.GetHeightMM() - Height) / 2;
-		var oController = this.Slides[this.CurPage].graphicObjects;
+		var oController = oSlide.graphicObjects;
 		var Image = AscFormat.fCreateSignatureShape(oPr, false, null, Width, Height, sImgUrl);
 		Image.spPr.xfrm.setOffX(fPosX);
 		Image.spPr.xfrm.setOffY(fPosY);
-		Image.setParent(this.Slides[this.CurPage]);
+		Image.setParent(oSlide);
 		Image.addToDrawingObjects();
 		oController.resetSelection();
 		oController.selectObject(Image, 0);

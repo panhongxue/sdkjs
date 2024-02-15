@@ -4773,6 +4773,29 @@ function CEditorPage(api)
 
 		this.OnResizeSplitter();
 	};
+
+	this.UpdateViewMode = function ()
+	{
+		let nMode = Asc.editor.presentationViewMode;
+		switch (nMode)
+		{
+			case Asc.c_oAscPresentationViewMode.normal:
+			{
+				this.m_oDrawingDocument.SlideCurrent = 0;
+				break;
+			}
+			case Asc.c_oAscPresentationViewMode.masterSlide:
+			{
+				this.m_oDrawingDocument.MasterCurrent = 0;
+				this.m_oDrawingDocument.LayoutCurrent = -1;
+				break;
+			}
+			case Asc.c_oAscPresentationViewMode.sorter:
+			{
+				break;
+			}
+		}
+	};
 }
 
 //------------------------------------------------------------export----------------------------------------------------

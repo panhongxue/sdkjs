@@ -642,6 +642,9 @@
 
 		this.isOnlyDemonstration = false;
 
+
+		this.presentationViewMode = Asc.c_oAscPresentationViewMode.masterSlide;
+
 		if (window.editor == undefined)
 		{
 			window.editor = this;
@@ -9065,6 +9068,20 @@ background-repeat: no-repeat;\
 		}
 		return oLogicDocument.GetSpeechDescription(prevState, action);
 	};
+
+
+	asc_docs_api.prototype.asc_changePresentationViewMode = function(mode) {
+		this.presentationViewMode = mode;
+		this.updateViewMode();
+	};
+	asc_docs_api.prototype.updateViewMode = function() {
+		if(!this.WordControl) {
+			return;
+		}
+		this.WordControl.UpdateViewMode();
+	};
+
+
 	//-------------------------------------------------------------export---------------------------------------------------
 	window['Asc']                                                 = window['Asc'] || {};
 	window['AscCommonSlide']                                      = window['AscCommonSlide'] || {};

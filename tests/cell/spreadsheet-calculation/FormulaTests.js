@@ -773,7 +773,7 @@ $(function () {
 		assert.strictEqual(ws.getRange2("A1012").getValue(), "120", "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. A1012 - 120");
 		assert.strictEqual(ws.getRange2("A1013").getValue(), "45", "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. A1013 - 45");
 		assert.strictEqual(ws.getRange2("A1014").getValue(), "10", "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. A1014 - 10");
-		// Test 3D sequence chain - A1012: A1012+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1
+		// Test: 3D sequence chain - A1012: A1012+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1
 		let ws2 = wb.createWorksheet(0, "Sheet2");
 		let ws3 = wb.createWorksheet(1, "Sheet3");
 		ws.getRange2("A1012").setValue("=A1012+Sheet2!A1000");
@@ -782,6 +782,30 @@ $(function () {
 		assert.strictEqual(ws.getRange2("A1012").getValue(), "45", "Test: 3D sequence chain - A1012: A1012+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1. A1012 - 45");
 		assert.strictEqual(ws2.getRange2("A1000").getValue(), "10", "Test: 3D sequence chain - A1012: A1012+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1. Sheet2!A1000 - 10");
 		assert.strictEqual(ws3.getRange2("A1000").getValue(), "1", "Test: 3D sequence chain - A1012: A1012+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1. Sheet3!A1000 - 1");
+		// Test: DefName loop cell - X: X+1
+		let oDefName = new Asc.asc_CDefName("x", ws.getName() + "!$A$1013");
+		wb.editDefinesNames(null, oDefName);
+		ws.getRange2("A1013").setValue("=x+1")
+		assert.strictEqual(ws.getRange2("A1013").getValue(), "10", "Test: DefName loop cell - X: X+1. X - 10");
+		// Clean define name
+		wb.delDefinesNames(oDefName);
+		//Test: DefName sequence chain - X: X+Y, Y: Y+Z, Z: 1
+		let oDefNameX = new Asc.asc_CDefName("x", ws.getName() + "!$A$1014");
+		let oDefNameY = new Asc.asc_CDefName("y", ws.getName() + "!$B$1014");
+		let oDefNameZ = new Asc.asc_CDefName("z", ws.getName() + "!$C$1014");
+		wb.editDefinesNames(null, oDefNameX);
+		wb.editDefinesNames(null, oDefNameY);
+		wb.editDefinesNames(null,oDefNameZ);
+		ws.getRange2("A1014").setValue("=x+y");
+		ws.getRange2("B1014").setValue("=y+z");
+		ws.getRange2("C1014").setValue("1");
+		assert.strictEqual(ws.getRange2("A1014").getValue(), "45", "Test: DefName sequence chain - X: X+Y, Y: Y+Z, Z: 1. X - 45");
+		assert.strictEqual(ws.getRange2("B1014").getValue(), "10", "Test: DefName sequence chain - X: X+Y, Y: Y+Z, Z: 1. Y - 10");
+		assert.strictEqual(ws.getRange2("C1014").getValue(), "1", "Test: DefName sequence chain - X: X+Y, Y: Y+Z, Z: 1. Z - 1");
+		// Clean define name
+		wb.delDefinesNames(oDefNameX);
+		wb.delDefinesNames(oDefNameY);
+		wb.delDefinesNames(oDefNameZ);
 		// Test changeLinkedCell method.
 		oCell = selectCell("A1000");
 		let oCellNeedEnableRecalc = selectCell("B1000");
@@ -842,6 +866,7 @@ $(function () {
 		oCell = selectCell("C1004");
 		nFactCellIndex = getStartCellForIterCalc(oCell);
 		assert.strictEqual(nFactCellIndex, null, `Test: initStartCellForIterCalc. Negative case cell without any chain. Selected cell: C1004. Start cell: ${nFactCellIndex}`);
+		// Remove created sheets.
 		wb.removeWorksheet(0);
 		wb.removeWorksheet(0);
 	});

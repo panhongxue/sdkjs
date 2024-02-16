@@ -14085,6 +14085,24 @@
 	 * @memberof Cell
 	 */
 	Cell.prototype.initStartCellForIterCalc = function (oPrevCell) {
+		function foreachListeners(fAction, oThis) {
+			for (let i in oListeners) {
+				let oListenerCell = oListeners[i].getParent();
+				let nListenerCellIndex = null;
+				if (oListenerCell instanceof DefName) {
+					let oParserRef = oListenerCell.parsedRef;
+					let oRange = oParserRef.outStack[0].getRange().bbox;
+					nListenerCellIndex = AscCommonExcel.getCellIndex(oRange.r1, oRange.c1);
+				} else {
+					nListenerCellIndex = AscCommonExcel.getCellIndex(oListenerCell.nRow, oListenerCell.nCol);
+				}
+				let oRes = fAction(nListenerCellIndex, oListenerCell, oThis);
+				if (oRes != null) {
+					return;
+				}
+			}
+		}
+
 		const ws = this.ws;
 		const oDepFormulas = ws.workbook.dependencyFormulas;
 
@@ -14106,40 +14124,35 @@
 		const oListeners = oCellListeners.listeners;
 		let oCellFromListener = null;
 		if (oCellListeners.count > 1) {
-			for (let i in oListeners) {
-				let oListener = oListeners[i];
-				let oListenerCell = oListener.getParent();
-				let nListenerCellIndex = AscCommonExcel.getCellIndex(oListenerCell.nRow, oListenerCell.nCol);
+			foreachListeners(function (nListenerCellIndex, oListenerCell, oThis) {
 				if (nCellIndex !== nListenerCellIndex) {
 					ws._getCell(oListenerCell.nRow, oListenerCell.nCol, function (oCell) {
 						oCellFromListener = oCell;
 					});
 					g_cCalcRecursion.incRecursionCounter();
-					oCellFromListener.initStartCellForIterCalc(this);
-					return;
+					oCellFromListener.initStartCellForIterCalc(oThis);
+					return true;
 				}
-			}
+			}, this);
 		} else {
-			for (let i in oListeners) {
-				let oListenerCell = oListeners[i].getParent();
-				let nListenerCellIndex = AscCommonExcel.getCellIndex(oListenerCell.nRow, oListenerCell.nCol);
-				let nPrevCellIndex = oPrevCell ? AscCommonExcel.getCellIndex(oPrevCell.nRow, oPrevCell.nCol) : null;
+			let nPrevCellIndex = oPrevCell ? AscCommonExcel.getCellIndex(oPrevCell.nRow, oPrevCell.nCol) : null;
+			foreachListeners(function (nListenerCellIndex, oListenerCell, oThis) {
 				if (nCellIndex === nListenerCellIndex) {
-					g_cCalcRecursion.setStartCellIndex(AscCommonExcel.getCellIndex(this.nRow, this.nCol));
+					g_cCalcRecursion.setStartCellIndex(AscCommonExcel.getCellIndex(oThis.nRow, oThis.nCol));
 					g_cCalcRecursion.resetRecursionCounter();
-					return;
+					return true;
 				} else if (nPrevCellIndex != null && nListenerCellIndex === nPrevCellIndex) {
 					g_cCalcRecursion.setStartCellIndex(AscCommonExcel.getCellIndex(oPrevCell.nRow, oPrevCell.nCol));
 					g_cCalcRecursion.resetRecursionCounter();
-					return;
+					return true;
 				} else {
 					ws._getCell(oListenerCell.nRow, oListenerCell.nCol, function (oCell) {
 						oCellFromListener = oCell;
 					});
 					g_cCalcRecursion.incRecursionCounter();
-					oCellFromListener.initStartCellForIterCalc(this);
+					oCellFromListener.initStartCellForIterCalc(oThis);
 				}
-			}
+			}, this);
 		}
 	};
 	/**
@@ -14196,22 +14209,24 @@
 			const b3D = nElemType === cElementType.cell3D || nElemType === cElementType.cellsRange3D;
 			const bArea = nElemType === cElementType.cellsRange;
 			const bDefName = nElemType === cElementType.name || nElemType === cElementType.name3D;
-			const bTable = nElemType === cElementType.table;
+			let oRange = null;
 
 			if (nElemType === cElementType.cell || bArea || b3D) {
-				const oRange = oRefElement.range;
-				oRange._foreachNoEmpty(function(oCell) {
-					let nCellIndex = AscCommonExcel.getCellIndex(oCell.nRow, oCell.nCol);
-					if (nCellIndex !== nThisIndex) {
-						fAction(oCell);
-						if (bRecursiveCall) {
-							g_cCalcRecursion.incRecursionCounter();
-							oCell.changeLinkedCell(fAction,true);
-						}
-					}
-				});
+				 oRange = oRefElement.range;
+			} else if (bDefName) {
+				const oElemValue = oRefElement.getValue();
+				oRange = oElemValue.range
 			}
-			// TODO Make logic for DefName, Table
+			oRange._foreachNoEmpty(function(oCell) {
+				let nCellIndex = AscCommonExcel.getCellIndex(oCell.nRow, oCell.nCol);
+				if (nCellIndex !== nThisIndex) {
+					fAction(oCell);
+					if (bRecursiveCall) {
+						g_cCalcRecursion.incRecursionCounter();
+						oCell.changeLinkedCell(fAction,true);
+					}
+				}
+			});
 		}
 		g_cCalcRecursion.resetRecursionCounter();
 	};

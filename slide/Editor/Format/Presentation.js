@@ -4907,6 +4907,7 @@ CPresentation.prototype.Recalculate = function (RecalcData) {
 			oCurMaster = this.slideMasters[0];
 		}
 	}
+	oCurSlide = this.GetCurrentSlide();
 	if (_RecalcData.Drawings.All || _RecalcData.Drawings.ThemeInfo) {
 		b_check_layout = true;
 		for (key in this.slideMasters) {
@@ -8071,7 +8072,8 @@ CPresentation.prototype.OnMouseDown = function (e, X, Y, PageIndex) {
 	this.CurPage = PageIndex;
 	e.ctrlKey = e.CtrlKey;
 	e.shiftKey = e.ShiftKey;
-	var oController = this.Slides[this.CurPage].graphicObjects;
+	let oSlide = this.GetCurrentSlide();
+	let oController = oSlide && oSlide.graphicObjects;
 	let oContent1, oContent2;
 	var ret = null;
 	if (oController) {
@@ -8107,7 +8109,9 @@ CPresentation.prototype.OnMouseUp = function (e, X, Y, PageIndex) {
 	e.shiftKey = e.ShiftKey;
 	const nStartPage = this.CurPage;
 
-	const oController = this.Slides[this.CurPage] && this.Slides[this.CurPage].graphicObjects;
+
+	let oSlide = this.GetCurrentSlide();
+	let oController = oSlide && oSlide.graphicObjects;
 	if (oController) {
 		const aStartAnims = oController.getAnimSelectionState();
 		oController.onMouseUp(e, X, Y);
@@ -8151,7 +8155,8 @@ CPresentation.prototype.OnMouseMove = function (e, X, Y, PageIndex) {
 	e.shiftKey = e.ShiftKey;
 	this.Api.sync_MouseMoveStartCallback();
 	this.CurPage = PageIndex;
-	let oController = this.Slides[this.CurPage] && this.Slides[this.CurPage].graphicObjects;
+	let oSlide = this.GetCurrentSlide();
+	let oController = oSlide && oSlide.graphicObjects;
 	if (oController) {
 		oController.onMouseMove(e, X, Y);
 	}

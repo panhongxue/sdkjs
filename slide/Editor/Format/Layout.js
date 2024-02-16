@@ -138,6 +138,8 @@ function SlideLayout()
     this.lastRecalcSlideIndex = -1;
 
 
+    this.presentation = editor && editor.WordControl && editor.WordControl.m_oLogicDocument;
+    this.graphicObjects = new AscFormat.DrawingObjectsController(this);
     this.deleteLock = new PropLocker(this.Id);
     this.backgroundLock = new PropLocker(this.Id);
     this.timingLock = new PropLocker(this.Id);
@@ -149,6 +151,49 @@ AscFormat.InitClass(SlideLayout, AscFormat.CBaseFormatObject, AscDFH.historyitem
 
 
 
+SlideLayout.prototype.getDrawingDocument = function() {
+    return editor.WordControl.m_oLogicDocument.DrawingDocument;
+};
+
+SlideLayout.prototype.OnUpdateOverlay = function()
+{
+    this.presentation.DrawingDocument.m_oWordControl.OnUpdateOverlay();
+};
+SlideLayout.prototype.getNum = function () {
+    let aSlides = this.presentation.GetAllSlides();
+    for(let nIdx = 0; nIdx < aSlides.length; ++nIdx) {
+        if(aSlides[nIdx] === this)
+            return nIdx;
+    }
+    return -1;
+};
+SlideLayout.prototype.drawSelect = function(_type)
+{
+    if (_type === undefined)
+    {
+        this.graphicObjects.drawTextSelection(this.getNum());
+        this.graphicObjects.drawSelect(0, this.presentation.DrawingDocument);
+    }
+    else if (_type == 1)
+        this.graphicObjects.drawTextSelection(this.getNum());
+    else if (_type == 2)
+        this.graphicObjects.drawSelect(0, this.presentation.DrawingDocument);
+};
+SlideLayout.prototype.showDrawingObjects = function()
+{
+    editor.WordControl.m_oDrawingDocument.OnRecalculatePage(this.getNum(), this);
+};
+SlideLayout.prototype.sendGraphicObjectProps = function()
+{
+    editor.WordControl.m_oLogicDocument.Document_UpdateInterfaceState();
+};
+SlideLayout.prototype.getDrawingsForController = function(){
+    return this.cSld.spTree;
+};
+
+SlideLayout.prototype.getTheme = function(){
+    return this.Master && this.Master.Theme || null;
+};
     SlideLayout.prototype.isAnimated = function () {
         return false;
     };

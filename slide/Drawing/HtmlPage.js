@@ -4079,7 +4079,7 @@ function CEditorPage(api)
 			ctx.beginPath();
 
 			if (drDoc.SlideCurrent != -1)
-				this.m_oLogicDocument.Slides[drDoc.SlideCurrent].drawSelect(1);
+				this.m_oLogicDocument.GetCurrentSlide().drawSelect(1);
 
 			ctx.globalAlpha = 0.2;
 			ctx.fill();
@@ -4128,9 +4128,10 @@ function CEditorPage(api)
 
 		if (this.m_oLogicDocument != null && drDoc.SlideCurrent >= 0)
 		{
-			this.m_oLogicDocument.Slides[drDoc.SlideCurrent].drawSelect(2);
+			let oSlide = this.m_oLogicDocument.GetCurrentSlide();
+			oSlide.drawSelect(2);
 
-			var elements = this.m_oLogicDocument.Slides[this.m_oLogicDocument.CurPage].graphicObjects;
+			var elements = oSlide.graphicObjects;
 			if (!elements.canReceiveKeyPress() && -1 != drDoc.SlideCurrent)
 			{
 				var drawPage = drDoc.SlideCurrectRect;

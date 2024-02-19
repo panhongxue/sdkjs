@@ -4217,9 +4217,15 @@ CT_pivotTableDefinition.prototype.getDataFieldsCount = function () {
 CT_pivotTableDefinition.prototype.getField = function (arrFields, callback) {
 	return arrFields && arrFields.map(callback, this);
 };
+/**
+ * @return {CT_I[] | null}
+ */
 CT_pivotTableDefinition.prototype.getRowItems = function () {
 	return this.rowItems && this.rowItems.i;
 };
+/**
+ * @return {CT_I[] | null}
+ */
 CT_pivotTableDefinition.prototype.getColItems = function () {
 	return this.colItems && this.colItems.i;
 };
@@ -6034,6 +6040,7 @@ CT_pivotTableDefinition.prototype.replaceSlicersPivotCacheDefinition = function(
 	wb.slicersUpdateAfterChangePivotTable(sheetId, pivotName);
 };
 CT_pivotTableDefinition.prototype.asc_create = function(ws, name, cacheDefinition, bbox) {
+	/**@type {Worksheet} */
 	this.worksheet = ws;
 	this.cacheDefinition = cacheDefinition;
 
@@ -8141,55 +8148,348 @@ function PivotChartsManager(pivot) {
 	this.pivot = pivot;
 }
 
-PivotChartsManager.prototype.getSeries = function() {
-	const result = this.getSeriesBar();
-	console.log('test');
-	return null;
+/**
+ * @param {number} colItemIndex
+ * @param {number} depth
+ * @return {string}
+ */
+PivotChartsManager.prototype.getCellValueByColItem = function(colItemIndex, depth) {
+	const pivot = this.pivot;
+	const worksheet = pivot.worksheet;
+	const pivotRange = pivot.getRange();
+	const location = pivot.location;
+	const c = pivotRange.c1 + location.firstDataCol + colItemIndex;
+	const r =  pivotRange.r1 + depth + 1;
+	const range = worksheet.getRange3(r, c, r, c);
+	const value = range.getValue();
+	return value;
 };
 /**
  * @param {Function} SeriaConstructor
  * @return {Array}
  */
-PivotChartsManager.prototype.getBaseSeries = function(SeriaConstructor) {
+PivotChartsManager.prototype.getSeries = function(SeriaConstructor) {
 	const result = [];
 	const colFields = this.pivot.asc_getColumnFields();
 	if (colFields && colFields.length > 0) {
-		for(let i = 0; i < colFields.length; i += 1) {
-			const seria = new SeriaConstructor();
-			seria.idx = i;
-			seria.order = i;
-			seria.tx = this.getTx();
-			result.push(seria);
+		const colItems = this.pivot.getColItems();
+		const cache = [];
+		for (let i = 0; i < colItems.length; i += 1) {
+			const colItem = colItems[i];
+			if (colItem.t === Asc.c_oAscItemType.Data) {
+				const r = colItem.getR();
+				for (let j = 0; j < colItem.x.length; j += 1) {
+					cache.length = r + j + 1;
+					cache[r + j] = this.getCellValueByColItem(i, r + j);
+					if (r + j === colFields.length - 1) {
+						const seria = new SeriaConstructor();
+						seria.idx = result.length;
+						seria.order = result.length;
+
+						seria.tx = this.getTx(i, cache);
+						seria.setParentToChild(seria.tx);
+
+						seria.cat = this.getCat();
+						seria.setParentToChild(seria.cat);
+						
+						seria.val = this.getVal(i);
+						seria.setParentToChild(seria.val);
+
+						result.push(seria);
+					}
+				}
+			}
+		}
+	} else {
+		const seria = new SeriaConstructor();
+		seria.idx = 0;
+		seria.order = 0;
+
+		seria.tx = new AscFormat.CTx();
+		const strRef = this.getBlankStrRef(false);
+		seria.tx.strRef = strRef;
+		result.setParentToChild(result.strRef);
+		seria.setParentToChild(seria.tx);
+
+		seria.cat = this.getCat();
+		seria.setParentToChild(seria.cat);
+		
+		seria.val = this.getVal(i);
+		seria.setParentToChild(seria.val);
+
+		result.push(seria);
+	}
+	return result;
+};
+/**
+ * @param {number} itemIndex
+ * @return {string}
+ */
+PivotChartsManager.prototype.getColumnRangeName = function(itemIndex) {
+	const pivot = this.pivot;
+	const worksheet = pivot.worksheet;
+	const pivotRange = pivot.getRange();
+	const location = pivot.location;
+	const c = pivotRange.c1 + location.firstDataCol + itemIndex;
+	const r1 = pivotRange.r1;
+	const r2 =  pivotRange.r1 + location.firstDataRow - 1;
+	const range = worksheet.getRange3(r1, c, r2, c);
+	const rangeName = worksheet.getName() + '!' + range.getName();
+	return rangeName;
+};
+/**
+ * @param {number} itemIndex
+ * @param {string[]} cache
+ * @return {CStrRef}
+ */
+PivotChartsManager.prototype.getTxStrRef = function(itemIndex, cache) {
+	const result = new AscFormat.CStrRef();
+	const rangeName = this.getColumnRangeName(itemIndex);
+	const strCache = new AscFormat.CStrCache();
+
+	let val = '';
+	for (let i = 0; i < cache.length; i += 1) {
+		if (i !== cache.length - 1) {
+			val += cache[i] + ' - ';
+		} else {
+			val += cache[i];
 		}
 	}
-	return result;
-};
-/**
- * @param {number} index
- * @return {CDataRefs}
- */
-PivotChartsManager.prototype.getTx = function(index) {
-	const result = new AscFormat.CDataRefs([]);
-	return result;
-};
-/**
- * @param {number} index
- * @return {CDataRefs}
- */
-PivotChartsManager.prototype.getCat = function(index) {
-	const rowFields = this.pivot.asc_getRowFields();
-	if (rowFields && rowFields.length > 0) {
-		
-	}
-	const result = new AscFormat.CDataRefs([]);
-	return result;
-};
-PivotChartsManager.prototype.getSeriesBar = function() {
-	const series = this.getBaseSeries(AscFormat.CBarSeries);
-	for (let i = 0; i < series.length; i += 1) {
+	strCache.addStringPoint(0, val);
 
+	result.f = rangeName;
+	result.strCache = strCache;
+    result.setParentToChild(result.strCache);
+	return result;
+};
+/**
+ * @param {boolean} isCat
+ * @return {string}
+ */
+PivotChartsManager.prototype.getBlankRangeName = function(isCat) {
+	const pivot = this.pivot;
+	const worksheet = pivot.worksheet;
+	const pivotRange = pivot.getRange();
+	let r;
+	let c;
+	if (isCat) {
+		r = pivotRange.r1;
+		c = pivotRange.c2;
+	} else {
+		r = pivotRange.r2;
+		c = pivotRange.c1;
 	}
-	return series;
+	const range = worksheet.getRange3(r, c, r, c);
+	const rangeName = worksheet.getName() + '!' + range.getName();
+	return rangeName;
+};
+/**
+ * @return {string}
+ */
+PivotChartsManager.prototype.getRowRangeName = function() {
+	const pivot = this.pivot;
+	const worksheet = pivot.worksheet;
+	const pivotRange = pivot.getRange();
+	const location = pivot.location;
+	const r1 = pivotRange.r1 + location.firstDataRow;
+	const r2 = pivotRange.r2;
+	const c1 = pivotRange.c1;
+	const c2 = pivotRange.c1 + location.firstDataCol - 1;
+	const range = worksheet.getRange3(r1, c1, r2, c2);
+	const rangeName = worksheet.getName() + '!' + range.getName();
+	return rangeName;
+};
+/**
+ * @param {number} itemIndex
+ * @param {string[]} cache
+ * @return {CTx}
+ */
+PivotChartsManager.prototype.getTx = function(itemIndex, cache) {
+	const result = new AscFormat.CTx();
+	const strRef = this.getTxStrRef(itemIndex, cache)
+	result.strRef = strRef;
+	result.setParentToChild(result.strRef);
+	return result;
+};
+/**
+ * @param {number} rowItemIndex
+ * @param {number} depth
+ * @return {string}
+ */
+PivotChartsManager.prototype.getCellValueByRowItem = function(rowItemIndex, depth) {
+	const pivot = this.pivot;
+	const worksheet = pivot.worksheet;
+	const pivotRange = pivot.getRange();
+	const location = pivot.location;
+	const c = pivot.compact ? pivotRange.c1 : pivotRange.c1 + depth;
+	const r = pivotRange.r1 + location.firstDataRow + rowItemIndex;
+	const range = worksheet.getRange3(r, c, r, c);
+	const value = range.getValue();
+	return value;
+};
+/**
+ * @return {CStrRef}
+ */
+PivotChartsManager.prototype.getCatStrRef = function() {
+	const pivot = this.pivot;
+	const rowItems = pivot.getRowItems();
+	const result = new AscFormat.CStrRef();
+	const rangeName = this.getRowRangeName();
+	const strCache = new AscFormat.CStrCache();
+	for (let i = 0; i < rowItems.length; i += 1) {
+		const rowItem = rowItems[i];
+		if (rowItem.t === Asc.c_oAscItemType.Data) {
+			const value = this.getCellValueByRowItem(i, 0);
+			strCache.addStringPoint(0, value);
+		}
+	}
+	result.f = rangeName;
+	result.strCache = strCache;
+	result.setParentToChild(result.strCache);
+	return result;
+};
+PivotChartsManager.prototype.getBlankStrRef = function(isCat) {
+	const result = new AscFormat.CStrRef();
+	const rangeName = this.getBlankRangeName(isCat);
+	const strCache = new AscFormat.CStrCache();
+	const value = AscCommon.translateManager.getValue('Total');
+	strCache.addStringPoint(0, value);
+	result.f = rangeName;
+	result.strCache = strCache;
+	result.setParentToChild(result.strCache);
+	return result;
+};
+/**
+ * @return {CMultiLvlStrRef}
+ */
+PivotChartsManager.prototype.getCatMultiLvlStrRef = function() {
+	const pivot = this.pivot;
+	const rowItems = pivot.getRowItems();
+	const rangeName = this.getRowRangeName();
+	const result = new AscFormat.CMultiLvlStrRef();
+	const multiLvlStrCache = new AscFormat.CMultiLvlStrCache();
+	const rowFields = pivot.asc_getRowFields();
+	const levels = [];
+	for (let i = 0; i < rowFields.length; i += 1) {
+		levels.push(new AscFormat.CStrCache());
+	}
+	let index = 0;
+	for (let i = 0; i < rowItems.length; i += 1) {
+		const rowItem = rowItems[i];
+		if (rowItem.t === Asc.c_oAscItemType.Data) {
+			const r = rowItem.getR();
+			for (let j = 0; j < rowItem.x.length; j += 1) {
+				const level = r + j;
+				const value = this.getCellValueByRowItem(i, r + j);
+				levels[level].addStringPoint(index, value);
+				if (level === rowFields.length - 1) {
+					index += 1;
+				}
+			}
+		}
+	}
+	levels.forEach(function(level) {
+		multiLvlStrCache.addLvl(level);
+	});
+	multiLvlStrCache.setPtCount(levels[levels.length - 1].ptCount);
+	result.f = rangeName;
+	result.multiLvlStrCache = multiLvlStrCache;
+	result.setParentToChild(result.multiLvlStrCache);
+	return result;
+};
+/**
+ * @return {CCat}
+ */
+PivotChartsManager.prototype.getCat = function() {
+	const rowFields = this.pivot.asc_getRowFields();
+	const result = new AscFormat.CCat();
+	if (!rowFields || rowFields.length === 0) {
+		result.strRef = this.getBlankStrRef(true);
+	} else {
+		if (rowFields.length === 1) {
+			result.strRef = this.getCatStrRef();
+		} else {
+			result.multiLvlStrRef = this.getCatMultiLvlStrRef();
+		}
+	}
+	result.setParentToChild(result.strRef);
+	return result;
+};
+/**
+ * @param {number} colItemInde
+ * @return {string}
+ */
+PivotChartsManager.prototype.getValRangeName = function(colItemIndex) {
+	const pivot = this.pivot;
+	const worksheet = pivot.worksheet;
+	const pivotRange = pivot.getRange();
+	const location = pivot.location;
+	const r1 = pivotRange.r1 + location.firstDataRow;
+	const r2 = pivotRange.r2;
+	const c = pivotRange.c1 + location.firstDataCol + colItemIndex;
+	const range = worksheet.getRange3(r1, c, r2, c);
+	const rangeName = worksheet.getName() + '!' + range.getName();
+	return rangeName;
+};
+/**
+ * @param {number} rowItemIndex
+ * @param {number} colItemIndex
+ * @return {number}
+ */
+PivotChartsManager.prototype.getCellValue = function(rowItemIndex, colItemIndex) {
+	const pivot = this.pivot;
+	const worksheet = pivot.worksheet;
+	const pivotRange = pivot.getRange();
+	const location = pivot.location;
+	const c = pivotRange.c1 + location.firstDataCol + colItemIndex;
+	const r = pivotRange.r1 + location.firstDataRow + rowItemIndex;
+	const range = worksheet.getRange3(r, c, r, c);
+	const value = range.getValue();
+	return value;
+};
+/**
+ * @param {number} colItemIndex
+ * @return {CnumRef}
+ */
+PivotChartsManager.prototype.getNumRef = function(colItemIndex) {
+	const pivot = this.pivot;
+	const rowItems = pivot.getRowItems();
+	const result = new AscFormat.CStrRef();
+	const rangeName = this.getValRangeName(colItemIndex);
+	const numCache = new AscFormat.CNumLit();
+	let index = 0;
+	for (let i = 0; i < rowItems.length; i += 1) {
+		const rowItem = rowItems[i];
+		if (rowItem.t === Asc.c_oAscItemType.Data) {
+			const value = this.getCellValue(i, colItemIndex);
+			if (value !== '') {
+				numCache.addNumericPoint(index, value);
+			}
+			index += 1;
+		}
+	}
+	numCache.setPtCount(index);
+
+	const dataFields = pivot.asc_getDataFields();
+	const dataField = dataFields && dataFields.length > 0 && dataFields[0];
+	const num = (dataField && dataField.num && dataField.num.f) || 'General';
+	numCache.setFormatCode(num);
+
+	result.f = rangeName;
+	result.numCache = numCache;
+	result.setParentToChild(result.numCache);
+	return result;
+};
+/**
+ * @param {number} colItemIndex
+ * @return {CVal}
+ */
+PivotChartsManager.prototype.getVal = function(colItemIndex) {
+	const result = new AscFormat.CYVal();
+	const numRef = this.getNumRef(colItemIndex);
+	result.numRef = numRef;
+	result.setParentToChild(result.numRef);
+	return result;
 };
 
 function CT_pivotTableDefinitionX14() {

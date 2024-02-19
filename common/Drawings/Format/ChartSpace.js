@@ -10841,12 +10841,14 @@ function(window, undefined) {
 		if (typeof sRange !== "string") {
 			return [];
 		}
-		const api = window["Asc"]["editor"] || editor;
+		// TEST
 		const range = AscFormat.fParseChartFormulaExternal(sRange);
 		const pivotTable = range[0].worksheet.getPivotTable(range[0].bbox.c1, range[0].bbox.r1);
 		if (pivotTable) {
-			return pivotTable.getSeries();
+			console.log(pivotTable.getSeries(AscFormat.CBarSeries));
+			debugger;
 		}
+		// DELETE AFTER DEVELOP
 		let bInColumns = options.getInColumns();
 		let bHorValues = null;
 		if (bInColumns === true || bInColumns === false) {

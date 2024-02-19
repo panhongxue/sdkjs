@@ -7589,9 +7589,12 @@ CT_pivotTableDefinition.prototype.canExpandCollapse = function(row, col) {
 	let layout = this.getLayoutByCell(row, col);
 	return layout && layout.canExpandCollapse() || false;
 };
-
-CT_pivotTableDefinition.prototype.getSeries = function() {
-	return this.chartsManager.getSeries();
+/**
+ * @param {Function} SeriaConstructor
+ * @return {CSeriesBase}
+ */
+CT_pivotTableDefinition.prototype.getSeries = function(SeriaConstructor) {
+	return this.chartsManager.getSeries(SeriaConstructor);
 };
 /**
  * @typedef PivotFormatsCollectionItem
@@ -8416,7 +8419,7 @@ PivotChartsManager.prototype.getCat = function() {
 	return result;
 };
 /**
- * @param {number} colItemInde
+ * @param {number} colItemIndex
  * @return {string}
  */
 PivotChartsManager.prototype.getValRangeName = function(colItemIndex) {

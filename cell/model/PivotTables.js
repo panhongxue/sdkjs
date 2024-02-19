@@ -7590,6 +7590,8 @@ CT_pivotTableDefinition.prototype.canExpandCollapse = function(row, col) {
 	return layout && layout.canExpandCollapse() || false;
 };
 /**
+ * Returns an array of objects of the passed class.
+ * Only the Tx, Cat, and Val attributes are filled in.
  * @param {Function} SeriaConstructor
  * @return {CSeriesBase}
  */
@@ -8168,8 +8170,10 @@ PivotChartsManager.prototype.getCellValueByColItem = function(colItemIndex, dept
 	return value;
 };
 /**
+ * Returns an array of objects of the passed class.
+ * Only the Tx, Cat, and Val attributes are filled in.
  * @param {Function} SeriaConstructor
- * @return {Array}
+ * @return {CSeriesBase}
  */
 PivotChartsManager.prototype.getSeries = function(SeriaConstructor) {
 	const result = [];

@@ -14091,10 +14091,26 @@
 				let nListenerCellIndex = null;
 				if (oListenerCell instanceof DefName) {
 					let oParserRef = oListenerCell.parsedRef;
-					let oRange = oParserRef.outStack[0].getRange().bbox;
-					nListenerCellIndex = AscCommonExcel.getCellIndex(oRange.r1, oRange.c1);
+					let oRange = oParserRef.outStack[0].getRange();
+					if (oRange.isOneCell()) {
+						nListenerCellIndex = AscCommonExcel.getCellIndex(oRange.bbox.r1, oRange.bbox.c1);
+						ws._getCell(oRange.bbox.r1, oRange.bbox.c1, function (oCell) {
+							oListenerCell = oCell;
+						});
+					} else {
+						oRange._foreachNoEmpty(function (oCell) {
+							if (oCell.isFormula()) {
+								nListenerCellIndex = AscCommonExcel.getCellIndex(oCell.nRow, oCell.nCol);
+								oListenerCell = oCell;
+								return true; // break loop;
+							}
+						})
+					}
 				} else {
 					nListenerCellIndex = AscCommonExcel.getCellIndex(oListenerCell.nRow, oListenerCell.nCol);
+				}
+				if (nListenerCellIndex == null) {
+					return;
 				}
 				let oRes = fAction(nListenerCellIndex, oListenerCell, oThis);
 				if (oRes != null) {
@@ -14116,11 +14132,33 @@
 		}
 
 		const nCellIndex = AscCommonExcel.getCellIndex(this.nRow, this.nCol);
-		const oCellListeners = oDepFormulas.sheetListeners[ws.Id].cellMap[nCellIndex];
+		const sFormula = this.getFormula();
+		let sAreaIndex = null;
+		if (sFormula) {
+			if (~sFormula.indexOf(':') && ~sFormula.indexOf('(') && ~sFormula.indexOf(')')) {
+				let nStartPos = sFormula.indexOf('(') + 1;
+				let nEndPos = sFormula.indexOf(')');
+				sAreaIndex = sFormula.slice(nStartPos, nEndPos);
+			} else {
+				let oOutStackElem = this.getFormulaParsed().outStack[0];
+				if (oOutStackElem.type === cElementType.name || oOutStackElem.type === cElementType.name3D) {
+					let oRef = oOutStackElem.toRef();
+					sAreaIndex = oRef.value.replace(/\$/g, "");
+				}
+			}
+		}
+		const oSheetListeners = oDepFormulas.sheetListeners[ws.Id];
+		let oCellListeners = null;
+		if (sAreaIndex && oSheetListeners.areaMap.hasOwnProperty(sAreaIndex)) {
+			oCellListeners = oSheetListeners.areaMap[sAreaIndex];
+		} else if (oSheetListeners.cellMap.hasOwnProperty(nCellIndex)) {
+			oCellListeners = oSheetListeners.cellMap[nCellIndex];
+		}
 		if (!oCellListeners) {
 			g_cCalcRecursion.resetRecursionCounter();
 			return;
 		}
+
 		const oListeners = oCellListeners.listeners;
 		let oCellFromListener = null;
 		if (oCellListeners.count > 1) {
@@ -14212,10 +14250,15 @@
 			let oRange = null;
 
 			if (nElemType === cElementType.cell || bArea || b3D) {
-				 oRange = oRefElement.range;
+				oRange = oRefElement.getRange();
 			} else if (bDefName) {
 				const oElemValue = oRefElement.getValue();
-				oRange = oElemValue.range
+				// If definition name was delete.
+				if (oElemValue.type === cElementType.error) {
+					g_cCalcRecursion.setStartCellIndex(null);
+					return;
+				}
+				oRange = oElemValue.getRange();
 			}
 			oRange._foreachNoEmpty(function(oCell) {
 				let nCellIndex = AscCommonExcel.getCellIndex(oCell.nRow, oCell.nCol);

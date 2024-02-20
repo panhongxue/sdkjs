@@ -670,40 +670,40 @@ $(function () {
 
 			return nStartCellIndex;
 		}
-		// Check recursion formula with iteration limit
-		// Case: Sequence chain - A1000: A1000+B1000 -> B1000: B1000+C1000 -> C1: 1
+		// -- Check recursion formula with iteration limit
+		// - Case: Sequence chain - A1000: A1000+B1000 -> B1000: B1000+C1000 -> C1: 1
 		// Fill cells
 		ws.getRange2("A1000").setValue("=A1000+B1000");
 		ws.getRange2("B1000").setValue("=B1000+C1000");
 		ws.getRange2("C1000").setValue("1");
 		assert.strictEqual(ws.getRange2("A1000").getValue(), "45", "Test: Sequence chain = A1000: A1000+B1000, B1000: B1000+C1000, C1000: 1. A1000 - 45");
 		assert.strictEqual(ws.getRange2("B1000").getValue(), "10", "Test: Sequence chain = A1000: A1000+B1000, B1000: B1000+C1000, C1000: 1. B1000 - 10");
-		//Case: Loop chain - D1000: F1000/E1000 <-> F1000: E1000+D1000
+		// - Case: Loop chain - D1000: F1000/E1000 <-> F1000: E1000+D1000
 		ws.getRange2("D1000").setValue("=F1000/E1000");
 		ws.getRange2("E1000").setValue("1");
 		ws.getRange2("F1000").setValue("=E1000+D1000");
-		// Case: Loop cell - A1001: A1001+1
+		// -  Case: Loop cell - A1001: A1001+1
 		ws.getRange2("A1001").setValue("=A1001+1");
 		assert.strictEqual(ws.getRange2("A1001").getValue(), "10", "Test: Loop cell - A1001: A1001+1. A1001 - 10");
-		// Negative case sequence chain without loop cell.
+		// - Negative case sequence chain without loop cell.
 		ws.getRange2("A1002").setValue("=1+B1002");
 		ws.getRange2("B1002").setValue("=1+C1002");
 		ws.getRange2("C1002").setValue("1");
 		assert.strictEqual(ws.getRange2("A1002").getValue(), "3", "Test: Negative case sequence chain without loop cell - A1002: 1+B1002. A1002 - 3");
 		assert.strictEqual(ws.getRange2("B1002").getValue(), "2", "Test: Negative case sequence chain without loop cell - B1002: 1+C1002. B1002 - 2");
 		assert.strictEqual(ws.getRange2("C1002").getValue(), "1", "Test: Negative case sequence chain without loop cell - C1002: 1. C1002 - 1");
-		// Negative case cell without any chain.
+		// - Negative case cell without any chain.
 		ws.getRange2("A1003").setValue("=1+2");
 		assert.strictEqual(ws.getRange2("A1003").getValue(), "3", "Test: Negative case cell without any chain - A1003: 1+2. A1003 - 3");
 		ws.getRange2("A1004").setValue("1");
 		ws.getRange2("B1004").setValue("2");
 		ws.getRange2("C1004").setValue("=A1004+B1004");
 		assert.strictEqual(ws.getRange2("C1004").getValue(), "3", "Test: Negative case cell without any chain - C1004: A1004+B1004. C1004 - 3");
-		// Test: Sequence chain - A1005: A1005+B1005, B1005: 1. Deep level of recursion - 0
+		// - Case: Sequence chain - A1005: A1005+B1005, B1005: 1. Deep level of recursion - 0
 		ws.getRange2("A1005").setValue("=A1005+B1005");
 		ws.getRange2("B1005").setValue("1");
 		assert.strictEqual(ws.getRange2("A1005").getValue(), "10", "Test: Sequence chain - A1005: A1005+B1005, B1005: 1");
-		// Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. Deep level of recursion - 10, Max iteration 10
+		// - Case: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. Deep level of recursion - 10, Max iteration 10
 		ws.getRange2("A1006").setValue("=A1006+B1006");
 		ws.getRange2("B1006").setValue("=B1006+C1006");
 		ws.getRange2("C1006").setValue("=C1006+D1006");
@@ -723,7 +723,7 @@ $(function () {
 		assert.strictEqual(ws.getRange2("G1006").getValue(), "120", "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. G1006 - 120");
 		assert.strictEqual(ws.getRange2("H1006").getValue(), "45", "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. H1006 - 45");
 		assert.strictEqual(ws.getRange2("I1006").getValue(), "10", "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. I1006 - 10");
-		// Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... T1007: 1. Deep level of recursion - 20, Max iteration 10
+		// - Case: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... T1007: 1. Deep level of recursion - 20, Max iteration 10
 		ws.getRange2("A1007").setValue("=A1007+B1007");
 		ws.getRange2("B1007").setValue("=B1007+C1007");
 		ws.getRange2("C1007").setValue("=C1007+D1007");
@@ -763,7 +763,7 @@ $(function () {
 		assert.strictEqual(ws.getRange2("U1007").getValue(), "120", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. U1007 - 120");
 		assert.strictEqual(ws.getRange2("V1007").getValue(), "45", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. V1007 - 45");
 		assert.strictEqual(ws.getRange2("W1007").getValue(), "10", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. W1007 - 10");
-		// Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1
+		// - Case: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1
 		ws.getRange2("A1011").setValue("=A1011+A1012");
 		ws.getRange2("A1012").setValue("=A1012+A1013");
 		ws.getRange2("A1013").setValue("=A1013+A1014");
@@ -773,7 +773,7 @@ $(function () {
 		assert.strictEqual(ws.getRange2("A1012").getValue(), "120", "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. A1012 - 120");
 		assert.strictEqual(ws.getRange2("A1013").getValue(), "45", "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. A1013 - 45");
 		assert.strictEqual(ws.getRange2("A1014").getValue(), "10", "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. A1014 - 10");
-		// Test: 3D sequence chain - A1012: A1012+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1
+		// - Case: 3D sequence chain - A1012: A1012+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1
 		let ws2 = wb.createWorksheet(0, "Sheet2");
 		let ws3 = wb.createWorksheet(1, "Sheet3");
 		ws.getRange2("A1012").setValue("=A1012+Sheet2!A1000");
@@ -782,14 +782,17 @@ $(function () {
 		assert.strictEqual(ws.getRange2("A1012").getValue(), "45", "Test: 3D sequence chain - A1012: A1012+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1. A1012 - 45");
 		assert.strictEqual(ws2.getRange2("A1000").getValue(), "10", "Test: 3D sequence chain - A1012: A1012+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1. Sheet2!A1000 - 10");
 		assert.strictEqual(ws3.getRange2("A1000").getValue(), "1", "Test: 3D sequence chain - A1012: A1012+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1. Sheet3!A1000 - 1");
-		// Test: DefName loop cell - X: X+1
+		// Remove created sheets.
+		wb.removeWorksheet(0);
+		wb.removeWorksheet(0);
+		// - Case: DefName loop cell - X: X+1
 		let oDefName = new Asc.asc_CDefName("x", ws.getName() + "!$A$1013");
 		wb.editDefinesNames(null, oDefName);
 		ws.getRange2("A1013").setValue("=x+1")
 		assert.strictEqual(ws.getRange2("A1013").getValue(), "10", "Test: DefName loop cell - X: X+1. X - 10");
 		// Clean define name
 		wb.delDefinesNames(oDefName);
-		//Test: DefName sequence chain - X: X+Y, Y: Y+Z, Z: 1
+		// - Case: DefName sequence chain - X: X+Y, Y: Y+Z, Z: 1
 		let oDefNameX = new Asc.asc_CDefName("x", ws.getName() + "!$A$1014");
 		let oDefNameY = new Asc.asc_CDefName("y", ws.getName() + "!$B$1014");
 		let oDefNameZ = new Asc.asc_CDefName("z", ws.getName() + "!$C$1014");
@@ -806,7 +809,51 @@ $(function () {
 		wb.delDefinesNames(oDefNameX);
 		wb.delDefinesNames(oDefNameY);
 		wb.delDefinesNames(oDefNameZ);
-		// Test changeLinkedCell method.
+		// - Case: Area recursive formula SUM(A1015:D1015)
+		ws.getRange2("A1015").setValue("1");
+		ws.getRange2("B1015").setValue("2");
+		ws.getRange2("C1015").setValue("3");
+		ws.getRange2("D1015").setValue("=SUM(A1015:D1015)");
+		assert.strictEqual(ws.getRange2("D1015").getValue(), "60", "Test: Area recursive formula SUM(A1015:D1015). D1015 - 60");
+		// - Case: Area recursive formula SUM(D1016, A1016:C1016)
+		ws.getRange2("A1016").setValue("1");
+		ws.getRange2("B1016").setValue("2");
+		ws.getRange2("C1016").setValue("3");
+		ws.getRange2("D1016").setValue("=SUM(D1016, A1016:C1016)");
+		assert.strictEqual(ws.getRange2("D1016").getValue(), "60", "Test: Area recursive formula SUM(D1016, A1016:C1016). D1016 - 60");
+		// - Case: 3D Area recursive formula SUM(A1017, Sheet2!A1000:C1000)
+		ws2 = wb.createWorksheet(0, "Sheet2");
+		ws2.getRange2("A1000").setValue("1");
+		ws2.getRange2("B1000").setValue("2");
+		ws2.getRange2("C1000").setValue("3");
+		ws.getRange2("A1017").setValue("=SUM(A1017, Sheet2!A1000:C1000)");
+		assert.strictEqual(ws.getRange2("A1017").getValue(), "60", "Test: 3D Area recursive formula SUM(A1017, Sheet2!A1000:C1000). A1017 - 60");
+		// Remove created sheets.
+		wb.removeWorksheet(0);
+		// - Case: DefName Area recursive formula SUM(Range)
+		let oDefNameRange = new Asc.asc_CDefName("Range", ws.getName() + "!$A$1018:$D$1018");
+		wb.editDefinesNames(null, oDefNameRange);
+		ws.getRange2("A1018").setValue("1");
+		ws.getRange2("B1018").setValue("2");
+		ws.getRange2("C1018").setValue("3");
+		ws.getRange2("D1018").setValue("=SUM(Range)");
+		assert.strictEqual(ws.getRange2("D1018").getValue(), "60", "Test: DefName Area recursive formula SUM(Range). D1018 - 60");
+		// Clean define name
+		wb.delDefinesNames(oDefNameRange);
+		// - Case: DefName Area 3D recursive formula SUM(А1019,Range3D)
+		ws2 = wb.createWorksheet(0, "Sheet2");
+		let oDefNameRange3D = new Asc.asc_CDefName("Range3D", ws.getName() + "!$A$1019:$C$1019");
+		wb.editDefinesNames(null, oDefNameRange3D);
+		ws.getRange2("A1019").setValue("1");
+		ws.getRange2("B1019").setValue("2");
+		ws.getRange2("C1019").setValue("3");
+		ws2.getRange2("A1000").setValue("=SUM(A1000, Range3D)");
+		assert.strictEqual(ws2.getRange2("A1000").getValue(), "60", "Test: DefName Area 3D recursive formula SUM(А1019,Range3D). Sheet2!A1000 - 60");
+		// Clean define name
+		wb.delDefinesNames(oDefNameRange3D);
+		// Remove created sheets.
+		wb.removeWorksheet(0);
+		// -- Test changeLinkedCell method.
 		oCell = selectCell("A1000");
 		let oCellNeedEnableRecalc = selectCell("B1000");
 		assert.strictEqual(oCellNeedEnableRecalc.getIsDirty(), false, "Test: changeLinkedCell. Before: Cell B1000 isDirty - false");
@@ -817,8 +864,8 @@ $(function () {
 		}, true);
 		oCellNeedEnableRecalc = selectCell("B1000");
 		assert.strictEqual(oCellNeedEnableRecalc.getIsDirty(), true, "Test: changeLinkedCell. After: Cell B1000 isDirty - true");
-		// Test initStartCellForIterCalc method
-		// Sequence chain A1000 -> B1000 -> C1000
+		// -- Test initStartCellForIterCalc method
+		// - Case: Sequence chain A1000 -> B1000 -> C1000
 		nExpectedCellIndex = AscCommonExcel.getCellIndex(999, 0);
 		oCell = selectCell("C1000");
 		nFactCellIndex = getStartCellForIterCalc(oCell);
@@ -832,7 +879,7 @@ $(function () {
 		nFactCellIndex = getStartCellForIterCalc(oCell);
 		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test: initStartCellForIterCalc. Sequence chain - A1000 -> B1000 -> C1000. Selected cell: A1000. Start cell: ${nFactCellIndex}`);
 		g_cCalcRecursion.setStartCellIndex(null);
-		// Loop chain D1000 <-> F1000
+		// - Case: Loop chain D1000 <-> F1000
 		oCell = selectCell("D1000");
 		nFactCellIndex = getStartCellForIterCalc(oCell);
 		nExpectedCellIndex = AscCommonExcel.getCellIndex(999, 3);
@@ -843,13 +890,13 @@ $(function () {
 		nExpectedCellIndex = AscCommonExcel.getCellIndex(999, 5);
 		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test: initStartCellForIterCalc. Loop chain - D1000 <-> F1000. Selected cell: F1000. Start cell: ${nFactCellIndex}`);
 		g_cCalcRecursion.setStartCellIndex(null);
-		// Loop cell
+		// - Case: Loop cell
 		oCell = selectCell("A1001");
 		nFactCellIndex = getStartCellForIterCalc(oCell);
 		nExpectedCellIndex = AscCommonExcel.getCellIndex(1000, 0);
 		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test: initStartCellForIterCalc. Loop cell - A1001. Selected cell: A1001. Start cell: ${nFactCellIndex}`);
 		g_cCalcRecursion.setStartCellIndex(null);
-		//Negative case sequence chain without loop cell.
+		// - Negative case: sequence chain without loop cell.
 		oCell = selectCell("C1002");
 		nFactCellIndex = getStartCellForIterCalc(oCell);
 		assert.strictEqual(nFactCellIndex, null, `Test: initStartCellForIterCalc. Negative case sequence chain without loop cell. Selected cell: C1002. Start cell: ${nFactCellIndex}`);
@@ -859,16 +906,13 @@ $(function () {
 		oCell = selectCell("A1002");
 		nFactCellIndex = getStartCellForIterCalc(oCell);
 		assert.strictEqual(nFactCellIndex, null, `Test: initStartCellForIterCalc. Negative case sequence chain without loop cell. Selected cell: A1002. Start cell: ${nFactCellIndex}`);
-		// Negative case cell without any chain.
+		// - Negative case: cell without any chain.
 		oCell = selectCell("A1003");
 		nFactCellIndex = getStartCellForIterCalc(oCell);
 		assert.strictEqual(nFactCellIndex, null, `Test: initStartCellForIterCalc. Negative case cell without any chain. Selected cell: A1003. Start cell: ${nFactCellIndex}`);
 		oCell = selectCell("C1004");
 		nFactCellIndex = getStartCellForIterCalc(oCell);
 		assert.strictEqual(nFactCellIndex, null, `Test: initStartCellForIterCalc. Negative case cell without any chain. Selected cell: C1004. Start cell: ${nFactCellIndex}`);
-		// Remove created sheets.
-		wb.removeWorksheet(0);
-		wb.removeWorksheet(0);
 	});
 	QUnit.test("Test: \"ABS\"", function (assert) {
 

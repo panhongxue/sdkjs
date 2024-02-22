@@ -8215,13 +8215,14 @@ PivotChartsManager.prototype.getSeries = function(SeriaConstructor) {
 		seria.tx = new AscFormat.CTx();
 		const strRef = this.getBlankStrRef(false);
 		seria.tx.strRef = strRef;
-		result.setParentToChild(result.strRef);
+		seria.tx.setParentToChild(result.strRef);
 		seria.setParentToChild(seria.tx);
 
 		seria.cat = this.getCat();
 		seria.setParentToChild(seria.cat);
-		
-		seria.val = this.getVal(i);
+
+		//todo
+		seria.val = this.getVal(0);
 		seria.setParentToChild(seria.val);
 
 		result.push(seria);
@@ -8234,14 +8235,12 @@ PivotChartsManager.prototype.getSeries = function(SeriaConstructor) {
  */
 PivotChartsManager.prototype.getColumnRangeName = function(itemIndex) {
 	const pivot = this.pivot;
-	const worksheet = pivot.worksheet;
 	const pivotRange = pivot.getRange();
 	const location = pivot.location;
 	const c = pivotRange.c1 + location.firstDataCol + itemIndex;
 	const r1 = pivotRange.r1;
 	const r2 =  pivotRange.r1 + location.firstDataRow - 1;
-	const range = worksheet.getRange3(r1, c, r2, c);
-	const rangeName = worksheet.getName() + '!' + range.getName();
+	const rangeName = AscFormat.fCreateRef({worksheet: pivot.worksheet, bbox: new Asc.Range(c, r1, c, r2)});
 	return rangeName;
 };
 /**
@@ -8275,7 +8274,6 @@ PivotChartsManager.prototype.getTxStrRef = function(itemIndex, cache) {
  */
 PivotChartsManager.prototype.getBlankRangeName = function(isCat) {
 	const pivot = this.pivot;
-	const worksheet = pivot.worksheet;
 	const pivotRange = pivot.getRange();
 	let r;
 	let c;
@@ -8286,8 +8284,7 @@ PivotChartsManager.prototype.getBlankRangeName = function(isCat) {
 		r = pivotRange.r2;
 		c = pivotRange.c1;
 	}
-	const range = worksheet.getRange3(r, c, r, c);
-	const rangeName = worksheet.getName() + '!' + range.getName();
+	const rangeName = AscFormat.fCreateRef({worksheet: pivot.worksheet, bbox: new Asc.Range(c, r, c, r)});
 	return rangeName;
 };
 /**
@@ -8295,15 +8292,13 @@ PivotChartsManager.prototype.getBlankRangeName = function(isCat) {
  */
 PivotChartsManager.prototype.getRowRangeName = function() {
 	const pivot = this.pivot;
-	const worksheet = pivot.worksheet;
 	const pivotRange = pivot.getRange();
 	const location = pivot.location;
 	const r1 = pivotRange.r1 + location.firstDataRow;
 	const r2 = pivotRange.r2;
 	const c1 = pivotRange.c1;
 	const c2 = pivotRange.c1 + location.firstDataCol - 1;
-	const range = worksheet.getRange3(r1, c1, r2, c2);
-	const rangeName = worksheet.getName() + '!' + range.getName();
+	const rangeName = AscFormat.fCreateRef({worksheet: pivot.worksheet, bbox: new Asc.Range(c1, r1, c2, r2)});
 	return rangeName;
 };
 /**
@@ -8428,14 +8423,12 @@ PivotChartsManager.prototype.getCat = function() {
  */
 PivotChartsManager.prototype.getValRangeName = function(colItemIndex) {
 	const pivot = this.pivot;
-	const worksheet = pivot.worksheet;
 	const pivotRange = pivot.getRange();
 	const location = pivot.location;
 	const r1 = pivotRange.r1 + location.firstDataRow;
 	const r2 = pivotRange.r2;
 	const c = pivotRange.c1 + location.firstDataCol + colItemIndex;
-	const range = worksheet.getRange3(r1, c, r2, c);
-	const rangeName = worksheet.getName() + '!' + range.getName();
+	const rangeName = AscFormat.fCreateRef({worksheet: pivot.worksheet, bbox: new Asc.Range(c, r1, c, r2)});
 	return rangeName;
 };
 /**

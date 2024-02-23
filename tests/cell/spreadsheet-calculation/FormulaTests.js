@@ -682,6 +682,17 @@ $(function () {
 		ws.getRange2("D1000").setValue("=F1000/E1000");
 		ws.getRange2("E1000").setValue("1");
 		ws.getRange2("F1000").setValue("=E1000+D1000");
+		assert.strictEqual(ws.getRange2("D1000").getValue(), "9", "Test: Loop chain - D1000: F1000/E1000 <-> F1000: E1000+D1000. D1000 - 9");
+		assert.strictEqual(ws.getRange2("F1000").getValue(), "10", "Test: Loop chain - D1000: F1000/E1000 <-> F1000: E1000+D1000. F1000 - 10");
+		// - Case: 3D Loop chain - D1001: Sheet2!A1000/E1001 <-> Sheet2!A1000: Sheet1!D1001+Sheet1!E1001
+		let ws2 = wb.createWorksheet(0, "Sheet2");
+		ws.getRange2("D1001").setValue("=Sheet2!D1001/E1001");
+		ws.getRange2("E1001").setValue("1");
+		ws2.getRange2("D1001").setValue("=Sheet1!D1001+Sheet1!E1001");
+		assert.strictEqual(ws.getRange2("D1001").getValue(), "9", "Test: 3D Loop chain - D1001: Sheet2!A1000/E1001 <-> Sheet2!A1000: Sheet1!D1001+Sheet1!E1001. D1001 - 9");
+		assert.strictEqual(ws2.getRange2("D1001").getValue(), "10", "Test: 3D Loop chain - D1001: Sheet2!A1000/E1001 <-> Sheet2!A1000: Sheet1!D1001+Sheet1!E1001. Sheet2!A1000 - 10");
+		// Remove created sheets.
+		wb.removeWorksheet(0);
 		// -  Case: Loop cell - A1001: A1001+1
 		ws.getRange2("A1001").setValue("=A1001+1");
 		assert.strictEqual(ws.getRange2("A1001").getValue(), "10", "Test: Loop cell - A1001: A1001+1. A1001 - 10");
@@ -774,7 +785,7 @@ $(function () {
 		assert.strictEqual(ws.getRange2("A1013").getValue(), "45", "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. A1013 - 45");
 		assert.strictEqual(ws.getRange2("A1014").getValue(), "10", "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. A1014 - 10");
 		// - Case: 3D sequence chain - A1012: A1012+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1
-		let ws2 = wb.createWorksheet(0, "Sheet2");
+		ws2 = wb.createWorksheet(0, "Sheet2");
 		let ws3 = wb.createWorksheet(1, "Sheet3");
 		ws.getRange2("A1012").setValue("=A1012+Sheet2!A1000");
 		ws2.getRange2("A1000").setValue("=A1000+Sheet3!A1000");
@@ -782,6 +793,13 @@ $(function () {
 		assert.strictEqual(ws.getRange2("A1012").getValue(), "45", "Test: 3D sequence chain - A1012: A1012+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1. A1012 - 45");
 		assert.strictEqual(ws2.getRange2("A1000").getValue(), "10", "Test: 3D sequence chain - A1012: A1012+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1. Sheet2!A1000 - 10");
 		assert.strictEqual(ws3.getRange2("A1000").getValue(), "1", "Test: 3D sequence chain - A1012: A1012+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1. Sheet3!A1000 - 1");
+		// - Case: 3D sequence chain  B1012: B1012+Sheet2!B1012, Sheet2!B1012: Sheet2!B1012+Sheet3!B1012, Sheet3!B1012: 1
+		ws.getRange2("B1012").setValue("=B1012+Sheet2!B1012");
+		ws2.getRange2("B1012").setValue("=B1012+Sheet3!B1012");
+		ws3.getRange2("B1012").setValue("1");
+		assert.strictEqual(ws.getRange2("B1012").getValue(), "45", "Test: 3D sequence chain - B1012: B1012+Sheet2!B1012, Sheet2!B1012: Sheet2!B1012+Sheet3!B1012, Sheet3!B1012: 1. B1012 - 45");
+		assert.strictEqual(ws2.getRange2("B1012").getValue(), "10", "Test: 3D sequence chain - B1012: B1012+Sheet2!B1012, Sheet2!B1012: Sheet2!B1012+Sheet3!B1012, Sheet3!B1012: 1. Sheet2!B1012 - 10");
+		assert.strictEqual(ws3.getRange2("B1012").getValue(), "1", "Test: 3D sequence chain - B1012: B1012+Sheet2!B1012, Sheet2!B1012: Sheet2!B1012+Sheet3!B1012, Sheet3!B1012: 1. Sheet3!B1012 - 1");
 		// Remove created sheets.
 		wb.removeWorksheet(0);
 		wb.removeWorksheet(0);
@@ -887,7 +905,7 @@ $(function () {
 		g_cCalcRecursion.setStartCellIndex(null);
 		oCell = selectCell("F1000");
 		nFactCellIndex = getStartCellForIterCalc(oCell);
-		nExpectedCellIndex = AscCommonExcel.getCellIndex(999, 5);
+		nExpectedCellIndex = AscCommonExcel.getCellIndex(999, 3);
 		assert.strictEqual(nFactCellIndex, nExpectedCellIndex, `Test: initStartCellForIterCalc. Loop chain - D1000 <-> F1000. Selected cell: F1000. Start cell: ${nFactCellIndex}`);
 		g_cCalcRecursion.setStartCellIndex(null);
 		// - Case: Loop cell

@@ -6048,7 +6048,7 @@ var wb, ws, wsData, pivotStyle, tableName, defNameName, defNameLocalName, report
 	}
 
 	function testPivotChartSeriesData() {
-		QUnit.test('Test: Show Details', function (assert) {
+		QUnit.test('Test: Chart Series Data', function (assert) {
 			const testData =  [
 				["Region","Gender","Style","Ship date","Units","Price","Cost"],
 				["East","Boy","Tee","1","12","11.04","10.42"],

@@ -8278,11 +8278,11 @@ PivotChartsManager.prototype.getBlankRangeName = function(isCat) {
 	let r;
 	let c;
 	if (isCat) {
-		r = pivotRange.r1;
-		c = pivotRange.c2;
-	} else {
 		r = pivotRange.r2;
 		c = pivotRange.c1;
+	} else {
+		r = pivotRange.r1;
+		c = pivotRange.c2;
 	}
 	const rangeName = AscFormat.fCreateRef({worksheet: pivot.worksheet, bbox: new Asc.Range(c, r, c, r)});
 	return rangeName;
@@ -8390,7 +8390,7 @@ PivotChartsManager.prototype.getCatMultiLvlStrRef = function() {
 			}
 		}
 	}
-	levels.forEach(function(level) {
+	levels.reverse().forEach(function(level) {
 		multiLvlStrCache.addLvl(level);
 	});
 	multiLvlStrCache.setPtCount(levels[levels.length - 1].ptCount);
@@ -8457,17 +8457,27 @@ PivotChartsManager.prototype.getNumRef = function(colItemIndex) {
 	const result = new AscFormat.CStrRef();
 	const rangeName = this.getValRangeName(colItemIndex);
 	const numCache = new AscFormat.CNumLit();
+	const rowFields = pivot.asc_getRowFields();
 	let index = 0;
-	for (let i = 0; i < rowItems.length; i += 1) {
-		const rowItem = rowItems[i];
-		if (rowItem.t === Asc.c_oAscItemType.Data) {
-			const value = this.getCellValue(i, colItemIndex);
-			if (value !== '') {
-				numCache.addNumericPoint(index, value);
+	if (rowFields !== null) {
+		for (let i = 0; i < rowItems.length; i += 1) {
+			const rowItem = rowItems[i];
+			if (rowItem.t === Asc.c_oAscItemType.Data && rowItem.getR() + rowItem.x.length === rowFields.length) {
+				const value = this.getCellValue(i, colItemIndex);
+				if (value !== '') {
+					numCache.addNumericPoint(index, value);
+				}
+				index += 1;
 			}
-			index += 1;
 		}
+	} else {
+		const value = this.getCellValue(0, colItemIndex);
+		if (value !== '') {
+			numCache.addNumericPoint(index, value);
+		}
+		index += 1;
 	}
+	
 	numCache.setPtCount(index);
 
 	const dataFields = pivot.asc_getDataFields();

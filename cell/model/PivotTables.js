@@ -8226,7 +8226,6 @@ PivotChartsManager.prototype.getSeries = function(SeriaConstructor) {
 		seria.cat = this.getCat();
 		seria.setParentToChild(seria.cat);
 
-		//todo
 		seria.val = this.getVal(0);
 		seria.setParentToChild(seria.val);
 

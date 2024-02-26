@@ -8196,7 +8196,12 @@ PivotChartsManager.prototype.getSeries = function(SeriaConstructor) {
 						seria.tx = this.getTx(i, cache);
 						seria.setParentToChild(seria.tx);
 
-						seria.cat = this.getCat();
+						if (result[0]) {
+							seria.cat = new AscFormat.CCat();
+							result[0].cat.fillObject(seria.cat);
+						} else {
+							seria.cat = this.getCat();
+						}
 						seria.setParentToChild(seria.cat);
 						
 						seria.val = this.getVal(i);

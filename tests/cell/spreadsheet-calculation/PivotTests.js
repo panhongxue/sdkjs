@@ -6048,45 +6048,59 @@ var wb, ws, wsData, pivotStyle, tableName, defNameName, defNameLocalName, report
 	}
 
 	function testPivotChartSeriesData() {
-		QUnit.test('Test: Chart Series Data', function (assert) {
-			const testData =  [
-				["Region","Gender","Style","Ship date","Units","Price","Cost"],
-				["East","Boy","Tee","1","12","11.04","10.42"],
-				["East","Boy","Fancy","1","12","13","12.6"],
-				["East","Boy","Golf","2","12","11.96","11.74"],
-				["East","Girl","Tee","2","10","11.27","10.56"],
-				["East","Girl","Golf","1","10","12.12","11.95"],
-				["East","Girl","Fancy","2","10","13.74","13.33"],
-				["West","Boy","Tee","1","11","11.44","10.94"],
-				["West","Boy","Golf","2","11","12.63","11.73"],
-				["West","Boy","Fancy","1","11","12.06","11.51"],
-				["West","Girl","Tee","2","15","13.42","13.29"],
-				["West","Girl","Golf","1","15","11.48","10.67"]
-			];
-			const standardXmls = [
-				[
-					'<c:ser><c:idx val="0"/><c:order val="0"/><c:tx><c:strRef><c:f>Sheet1!$B$3:$B$4</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Boy</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:multiLvlStrRef><c:f>Sheet1!$A$5:$A$13</c:f><c:multiLvlStrCache><c:ptCount val="6"/><c:lvl><c:pt idx="0"><c:v>Fancy</c:v></c:pt><c:pt idx="1"><c:v>Golf</c:v></c:pt><c:pt idx="2"><c:v>Tee</c:v></c:pt><c:pt idx="3"><c:v>Fancy</c:v></c:pt><c:pt idx="4"><c:v>Golf</c:v></c:pt><c:pt idx="5"><c:v>Tee</c:v></c:pt></c:lvl><c:lvl><c:pt idx="0"><c:v>East</c:v></c:pt><c:pt idx="3"><c:v>West</c:v></c:pt></c:lvl></c:multiLvlStrCache></c:multiLvlStrRef></c:cat><c:val><c:numRef><c:f>Sheet1!$B$5:$B$13</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="6"/><c:pt idx="0"><c:v>13</c:v></c:pt><c:pt idx="1"><c:v>11.96</c:v></c:pt><c:pt idx="2"><c:v>11.04</c:v></c:pt><c:pt idx="3"><c:v>12.06</c:v></c:pt><c:pt idx="4"><c:v>12.63</c:v></c:pt><c:pt idx="5"><c:v>11.44</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>',
-					'<c:ser><c:idx val="1"/><c:order val="1"/><c:tx><c:strRef><c:f>Sheet1!$C$3:$C$4</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Girl</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:multiLvlStrRef><c:f>Sheet1!$A$5:$A$13</c:f><c:multiLvlStrCache><c:ptCount val="6"/><c:lvl><c:pt idx="0"><c:v>Fancy</c:v></c:pt><c:pt idx="1"><c:v>Golf</c:v></c:pt><c:pt idx="2"><c:v>Tee</c:v></c:pt><c:pt idx="3"><c:v>Fancy</c:v></c:pt><c:pt idx="4"><c:v>Golf</c:v></c:pt><c:pt idx="5"><c:v>Tee</c:v></c:pt></c:lvl><c:lvl><c:pt idx="0"><c:v>East</c:v></c:pt><c:pt idx="3"><c:v>West</c:v></c:pt></c:lvl></c:multiLvlStrCache></c:multiLvlStrRef></c:cat><c:val><c:numRef><c:f>Sheet1!$C$5:$C$13</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="6"/><c:pt idx="0"><c:v>13.74</c:v></c:pt><c:pt idx="1"><c:v>12.12</c:v></c:pt><c:pt idx="2"><c:v>11.27</c:v></c:pt><c:pt idx="4"><c:v>11.48</c:v></c:pt><c:pt idx="5"><c:v>13.42</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>'
-				],
-			];
-			function getXml(seria) {
-				memory.Seek(0);
-				seria.toXml(memory, 'c:ser');
-				var buffer = new Uint8Array(memory.GetCurPosition());
-				for (var i = 0; i < memory.GetCurPosition(); i++) {
-					buffer[i] = memory.data[i];
-				}
-				if (typeof TextDecoder !== "undefined") {
-					return new TextDecoder("utf-8").decode(buffer);
-				} else {
-					return Utf8ArrayToStr(buffer);
-				}
+		const testData =  [
+			["Region","Gender","Style","Ship date","Units","Price","Cost"],
+			["East","Boy","Tee","1","12","11.04","10.42"],
+			["East","Boy","Fancy","1","12","13","12.6"],
+			["East","Boy","Golf","2","12","11.96","11.74"],
+			["East","Girl","Tee","2","10","11.27","10.56"],
+			["East","Girl","Golf","1","10","12.12","11.95"],
+			["East","Girl","Fancy","2","10","13.74","13.33"],
+			["West","Boy","Tee","1","11","11.44","10.94"],
+			["West","Boy","Golf","2","11","12.63","11.73"],
+			["West","Boy","Fancy","1","11","12.06","11.51"],
+			["West","Girl","Tee","2","15","13.42","13.29"],
+			["West","Girl","Golf","1","15","11.48","10.67"]
+		];
+		const standardXmls = [
+			[
+				'<c:ser><c:idx val="0"/><c:order val="0"/><c:tx><c:strRef><c:f>Sheet1!$B$3:$B$4</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Boy</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:multiLvlStrRef><c:f>Sheet1!$A$5:$A$13</c:f><c:multiLvlStrCache><c:ptCount val="6"/><c:lvl><c:pt idx="0"><c:v>Fancy</c:v></c:pt><c:pt idx="1"><c:v>Golf</c:v></c:pt><c:pt idx="2"><c:v>Tee</c:v></c:pt><c:pt idx="3"><c:v>Fancy</c:v></c:pt><c:pt idx="4"><c:v>Golf</c:v></c:pt><c:pt idx="5"><c:v>Tee</c:v></c:pt></c:lvl><c:lvl><c:pt idx="0"><c:v>East</c:v></c:pt><c:pt idx="3"><c:v>West</c:v></c:pt></c:lvl></c:multiLvlStrCache></c:multiLvlStrRef></c:cat><c:val><c:numRef><c:f>Sheet1!$B$5:$B$13</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="6"/><c:pt idx="0"><c:v>13</c:v></c:pt><c:pt idx="1"><c:v>11.96</c:v></c:pt><c:pt idx="2"><c:v>11.04</c:v></c:pt><c:pt idx="3"><c:v>12.06</c:v></c:pt><c:pt idx="4"><c:v>12.63</c:v></c:pt><c:pt idx="5"><c:v>11.44</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>',
+				'<c:ser><c:idx val="1"/><c:order val="1"/><c:tx><c:strRef><c:f>Sheet1!$C$3:$C$4</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Girl</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:multiLvlStrRef><c:f>Sheet1!$A$5:$A$13</c:f><c:multiLvlStrCache><c:ptCount val="6"/><c:lvl><c:pt idx="0"><c:v>Fancy</c:v></c:pt><c:pt idx="1"><c:v>Golf</c:v></c:pt><c:pt idx="2"><c:v>Tee</c:v></c:pt><c:pt idx="3"><c:v>Fancy</c:v></c:pt><c:pt idx="4"><c:v>Golf</c:v></c:pt><c:pt idx="5"><c:v>Tee</c:v></c:pt></c:lvl><c:lvl><c:pt idx="0"><c:v>East</c:v></c:pt><c:pt idx="3"><c:v>West</c:v></c:pt></c:lvl></c:multiLvlStrCache></c:multiLvlStrRef></c:cat><c:val><c:numRef><c:f>Sheet1!$C$5:$C$13</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="6"/><c:pt idx="0"><c:v>13.74</c:v></c:pt><c:pt idx="1"><c:v>12.12</c:v></c:pt><c:pt idx="2"><c:v>11.27</c:v></c:pt><c:pt idx="4"><c:v>11.48</c:v></c:pt><c:pt idx="5"><c:v>13.42</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>'
+			],
+			[
+				'<c:ser><c:idx val="0"/><c:order val="0"/><c:tx><c:strRef><c:f>Sheet1!$B$3</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Total</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:multiLvlStrRef><c:f>Sheet1!$A$4:$A$12</c:f><c:multiLvlStrCache><c:ptCount val="6"/><c:lvl><c:pt idx="0"><c:v>Fancy</c:v></c:pt><c:pt idx="1"><c:v>Golf</c:v></c:pt><c:pt idx="2"><c:v>Tee</c:v></c:pt><c:pt idx="3"><c:v>Fancy</c:v></c:pt><c:pt idx="4"><c:v>Golf</c:v></c:pt><c:pt idx="5"><c:v>Tee</c:v></c:pt></c:lvl><c:lvl><c:pt idx="0"><c:v>East</c:v></c:pt><c:pt idx="3"><c:v>West</c:v></c:pt></c:lvl></c:multiLvlStrCache></c:multiLvlStrRef></c:cat><c:val><c:numRef><c:f>Sheet1!$B$4:$B$12</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="6"/><c:pt idx="0"><c:v>26.740000000000002</c:v></c:pt><c:pt idx="1"><c:v>24.08</c:v></c:pt><c:pt idx="2"><c:v>22.31</c:v></c:pt><c:pt idx="3"><c:v>12.06</c:v></c:pt><c:pt idx="4"><c:v>24.11</c:v></c:pt><c:pt idx="5"><c:v>24.86</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>'
+			],
+			[
+				'<c:ser><c:idx val="0"/><c:order val="0"/><c:tx><c:strRef><c:f>Sheet1!$B$3:$B$5</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Boy - Fancy</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:strRef><c:f>Sheet1!$A$6</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Total</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f>Sheet1!$B$6</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="1"/><c:pt idx="0"><c:v>25.060000000000002</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>',
+				'<c:ser><c:idx val="1"/><c:order val="1"/><c:tx><c:strRef><c:f>Sheet1!$C$3:$C$5</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Boy - Golf</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:strRef><c:f>Sheet1!$A$6</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Total</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f>Sheet1!$C$6</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="1"/><c:pt idx="0"><c:v>24.590000000000003</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>',
+				'<c:ser><c:idx val="2"/><c:order val="2"/><c:tx><c:strRef><c:f>Sheet1!$D$3:$D$5</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Boy - Tee</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:strRef><c:f>Sheet1!$A$6</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Total</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f>Sheet1!$D$6</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="1"/><c:pt idx="0"><c:v>22.479999999999997</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>',
+				'<c:ser><c:idx val="3"/><c:order val="3"/><c:tx><c:strRef><c:f>Sheet1!$F$3:$F$5</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Girl - Fancy</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:strRef><c:f>Sheet1!$A$6</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Total</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f>Sheet1!$F$6</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="1"/><c:pt idx="0"><c:v>13.74</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>',
+				'<c:ser><c:idx val="4"/><c:order val="4"/><c:tx><c:strRef><c:f>Sheet1!$G$3:$G$5</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Girl - Golf</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:strRef><c:f>Sheet1!$A$6</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Total</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f>Sheet1!$G$6</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="1"/><c:pt idx="0"><c:v>23.6</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>',
+				'<c:ser><c:idx val="5"/><c:order val="5"/><c:tx><c:strRef><c:f>Sheet1!$H$3:$H$5</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Girl - Tee</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:strRef><c:f>Sheet1!$A$6</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Total</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f>Sheet1!$H$6</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="1"/><c:pt idx="0"><c:v>24.689999999999998</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>',
+			]
+		];
+		function getXml(seria) {
+			memory.Seek(0);
+			seria.toXml(memory, 'c:ser');
+			var buffer = new Uint8Array(memory.GetCurPosition());
+			for (var i = 0; i < memory.GetCurPosition(); i++) {
+				buffer[i] = memory.data[i];
 			}
+			if (typeof TextDecoder !== "undefined") {
+				return new TextDecoder("utf-8").decode(buffer);
+			} else {
+				return Utf8ArrayToStr(buffer);
+			}
+		}
+		QUnit.test('Test: Chart Series Data 1', function (assert) {
+
 			const testDataRange = new Asc.Range(0, 0, testData[0].length - 1, testData.length - 1);
 			fillData(wsData, testData, testDataRange);
 			const dataRef = wsData.getName() + "!" + testDataRange.getName();
+	
 			const pivot = api._asc_insertPivot(wb, dataRef, ws, reportRange);
 			pivot.asc_getStyleInfo().asc_setName(api, pivot, pivotStyle);
+
 			pivot.asc_addRowField(api, 0);
 			pivot.asc_addRowField(api, 2);
 			pivot.asc_addColField(api, 1);
@@ -6096,8 +6110,52 @@ var wb, ws, wsData, pivotStyle, tableName, defNameName, defNameLocalName, report
 			const seriesXml = series.map(getXml);
 			seriesXml.forEach(function(seriaXml, index) {
 				assert.strictEqual(seriaXml, standardXmls[0][index], 'Region, Style | Gender | Price');
-			})
+			});
+
+			ws.deletePivotTable(pivot.Get_Id());
+
+		});
+
+		QUnit.test('Test: Chart Series Data 2', function (assert) {
+			const testDataRange = new Asc.Range(0, 0, testData[0].length - 1, testData.length - 1);
+			fillData(wsData, testData, testDataRange);
+			const dataRef = wsData.getName() + "!" + testDataRange.getName();
+	
+			const pivot = api._asc_insertPivot(wb, dataRef, ws, reportRange);
+			pivot.asc_getStyleInfo().asc_setName(api, pivot, pivotStyle);
+
+			pivot.asc_addRowField(api, 0);
+			pivot.asc_addRowField(api, 2);
+			pivot.asc_addDataField(api, 5);
+
+			const series = pivot.getSeries(AscFormat.CBarSeries);
+			const seriesXml = series.map(getXml);
+			seriesXml.forEach(function(seriaXml, index) {
+				assert.strictEqual(seriaXml, standardXmls[1][index], 'Region, Style | Blank | Price');
+			});
+
+			ws.deletePivotTable(pivot.Get_Id());
+		});
+
+		QUnit.test('Test: Chart Series Data 3', function (assert) {
+			const testDataRange = new Asc.Range(0, 0, testData[0].length - 1, testData.length - 1);
+			fillData(wsData, testData, testDataRange);
+			const dataRef = wsData.getName() + "!" + testDataRange.getName();
+	
+			const pivot = api._asc_insertPivot(wb, dataRef, ws, reportRange);
+			pivot.asc_getStyleInfo().asc_setName(api, pivot, pivotStyle);
+
+			pivot.asc_addColField(api, 1);
+			pivot.asc_addColField(api, 2);
+			pivot.asc_addDataField(api, 5);
+
+			const series = pivot.getSeries(AscFormat.CBarSeries);
+			const seriesXml = series.map(getXml);
+			seriesXml.forEach(function(seriaXml, index) {
+				assert.strictEqual(seriaXml, standardXmls[2][index], 'Blank | Gender, Style | Price');
+			});
 			
+			ws.deletePivotTable(pivot.Get_Id());
 		});
 	}
 

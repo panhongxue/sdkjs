@@ -8387,7 +8387,12 @@ PivotChartsManager.prototype.getCatMultiLvlStrRef = function() {
 			for (let j = 0; j < rowItem.x.length; j += 1) {
 				const level = r + j;
 				const value = this.getCellValueByRowItem(i, r + j);
-				levels[level].addStringPoint(index, value);
+
+				const pt = new AscFormat.CStringPoint();
+				pt.setIdx(index);
+				pt.setVal(value);
+
+				levels[level].addPt(pt);
 				if (level === rowFields.length - 1) {
 					index += 1;
 				}
@@ -8397,7 +8402,7 @@ PivotChartsManager.prototype.getCatMultiLvlStrRef = function() {
 	levels.reverse().forEach(function(level) {
 		multiLvlStrCache.addLvl(level);
 	});
-	multiLvlStrCache.setPtCount(levels[levels.length - 1].ptCount);
+	multiLvlStrCache.setPtCount(index);
 	result.f = rangeName;
 	result.multiLvlStrCache = multiLvlStrCache;
 	result.setParentToChild(result.multiLvlStrCache);
@@ -8458,7 +8463,7 @@ PivotChartsManager.prototype.getCellValue = function(rowItemIndex, colItemIndex)
 PivotChartsManager.prototype.getNumRef = function(colItemIndex) {
 	const pivot = this.pivot;
 	const rowItems = pivot.getRowItems();
-	const result = new AscFormat.CStrRef();
+	const result = new AscFormat.CNumRef();
 	const rangeName = this.getValRangeName(colItemIndex);
 	const numCache = new AscFormat.CNumLit();
 	const rowFields = pivot.asc_getRowFields();

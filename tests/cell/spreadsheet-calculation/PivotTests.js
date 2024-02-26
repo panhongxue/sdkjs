@@ -6052,8 +6052,8 @@ var wb, ws, wsData, pivotStyle, tableName, defNameName, defNameLocalName, report
 			const testData =  [
 				["Region","Gender","Style","Ship date","Units","Price","Cost"],
 				["East","Boy","Tee","1","12","11.04","10.42"],
-				["East","Boy","Golf","1","12","13","12.6"],
-				["East","Boy","Fancy","2","12","11.96","11.74"],
+				["East","Boy","Fancy","1","12","13","12.6"],
+				["East","Boy","Golf","2","12","11.96","11.74"],
 				["East","Girl","Tee","2","10","11.27","10.56"],
 				["East","Girl","Golf","1","10","12.12","11.95"],
 				["East","Girl","Fancy","2","10","13.74","13.33"],
@@ -6065,8 +6065,8 @@ var wb, ws, wsData, pivotStyle, tableName, defNameName, defNameLocalName, report
 			];
 			const standardXmls = [
 				[
-					'<c:ser><c:idx val="0" /><c:order val="0" /><c:tx><c:strRef><c:f>Sheet2!$B$3:$B$4</c:f><c:strCache><c:ptCount val="1" /><c:pt idx="0"><c:v>Boy</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:multiLvlStrRef><c:f>Sheet2!$A$5:$A$13</c:f><c:multiLvlStrCache><c:ptCount val="6" /><c:lvl><c:pt idx="0"><c:v>Fancy</c:v></c:pt><c:pt idx="1"><c:v>Golf</c:v></c:pt><c:pt idx="2"><c:v>Tee</c:v></c:pt><c:pt idx="3"><c:v>Fancy</c:v></c:pt><c:pt idx="4"><c:v>Golf</c:v></c:pt><c:pt idx="5"><c:v>Tee</c:v></c:pt></c:lvl><c:lvl><c:pt idx="0"><c:v>East</c:v></c:pt><c:pt idx="3"><c:v>West</c:v></c:pt></c:lvl></c:multiLvlStrCache></c:multiLvlStrRef></c:cat><c:val><c:numRef><c:f>Sheet2!$B$5:$B$13</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="6" /><c:pt idx="0"><c:v>13</c:v></c:pt><c:pt idx="1"><c:v>11.96</c:v></c:pt><c:pt idx="2"><c:v>11.04</c:v></c:pt><c:pt idx="3"><c:v>12.06</c:v></c:pt><c:pt idx="4"><c:v>12.63</c:v></c:pt><c:pt idx="5"><c:v>11.44</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>',
-					'<c:ser><c:idx val="1" /><c:order val="1" /><c:tx><c:strRef><c:f>Sheet2!$C$3:$C$4</c:f><c:strCache><c:ptCount val="1" /><c:pt idx="0"><c:v>Girl</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:multiLvlStrRef><c:f>Sheet2!$A$5:$A$13</c:f><c:multiLvlStrCache><c:ptCount val="6" /><c:lvl><c:pt idx="0"><c:v>Fancy</c:v></c:pt><c:pt idx="1"><c:v>Golf</c:v></c:pt><c:pt idx="2"><c:v>Tee</c:v></c:pt><c:pt idx="3"><c:v>Fancy</c:v></c:pt><c:pt idx="4"><c:v>Golf</c:v></c:pt><c:pt idx="5"><c:v>Tee</c:v></c:pt></c:lvl><c:lvl><c:pt idx="0"><c:v>East</c:v></c:pt><c:pt idx="3"><c:v>West</c:v></c:pt></c:lvl></c:multiLvlStrCache></c:multiLvlStrRef></c:cat><c:val><c:numRef><c:f>Sheet2!$C$5:$C$13</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="6" /><c:pt idx="0"><c:v>13.74</c:v></c:pt><c:pt idx="1"><c:v>12.12</c:v></c:pt><c:pt idx="2"><c:v>11.27</c:v></c:pt><c:pt idx="4"><c:v>11.48</c:v></c:pt><c:pt idx="5"><c:v>13.42</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>'
+					'<c:ser><c:idx val="0"/><c:order val="0"/><c:tx><c:strRef><c:f>Sheet1!$B$3:$B$4</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Boy</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:multiLvlStrRef><c:f>Sheet1!$A$5:$A$13</c:f><c:multiLvlStrCache><c:ptCount val="6"/><c:lvl><c:pt idx="0"><c:v>Fancy</c:v></c:pt><c:pt idx="1"><c:v>Golf</c:v></c:pt><c:pt idx="2"><c:v>Tee</c:v></c:pt><c:pt idx="3"><c:v>Fancy</c:v></c:pt><c:pt idx="4"><c:v>Golf</c:v></c:pt><c:pt idx="5"><c:v>Tee</c:v></c:pt></c:lvl><c:lvl><c:pt idx="0"><c:v>East</c:v></c:pt><c:pt idx="3"><c:v>West</c:v></c:pt></c:lvl></c:multiLvlStrCache></c:multiLvlStrRef></c:cat><c:val><c:numRef><c:f>Sheet1!$B$5:$B$13</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="6"/><c:pt idx="0"><c:v>13</c:v></c:pt><c:pt idx="1"><c:v>11.96</c:v></c:pt><c:pt idx="2"><c:v>11.04</c:v></c:pt><c:pt idx="3"><c:v>12.06</c:v></c:pt><c:pt idx="4"><c:v>12.63</c:v></c:pt><c:pt idx="5"><c:v>11.44</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>',
+					'<c:ser><c:idx val="1"/><c:order val="1"/><c:tx><c:strRef><c:f>Sheet1!$C$3:$C$4</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Girl</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:multiLvlStrRef><c:f>Sheet1!$A$5:$A$13</c:f><c:multiLvlStrCache><c:ptCount val="6"/><c:lvl><c:pt idx="0"><c:v>Fancy</c:v></c:pt><c:pt idx="1"><c:v>Golf</c:v></c:pt><c:pt idx="2"><c:v>Tee</c:v></c:pt><c:pt idx="3"><c:v>Fancy</c:v></c:pt><c:pt idx="4"><c:v>Golf</c:v></c:pt><c:pt idx="5"><c:v>Tee</c:v></c:pt></c:lvl><c:lvl><c:pt idx="0"><c:v>East</c:v></c:pt><c:pt idx="3"><c:v>West</c:v></c:pt></c:lvl></c:multiLvlStrCache></c:multiLvlStrRef></c:cat><c:val><c:numRef><c:f>Sheet1!$C$5:$C$13</c:f><c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="6"/><c:pt idx="0"><c:v>13.74</c:v></c:pt><c:pt idx="1"><c:v>12.12</c:v></c:pt><c:pt idx="2"><c:v>11.27</c:v></c:pt><c:pt idx="4"><c:v>11.48</c:v></c:pt><c:pt idx="5"><c:v>13.42</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>'
 				],
 			];
 			function getXml(seria) {
@@ -6166,6 +6166,6 @@ var wb, ws, wsData, pivotStyle, tableName, defNameName, defNameLocalName, report
 
 		testPivotShowDetails();
 
-		testPivotChartSeriesData()
+		testPivotChartSeriesData();
 	}
 });

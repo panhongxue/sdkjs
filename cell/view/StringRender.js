@@ -123,6 +123,76 @@
 		};
 
 
+
+		function CCacheData(oObject) {
+			this.object = oObject;
+			this.locked = false;
+		}
+		CCacheData.prototype.lock = function() {
+			this.locked = true;
+		};
+		CCacheData.prototype.unlock = function() {
+			this.locked = false;
+		};
+		CCacheData.prototype.getId = function() {
+			return this.object.Get_Id();
+		};
+		CCacheData.prototype.isFree = function() {
+			return !this.locked;
+		};
+		CCacheData.prototype.getObject = function() {
+			return this.object;
+		};
+
+		function CRunCache() {
+			this.data = {};
+		}
+		CRunCache.prototype.getAndLockRun = function () {
+			for(let sId in this.data) {
+				if(this.data.hasOwnProperty(sId)) {
+					let oData = this.data[sId];
+					if(oData && oData.isFree()) {
+						oData.lock();
+						return oData.object;
+					}
+				}
+			}
+			let oNewData = this.createRunCacheData();
+			this.data[oNewData.getId()] = oNewData;
+			oNewData.lock();
+			return oNewData.object;
+		};
+		CRunCache.prototype.unlockRun = function (oRun) {
+			for(let sId in this.data) {
+				if(this.data.hasOwnProperty(sId)) {
+					let oData = this.data[sId];
+					if(oData && oData.getObject() === oRun) {
+						oData.unlock();
+						return;
+					}
+				}
+			}
+		};
+		CRunCache.prototype.createRunCacheData = function () {
+			return new CCacheData(AscFormat.ExecuteNoHistory(
+				function () {
+					return new AscWord.CRun();
+				}
+			));
+		};
+		CRunCache.prototype.unlockAll = function () {
+			for(let sId in this.data) {
+				if(this.data.hasOwnProperty(sId)) {
+					let oData = this.data[sId];
+					if(oData) {
+						oData.unlock();
+					}
+				}
+			}
+		};
+
+		let RUN_CACHE = new CRunCache();
+
 		/**
 		 * Formatted text render
 		 * -----------------------------------------------------------------------------
@@ -866,6 +936,7 @@
 					fCallback(oTxt);
 				}
 			}
+			RUN_CACHE.unlockAll();
 		};
 
 		/**
@@ -971,6 +1042,7 @@
 
 		StringRender.prototype.getLines = function () {
 			let oParagraph = this.getCalculatedParagraph();
+			RUN_CACHE.unlockAll();
 			return oParagraph.Lines;
 		};
 
@@ -1099,6 +1171,7 @@
 				TW = this.mmToPixels(oResult.Max);
 				TH = this.mmToPixels(oParagraph.Parent.GetSummaryHeight()) + 1;
 			}
+			RUN_CACHE.unlockAll();
 			return new asc.TextMetrics(TW, TH, 0, BL, 0, 0);
 		};
 
@@ -1126,7 +1199,8 @@
 
 		StringRender.prototype.createRun = function(aChars, oFont) {
 			return AscFormat.ExecuteNoHistory(function(){
-				let oRun = new AscWord.CRun();
+				let oRun = RUN_CACHE.getAndLockRun();
+				oRun.Content.length = 0;
 				for(let nChar = 0; nChar < aChars.length; ++nChar) {
 					let nUnicode = aChars[nChar];
 					if (AscCommon.IsSpace(nUnicode)) {
@@ -1147,7 +1221,12 @@
 				}
 				let oPr = new AscWord.CTextPr();
 				oPr.SetFromFontObject(oFont);
-				oRun.SetPr(oPr);
+				if(!oRun.RecalcInfo.TextPr) {
+					oRun.CompiledPr.Merge(oPr);
+				}
+				else {
+					oRun.SetPr(oPr);
+				}
 				return oRun;
 			}, this, []);
 		};
@@ -1159,20 +1238,29 @@
 		};
 		StringRender.prototype.createParagraph = function() {
 			let oParagraph = AscFormat.ExecuteNoHistory(function() {
+
+				let oParagraph;
 				let bWrap = this.flags && (this.flags.wrapText || this.flags.wrapOnlyCE) && !this.flags.isNumberFormat;
 				let bWrapNL = this.flags && this.flags.wrapOnlyNL;
 				let bVerticalText = this.flags && this.flags.verticalText;
-				let aFragments = this.fragments;
+				if(this.paragraph) {
+					oParagraph = this.paragraph;
+					oParagraph.Content.splice(0, oParagraph.Content.length - 1);
+				}
+				else {
 
-				let oShape = new AscFormat.CShape();
-				oShape.setTxBody(AscFormat.CreateTextBodyFromString("", this, oShape));
-				let oContent = oShape.txBody.content;
-				let oParagraph = oContent.Content[0];
-				let nAlign = AscCommon.align_Left;
-				//if(this.flags && AscFormat.isRealNumber(this.flags.textAlign)) {
-				//	nAlign = this.flags.textAlign;
-				//}
-				oParagraph.SetParagraphAlign(nAlign)
+					let oShape = new AscFormat.CShape();
+					oShape.setTxBody(AscFormat.CreateTextBodyFromString("", this, oShape));
+					let oContent = oShape.txBody.content;
+					oParagraph = oContent.Content[0];
+					let nAlign = AscCommon.align_Left;
+					//if(this.flags && AscFormat.isRealNumber(this.flags.textAlign)) {
+					//	nAlign = this.flags.textAlign;
+					//}
+					oParagraph.SetParagraphAlign(nAlign);
+					this.paragraph = oParagraph;
+				}
+				let aFragments = this.fragments;
 				for(let nFgm = 0; nFgm < aFragments.length; ++nFgm) {
 					let oFgm = aFragments[nFgm];
 					if (oFgm.isInitCharCodes()) {
@@ -1268,6 +1356,7 @@
 			oGraphics.transform3(new AscCommon.CMatrix());
 			oParagraph.Draw(0, oGraphics);
 			oGraphics.RestoreGrState();
+			RUN_CACHE.unlockAll();
 		};
 
 		StringRender.prototype.getInternalState = function () {

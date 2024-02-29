@@ -1978,9 +1978,9 @@
     var ct = ws.getCursorTypeFromXY(x, y);
 
     if (ct.target === c_oTargetType.FillHandle) {
-		ws.applyFillHandleDoubleClick();
-    	asc_applyFunction(callback);
-	} else if (ct.target === c_oTargetType.ColumnResize || ct.target === c_oTargetType.RowResize) {
+        ws.applyFillHandleDoubleClick();
+        asc_applyFunction(callback);
+    } else if (ct.target === c_oTargetType.ColumnResize || ct.target === c_oTargetType.RowResize) {
       if (ct.target === c_oTargetType.ColumnResize) {
       	ws.autoFitColumnsWidth(ct.col);
       } else {
@@ -1990,8 +1990,9 @@
     } else {
       // In view mode or click on column | row | all | frozenMove | drawing object do not process
       if (!this.canEdit() || c_oTargetType.ColumnHeader === ct.target || c_oTargetType.RowHeader === ct.target ||
-		  c_oTargetType.Corner === ct.target || c_oTargetType.FrozenAnchorH === ct.target ||
-		  c_oTargetType.FrozenAnchorV === ct.target || ws.objectRender.checkCursorDrawingObject(x, y)) {
+          c_oTargetType.Corner === ct.target || c_oTargetType.FrozenAnchorH === ct.target ||
+          c_oTargetType.FrozenAnchorV === ct.target || ws.objectRender.checkCursorDrawingObject(x, y) ||
+          c_oTargetType.ColumnRowHeaderMove === ct.target) {
         asc_applyFunction(callback);
         return;
       }
@@ -5950,7 +5951,8 @@
 		if (-1 !== this.CurId) {
 			return this.Direction ? this.CurId + 1 : this.CurId - 1;
 		} else {
-			let ws = this.wb.getActiveWS();
+			// it's necessary because into the docbuilder "this.wb.wsActive" is "-1" and search doesn't work
+			let ws = this.wb.model.getActiveWs();
 			let selectionRange = (this.props && this.props.selectionRange) || ws.selectionRange || ws.copySelection;
 
 			let activeCell = this.props.activeCell ? this.props.activeCell : selectionRange.activeCell;

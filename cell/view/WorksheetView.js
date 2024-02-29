@@ -7654,9 +7654,9 @@
 			arnIntersection = activeMoveRange.intersectionSimple(range);
 			if (arnIntersection) {
 				// Координаты для перемещения диапазона
-				_x1 = this._getColLeft(arnIntersection.c1) - offsetX - 2 - 1*isRetinaWidth*bInsertBetweenRowCol;
+				_x1 = this._getColLeft(arnIntersection.c1) - offsetX - 2 - 1*isRetinaWidth;
 				_x2 = this._getColLeft(arnIntersection.c2 + 1) - offsetX + 1 + 2;
-				_y1 = this._getRowTop(arnIntersection.r1) - offsetY - 2 - 1*isRetinaWidth*bInsertBetweenRowCol;
+				_y1 = this._getRowTop(arnIntersection.r1) - offsetY - 2 - 1*isRetinaWidth;
 				_y2 = this._getRowTop(arnIntersection.r2 + 1) - offsetY + 1 + 2;
 
 				// Выбираем наибольший range для очистки
@@ -10221,7 +10221,7 @@
 		}
 
 		let isMobileVersion = this.workbook && this.workbook.Api && this.workbook.Api.isMobileVersion;
-		var epsChangeSize = 3 * AscCommon.global_mouseEvent.KoefPixToMM;
+		var epsChangeSize = AscCommon.AscBrowser.convertToRetinaValue(3 * AscCommon.global_mouseEvent.KoefPixToMM, true);
 		if (x <= this.cellsLeft && y >= this.cellsTop && x >= this.headersLeft) {
 			r = this._findRowUnderCursor(y, true);
 			if (r === null) {
@@ -15884,6 +15884,7 @@
 					var modelExternalReference = t.model.workbook.externalReferences[pasteLinkIndex - 1];
 					if (modelExternalReference) {
 						modelExternalReference.updateSheetData(pasteSheetLinkName, pastedWb.aWorksheets[0], [activeCellsPasteFragment]);
+						t.model.workbook.changeExternalReference(pasteLinkIndex, modelExternalReference);
 					}
 				} else if (linkInfo.type === -2) {
 					//добавляем

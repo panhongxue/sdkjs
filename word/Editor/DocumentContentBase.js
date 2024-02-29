@@ -71,6 +71,11 @@ CDocumentContentBase.prototype.GetLogicDocument = function()
 
 	return this.LogicDocument;
 };
+CDocumentContentBase.prototype.getDrawingDocument = function()
+{
+	let logicDocument = this.GetLogicDocument();
+	return logicDocument ? logicDocument.GetDrawingDocument() : null;
+};
 /**
  * Получаем тип активной части документа.
  * @returns {(docpostype_Content | docpostype_HdrFtr | docpostype_DrawingObjects | docpostype_Footnotes)}
@@ -443,7 +448,7 @@ CDocumentContentBase.prototype.MoveCursorToNearestPos = function(oNearestPos)
 };
 CDocumentContentBase.prototype.private_CreateNewParagraph = function()
 {
-	var oPara = new Paragraph(this.DrawingDocument, this, this.bPresentation === true);
+	var oPara = new AscWord.Paragraph(this, this.bPresentation === true);
 	oPara.Correct_Content();
 	oPara.MoveCursorToStartPos(false);
 	return oPara;
@@ -1287,7 +1292,7 @@ CDocumentContentBase.prototype.private_AddContentControl = function(nContentCont
 				}
 				else
 				{
-					var oNewParagraph = new Paragraph(this.DrawingDocument, this);
+					var oNewParagraph = new AscWord.Paragraph();
 					oElement.Split(oNewParagraph);
 
 					this.AddToContent(nContentPos + 1, oNewParagraph);
@@ -1534,8 +1539,9 @@ CDocumentContentBase.prototype.GetTablesOfFigures = function(arrComplexFields)
 /**
  * Добавляем заданный текст в текущей позиции
  * @param {String} sText
+ * @param {AscWord.CTextPr} textPr
  */
-CDocumentContentBase.prototype.AddText = function(sText)
+CDocumentContentBase.prototype.AddText = function(sText, textPr)
 {
 	if (this.IsSelectionUse())
 		this.Remove(1, true, false, true, false);
@@ -1544,12 +1550,14 @@ CDocumentContentBase.prototype.AddText = function(sText)
 	if (!oParagraph)
 		return;
 
-	var oTextPr = oParagraph.GetDirectTextPr();
-	if (!oTextPr)
-		oTextPr = new CTextPr();
-
+	if (!textPr)
+		textPr = oParagraph.GetDirectTextPr();
+	
 	var oRun = new ParaRun(oParagraph);
-	oRun.SetPr(oTextPr);
+	
+	if (textPr)
+		oRun.SetPr(textPr);
+	
 	oRun.AddText(sText);
 	oParagraph.Add(oRun);
 };

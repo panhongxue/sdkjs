@@ -31,10 +31,6 @@
  */
 QUnit.config.autostart = false;
 $(function() {
-	function fillData(ws, data, range) {
-		range = ws.getRange4(range.r1, range.c1);
-		range.fillData(data);
-	}
 	let api = new Asc.spreadsheet_api({
 		'id-view': 'editor_sdk'
 	});

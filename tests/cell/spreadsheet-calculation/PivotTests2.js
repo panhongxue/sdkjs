@@ -31,13 +31,10 @@
  */
 QUnit.config.autostart = false;
 $(function() {
-	let documents = {
-		"test_formats": Asc.test_formats,
-		"test_formats_redo": Asc.test_formats_redo,
-		"test_formats2": Asc.test_formats,
-		"test_formats2_redo": Asc.test_formats_redo,
+	function fillData(ws, data, range) {
+		range = ws.getRange4(range.r1, range.c1);
+		range.fillData(data);
 	}
-	let files = {};
 	let api = new Asc.spreadsheet_api({
 		'id-view': 'editor_sdk'
 	});
@@ -444,5 +441,68 @@ $(function() {
 				assert.deepEqual(getValues(pivot), values, message);
 			});
 		});
+		(function testPivotChartSeriesData() {
+			const standardXmls = [
+				[
+					'<c:ser><c:idx val=\"0\"/><c:order val=\"0\"/><c:tx><c:strRef><c:f xml:space=\"preserve\">&apos;Region, Style | Gender | Price&apos;!$B$3:$B$4</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Boy</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:multiLvlStrRef><c:f xml:space=\"preserve\">&apos;Region, Style | Gender | Price&apos;!$A$5:$A$13</c:f><c:multiLvlStrCache><c:ptCount val=\"6\"/><c:lvl><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Fancy</c:v></c:pt><c:pt idx=\"1\"><c:v xml:space=\"preserve\">Golf</c:v></c:pt><c:pt idx=\"2\"><c:v xml:space=\"preserve\">Tee</c:v></c:pt><c:pt idx=\"3\"><c:v xml:space=\"preserve\">Fancy</c:v></c:pt><c:pt idx=\"4\"><c:v xml:space=\"preserve\">Golf</c:v></c:pt><c:pt idx=\"5\"><c:v xml:space=\"preserve\">Tee</c:v></c:pt></c:lvl><c:lvl><c:pt idx=\"0\"><c:v xml:space=\"preserve\">East</c:v></c:pt><c:pt idx=\"3\"><c:v xml:space=\"preserve\">West</c:v></c:pt></c:lvl></c:multiLvlStrCache></c:multiLvlStrRef></c:cat><c:val><c:numRef><c:f xml:space=\"preserve\">&apos;Region, Style | Gender | Price&apos;!$B$5:$B$13</c:f><c:numCache><c:formatCode xml:space=\"preserve\">General</c:formatCode><c:ptCount val=\"6\"/><c:pt idx=\"0\"><c:v>13</c:v></c:pt><c:pt idx=\"1\"><c:v>11.96</c:v></c:pt><c:pt idx=\"2\"><c:v>11.04</c:v></c:pt><c:pt idx=\"3\"><c:v>12.06</c:v></c:pt><c:pt idx=\"4\"><c:v>12.63</c:v></c:pt><c:pt idx=\"5\"><c:v>11.44</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>',
+					'<c:ser><c:idx val=\"1\"/><c:order val=\"1\"/><c:tx><c:strRef><c:f xml:space=\"preserve\">&apos;Region, Style | Gender | Price&apos;!$C$3:$C$4</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Girl</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:multiLvlStrRef><c:f xml:space=\"preserve\">&apos;Region, Style | Gender | Price&apos;!$A$5:$A$13</c:f><c:multiLvlStrCache><c:ptCount val=\"6\"/><c:lvl><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Fancy</c:v></c:pt><c:pt idx=\"1\"><c:v xml:space=\"preserve\">Golf</c:v></c:pt><c:pt idx=\"2\"><c:v xml:space=\"preserve\">Tee</c:v></c:pt><c:pt idx=\"3\"><c:v xml:space=\"preserve\">Fancy</c:v></c:pt><c:pt idx=\"4\"><c:v xml:space=\"preserve\">Golf</c:v></c:pt><c:pt idx=\"5\"><c:v xml:space=\"preserve\">Tee</c:v></c:pt></c:lvl><c:lvl><c:pt idx=\"0\"><c:v xml:space=\"preserve\">East</c:v></c:pt><c:pt idx=\"3\"><c:v xml:space=\"preserve\">West</c:v></c:pt></c:lvl></c:multiLvlStrCache></c:multiLvlStrRef></c:cat><c:val><c:numRef><c:f xml:space=\"preserve\">&apos;Region, Style | Gender | Price&apos;!$C$5:$C$13</c:f><c:numCache><c:formatCode xml:space=\"preserve\">General</c:formatCode><c:ptCount val=\"6\"/><c:pt idx=\"0\"><c:v>13.74</c:v></c:pt><c:pt idx=\"1\"><c:v>12.12</c:v></c:pt><c:pt idx=\"2\"><c:v>11.27</c:v></c:pt><c:pt idx=\"4\"><c:v>11.48</c:v></c:pt><c:pt idx=\"5\"><c:v>13.42</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>'
+				],
+				[
+					'<c:ser><c:idx val=\"0\"/><c:order val=\"0\"/><c:tx><c:strRef><c:f xml:space=\"preserve\">&apos;Region, Style | blank | Price&apos;!$B$3</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Total</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:multiLvlStrRef><c:f xml:space=\"preserve\">&apos;Region, Style | blank | Price&apos;!$A$4:$A$12</c:f><c:multiLvlStrCache><c:ptCount val=\"6\"/><c:lvl><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Fancy</c:v></c:pt><c:pt idx=\"1\"><c:v xml:space=\"preserve\">Golf</c:v></c:pt><c:pt idx=\"2\"><c:v xml:space=\"preserve\">Tee</c:v></c:pt><c:pt idx=\"3\"><c:v xml:space=\"preserve\">Fancy</c:v></c:pt><c:pt idx=\"4\"><c:v xml:space=\"preserve\">Golf</c:v></c:pt><c:pt idx=\"5\"><c:v xml:space=\"preserve\">Tee</c:v></c:pt></c:lvl><c:lvl><c:pt idx=\"0\"><c:v xml:space=\"preserve\">East</c:v></c:pt><c:pt idx=\"3\"><c:v xml:space=\"preserve\">West</c:v></c:pt></c:lvl></c:multiLvlStrCache></c:multiLvlStrRef></c:cat><c:val><c:numRef><c:f xml:space=\"preserve\">&apos;Region, Style | blank | Price&apos;!$B$4:$B$12</c:f><c:numCache><c:formatCode xml:space=\"preserve\">General</c:formatCode><c:ptCount val=\"6\"/><c:pt idx=\"0\"><c:v>26.740000000000002</c:v></c:pt><c:pt idx=\"1\"><c:v>24.08</c:v></c:pt><c:pt idx=\"2\"><c:v>22.31</c:v></c:pt><c:pt idx=\"3\"><c:v>12.06</c:v></c:pt><c:pt idx=\"4\"><c:v>24.11</c:v></c:pt><c:pt idx=\"5\"><c:v>24.86</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>'
+				],
+				[
+					'<c:ser><c:idx val=\"0\"/><c:order val=\"0\"/><c:tx><c:strRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$B$3:$B$5</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Boy - Fancy</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:strRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$A$6</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Total</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$B$6</c:f><c:numCache><c:formatCode xml:space=\"preserve\">General</c:formatCode><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v>25.060000000000002</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>',
+					'<c:ser><c:idx val=\"1\"/><c:order val=\"1\"/><c:tx><c:strRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$C$3:$C$5</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Boy - Golf</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:strRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$A$6</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Total</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$C$6</c:f><c:numCache><c:formatCode xml:space=\"preserve\">General</c:formatCode><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v>24.590000000000003</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>',
+					'<c:ser><c:idx val=\"2\"/><c:order val=\"2\"/><c:tx><c:strRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$D$3:$D$5</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Boy - Tee</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:strRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$A$6</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Total</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$D$6</c:f><c:numCache><c:formatCode xml:space=\"preserve\">General</c:formatCode><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v>22.479999999999997</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>',
+					'<c:ser><c:idx val=\"3\"/><c:order val=\"3\"/><c:tx><c:strRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$F$3:$F$5</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Girl - Fancy</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:strRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$A$6</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Total</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$F$6</c:f><c:numCache><c:formatCode xml:space=\"preserve\">General</c:formatCode><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v>13.74</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>',
+					'<c:ser><c:idx val=\"4\"/><c:order val=\"4\"/><c:tx><c:strRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$G$3:$G$5</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Girl - Golf</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:strRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$A$6</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Total</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$G$6</c:f><c:numCache><c:formatCode xml:space=\"preserve\">General</c:formatCode><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v>23.6</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>',
+					'<c:ser><c:idx val=\"5\"/><c:order val=\"5\"/><c:tx><c:strRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$H$3:$H$5</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Girl - Tee</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:strRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$A$6</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Total</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f xml:space=\"preserve\">&apos;blank | Gender, Style | Price&apos;!$H$6</c:f><c:numCache><c:formatCode xml:space=\"preserve\">General</c:formatCode><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v>24.689999999999998</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser>',
+				],
+				[
+					`<c:ser><c:idx val=\"0\"/><c:order val=\"0\"/><c:tx><c:strRef><c:f xml:space=\"preserve\">&apos;Region, Style | Gender | blank&apos;!$B$3:$B$4</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Boy</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:multiLvlStrRef><c:f xml:space=\"preserve\">&apos;Region, Style | Gender | blank&apos;!$A$5:$A$13</c:f><c:multiLvlStrCache><c:ptCount val=\"6\"/><c:lvl><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Fancy</c:v></c:pt><c:pt idx=\"1\"><c:v xml:space=\"preserve\">Golf</c:v></c:pt><c:pt idx=\"2\"><c:v xml:space=\"preserve\">Tee</c:v></c:pt><c:pt idx=\"3\"><c:v xml:space=\"preserve\">Fancy</c:v></c:pt><c:pt idx=\"4\"><c:v xml:space=\"preserve\">Golf</c:v></c:pt><c:pt idx=\"5\"><c:v xml:space=\"preserve\">Tee</c:v></c:pt></c:lvl><c:lvl><c:pt idx=\"0\"><c:v xml:space=\"preserve\">East</c:v></c:pt><c:pt idx=\"3\"><c:v xml:space=\"preserve\">West</c:v></c:pt></c:lvl></c:multiLvlStrCache></c:multiLvlStrRef></c:cat><c:val><c:numRef><c:f xml:space=\"preserve\">&apos;Region, Style | Gender | blank&apos;!$B$5:$B$13</c:f><c:numCache><c:formatCode xml:space=\"preserve\">General</c:formatCode><c:ptCount val=\"6\"/></c:numCache></c:numRef></c:val></c:ser>`,
+					`<c:ser><c:idx val=\"1\"/><c:order val=\"1\"/><c:tx><c:strRef><c:f xml:space=\"preserve\">&apos;Region, Style | Gender | blank&apos;!$C$3:$C$4</c:f><c:strCache><c:ptCount val=\"1\"/><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Girl</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:multiLvlStrRef><c:f xml:space=\"preserve\">&apos;Region, Style | Gender | blank&apos;!$A$5:$A$13</c:f><c:multiLvlStrCache><c:ptCount val=\"6\"/><c:lvl><c:pt idx=\"0\"><c:v xml:space=\"preserve\">Fancy</c:v></c:pt><c:pt idx=\"1\"><c:v xml:space=\"preserve\">Golf</c:v></c:pt><c:pt idx=\"2\"><c:v xml:space=\"preserve\">Tee</c:v></c:pt><c:pt idx=\"3\"><c:v xml:space=\"preserve\">Fancy</c:v></c:pt><c:pt idx=\"4\"><c:v xml:space=\"preserve\">Golf</c:v></c:pt><c:pt idx=\"5\"><c:v xml:space=\"preserve\">Tee</c:v></c:pt></c:lvl><c:lvl><c:pt idx=\"0\"><c:v xml:space=\"preserve\">East</c:v></c:pt><c:pt idx=\"3\"><c:v xml:space=\"preserve\">West</c:v></c:pt></c:lvl></c:multiLvlStrCache></c:multiLvlStrRef></c:cat><c:val><c:numRef><c:f xml:space=\"preserve\">&apos;Region, Style | Gender | blank&apos;!$C$5:$C$13</c:f><c:numCache><c:formatCode xml:space=\"preserve\">General</c:formatCode><c:ptCount val=\"6\"/></c:numCache></c:numRef></c:val></c:ser>`
+				]
+			];
+			function getXml(seria) {
+				memory.Seek(0);
+				seria.toXml(memory, 'c:ser');
+				var buffer = new Uint8Array(memory.GetCurPosition());
+				for (var i = 0; i < memory.GetCurPosition(); i++) {
+					buffer[i] = memory.data[i];
+				}
+				if (typeof TextDecoder !== "undefined") {
+					return new TextDecoder("utf-8").decode(buffer);
+				} else {
+					return Utf8ArrayToStr(buffer);
+				}
+			}
+			QUnit.test('Test: Chart Series Data', function (assert) {
+
+				const file = Asc.pivot_chart_series_data;
+				const wb = openDocument(file);
+				const wsNames = [
+					'Region, Style | Gender | Price',
+					'Region, Style | blank | Price',
+					'blank | Gender, Style | Price',
+					'Region, Style | Gender | blank'
+				]
+
+				function getPivots(wb, name, row, col){
+					return wb.getWorksheetByName(name).getPivotTable(col, row);
+				}
+				const pivots = wsNames.map(function(name) {
+					return getPivots(wb, name, 2, 0);
+				});
+
+				wsNames.forEach(function(wsName, index) {
+					const pivot = pivots[index];
+					const series = pivot.getSeries(AscFormat.CBarSeries);
+					const seriesXml = series.map(getXml);
+					seriesXml.forEach(function(seriaXml, idx) {
+						assert.strictEqual(seriaXml, standardXmls[index][idx], wsName);
+					});
+				});
+			});
+		})();
 	}
 });

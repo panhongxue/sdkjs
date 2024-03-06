@@ -6691,6 +6691,29 @@ function parserFormula( formula, parent, _ws ) {
 			parseResult.operand_expected = false;
 			return true;
 		};
+		const isRecursiveFormula = function (found_operand) {
+			const nOperandType = found_operand.type;
+			let oRange = null;
+			let bRecursiveCell = false;
+
+			if (nOperandType === cElementType.name || nOperandType === cElementType.name3D) {
+				const oElemValue = found_operand.getValue();
+				const oElemType = oElemValue.type;
+				let aRef = [cElementType.cell, cElementType.cell3D, cElementType.cellsRange, cElementType.cellsRange3D];
+				if (!aRef.includes(oElemType)) {
+					return false;
+				}
+				oRange = oElemValue.getRange();
+			} else {
+				oRange = found_operand.getRange();
+			}
+			oRange._foreachNoEmpty(function(oCell) {
+				if (oCell.isFormula()) {
+					bRecursiveCell = oCell.checkRecursiveFormula();
+				}
+			});
+			return bRecursiveCell;
+		};
 
 		var parseOperands = function () {
 			found_operand = null;
@@ -6827,6 +6850,7 @@ function parserFormula( formula, parent, _ws ) {
 				}
 				found_operand = new cArea(ph.real_str ? ph.real_str.toUpperCase() : ph.operand_str.toUpperCase(), t.ws);
 				parseResult.addRefPos(ph.pCurrPos - ph.operand_str.length, ph.pCurrPos, t.outStack.length, found_operand);
+				t.ca = isRecursiveFormula(found_operand);
 			}
 			/* Referens to cell A4 */ else if (parserHelp.isRef.call(ph, t.Formula, ph.pCurrPos)) {
 				if (!_checkReferenceCount(1)) {
@@ -6834,6 +6858,7 @@ function parserFormula( formula, parent, _ws ) {
 				}
 				found_operand = new cRef(ph.real_str ? ph.real_str.toUpperCase() : ph.operand_str.toUpperCase(), t.ws);
 				parseResult.addRefPos(ph.pCurrPos - ph.operand_str.length, ph.pCurrPos, t.outStack.length, found_operand);
+				t.ca = isRecursiveFormula(found_operand);
 			} else if (_tableTMP = parserHelp.isTable.call(ph, t.Formula, ph.pCurrPos, local)) {
 				found_operand = cStrucTable.prototype.createFromVal(_tableTMP, t.wb, t.ws, tablesMap);
 
@@ -6891,6 +6916,7 @@ function parserFormula( formula, parent, _ws ) {
 					needAssemble = true;
 				}
 				parseResult.addRefPos(ph.pCurrPos - ph.operand_str.length, ph.pCurrPos, t.outStack.length, found_operand, true);
+				t.ca = isRecursiveFormula(found_operand);
 			}
 
 			/* Numbers*/ else if (parserHelp.isNumber.call(ph, t.Formula, ph.pCurrPos, digitDelim)) {
@@ -8229,7 +8255,7 @@ function parserFormula( formula, parent, _ws ) {
 		this.nLevel = 0;
 		this.nIterStep = 1;
 		this.bIsForceBacktracking = false;
-		this.nStartCellIndex = null;
+		this.oStartCellIndex = null;
 		this.nRecursionCounter = 0;
 
 		this.bIsEnabledRecursion = true;
@@ -8375,19 +8401,19 @@ function parserFormula( formula, parent, _ws ) {
 	 * Method sets index of start cell. This cell is a start and finish point of iteration for a recursion formula.
 	 * Uses for only with enabled iterative calculations setting.
 	 * @memberof CalcRecursion
-	 * @param {number|null} nStartCellIndex
+	 * @param {{cellId: number, wsId: string}|null} oStartCellIndex
 	 */
-	CalcRecursion.prototype.setStartCellIndex = function (nStartCellIndex) {
-		this.nStartCellIndex = nStartCellIndex;
+	CalcRecursion.prototype.setStartCellIndex = function (oStartCellIndex) {
+		this.oStartCellIndex = oStartCellIndex;
 	};
 	/**
 	 * Method returns index of start cell. This cell is a start and finish point of iteration for a recursion formula.
 	 * Uses for only with enabled iterative calculations setting.
 	 * @memberof CalcRecursion
-	 * @returns {number}
+	 * @returns {{cellId: number, wsId: string}}
 	 */
 	CalcRecursion.prototype.getStartCellIndex = function () {
-		return this.nStartCellIndex;
+		return this.oStartCellIndex;
 	};
 	/**
 	 * Method sets a maximum iterations.

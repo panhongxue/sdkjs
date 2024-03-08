@@ -283,6 +283,14 @@ window.startPluginApi = function() {
 	 * @description The function called when the mouse button is released outside the plugin iframe.
      */
 
+	/**
+     * Event: onPluginMessage
+     * @event Plugin#onPluginMessage
+     * @memberof Plugin
+     * @alias onPluginMessage
+	 * @description The function called when a plugin receives a message from other plugins.
+     */
+
     /**
      * Event: onExternalPluginMessage
      * @event Plugin#onExternalPluginMessage
@@ -779,6 +787,33 @@ window.startPluginApi = function() {
 		window.Asc.plugin.info.windowID = this.windowID;
 
 		var _message = "";
+		try
+		{
+			_message = JSON.stringify(window.Asc.plugin.info);
+		}
+		catch(err)
+		{
+			return false;
+		}
+		window.plugin_sendMessage(_message);
+		return true;
+	};
+
+	/**
+	 * answer
+	 * @memberof Plugin
+	 * @alias answer
+	 * @description Sends an answer from the current plugin to plugin which sent a message.
+	 * @param {object | string | number | boolean | array} data - The event data.
+	 * @return {boolean} Returns true if the operation is successful.
+	 * @since 8.1.0
+	 */
+	Plugin.answer = function(data)
+	{
+		window.Asc.plugin.info.type = "answer";
+		window.Asc.plugin.info.data = data;
+
+		let _message = "";
 		try
 		{
 			_message = JSON.stringify(window.Asc.plugin.info);

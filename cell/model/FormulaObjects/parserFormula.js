@@ -6704,6 +6704,9 @@ function parserFormula( formula, parent, _ws ) {
 					return false;
 				}
 				oRange = oElemValue.getRange();
+			} else if (nOperandType === cElementType.table) {
+				let oRefElem = found_operand.toRef();
+				oRange = oRefElem.getRange();
 			} else {
 				oRange = found_operand.getRange();
 			}

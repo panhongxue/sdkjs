@@ -14200,48 +14200,32 @@
 		}
 		const oListeners = oCellListeners.listeners;
 		let oCellFromListener = null;
-		if (oCellListeners.count > 1) {
-			_foreachListeners(function (nListenerCellIndex, oListenerCell, oThis) {
-				if (nCellIndex !== nListenerCellIndex || oThis.ws.getId() !== oListenerCell.ws.getId()) {
-					let oWs = oListenerCell.ws;
-					oWs._getCell(oListenerCell.nRow, oListenerCell.nCol, function (oCell) {
-						oCellFromListener = oCell;
-					});
-					g_cCalcRecursion.incRecursionCounter();
-					oCellFromListener.initStartCellForIterCalc(oThis);
-				} else if (g_cCalcRecursion.getStartCellIndex() && (g_cCalcRecursion.getStartCellIndex().cellId > nCellIndex || g_cCalcRecursion.getStartCellIndex().wsId > oThis.ws.getId())) {
-					g_cCalcRecursion.setStartCellIndex({cellId: nCellIndex, wsId: oThis.ws.getId()});
-					g_cCalcRecursion.resetRecursionCounter();
-					return true;
-				}
-			}, this, oListeners);
-		} else {
-			let nPrevCellIndex = oPrevCell ? getCellIndex(oPrevCell.nRow, oPrevCell.nCol) : null;
-			_foreachListeners(function (nListenerCellIndex, oListenerCell, oThis) {
-				if (nCellIndex === nListenerCellIndex && oThis.ws.getId() === oListenerCell.ws.getId()) {
-					g_cCalcRecursion.setStartCellIndex({cellId: nCellIndex, wsId: oThis.ws.getId()});
-					g_cCalcRecursion.resetRecursionCounter();
-					return true;
-				} else if (nPrevCellIndex != null && nListenerCellIndex === nPrevCellIndex && oPrevCell.ws.getId() === oListenerCell.ws.getId()) {
-					let sCellProp = oPrevCell.ws.getId() !== oThis.ws.getId() ? oThis.ws.getId() : nCellIndex.toString();
-					let sPrevCellProp = oPrevCell.ws.getId() !== oThis.ws.getId() ? oPrevCell.ws.getId() : nPrevCellIndex.toString();
-					if (sPrevCellProp < sCellProp) {
-						g_cCalcRecursion.setStartCellIndex({cellId: nPrevCellIndex, wsId: oPrevCell.ws.getId()});
-					} else {
-						g_cCalcRecursion.setStartCellIndex({cellId: nCellIndex, wsId: oThis.ws.getId()});
-					}
-					g_cCalcRecursion.resetRecursionCounter();
-					return true;
+		let nPrevCellIndex = oPrevCell ? getCellIndex(oPrevCell.nRow, oPrevCell.nCol) : null;
+		_foreachListeners(function (nListenerCellIndex, oListenerCell, oThis) {
+			if (nCellIndex === nListenerCellIndex && oThis.ws.getId() === oListenerCell.ws.getId()) {
+				g_cCalcRecursion.setStartCellIndex({cellId: nCellIndex, wsId: oThis.ws.getId()});
+				g_cCalcRecursion.resetRecursionCounter();
+				return true;
+			} else if (nPrevCellIndex != null && nListenerCellIndex === nPrevCellIndex && oPrevCell.ws.getId() === oListenerCell.ws.getId()) {
+				let sCellProp = oPrevCell.ws.getId() !== oThis.ws.getId() ? oThis.ws.getId() : nCellIndex.toString();
+				let sPrevCellProp = oPrevCell.ws.getId() !== oThis.ws.getId() ? oPrevCell.ws.getId() : nPrevCellIndex.toString();
+				if (sPrevCellProp < sCellProp) {
+					g_cCalcRecursion.setStartCellIndex({cellId: nPrevCellIndex, wsId: oPrevCell.ws.getId()});
 				} else {
-					let oWs = oListenerCell.ws;
-					oWs._getCell(oListenerCell.nRow, oListenerCell.nCol, function (oCell) {
-						oCellFromListener = oCell;
-					});
-					g_cCalcRecursion.incRecursionCounter();
-					oCellFromListener.initStartCellForIterCalc(oThis);
+					g_cCalcRecursion.setStartCellIndex({cellId: nCellIndex, wsId: oThis.ws.getId()});
 				}
-			}, this, oListeners);
-		}
+				g_cCalcRecursion.resetRecursionCounter();
+				return true;
+			} else {
+				let oWs = oListenerCell.ws;
+				oWs._getCell(oListenerCell.nRow, oListenerCell.nCol, function (oCell) {
+					oCellFromListener = oCell;
+				});
+				g_cCalcRecursion.incRecursionCounter();
+				oCellFromListener.initStartCellForIterCalc(oThis);
+				return true;
+			}
+		}, this, oListeners);
 	};
 	/**
 	 * Function returns an array of reference cells from outStack attribute of parserFormula class.

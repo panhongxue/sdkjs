@@ -826,4 +826,19 @@ window.startPluginApi = function() {
 		return true;
 	};
 
+	/**
+	 * sendMessageToPlugin
+	 * @memberof Plugin
+	 * @alias sendMessageToPlugin
+	 * @description Sends a message from the current plugin to another plugin by guid.
+	 * @param {string} guid - The plugin guid wich will receive a message.
+	 * @param {object | string | number | boolean | array} data - The event data.
+	 * @param {Function} callback - The result that the method returns.
+	 * @since 8.1.0
+	 */
+	Plugin.sendMessageToPlugin = function(guid, data, callback)
+	{
+		this.executeMethod('SendMessageToPlugin', [guid, data], callback);
+	};
+
 };

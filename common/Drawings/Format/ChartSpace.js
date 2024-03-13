@@ -3965,7 +3965,7 @@ function(window, undefined) {
 		return ret;
 	};
 	CChartSpace.prototype.getAxisCrossType = function (oAxis) {
-		if (oAxis.getObjectType() === AscDFH.historyitem_type_ValAx || (oAxis.getObjectType() === AscDFH.historyitem_type_Axis && oAxis.axPos === window['AscFormat'].AX_POS_L)) {
+		if (oAxis.getObjectType() === AscDFH.historyitem_type_ValAx || (oAxis.getObjectType() === AscDFH.historyitem_type_Axis && oAxis.isValuesAxis())) {
 			return AscFormat.CROSS_BETWEEN_MID_CAT;
 		}
 		if (oAxis.getObjectType() === AscDFH.historyitem_type_SerAx) {
@@ -4112,7 +4112,9 @@ function(window, undefined) {
 				return cachedData.clusteredColumn.results;
 			} else if (cachedData.waterfall){
 				return cachedData.waterfall;
-			}else {
+			} else if (cachedData.funnel) {
+				return cachedData.funnel;
+			} else {
 				return {};
 			}
 		}
@@ -4153,6 +4155,9 @@ function(window, undefined) {
 				pt.compiledDlb.pt = obtainVal(cachedData, i);
 				pt.compiledDlb.setShowChartExVal(true);
 				pt.compiledDlb.recalculate();
+				if (cachedData.funnel && pt.compiledDlb.pt <= 0) {
+					pt.compiledDlb = default_lbl;
+				}
 				cachedData.compiledDlbs.push(pt);
 			}
 		}
@@ -4612,13 +4617,11 @@ function(window, undefined) {
 					} else if (type === AscFormat.SERIES_LAYOUT_FUNNEL) {
 						const strCache = strSeria.getCatLit(type);
 						if (strCache) {
-							for ( let i = 0; i < strCache.pts.length; i++) {
+							for ( let i = strCache.pts.length - 1; i >= 0; i--) {
 								aStrings.push(strCache.pts[i].val);
 							}
 						} else {
-							for ( let i = cachedData.funnel.length - 1; i >= 0; i--) {
-								aStrings.push("" + (i + 1));
-							}
+							aStrings = this.getValLabels(oAxis);
 						}
 					}
 				}

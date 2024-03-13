@@ -1224,7 +1224,8 @@ CChartsDrawer.prototype =
 
 		if (!horizontalAxis && isChartEx && verticalAxis.labels && verticalAxis.yPoints) {
 			calculateLeft = this.cChartSpace && this.cChartSpace.plotAreaRect ? this.cChartSpace.plotAreaRect.x : 0;
-			const curBetween = verticalAxis.yPoints[1] ? Math.abs(verticalAxis.yPoints[1].pos - verticalAxis.yPoints[0].pos) / 2 : 0;
+			let curBetween = verticalAxis.yPoints[1] ? Math.abs(verticalAxis.yPoints[1].pos - verticalAxis.yPoints[0].pos) / 2 : 0;
+			// curBetween = !curBetween && this.cChartSpace && this.cChartSpace.plotAreaRect ? verticalAxis.yPoints[0].pos - this.cChartSpace.plotAreaRect.y : curBetween;
 			calculateTop -= curBetween;
 			calculateBottom -= curBetween;
 		}
@@ -2510,7 +2511,7 @@ CChartsDrawer.prototype =
 			trueMax = AscFormat.isRealNumber(trueMax) ? trueMax : axis.max;
 
 			//for special cases, when min greater than max, or max is negative
-			trueMax = (trueMax === 0) ? 1 : trueMax;
+			trueMax = (trueMax === 0 && trueMin >= 0) ? 1 : trueMax;
 			trueMax = (trueMin >= 1 && trueMin > trueMax - 1) ? trueMax * 2 : trueMax;
 			trueMin = (trueMax < 0 && trueMax < trueMin) ? trueMax * 2 : trueMin;
 
@@ -2770,7 +2771,7 @@ CChartsDrawer.prototype =
 		for (let i = 0; i < numArr.length; i++) {
 			this._chartExSetAxisMinAndMax(axisProperties.val, numArr[i].val);
 			cachedData.funnel.push(numArr[i].val);
-			axisProperties.val.scale.push(i + 1);
+			axisProperties.val.scale.push(numArr.length - i);
 		}
 	},
 
@@ -7799,7 +7800,6 @@ drawHistogramChart.prototype = {
 		const oCommand0 = oPath.getCommandByIndex(0);
 		const oCommand1 = oPath.getCommandByIndex(1);
 		const oCommand2 = oPath.getCommandByIndex(2);
-		const oCommand3 = oPath.getCommandByIndex(3);
 
 		const x = oCommand0.X;
 		const y = oCommand0.Y;
@@ -8116,7 +8116,7 @@ drawFunnelChart.prototype = {
 				let startVertical = (valStart + margin + gapWidth + barHeight); 
 				for (let i = 0; i < data.length; i++) {
 					if (this.chartProp && this.chartProp.pxToMM ) {
-						const barWidth = valAxis.max ? (data[i].val / valAxis.max) * this.chartProp.trueWidth: 0;
+						const barWidth = valAxis.max && data[i].val > 0 ? (data[i].val / valAxis.max) * this.chartProp.trueWidth: 0;
 						this.paths[i] = this.cChartDrawer._calculateRect(catMiddle - (barWidth / 2), startVertical, barWidth, barHeight);
 					}
 					startVertical += margin + gapWidth + gapWidth + margin + barHeight;
@@ -8190,7 +8190,47 @@ drawFunnelChart.prototype = {
 	}, 
 
 	_calculateDLbl: function (compiledDlb) {
-		//TODO: add DLBL
+		if (!this.paths || !this.chartProp) {
+			return;
+		}
+		const path = this.paths[compiledDlb.idx];
+
+		if (!AscFormat.isRealNumber(path)) {
+			return;
+		}
+
+		const oPath = this.cChartSpace.GetPath(path);
+		const oCommand0 = oPath.getCommandByIndex(0);
+		const oCommand1 = oPath.getCommandByIndex(1);
+		const oCommand2 = oPath.getCommandByIndex(2);
+		const oCommand3 = oPath.getCommandByIndex(3);
+
+		const x = oCommand0.X;
+		const y = oCommand0.Y;
+
+		const h = oCommand0.Y - oCommand1.Y;
+		const w = oCommand2.X - oCommand1.X;
+
+		const pxToMm = this.chartProp.pxToMM;
+
+		const width = compiledDlb.extX;
+		const height = compiledDlb.extY;
+
+		let centerX, centerY;
+
+		centerX = x + w / 2 - width / 2;
+		centerY = y - h / 2 - height / 2;
+		const top = this.chartProp.chartGutter._top / pxToMm;
+		if (centerY < top) {
+			centerY = top;
+		}
+
+		const bottom = ((this.chartProp.trueHeight + this.chartProp.chartGutter._top) / pxToMm) - height ;
+		if (centerY >= bottom) {
+			centerY = bottom;
+		}
+
+		return {x: centerX, y: centerY};
 	}
 }
 

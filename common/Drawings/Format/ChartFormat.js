@@ -4042,10 +4042,7 @@
         return new CDataRefs([]);
     };
     CSeriesBase.prototype.getTxDataRefs = function() {
-        if(this.tx) {
-            return this.tx.getDataRefs();
-        }
-        return new CDataRefs([]);
+        return this.tx && this.tx.getDataRefs ? this.tx.getDataRefs() : new CDataRefs([]);
     };
     CSeriesBase.prototype.getValDataRefs = function() {
         var oVal = this.val || this.yVal;

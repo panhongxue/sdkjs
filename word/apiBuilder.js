@@ -1340,7 +1340,19 @@
 				isStartPosFounded = true;
 			}
 				
-			var nCurPos = oRun == oRunStart ? oRun.State.Selection.StartPos : oRun.Content.length;
+			var nCurPos;
+			if (oRun == oRunStart) {
+				if (oRun.State.Selection.StartPos <= oRun.State.Selection.EndPos) {
+					nCurPos = oRun.State.Selection.StartPos;
+				}
+				else {
+					nCurPos = oRun.State.Selection.EndPos;
+				}
+			}
+			else {
+				nCurPos = oRun.Content.length;
+			}
+
 			for (var nPos = 0; nPos < nCurPos; ++nPos)
 			{
 				if (nPos == oRun.Content.length - 1) {
@@ -1361,8 +1373,11 @@
 		}
 
 		let oRunStart;
-		for (let i = oInfo.selectionStart.length - 1; i >= 0; i--) {
-			oRunStart = oInfo.selectionStart[i].Class;
+		let nSelDirection		= this.Document.GetSelectDirection();
+		let aTargetSelection	= nSelDirection == 1 ? oInfo.selectionStart : oInfo.selectionEnd;
+
+		for (let i = aTargetSelection.length - 1; i >= 0; i--) {
+			oRunStart = aTargetSelection[i].Class;
 			if (oRunStart instanceof ParaRun) {
 				break;
 			}
@@ -1409,7 +1424,19 @@
 				isEndPosFounded = true;
 			}
 				
-			var nCurPos = oRun == oRunEnd ? oRun.State.Selection.EndPos : oRun.Content.length;
+			var nCurPos;
+			if (oRun == oRunEnd) {
+				if (oRun.State.Selection.EndPos >= oRun.State.Selection.StartPos) {
+					nCurPos = oRun.State.Selection.EndPos;
+				}
+				else {
+					nCurPos = oRun.State.Selection.StartPos;
+				}
+			}
+			else {
+				nCurPos = oRun.Content.length;
+			}
+
 			for (var nPos = 0; nPos < nCurPos; ++nPos)
 			{
 				if (nPos == oRun.Content.length - 1) {
@@ -1430,8 +1457,11 @@
 		}
 
 		let oRunEnd;
-		for (let i = oInfo.selectionEnd.length - 1; i >= 0; i--) {
-			oRunEnd = oInfo.selectionEnd[i].Class;
+		let nSelDirection		= this.Document.GetSelectDirection();
+		let aTargetSelection	= nSelDirection == 1 ? oInfo.selectionEnd : oInfo.selectionStart;
+		
+		for (let i = aTargetSelection.length - 1; i >= 0; i--) {
+			oRunEnd = aTargetSelection[i].Class;
 			if (oRunEnd instanceof ParaRun) {
 				break;
 			}

@@ -4102,45 +4102,30 @@ function(window, undefined) {
 		return fRetLayout;
 	};
 	CChartSpace.prototype.calculateDLblsForChartEx = function () {
-		const obtainResults = function (cachedData) {
+		const obtainData = function (cachedData, key) {
 			if (!cachedData) {
 				return;
 			}
-			if (cachedData.clusteredColumn && cachedData.clusteredColumn.aggregation) {
-				return cachedData.clusteredColumn.aggregation;
-			} else if (cachedData.clusteredColumn && cachedData.clusteredColumn.results) {
-				return cachedData.clusteredColumn.results;
-			} else if (cachedData.waterfall){
-				return cachedData.waterfall;
+			if (cachedData.clusteredColumn) {
+				if (cachedData.clusteredColumn.aggregation) {
+					return AscFormat.isRealNumber(key) ? cachedData.clusteredColumn.aggregation[key] : cachedData.clusteredColumn.aggregation;
+				} else if (cachedData.clusteredColumn.results) {
+					return AscFormat.isRealNumber(key) ? cachedData.clusteredColumn.results[key].occurrence : cachedData.clusteredColumn.results;
+				}
+			} else if (cachedData.waterfall) {
+				return AscFormat.isRealNumber(key) ? cachedData.waterfall[key] : cachedData.waterfall;
 			} else if (cachedData.funnel) {
-				return cachedData.funnel;
-			} else {
-				return {};
+				return AscFormat.isRealNumber(key) ? cachedData.funnel[key] : cachedData.funnel;
 			}
+			return null;
 		}
 
-		const obtainVal = function (cachedData, key) {
-			if (!cachedData) {
-				return;
-			}
-			if (cachedData.clusteredColumn && cachedData.clusteredColumn.aggregation) {
-				return cachedData.clusteredColumn.aggregation[key];
-			} else if (cachedData.clusteredColumn && cachedData.clusteredColumn.results) {
-				return cachedData.clusteredColumn.results[key].occurrence;
-			} else if (cachedData.waterfall) {
-				return cachedData.waterfall[key];
-			} else if (cachedData.funnel) {
-				return cachedData.funnel[key];
-			} else {
-				return null;
-			}
-		}
 		const size = this.chart.plotArea.plotAreaRegion.series.length;
 		const seria = this.chart.plotArea.plotAreaRegion.series[size - 1];
 		const cachedData = this.chart.plotArea.plotAreaRegion.cachedData;
-		const results = obtainResults(cachedData);
+		const results = obtainData(cachedData);
 		//seria.dataLabels.visibility optional
-		if (cachedData && seria && seria.dataLabels) {
+		if (cachedData && seria && seria.dataLabels && results) {
 			const default_lbl = new AscFormat.CDLbl();
 			const nDefaultPosition = seria.dataLabels.pos ? seria.dataLabels.pos : AscFormat.DATA_LABEL_POS_OUT_END;
 			default_lbl.initDefault(nDefaultPosition);
@@ -4152,7 +4137,7 @@ function(window, undefined) {
 				pt.compiledDlb = compiled_dlb;
 				pt.compiledDlb.chart = this;
 				pt.compiledDlb.series = seria;
-				pt.compiledDlb.pt = obtainVal(cachedData, i);
+				pt.compiledDlb.pt = obtainData(cachedData, i);
 				pt.compiledDlb.setShowChartExVal(true);
 				pt.compiledDlb.recalculate();
 				if (cachedData.funnel && pt.compiledDlb.pt <= 0) {

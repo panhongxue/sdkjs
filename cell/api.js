@@ -115,6 +115,9 @@ var editor;
     this.shapeElementId = null;
     this.textArtElementId = null;
 
+	// Form Controls
+	this.isStartAddFormControl = false;
+
     //frozen pane border type
     this.frozenPaneBorderType = Asc.c_oAscFrozenPaneBorderType.shadow;
 
@@ -4973,6 +4976,33 @@ var editor;
 			this.wb.showComments(false, false);
 		}
 	};
+
+	// Form Controls
+	spreadsheet_api.prototype.asc_startAddFormControl = function (sType) {
+		var ws = this.wb.getWorksheet();
+
+		/*
+			Пока не разобрался, что за защищенные типы
+		*/
+		// if (ws.model.getSheetProtection(Asc.c_oAscSheetProtectType.objects)) {
+		// 	this.asc_endAddShape();
+		// 	return false;
+		// }
+
+		this.stopInkDrawer();
+		this.cancelEyedropper();
+
+		// this.isStartAddFormControl = true;
+		// this.isStartAddShape = true;
+		// this.controller.isShapeAction = true;
+
+		ws.objectRender.controller.startTrackNewFormControl(sType);
+	}
+	spreadsheet_api.prototype.asc_endAddFormControl = function () {
+		// this.isStartAddFormControl = false;
+		// this.handlers.trigger("asc_onEndAddShape"); // TODO
+	}
+	// TODO: asc_addFormControlOnSheet - для мобильной версии
 
   // Shapes
   spreadsheet_api.prototype.setStartPointHistory = function() {

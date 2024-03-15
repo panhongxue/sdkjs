@@ -44,6 +44,299 @@ var isRealObject = AscCommon.isRealObject;
 var MOVE_DELTA = 1/100000;
 var SNAP_DISTANCE = 1.27;
 
+/*
+	Нужен ли мне этот конструктор - StartAddNewFormControl?
+	Или можно считать, что все FormControls будут просто шейпами,
+	и использовать StartAddNewShape?
+*/
+function StartAddNewFormControl(drawingObjects, formControlType) {
+	this.drawingObjects = drawingObjects;
+    this.preset = formControlType;
+
+    this.bStart = false;
+    this.bMoved = false;
+
+    this.startX = null;
+    this.startY = null;
+
+    this.oldConnector = null;
+}
+
+StartAddNewFormControl.prototype.onMouseDown = function (e, x, y) {
+	if (this.drawingObjects.handleEventMode === HANDLE_EVENT_MODE_CURSOR)
+		return { objectId: "1", bMarker: true, cursorType: "crosshair" };
+
+	let dStartX = x;
+	let dStartY = y;
+	let oNearestPos = this.drawingObjects.getSnapNearestPos(x, y);
+	if (oNearestPos) {
+		dStartX = oNearestPos.x;
+		dStartY = oNearestPos.y;
+	}
+	this.startX = dStartX;
+	this.startY = dStartY;
+
+	let layout = null, master = null, slide = null;
+	if (this.drawingObjects.drawingObjects && this.drawingObjects.drawingObjects.cSld) {
+		if (this.drawingObjects.drawingObjects.getParentObjects) {
+			const oParentObjects = this.drawingObjects.drawingObjects.getParentObjects();
+			if (isRealObject(oParentObjects)) {
+				layout = oParentObjects.layout;
+				master = oParentObjects.master;
+				slide = oParentObjects.slide;
+			}
+		}
+	}
+
+	const shapeTrack = new AscFormat.NewShapeTrack(
+		this.preset,
+		dStartX, dStartY,
+		this.drawingObjects.getTheme(),
+		master, layout, slide,
+		0, this.drawingObjects
+	);
+
+	this.drawingObjects.arrPreTrackObjects.length = 0;
+	this.drawingObjects.arrPreTrackObjects.push(shapeTrack);
+	this.bStart = true;
+	this.drawingObjects.swapTrackObjects();
+}
+
+StartAddNewFormControl.prototype.onMouseMove = function (e, x, y) {
+	if (this.bStart && e.IsLocked) {
+		const isMoveDeltaExceeded = Math.abs(this.startX - x) > MOVE_DELTA || Math.abs(this.startY - y) > MOVE_DELTA;
+		if (!this.bMoved && isMoveDeltaExceeded) { this.bMoved = true; }
+
+		let oNearestPos = this.drawingObjects.getSnapNearestPos(x, y);
+		let dX = x;
+		let dY = y;
+		if (oNearestPos) {
+			dX = oNearestPos.x;
+			dY = oNearestPos.y;
+		}
+
+		this.drawingObjects.arrTrackObjects[0].track(e, dX, dY);
+		this.drawingObjects.updateOverlay();
+	}
+	else {
+		if (AscFormat.isConnectorPreset(this.preset)) {
+			const oOldState = this.drawingObjects.curState;
+
+			this.drawingObjects.connector = null;
+			this.drawingObjects.changeCurrentState(new AscFormat.NullState(this.drawingObjects));
+			this.drawingObjects.handleEventMode = HANDLE_EVENT_MODE_CURSOR;
+			const oResult = this.drawingObjects.curState.onMouseDown(e, x, y, 0);
+
+			this.drawingObjects.handleEventMode = HANDLE_EVENT_MODE_HANDLE;
+			this.drawingObjects.changeCurrentState(oOldState);
+
+			if (oResult) {
+				const oObject = AscCommon.g_oTableId.Get_ById(oResult.objectId);
+				if (oObject.canConnectTo && oObject.canConnectTo()) {
+					this.drawingObjects.connector = oObject;
+				}
+			}
+			if (this.drawingObjects.connector !== this.oldConnector) {
+				this.oldConnector = this.drawingObjects.connector;
+				this.drawingObjects.updateOverlay();
+			}
+			else {
+				this.oldConnector = this.drawingObjects.connector;
+			}
+		}
+	}
+}
+
+StartAddNewFormControl.prototype.onMouseUp = function (e, x, y) {
+	let bRet = false;
+	if (this.bStart && this.drawingObjects.canEdit() && this.drawingObjects.arrTrackObjects.length > 0) {
+		bRet = true;
+
+		if (!this.bMoved && this instanceof StartAddNewFormControl) {
+			var ext_x, ext_y;
+			var oExt = AscFormat.fGetDefaultShapeExtents(this.preset);
+			ext_x = oExt.x;
+			ext_y = oExt.y;
+			this.onMouseMove({ IsLocked: true }, this.startX + ext_x, this.startY + ext_y);
+		}
+		var oTrack = this.drawingObjects.arrTrackObjects[0];
+		if (oTrack instanceof AscFormat.PolyLine) {
+
+			if (!oTrack.canCreateShape()) {
+				this.drawingObjects.clearTrackObjects();
+				this.drawingObjects.clearPreTrackObjects();
+				this.drawingObjects.updateOverlay();
+				if (Asc["editor"] && Asc["editor"].wb) {
+					if (!e.fromWindow || this.bStart) {
+						Asc["editor"].asc_endAddShape();
+					}
+				}
+				else if (editor && editor.sync_EndAddShape) {
+					editor.sync_EndAddShape();
+				}
+				this.drawingObjects.changeCurrentState(new NullState(this.drawingObjects));
+				return;
+			}
+		}
+		if (this.bAnimCustomPath) {
+			this.drawingObjects.clearTrackObjects();
+			this.drawingObjects.clearPreTrackObjects();
+			this.drawingObjects.updateOverlay();
+			this.drawingObjects.changeCurrentState(new NullState(this.drawingObjects));
+			let oApi = this.drawingObjects.getEditorApi();
+			let oPresentation = oApi.WordControl && oApi.WordControl.m_oLogicDocument;
+			if (oPresentation) {
+				let oCurSlide = oPresentation.GetCurrentSlide();
+				if (oCurSlide) {
+					if (oPresentation.IsSelectionLocked(AscCommon.changestype_Timing) === false) {
+						oPresentation.StartAction(0);
+						let oTiming;
+						let aAddedEffects;
+						aAddedEffects = oCurSlide.addAnimation(AscFormat.PRESET_CLASS_PATH, AscFormat.MOTION_SQUARE, 0, null, this.bReplace);
+						oTiming = oCurSlide.timing;
+						if (!oTiming) {
+							oPresentation.FinalizeAction();
+							return;
+						}
+						for (let nEffect = 0; nEffect < aAddedEffects.length; ++nEffect) {
+							let oEffect = aAddedEffects[nEffect];
+							if (!oEffect) {
+								continue;
+							}
+							let oPathShape = null;
+							oEffect.traverse(function (oChild) {
+								if (oChild.getObjectType() === AscDFH.historyitem_type_AnimMotion) {
+									oPathShape = oChild.createPathShape();
+									return true;
+								}
+								return false;
+							});
+							if (!oPathShape) {
+								continue;
+							}
+							let oPolylineShape = AscFormat.ExecuteNoHistory(function () {
+								return oTrack.getShape(false, oPresentation.drawingDocument, oCurSlide.graphicObjects);
+							}, this, []);
+							if (!oPolylineShape) {
+								continue;
+							}
+							let oSpPr = oPolylineShape.spPr;
+							let oXfrm = oSpPr.xfrm;
+							let oGeometry = null;
+							let oPath = null;
+							let dOffX = oXfrm.offX;
+							let dOffY = oXfrm.offY;
+							let oObjectBounds = oPathShape.objectBounds;
+							if (oSpPr.geometry) {
+								oGeometry = oSpPr.geometry.createDuplicate();
+								oGeometry.Recalculate(oXfrm.extX, oXfrm.extY);
+								if (aAddedEffects.length > 1) {
+									oPath = oGeometry.pathLst[0];
+									if (oPath && oObjectBounds) {
+										let oFirstCommand = oPath.ArrPathCommand[0];
+										if (oFirstCommand && oFirstCommand.id === AscFormat.moveTo) {
+											dOffX = oObjectBounds.x + oObjectBounds.w / 2 - oFirstCommand.X;
+											dOffY = oObjectBounds.y + oObjectBounds.h / 2 - oFirstCommand.Y;
+										}
+									}
+								}
+							}
+							oPathShape.updateAnimation(dOffX, dOffY, oXfrm.extX, oXfrm.extY, oXfrm.rot, oGeometry);
+							oEffect.cTn.setPresetID(AscFormat.MOTION_CUSTOM_PATH);
+							oEffect.cTn.setPresetSubtype(0);
+						}
+						oPresentation.FinalizeAction();
+						if (Asc["editor"] && Asc["editor"].wb) {
+							if (!e.fromWindow || this.bStart) {
+								Asc["editor"].asc_endAddShape();
+							}
+						}
+						else if (editor && editor.sync_EndAddShape) {
+							editor.sync_EndAddShape();
+						}
+						oPresentation.Document_UpdateInterfaceState();
+						if (this.bPreview && aAddedEffects.length > 0) {
+							let oTiming = oCurSlide.timing;
+							if (oTiming) {
+								oCurSlide.graphicObjects.resetSelection();
+								oTiming.resetSelection();
+								for (let nEffect = 0; nEffect < aAddedEffects.length; ++nEffect) {
+									aAddedEffects[nEffect].select();
+								}
+								oPresentation.StartAnimationPreview();
+								oTiming.checkSelectedAnimMotionShapes();
+							}
+						}
+						else {
+							oPresentation.DrawingDocument.OnRecalculatePage(oPresentation.CurPage, oCurSlide);
+						}
+					}
+				}
+			}
+			return;
+		}
+
+		const oThis = this;
+		const track = this.drawingObjects.arrTrackObjects[0];
+		var callback = function (bLock, isClickMouseEvent) {
+			if (bLock) {
+				History.Create_NewPoint(AscDFH.historydescription_CommonStatesAddNewShape);
+				var shape = track.getShape(false, oThis.drawingObjects.getDrawingDocument(), oThis.drawingObjects.drawingObjects, isClickMouseEvent);
+
+				if (!(oThis.drawingObjects.drawingObjects && oThis.drawingObjects.drawingObjects.cSld)) {
+					if (shape.spPr.xfrm.offX < 0) {
+						shape.spPr.xfrm.setOffX(0);
+					}
+					if (shape.spPr.xfrm.offY < 0) {
+						shape.spPr.xfrm.setOffY(0);
+					}
+				}
+				oThis.drawingObjects.drawingObjects.getWorksheetModel && shape.setWorksheet(oThis.drawingObjects.drawingObjects.getWorksheetModel());
+				if (oThis.drawingObjects.drawingObjects && oThis.drawingObjects.drawingObjects.cSld) {
+					shape.setParent(oThis.drawingObjects.drawingObjects);
+					shape.setRecalculateInfo();
+				}
+				shape.addToDrawingObjects(undefined, AscCommon.c_oAscCellAnchorType.cellanchorTwoCell);
+				shape.checkDrawingBaseCoords();
+				let oAPI = oThis.drawingObjects.getEditorApi();
+				if (!oAPI.isDrawInkMode()) {
+					oThis.drawingObjects.checkChartTextSelection();
+					oThis.drawingObjects.resetSelection();
+					shape.select(oThis.drawingObjects, 0);
+					if (oThis.preset === "textRect") {
+						oThis.drawingObjects.selection.textSelection = shape;
+						shape.recalculate();
+						shape.selectionSetStart(e, x, y, 0);
+						shape.selectionSetEnd(e, x, y, 0);
+					}
+				}
+				oThis.drawingObjects.startRecalculate();
+				if (!oAPI.isDrawInkMode()) {
+					oThis.drawingObjects.drawingObjects.sendGraphicObjectProps();
+				}
+			}
+			oThis.drawingObjects.updateOverlay();
+		};
+		if (Asc.editor && Asc.editor.checkObjectsLock) {
+			Asc.editor.checkObjectsLock([AscCommon.g_oIdCounter.Get_NewId()], callback);
+		}
+		else {
+			callback(true, e.ClickCount);
+		}
+	}
+	this.drawingObjects.clearTrackObjects();
+	this.drawingObjects.clearPreTrackObjects();
+	if (Asc["editor"] && Asc["editor"].wb) {
+		if (!e.fromWindow || this.bStart) {
+			Asc["editor"].asc_endAddShape();
+		}
+	}
+	else if (editor && editor.sync_EndAddShape) {
+		editor.sync_EndAddShape();
+	}
+	this.drawingObjects.changeCurrentState(new NullState(this.drawingObjects));
+	return bRet;
+}
 
 
 function StartAddNewShape(drawingObjects, preset)
@@ -2945,6 +3238,7 @@ function TrackTextState(drawingObjects, majorObject, x, y) {
     window['AscFormat'].MOVE_DELTA = MOVE_DELTA;
     window['AscFormat'].SNAP_DISTANCE = SNAP_DISTANCE;
     window['AscFormat'].StartAddNewShape = StartAddNewShape;
+    window['AscFormat'].StartAddNewFormControl = StartAddNewFormControl;
     window['AscFormat'].NullState = NullState;
     window['AscFormat'].SlicerState = SlicerState;
     window['AscFormat'].PreChangeAdjState = PreChangeAdjState;

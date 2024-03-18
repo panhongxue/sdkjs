@@ -6565,18 +6565,6 @@
 					return bRetArray === true ? ret_array : false;
 				},
 
-				/*
-					Здесь отдельный метод вроде нужен,
-					но это не точно, потому что возможные значения presetGeom и sControlType
-					вроде не пересекаются
-				*/
-				startTrackNewFormControl: function (sControlType) {
-					if (('button' === sControlType) || ('sun' === sControlType)) {
-						const newState = new AscFormat.StartAddNewFormControl(this, sControlType);
-						this.changeCurrentState(newState);
-					}
-				},
-
 				startTrackNewShape: function (presetGeom) {
 					switch (presetGeom) {
 						case "spline": {

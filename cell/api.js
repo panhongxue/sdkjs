@@ -4974,6 +4974,15 @@ var editor;
 		}
 	};
 
+	// Form Controls
+	spreadsheet_api.prototype.asc_startAddFormControl = function (sFormControlType) {
+		// types: formControlsButton
+		this.asc_startAddShape(sFormControlType);
+	}
+	spreadsheet_api.prototype.asc_endAddFormControl = function () {
+		this.asc_endAddShape();
+	}
+	// TODO: asc_addFormControlOnSheet - для мобильной версии
 
   // Shapes
   spreadsheet_api.prototype.setStartPointHistory = function() {

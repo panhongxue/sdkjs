@@ -259,6 +259,9 @@ function NewShapeTrack(presetGeom, startX, startY, theme, master, layout, slide,
         }
 
         var geometry = AscFormat.CreateGeometry(!isTextRect ? presetGeom : "rect");
+        if (this.presetGeom === 'formControlsButton') {
+            geometry = AscFormat.CreateGeometry("rect");
+        }
 
         this.startGeom = geometry;
         if(pen.Fill)
@@ -266,6 +269,10 @@ function NewShapeTrack(presetGeom, startX, startY, theme, master, layout, slide,
             pen.Fill.calculate(theme, slide, layout, master, RGBA);
         }
         brush.calculate(theme, slide, layout, master, RGBA);
+        if (this.presetGeom === 'formControlsButton') {
+            if (pen.Fill) pen.Fill.fill.color.RGBA = { R: 0, G: 0, B: 0, A: 64 };
+            brush.fill.color.RGBA = { R: 255, G: 255, B: 255, A: 192 };
+        }
 
         this.isLine = this.presetGeom === "line";
 

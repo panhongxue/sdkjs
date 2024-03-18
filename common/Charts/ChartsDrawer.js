@@ -1222,6 +1222,7 @@ CChartsDrawer.prototype =
 			}
 		}
 
+		// for funnel chart
 		if (!horizontalAxis && isChartEx && verticalAxis.labels && verticalAxis.yPoints) {
 			calculateLeft = this.cChartSpace && this.cChartSpace.plotAreaRect ? this.cChartSpace.plotAreaRect.x : 0;
 			let curBetween = verticalAxis.yPoints[1] ? Math.abs(verticalAxis.yPoints[1].pos - verticalAxis.yPoints[0].pos) / 2 : 0;
@@ -1413,7 +1414,6 @@ CChartsDrawer.prototype =
 
 		this.calcProp.trueWidth = this.calcProp.widthCanvas - this.calcProp.chartGutter._left - this.calcProp.chartGutter._right;
 		this.calcProp.trueHeight = this.calcProp.heightCanvas - this.calcProp.chartGutter._top - this.calcProp.chartGutter._bottom;
-		console.log(this.calcProp.trueHeight);
 	},
 	
 	//****new calculate data****
@@ -2502,8 +2502,10 @@ CChartsDrawer.prototype =
 		//check for user typed max and min properties
 		let trueMin = (axis.scaling && axis.scaling.min != null) ? this._roundValue(axis.scaling.min) : null;
 		let trueMax = (axis.scaling && axis.scaling.max != null) ? this._roundValue(axis.scaling.max) : null;
+		const isTrueMin = AscFormat.isRealNumber(trueMin);
+		const isTreuMax = AscFormat.isRealNumber(trueMax);
 
-		if (AscFormat.isRealNumber(trueMin) && AscFormat.isRealNumber(trueMax) && trueMin >= trueMax) {
+		if (isTrueMin && isTreuMax && trueMin >= trueMax) {
 			axis.max = 0;
 			axis.min = 0;
 		} else {
@@ -2512,7 +2514,7 @@ CChartsDrawer.prototype =
 
 			//for special cases, when min greater than max, or max is negative
 			trueMax = (trueMax === 0 && trueMin >= 0) ? 1 : trueMax;
-			trueMax = (trueMin >= 1 && trueMin > trueMax - 1) ? trueMax * 2 : trueMax;
+			trueMax = (trueMin > 1 && trueMin > trueMax - 1) ? trueMax * 2 : trueMax;
 			trueMin = (trueMax < 0 && trueMax < trueMin) ? trueMax * 2 : trueMin;
 
 			axis.max = trueMax;
@@ -2532,8 +2534,6 @@ CChartsDrawer.prototype =
 			this._handleUserTypedChartExValMinMax(axes[i]);
 			axes[i].scale = customAxis.scale.length > 0 ? customAxis.scale : this._roundValues(this._getAxisValues2(axes[i], this.cChartSpace, false, false));
 		}
-		
-		console.log("here");
 
 	},
 
@@ -3316,29 +3316,35 @@ CChartsDrawer.prototype =
 				var res;
 				var startPos = yPoints[index].pos;
 
-				if (!isOx) {
-					if (!axis.isReversed() || isChartEx) {
-						res = -(resPos / resVal) * (Math.abs(val - yPoints[index].val)) + startPos;
-					} else {
-						res = (resPos / resVal) * (Math.abs(val - yPoints[index].val)) + startPos;
-					}
-				} else {
-					if (axis.isReversed() || isChartEx) {
-						res = -(resPos / resVal) * (Math.abs(val - yPoints[index].val)) + startPos;
-					} else {
-						res = (resPos / resVal) * (Math.abs(val - yPoints[index].val)) + startPos;
-					}
-				}
+				// for the cases of reversed axis, direction is calculated 
+				let firstDirection = !isOx && (!axis.isReversed() || isChartEx) ? -1 : 1;
+				let secondDirection = isOx && (axis.isReversed() || isChartEx) ? -1 : 1;
+
+				res = (firstDirection * secondDirection * (resPos / resVal) * (Math.abs(val - yPoints[index].val))) + startPos;
+
+				// if (!isOx) {
+				// 	if (!axis.isReversed() || isChartEx) {
+				// 		res = -(resPos / resVal) * (Math.abs(val - yPoints[index].val)) + startPos;
+				// 	} else {
+				// 		res = (resPos / resVal) * (Math.abs(val - yPoints[index].val)) + startPos;
+				// 	}
+				// } else {
+				// 	if (axis.isReversed() || isChartEx) {
+				// 		res = -(resPos / resVal) * (Math.abs(val - yPoints[index].val)) + startPos;
+				// 	} else {
+				// 		res = (resPos / resVal) * (Math.abs(val - yPoints[index].val)) + startPos;
+				// 	}
+				// }
 
 				return res;
 			};
 
 			var i = 0, j = yPoints.length - 1, k;
+			const isChartEx = this.cChartSpace.isChartEx();
 			while (i <= j) {
 				k = Math.floor((i + j) / 2);
 
 				if (val >= yPoints[k].val && yPoints[k + 1] && val <= yPoints[k + 1].val) {
-					const isChartEx = this.cChartSpace.isChartEx();
 					result = getResult(k, isChartEx);
 					break;
 				} else if (val < yPoints[k].val) {
@@ -8017,7 +8023,6 @@ drawWaterfallChart.prototype = {
 		const oCommand0 = oPath.getCommandByIndex(0);
 		const oCommand1 = oPath.getCommandByIndex(1);
 		const oCommand2 = oPath.getCommandByIndex(2);
-		const oCommand3 = oPath.getCommandByIndex(3);
 
 		const x = oCommand0.X;
 		const y = oCommand0.Y;
@@ -8203,7 +8208,6 @@ drawFunnelChart.prototype = {
 		const oCommand0 = oPath.getCommandByIndex(0);
 		const oCommand1 = oPath.getCommandByIndex(1);
 		const oCommand2 = oPath.getCommandByIndex(2);
-		const oCommand3 = oPath.getCommandByIndex(3);
 
 		const x = oCommand0.X;
 		const y = oCommand0.Y;

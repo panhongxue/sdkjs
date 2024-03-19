@@ -2584,8 +2584,8 @@ CChartsDrawer.prototype =
 					return;
 				}
 				// uncomment when excel will fix the problem of overflow and underflow being incorrect in some moments
-				// const statement1 = localBinning.intervalClosed !== "r" ? localBinning.overflow < axisProperties.cat.max && localBinning.overflow >= axisProperties.cat.min : localBinning.overflow <= axisProperties.cat.max && localBinning.overflow > axisProperties.cat.min;
-				// const statement2 = localBinning.intervalClosed !== "r" ? localBinning.underflow >= axisProperties.cat.min && localBinning.underflow < axisProperties.cat.max : localBinning.underflow > axisProperties.cat.min && localBinning.underflow <= axisProperties.cat.max;
+				// const statement1 = localBinning.intervalClosed !== AscFormat.INTERVAL_CLOSED_SIDE_R ? localBinning.overflow < axisProperties.cat.max && localBinning.overflow >= axisProperties.cat.min : localBinning.overflow <= axisProperties.cat.max && localBinning.overflow > axisProperties.cat.min;
+				// const statement2 = localBinning.intervalClosed !== AscFormat.INTERVAL_CLOSED_SIDE_R ? localBinning.underflow >= axisProperties.cat.min && localBinning.underflow < axisProperties.cat.max : localBinning.underflow > axisProperties.cat.min && localBinning.underflow <= axisProperties.cat.max;
 				// localBinning.overflow = ((localBinning.overflow === 0 || localBinning.overflow) && statement1) ? localBinning.overflow : null;
 				// localBinning.underflow = ((localBinning.underflow === 0 || localBinning.underflow) && statement2) ? localBinning.underflow : null;
 				localBinning.overflow = ((localBinning.overflow === 0 || localBinning.overflow) && localBinning.overflow < axisProperties.cat.max && localBinning.overflow >= axisProperties.cat.min) ? localBinning.overflow : null;
@@ -2693,7 +2693,7 @@ CChartsDrawer.prototype =
 							const min = localResults[j].min;
 							const max = localResults[j].max;
 							const statement1 = (j === 0 && numArr[i].val === min);
-							const statement2 = localBinning.intervalClosed !== "r" ? 
+							const statement2 = localBinning.intervalClosed !== AscFormat.INTERVAL_CLOSED_SIDE_R ? 
 								((!min || numArr[i].val > min) && (!max || numArr[i].val <= max)) : 
 								((!min || numArr[i].val >= min) && (!max || numArr[i].val < max));
 							if (statement1 || statement2) {
@@ -2731,7 +2731,7 @@ CChartsDrawer.prototype =
 		if (!cachedData.clusteredColumn) {
 			cachedData.clusteredColumn = {};
 		}
-
+		this._chartExSetAxisMinAndMax(axisProperties.val, 0);
 		this._chartExHandleAggregation(type, cachedData.clusteredColumn, numArr, strArr, axisProperties);
 		this._chartExHandleBinning(type, cachedData.clusteredColumn, numArr, axisProperties);
 	},

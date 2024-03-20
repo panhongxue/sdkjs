@@ -801,7 +801,7 @@
 		AscDFH.changesFactory[AscDFH.historyitem_ShapeSetWordShape] = AscDFH.CChangesDrawingsBool;
 		AscDFH.changesFactory[AscDFH.historyitem_ShapeSetModelId] = AscDFH.CChangesDrawingsString;
 		AscDFH.changesFactory[AscDFH.historyitem_ShapeSetSignature] = AscDFH.CChangesDrawingsObjectNoId;
-		AscDFH.changesFactory[AscDFH.historyitem_ShapeSetVmlDrawing] = AscDFH.CChangesDrawingsObject;
+		AscDFH.changesFactory[AscDFH.historyitem_ShapeSetVmlDrawing] = AscDFH.CChangesDrawingsObjectNoId;
 
 
 		AscDFH.drawingsChangesMap[AscDFH.historyitem_ShapeSetNvSpPr] = function (oClass, value) {
@@ -3006,7 +3006,7 @@
 			}
 
 			// Проверка на то, что это кнопка
-			if (this.vmlDrawing && (this.vmlDrawing.test === 'test')) {
+			if (this.vmlDrawing) {
 				this.brush.fill.color.RGBA = {R: 240, G: 240, B: 255, A: 255}
 			}
 

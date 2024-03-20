@@ -795,9 +795,12 @@ function NewShapeTrack(presetGeom, startX, startY, theme, master, layout, slide,
                 }
             }
         }
+        const vmlDrawing = new AscFormat.CVMLDrawing();
+        shape.setVmlDrawing(vmlDrawing);
+
         shape.x = this.x;
         shape.y = this.y;
-        shape.setVmlDrawing({ test: 'test' });
+
         return shape;
     };
 

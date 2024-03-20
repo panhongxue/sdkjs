@@ -801,6 +801,7 @@
 		AscDFH.changesFactory[AscDFH.historyitem_ShapeSetWordShape] = AscDFH.CChangesDrawingsBool;
 		AscDFH.changesFactory[AscDFH.historyitem_ShapeSetModelId] = AscDFH.CChangesDrawingsString;
 		AscDFH.changesFactory[AscDFH.historyitem_ShapeSetSignature] = AscDFH.CChangesDrawingsObjectNoId;
+		AscDFH.changesFactory[AscDFH.historyitem_ShapeSetVmlDrawing] = AscDFH.CChangesDrawingsObject;
 
 
 		AscDFH.drawingsChangesMap[AscDFH.historyitem_ShapeSetNvSpPr] = function (oClass, value) {
@@ -862,6 +863,9 @@
 					}
 				}
 			}
+		};
+		AscDFH.drawingsChangesMap[AscDFH.historyitem_ShapeSetVmlDrawing] = function (oClass, value) {
+			oClass.vmlDrawing = value;
 		};
 
 		function CSignatureLine() {
@@ -950,6 +954,8 @@
 			this.tmpFontScale = undefined;
 			this.tmpLnSpcReduction = undefined;
 			this.shapeSmartArtInfo = null;
+
+			this.vmlDrawing = null;
 		}
 
 		AscFormat.InitClass(CShape, AscFormat.CGraphicObjectBase, AscDFH.historyitem_type_Shape);
@@ -2998,6 +3004,12 @@
 					oGradFill.setLin(oLin);
 				}
 			}
+
+			// Проверка на то, что это кнопка
+			if (this.vmlDrawing && (this.vmlDrawing.test === 'test')) {
+				this.brush.fill.color.RGBA = {R: 240, G: 240, B: 255, A: 255}
+			}
+
 		};
 
 		CShape.prototype.recalculatePen = function () {
@@ -6860,6 +6872,11 @@
 			}
 			return  oCurCandidate;
 		};
+
+		CShape.prototype.setVmlDrawing = function (vmlDrawing) {
+			History.Add(new AscDFH.CChangesDrawingsObject(this, AscDFH.historyitem_ShapeSetVmlDrawing, this.vmlDrawing, vmlDrawing));
+			this.vmlDrawing = vmlDrawing;
+		}
 
 		function CreateBinaryReader(szSrc, offset, srcLen) {
 			var memoryData = AscCommon.Base64.decode(szSrc, true, srcLen, offset);

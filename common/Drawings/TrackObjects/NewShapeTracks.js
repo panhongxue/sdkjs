@@ -751,6 +751,7 @@ function NewShapeTrack(presetGeom, startX, startY, theme, master, layout, slide,
         {
             if(!shape.spPr.geometry){
                 shape.spPr.setGeometry(AscFormat.CreateGeometry(this.presetGeom));
+                if (this.presetGeom === 'formControlsButton') shape.spPr.setGeometry(AscFormat.CreateGeometry('rect'));
             }
             shape.setStyle(AscFormat.CreateDefaultShapeStyle(this.presetGeom));
             if(this.arrowsCount > 0)
@@ -796,6 +797,7 @@ function NewShapeTrack(presetGeom, startX, startY, theme, master, layout, slide,
         }
         shape.x = this.x;
         shape.y = this.y;
+        shape.setVmlDrawing({ test: 'test' });
         return shape;
     };
 

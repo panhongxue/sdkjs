@@ -795,8 +795,12 @@ function NewShapeTrack(presetGeom, startX, startY, theme, master, layout, slide,
                 }
             }
         }
-        const vmlDrawing = new AscFormat.CVMLDrawing();
-        shape.setVmlDrawing(vmlDrawing);
+
+        if (this.presetGeom === 'formControlsButton') {
+            const vmlDrawing = new AscFormat.CVMLDrawing();
+			vmlDrawing.configureVmlDrawingFor('button');
+            shape.setVmlDrawing(vmlDrawing);
+        }
 
         shape.x = this.x;
         shape.y = this.y;

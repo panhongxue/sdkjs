@@ -3007,7 +3007,7 @@
 
 			// Проверка на то, что это кнопка
 			if (this.vmlDrawing) {
-				this.brush.fill.color.RGBA = {R: 240, G: 240, B: 255, A: 255}
+				this.brush = AscFormat.CreateSolidFillRGBA(240, 240, 240, 255);
 			}
 
 		};
@@ -3046,6 +3046,9 @@
 			}
 			if (this.pen) {
 				this.pen.calculate(parents.theme, parents.slide, parents.layout, parents.master, RGBA);
+			}
+			if (this.vmlDrawing) {
+				this.pen = null;
 			}
 		};
 
@@ -5335,6 +5338,11 @@
 			if (oClipRect) {
 				graphics.RestoreGrState();
 			}
+
+			if (this.vmlDrawing) {
+				this.drawButtonShadows(graphics);
+			}
+
 			//if(this.txXfrm && this.group) {
 			//    graphics.SetIntegerGrid(false);
 			//    _transform = new AscCommon.CMatrix();
@@ -5355,6 +5363,34 @@
 				graphics.EndDrawShape();
 			}
 		};
+		CShape.prototype.drawButtonShadows = function (graphics) {
+			graphics.SaveGrState();
+
+			const bPressed = this.isPressed();
+			const width = this.GetWidth();
+			const height = this.GetHeight();
+			const ctx = graphics.m_oContext;
+
+			ctx.lineWidth = 1;
+			ctx.beginPath();
+			ctx.moveTo(0, height);
+			ctx.lineTo(0, 0);
+			ctx.lineTo(width, 0);
+			ctx.strokeStyle = bPressed ? 'black' : 'white';
+			ctx.stroke();
+
+			ctx.beginPath();
+			ctx.moveTo(width, 0);
+			ctx.lineTo(width, height);
+			ctx.lineTo(0, height);
+			ctx.strokeStyle = bPressed ? 'white' : 'black';
+			ctx.stroke();
+
+			graphics.RestoreGrState();
+		};
+		CShape.prototype.isPressed = function () {
+			return false;
+		}
 
 		CShape.prototype.recalculateGeometry = function () {
 			this.calcGeometry = null;

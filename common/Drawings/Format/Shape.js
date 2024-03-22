@@ -5369,22 +5369,17 @@
 			const bPressed = this.isPressed();
 			const width = this.GetWidth();
 			const height = this.GetHeight();
-			const ctx = graphics.m_oContext;
 
-			ctx.lineWidth = 1;
-			ctx.beginPath();
-			ctx.moveTo(0, height);
-			ctx.lineTo(0, 0);
-			ctx.lineTo(width, 0);
-			ctx.strokeStyle = bPressed ? 'black' : 'white';
-			ctx.stroke();
+			const alignCenter = 1;
+			const penWidth = 1;
 
-			ctx.beginPath();
-			ctx.moveTo(width, 0);
-			ctx.lineTo(width, height);
-			ctx.lineTo(0, height);
-			ctx.strokeStyle = bPressed ? 'white' : 'black';
-			ctx.stroke();
+			bPressed ? graphics.p_color(0, 0, 0, 255) : graphics.p_color(255, 255, 255, 255);
+			graphics.drawHorLine(alignCenter, 0, 0, width, penWidth);
+			graphics.drawVerLine(alignCenter, 0, 0, height, penWidth);
+
+			bPressed ? graphics.p_color(255, 255, 255, 255) : graphics.p_color(0, 0, 0, 255);
+			graphics.drawHorLine(alignCenter, height, 0, width, penWidth);
+			graphics.drawVerLine(alignCenter, width, 0, height, penWidth);
 
 			graphics.RestoreGrState();
 		};

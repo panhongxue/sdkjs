@@ -953,29 +953,44 @@
 			}
 			return aOOXMLSl;
 		};
-		CVMLDrawing.prototype.configureVmlDrawingFor = function (sFormControlType) {
-			if ('button' === sFormControlType) {
-				const shapeLayout = new CShapeLayout();
-				const shapeType = new CShapeType();
-				const shape = new CShape();
-				
-				// for shapeLayout
-				shapeLayout.m_oIdMap = new CIdMap();
-				
-				// for shapeType
-				const stroke = new CStroke();
-				const path = new CPath();
-				const shapeType_lock = new CLock();
-				shapeType.items.push(stroke, path, shapeType_lock);
-				
-				// for shape
-				const fill = new CFill();
-				const shape_lock = new CLock();
-				const textBox = new CTextbox();
-				const clientData = new CClientData();
-				shape.items.push(stroke, path, shape_lock);
+		CVMLDrawing.prototype.configureVmlDrawingFor = function (formControlType) {
+			if (formControlType === 'button') {
+				const shapeLayout = createShapeLayout();
+				const shapeType = createShapeType();
+				const shape = createShape();
 
 				this.items.push(shapeLayout, shapeType, shape);
+
+				function createShapeLayout() {
+					const shapeLayout = new CShapeLayout();
+					shapeLayout.m_oIdMap = new CIdMap();
+					return shapeLayout;
+				}
+
+				function createShapeType() {
+					const shapeType = new CShapeType();
+					shapeType.items.push(new CStroke(), new CPath(), new CLock());
+					return shapeType;
+				}
+
+				function createShape() {
+					const shape = new CShape();
+					shape.items.push(
+						new CFill(),
+						new CLock(),
+						createTextBox(),
+						new CClientData()
+					);
+					return shape;
+				}
+
+				function createTextBox() {
+					const textBox = new CTextbox();
+					const textBoxDiv = new CDiv();
+					textBoxDiv.items.push(new CFont());
+					textBox.items.push(textBoxDiv);
+					return textBox;
+				}
 			}
 		}
 
@@ -1212,6 +1227,8 @@
 		function CTextbox() {
 			CBaseNoId.call(this);
 
+			this.items = []
+
 			this.m_oId = null;
 			this.m_oStyle = null;
 			this.m_oInset = null;
@@ -1294,6 +1311,28 @@
 			//TODO: implement
 			throw new Error('CClientData.prototype.toFormControlPr not implemented');
 		};
+
+		function CDiv() {
+			CBaseNoId.call(this);
+
+			this.items = [];
+
+			this.style = null;
+		}
+
+		IC(CDiv, CBaseNoId, 0);
+
+		function CFont() {
+			CBaseNoId.call(this);
+
+			this.items = [];
+
+			this.face = null;
+			this.size = null;
+			this.color = null;
+		}
+
+		IC(CFont, CBaseNoId, 0);
 
 
 		/* Exports */

@@ -956,6 +956,7 @@
 			this.shapeSmartArtInfo = null;
 
 			this.vmlDrawing = null;
+			this.bPressed = false;
 		}
 
 		AscFormat.InitClass(CShape, AscFormat.CGraphicObjectBase, AscDFH.historyitem_type_Shape);
@@ -5371,7 +5372,7 @@
 			const height = this.GetHeight();
 
 			const alignCenter = 1;
-			const penWidth = 1 * AscCommon.g_dKoef_pix_to_mm;
+			const penWidth = 20 * AscCommon.g_dKoef_pix_to_mm;
 
 			bPressed ? graphics.p_color(0, 0, 0, 255) : graphics.p_color(255, 255, 255, 255);
 			graphics.drawHorLine(alignCenter, 0, 0, width, penWidth);
@@ -5384,7 +5385,7 @@
 			graphics.RestoreGrState();
 		};
 		CShape.prototype.isPressed = function () {
-			return false;
+			return this.bPressed;
 		}
 
 		CShape.prototype.recalculateGeometry = function () {

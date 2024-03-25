@@ -5371,7 +5371,7 @@
 			const height = this.GetHeight();
 
 			const alignCenter = 1;
-			const penWidth = 1;
+			const penWidth = 1 * AscCommon.g_dKoef_pix_to_mm;
 
 			bPressed ? graphics.p_color(0, 0, 0, 255) : graphics.p_color(255, 255, 255, 255);
 			graphics.drawHorLine(alignCenter, 0, 0, width, penWidth);

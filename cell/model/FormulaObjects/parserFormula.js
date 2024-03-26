@@ -6691,30 +6691,45 @@ function parserFormula( formula, parent, _ws ) {
 			parseResult.operand_expected = false;
 			return true;
 		};
-		const isRecursiveFormula = function (found_operand) {
+		const isRecursiveFormula = function (found_operand, parserFormula) {
 			const nOperandType = found_operand.type;
 			let oRange = null;
-			let bRecursiveCell = false;
+			let bRecursiveCell = parserFormula.ca;
 
+			if (parserFormula.getParent() == null) {
+				return bRecursiveCell;
+			}
+			if (parserFormula.ca) {
+				return bRecursiveCell;
+			}
+			if (nOperandType === cElementType.cellsRange || nOperandType === cElementType.cellsRange3D) {
+				oRange = found_operand.getRange();
+				return oRange.containCell2(parserFormula.getParent());
+			}
 			if (nOperandType === cElementType.name || nOperandType === cElementType.name3D) {
 				const oElemValue = found_operand.getValue();
 				const oElemType = oElemValue.type;
 				let aRef = [cElementType.cell, cElementType.cell3D, cElementType.cellsRange, cElementType.cellsRange3D];
 				if (!aRef.includes(oElemType)) {
-					return false;
+					return bRecursiveCell;
 				}
 				oRange = oElemValue.getRange();
+				if (oElemType === cElementType.cellsRange || oElemType === cElementType.cellsRange3D) {
+					return oRange.containCell2(parserFormula.getParent());
+				}
 			} else if (nOperandType === cElementType.table) {
 				let oRefElem = found_operand.toRef();
 				oRange = oRefElem.getRange();
 			} else {
 				oRange = found_operand.getRange();
 			}
-			oRange._foreachNoEmpty(function(oCell) {
-				if (oCell.isFormula()) {
-					bRecursiveCell = oCell.checkRecursiveFormula();
+
+			oRange._foreach(function (oCell) {
+				if (!bRecursiveCell) {
+					bRecursiveCell = oCell.checkRecursiveFormula(parserFormula.getParent());
 				}
 			});
+
 			return bRecursiveCell;
 		};
 
@@ -6829,6 +6844,7 @@ function parserFormula( formula, parent, _ws ) {
 						found_operand = new cArea3D(ph.real_str ? ph.real_str.toUpperCase() : ph.operand_str.toUpperCase(), wsF, wsT, externalLink);
 					}
 					parseResult.addRefPos(prevCurrPos, ph.pCurrPos, t.outStack.length, found_operand);
+					t.ca = isRecursiveFormula(found_operand, t);
 				} else if (parserHelp.isRef.call(ph, t.Formula, ph.pCurrPos)) {
 					if (!(wsF && wsT)) {
 						//for edit formula mode
@@ -6840,10 +6856,12 @@ function parserFormula( formula, parent, _ws ) {
 						found_operand = new cRef3D(ph.real_str ? ph.real_str.toUpperCase() : ph.operand_str.toUpperCase(), wsF, externalLink);
 					}
 					parseResult.addRefPos(prevCurrPos, ph.pCurrPos, t.outStack.length, found_operand);
+					t.ca = isRecursiveFormula(found_operand, t);
 				} else {
 					parserHelp.isName.call(ph, t.Formula, ph.pCurrPos);
 					found_operand = new cName3D(ph.operand_str, wsF);
 					parseResult.addRefPos(prevCurrPos, ph.pCurrPos, t.outStack.length, found_operand);
+					t.ca = isRecursiveFormula(found_operand, t);
 				}
 			}
 
@@ -6853,7 +6871,7 @@ function parserFormula( formula, parent, _ws ) {
 				}
 				found_operand = new cArea(ph.real_str ? ph.real_str.toUpperCase() : ph.operand_str.toUpperCase(), t.ws);
 				parseResult.addRefPos(ph.pCurrPos - ph.operand_str.length, ph.pCurrPos, t.outStack.length, found_operand);
-				t.ca = isRecursiveFormula(found_operand);
+				t.ca = isRecursiveFormula(found_operand, t);
 			}
 			/* Referens to cell A4 */ else if (parserHelp.isRef.call(ph, t.Formula, ph.pCurrPos)) {
 				if (!_checkReferenceCount(1)) {
@@ -6861,7 +6879,8 @@ function parserFormula( formula, parent, _ws ) {
 				}
 				found_operand = new cRef(ph.real_str ? ph.real_str.toUpperCase() : ph.operand_str.toUpperCase(), t.ws);
 				parseResult.addRefPos(ph.pCurrPos - ph.operand_str.length, ph.pCurrPos, t.outStack.length, found_operand);
-				t.ca = isRecursiveFormula(found_operand);
+
+				t.ca = isRecursiveFormula(found_operand, t);
 			} else if (_tableTMP = parserHelp.isTable.call(ph, t.Formula, ph.pCurrPos, local)) {
 				found_operand = cStrucTable.prototype.createFromVal(_tableTMP, t.wb, t.ws, tablesMap);
 
@@ -6919,7 +6938,7 @@ function parserFormula( formula, parent, _ws ) {
 					needAssemble = true;
 				}
 				parseResult.addRefPos(ph.pCurrPos - ph.operand_str.length, ph.pCurrPos, t.outStack.length, found_operand, true);
-				t.ca = isRecursiveFormula(found_operand);
+				t.ca = isRecursiveFormula(found_operand, t);
 			}
 
 			/* Numbers*/ else if (parserHelp.isNumber.call(ph, t.Formula, ph.pCurrPos, digitDelim)) {
@@ -8260,6 +8279,7 @@ function parserFormula( formula, parent, _ws ) {
 		this.bIsForceBacktracking = false;
 		this.oStartCellIndex = null;
 		this.nRecursionCounter = 0;
+		this.oGroupChangedCells = null;
 
 		this.bIsEnabledRecursion = true;
 		this.nMaxIterations = 10; // Max iterations of recursion calculations. Default value: 100.
@@ -8404,7 +8424,7 @@ function parserFormula( formula, parent, _ws ) {
 	 * Method sets index of start cell. This cell is a start and finish point of iteration for a recursion formula.
 	 * Uses for only with enabled iterative calculations setting.
 	 * @memberof CalcRecursion
-	 * @param {{cellId: number, wsId: string}|null} oStartCellIndex
+	 * @param {{cellId: number, wsName: string}|null} oStartCellIndex
 	 */
 	CalcRecursion.prototype.setStartCellIndex = function (oStartCellIndex) {
 		this.oStartCellIndex = oStartCellIndex;
@@ -8413,7 +8433,7 @@ function parserFormula( formula, parent, _ws ) {
 	 * Method returns index of start cell. This cell is a start and finish point of iteration for a recursion formula.
 	 * Uses for only with enabled iterative calculations setting.
 	 * @memberof CalcRecursion
-	 * @returns {{cellId: number, wsId: string}}
+	 * @returns {{cellId: number, wsName: string}}
 	 */
 	CalcRecursion.prototype.getStartCellIndex = function () {
 		return this.oStartCellIndex;
@@ -8447,7 +8467,115 @@ function parserFormula( formula, parent, _ws ) {
 	 */
 	CalcRecursion.prototype.getRelativeError = function () {
 		return this.nRelativeError;
-	}
+	};
+	/**
+	 * Method sets a grouped changed cells.
+	 * @param {{wsName:{cellId: {cellId: number, wsName: string}[]}}|null} oGroupChangedCells
+	 */
+	CalcRecursion.prototype.setGroupChangedCells = function (oGroupChangedCells) {
+		this.oGroupChangedCells = oGroupChangedCells;
+	};
+	/**
+	 * Method returns a grouped changed cells.
+	 * @returns {{wsName:{cellId: {cellId: number, wsName: string}[]}}|null}
+	 */
+	CalcRecursion.prototype.getGroupChangedCells = function () {
+		return this.oGroupChangedCells;
+	};
+	/**
+	 * Method initializes an object for grouped changed cells.
+	 * @param {Cell} oCell
+	 */
+	CalcRecursion.prototype.initGroupChangedCells = function (oCell) {
+		let oGroupChangedCell = {};
+		let sCellWsName = oCell.ws.getName().toLowerCase();
+		oGroupChangedCell[sCellWsName] = {};
+		this.setGroupChangedCells(oGroupChangedCell);
+	};
+	/**
+	 * Method returns an array of cells with recursive formula.
+	 * @param {Cell} oCell
+	 * @returns {{cellId: number, wsName: string}[]}
+	 */
+	CalcRecursion.prototype.getRecursiveCells = function (oCell) {
+		const oGroupChangedCell = this.getGroupChangedCells();
+		const sCellWsName = oCell.ws.getName().toLowerCase();
+		const nCellIndex = AscCommonExcel.getCellIndex(oCell.nRow, oCell.nCol);
+
+		for (let sSheetName in oGroupChangedCell) {
+			let oGroupChangedSheet = oGroupChangedCell[sSheetName];
+			for (let nLinkedCellIndex in oGroupChangedSheet) {
+				const aLinkedCells = oGroupChangedSheet[nLinkedCellIndex];
+				let bHasCell = aLinkedCells.some(function (oCellIndex) {
+					return oCellIndex.cellId === nCellIndex && oCellIndex.wsName === sCellWsName;
+				})
+				if (bHasCell) {
+					return aLinkedCells;
+				}
+			}
+		}
+
+		return [];
+	};
+	/**
+	 * Method updates start cell index.
+	 * @param {{cellId: number, wsName: string}[]} aRecursiveCells
+	 */
+	CalcRecursion.prototype.updateStartCellIndex = function (aRecursiveCells) {
+		if (!aRecursiveCells.length) {
+			this.setStartCellIndex(null);
+			return;
+		}
+
+		const START_CELL_INDEX = 0;
+		const oStartCellIdFromArr = aRecursiveCells[START_CELL_INDEX];
+		const oStartCellIndex = this.getStartCellIndex();
+		if (oStartCellIndex && oStartCellIdFromArr.cellId === oStartCellIndex.cellId && oStartCellIdFromArr.wsName === oStartCellIndex.wsName) {
+			return;
+		}
+		this.setStartCellIndex(oStartCellIdFromArr);
+	};
+	/**
+	 * Method adds array with recursive cells in the group changed cells object.
+	 * @param {Cell} oCell
+	 * @param {{cellId: number, wsName: string}[]} aRecursiveCells
+	 */
+	CalcRecursion.prototype.addRecursiveCells = function (oCell, aRecursiveCells) {
+		const oGroupChangedCell = this.getGroupChangedCells();
+		const sCellWsName = oCell.ws.getName().toLowerCase();
+		const nCellIndex = AscCommonExcel.getCellIndex(oCell.nRow, oCell.nCol);
+
+		if (!oGroupChangedCell.hasOwnProperty(sCellWsName)) {
+			oGroupChangedCell[sCellWsName] = {};
+		}
+		oGroupChangedCell[sCellWsName][nCellIndex] = aRecursiveCells;
+	};
+	/**
+	 * Method returns a flag that checks a recursive call is needed.
+	 * @returns {boolean}
+	 */
+	CalcRecursion.prototype.needRecursiveCall = function () {
+		const oStartCellIndex = this.getStartCellIndex();
+		const oGroupChangedCells = this.getGroupChangedCells();
+		const bMaxStepNotExceeded = this.getIterStep() < this.getMaxIterations() && this.getIterStep() <= this.getMaxRecursion();
+		let bHasRecursiveCell = false;
+
+		for (let nSheetId in oGroupChangedCells) {
+			let oGroupChangedSheet = oGroupChangedCells[nSheetId];
+			for (let nCellIndex in oGroupChangedSheet) {
+				let aRecursiveCells = oGroupChangedSheet[nCellIndex];
+				if (aRecursiveCells.length) {
+					bHasRecursiveCell = true;
+					break;
+				}
+			}
+			if (bHasRecursiveCell) {
+				break;
+			}
+		}
+
+		return this.getIsEnabledRecursion() && (oStartCellIndex || bHasRecursiveCell) && bMaxStepNotExceeded;
+	};
 
 	const g_cCalcRecursion = new CalcRecursion();
 

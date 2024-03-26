@@ -652,10 +652,10 @@ $(function () {
 	QUnit.module("Formula");
 	QUnit.test('Iterative calculation', function (assert) {
 		const g_cCalcRecursion = AscCommonExcel.g_cCalcRecursion;
-		let nExpectedCellIndex, oFactCellIndex, oCell;
+		let nExpectedCellIndex, oFactCellIndex, oCell, bCaFromSelectedCell;
 		// Init necessary functions
-		const selectCell = function (sRange) {
-			let oSelectCell = ws.getRange2(sRange);
+		const selectCell = function (sRange, oWs) {
+			let oSelectCell = oWs ? oWs.getRange2(sRange) : ws.getRange2(sRange);
 			let oCell = null;
 
 			oSelectCell._foreach2(function (cell) {
@@ -669,6 +669,12 @@ $(function () {
 
 			return g_cCalcRecursion.getStartCellIndex();
 		};
+		const getCaFromSelectedCell = function (sRange, oWs) {
+			const oSelectedCell = selectCell(sRange, oWs);
+			const oSelectedCellFormula = oSelectedCell.getFormulaParsed();
+
+			return oSelectedCellFormula.ca;
+		};
 		// -- Check recursion formula with iteration limit
 		// - Case: Sequence chain - A1000: A1000+B1000 -> B1000: B1000+C1000 -> C1: 1
 		// Fill cells
@@ -677,12 +683,26 @@ $(function () {
 		ws.getRange2("C1000").setValue("1");
 		assert.strictEqual(ws.getRange2("A1000").getValue(), "45", "Test: Sequence chain = A1000: A1000+B1000, B1000: B1000+C1000, C1000: 1. A1000 - 45");
 		assert.strictEqual(ws.getRange2("B1000").getValue(), "10", "Test: Sequence chain = A1000: A1000+B1000, B1000: B1000+C1000, C1000: 1. B1000 - 10");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("A1000");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain = A1000: A1000+B1000, B1000: B1000+C1000, C1000: 1. isFormulaRecursion test. A1000 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("B1000");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain = A1000: A1000+B1000, B1000: B1000+C1000, C1000: 1. isFormulaRecursion test. B1000 - flag ca: true");
+		bCaFromSelectedCell = null;
 		// - Case: Loop chain - D1000: F1000/E1000 <-> F1000: E1000+D1000
 		ws.getRange2("E1000").setValue("1");
 		ws.getRange2("D1000").setValue("=F1000/E1000");
 		ws.getRange2("F1000").setValue("=E1000+D1000");
 		assert.strictEqual(ws.getRange2("D1000").getValue(), "9", "Test: Loop chain - D1000: F1000/E1000 <-> F1000: E1000+D1000. D1000 - 9");
 		assert.strictEqual(ws.getRange2("F1000").getValue(), "10", "Test: Loop chain - D1000: F1000/E1000 <-> F1000: E1000+D1000. F1000 - 10");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("D1000");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Loop chain - D1000: F1000/E1000 <-> F1000: E1000+D1000. isFormulaRecursion test. D1000 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("F1000");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Loop chain - D1000: F1000/E1000 <-> F1000: E1000+D1000. isFormulaRecursion test. F1000 - flag ca: true");
+		bCaFromSelectedCell = null;
 		// - Case: 3D Loop chain - D1001: Sheet2!A1000/E1001 <-> Sheet2!A1000: Sheet1!D1001+Sheet1!E1001
 		let ws2 = wb.createWorksheet(0, "Sheet2");
 		ws.getRange2("E1001").setValue("1");
@@ -690,11 +710,22 @@ $(function () {
 		ws2.getRange2("D1001").setValue("=Sheet1!D1001+Sheet1!E1001");
 		assert.strictEqual(ws.getRange2("D1001").getValue(), "9", "Test: 3D Loop chain - D1001: Sheet2!A1000/E1001 <-> Sheet2!A1000: Sheet1!D1001+Sheet1!E1001. D1001 - 9");
 		assert.strictEqual(ws2.getRange2("D1001").getValue(), "10", "Test: 3D Loop chain - D1001: Sheet2!A1000/E1001 <-> Sheet2!A1000: Sheet1!D1001+Sheet1!E1001. Sheet2!A1000 - 10");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("D1001");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: 3D Loop chain - D1001: Sheet2!A1000/E1001 <-> Sheet2!A1000: Sheet1!D1001+Sheet1!E1001. isFormulaRecursion test. D1001 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("D1001", ws2);
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: 3D Loop chain - D1001: Sheet2!A1000/E1001 <-> Sheet2!A1000: Sheet1!D1001+Sheet1!E1001. isFormulaRecursion test. Sheet2!A1000 - flag ca: true");
+		bCaFromSelectedCell = null;
 		// Remove created sheets.
 		wb.removeWorksheet(0);
 		// -  Case: Loop cell - A1001: A1001+1
 		ws.getRange2("A1001").setValue("=A1001+1");
 		assert.strictEqual(ws.getRange2("A1001").getValue(), "10", "Test: Loop cell - A1001: A1001+1. A1001 - 10");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("A1001");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Loop cell - A1001: A1001+1. isFormulaRecursion test. A1001 - flag ca: true");
+		bCaFromSelectedCell = null;
 		// - Negative case sequence chain without loop cell.
 		ws.getRange2("A1002").setValue("=1+B1002");
 		ws.getRange2("B1002").setValue("=1+C1002");
@@ -702,17 +733,36 @@ $(function () {
 		assert.strictEqual(ws.getRange2("A1002").getValue(), "3", "Test: Negative case sequence chain without loop cell - A1002: 1+B1002. A1002 - 3");
 		assert.strictEqual(ws.getRange2("B1002").getValue(), "2", "Test: Negative case sequence chain without loop cell - B1002: 1+C1002. B1002 - 2");
 		assert.strictEqual(ws.getRange2("C1002").getValue(), "1", "Test: Negative case sequence chain without loop cell - C1002: 1. C1002 - 1");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("A1002");
+		assert.strictEqual(bCaFromSelectedCell, false, "Test: Negative case sequence chain without loop cell - A1002: 1+B1002. isFormulaRecursion test. A1002 - flag ca: false");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("B1002");
+		assert.strictEqual(bCaFromSelectedCell, false, "Test: Negative case sequence chain without loop cell - A1002: 1+B1002. isFormulaRecursion test. B1002 - flag ca: false");
+		bCaFromSelectedCell = null;
 		// - Negative case cell without any chain.
 		ws.getRange2("A1003").setValue("=1+2");
 		assert.strictEqual(ws.getRange2("A1003").getValue(), "3", "Test: Negative case cell without any chain - A1003: 1+2. A1003 - 3");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("A1003");
+		assert.strictEqual(bCaFromSelectedCell, false, "Test: Negative case cell without any chain - A1003: 1+2. isFormulaRecursion test. A1003 - flag ca: false");
+		bCaFromSelectedCell = null;
 		ws.getRange2("A1004").setValue("1");
 		ws.getRange2("B1004").setValue("2");
 		ws.getRange2("C1004").setValue("=A1004+B1004");
 		assert.strictEqual(ws.getRange2("C1004").getValue(), "3", "Test: Negative case cell without any chain - C1004: A1004+B1004. C1004 - 3");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("C1004");
+		assert.strictEqual(bCaFromSelectedCell, false, "Test: Negative case cell without any chain - C1004: A1004+B1004. isFormulaRecursion test. C1004 - flag ca: false");
+		bCaFromSelectedCell = null;
 		// - Case: Sequence chain - A1005: A1005+B1005, B1005: 1. Deep level of recursion - 0
 		ws.getRange2("A1005").setValue("=A1005+B1005");
 		ws.getRange2("B1005").setValue("1");
 		assert.strictEqual(ws.getRange2("A1005").getValue(), "10", "Test: Sequence chain - A1005: A1005+B1005, B1005: 1");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("A1005");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1005: A1005+B1005, B1005: 1. isFormulaRecursion test. A1005 - flag ca: true");
+		bCaFromSelectedCell = null;
 		// - Case: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. Deep level of recursion - 10, Max iteration 10
 		ws.getRange2("A1006").setValue("=A1006+B1006");
 		ws.getRange2("B1006").setValue("=B1006+C1006");
@@ -733,6 +783,34 @@ $(function () {
 		assert.strictEqual(ws.getRange2("G1006").getValue(), "120", "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. G1006 - 120");
 		assert.strictEqual(ws.getRange2("H1006").getValue(), "45", "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. H1006 - 45");
 		assert.strictEqual(ws.getRange2("I1006").getValue(), "10", "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. I1006 - 10");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("A1006");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. isFormulaRecursion test. A1006 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("B1006");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. isFormulaRecursion test. B1006 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("C1006");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. isFormulaRecursion test. C1006 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("D1006");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. isFormulaRecursion test. D1006 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("E1006");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. isFormulaRecursion test. E1006 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("F1006");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. isFormulaRecursion test. F1006 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("G1006");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. isFormulaRecursion test. G1006 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("H1006");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. isFormulaRecursion test. H1006 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("I1006");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1006: A1006+B1006, B1006: B1006+C1006, C1006: C1006+D1006 ... J1006: 1. isFormulaRecursion test. I1006 - flag ca: true");
+		bCaFromSelectedCell = null;
 		// - Case: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... T1007: 1. Deep level of recursion - 20, Max iteration 10
 		ws.getRange2("A1007").setValue("=A1007+B1007");
 		ws.getRange2("B1007").setValue("=B1007+C1007");
@@ -773,6 +851,64 @@ $(function () {
 		assert.strictEqual(ws.getRange2("U1007").getValue(), "120", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. U1007 - 120");
 		assert.strictEqual(ws.getRange2("V1007").getValue(), "45", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. V1007 - 45");
 		assert.strictEqual(ws.getRange2("W1007").getValue(), "10", "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. W1007 - 10");
+		// Check work isFormulaRecursion function
+		bCaFromSelectedCell = getCaFromSelectedCell("A1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. A1007 - flag ca: true");
+		bCaFromSelectedCell = null
+		bCaFromSelectedCell = getCaFromSelectedCell("B1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. B1007 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("C1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. C1007 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("D1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. D1007 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("E1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. E1007 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("F1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. F1007 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("G1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. G1007 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("H1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. H1007 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("I1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. I1007 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("J1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. J1007 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("K1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. K1007 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("L1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. L1007 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("Q1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. Q1007 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("R1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. R1007 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("S1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. S1007 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("T1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. T1007 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("U1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. U1007 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("V1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. V1007 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("W1007");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Sequence chain - A1007: A1007+B1007, B1007: B1007+C1007, C1007: C1007+D1007 ... X1007: 1. isFormulaRecursion test. W1007 - flag ca: true");
+		bCaFromSelectedCell = null;
 		// - Case: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1
 		ws.getRange2("A1011").setValue("=A1011+A1012");
 		ws.getRange2("A1012").setValue("=A1012+A1013");
@@ -783,6 +919,19 @@ $(function () {
 		assert.strictEqual(ws.getRange2("A1012").getValue(), "120", "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. A1012 - 120");
 		assert.strictEqual(ws.getRange2("A1013").getValue(), "45", "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. A1013 - 45");
 		assert.strictEqual(ws.getRange2("A1014").getValue(), "10", "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. A1014 - 10");
+		// Check work isRecursionFormula function
+		bCaFromSelectedCell = getCaFromSelectedCell("A1011");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. isFormulaRecursion test. A1011 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("A1012");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. isFormulaRecursion test. A1012 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("A1013");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. isFormulaRecursion test. A1013 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("A1014");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. isFormulaRecursion test. A1014 - flag ca: true");
+		bCaFromSelectedCell = null;
 		// - Case: 3D sequence chain - A1016: A1016+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1
 		ws2 = wb.createWorksheet(0, "Sheet2");
 		let ws3 = wb.createWorksheet(1, "Sheet3");
@@ -792,6 +941,13 @@ $(function () {
 		assert.strictEqual(ws.getRange2("A1016").getValue(), "45", "Test: 3D sequence chain - A1012: A1012+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1. A1012 - 45");
 		assert.strictEqual(ws2.getRange2("A1000").getValue(), "10", "Test: 3D sequence chain - A1012: A1012+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1. Sheet2!A1000 - 10");
 		assert.strictEqual(ws3.getRange2("A1000").getValue(), "1", "Test: 3D sequence chain - A1012: A1012+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1. Sheet3!A1000 - 1");
+		// Check work isRecursionFormula function
+		bCaFromSelectedCell = getCaFromSelectedCell("A1016");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: 3D sequence chain - A1016: A1016+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1. isFormulaRecursion test. A1016 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("A1000", ws2);
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: 3D sequence chain - A1016: A1016+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1. isFormulaRecursion test. Sheet2!A1000 - flag ca: true");
+		bCaFromSelectedCell = null;
 		// - Case: 3D sequence chain  B1012: B1012+Sheet2!B1012, Sheet2!B1012: Sheet2!B1012+Sheet3!B1012, Sheet3!B1012: 1
 		ws.getRange2("B1012").setValue("=B1012+Sheet2!B1012");
 		ws2.getRange2("B1012").setValue("=B1012+Sheet3!B1012");
@@ -799,6 +955,13 @@ $(function () {
 		assert.strictEqual(ws.getRange2("B1012").getValue(), "45", "Test: 3D sequence chain - B1012: B1012+Sheet2!B1012, Sheet2!B1012: Sheet2!B1012+Sheet3!B1012, Sheet3!B1012: 1. B1012 - 45");
 		assert.strictEqual(ws2.getRange2("B1012").getValue(), "10", "Test: 3D sequence chain - B1012: B1012+Sheet2!B1012, Sheet2!B1012: Sheet2!B1012+Sheet3!B1012, Sheet3!B1012: 1. Sheet2!B1012 - 10");
 		assert.strictEqual(ws3.getRange2("B1012").getValue(), "1", "Test: 3D sequence chain - B1012: B1012+Sheet2!B1012, Sheet2!B1012: Sheet2!B1012+Sheet3!B1012, Sheet3!B1012: 1. Sheet3!B1012 - 1");
+		// Check work isRecursionFormula function
+		bCaFromSelectedCell = getCaFromSelectedCell("B1012");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: 3D sequence chain - B1012: B1012+Sheet2!B1012, Sheet2!B1012: Sheet2!B1012+Sheet3!B1012, Sheet3!B1012: 1. isFormulaRecursion test. B1012 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("B1012", ws2);
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: 3D sequence chain - B1012: B1012+Sheet2!B1012, Sheet2!B1012: Sheet2!B1012+Sheet3!B1012, Sheet3!B1012: 1. isFormulaRecursion test. Sheet2!B1012 - flag ca: true");
+		bCaFromSelectedCell = null;
 		// Remove created sheets.
 		wb.removeWorksheet(0);
 		wb.removeWorksheet(0);
@@ -807,8 +970,13 @@ $(function () {
 		wb.editDefinesNames(null, oDefName);
 		ws.getRange2("A1017").setValue("=x+1")
 		assert.strictEqual(ws.getRange2("A1017").getValue(), "10", "Test: DefName loop cell - X: X+1. X - 10");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("A1017");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: DefName loop cell - X: X+1. isFormulaRecursion test. A1017(X) - flag ca: true");
+		bCaFromSelectedCell = null;
 		// Clean define name
 		wb.delDefinesNames(oDefName);
+		oDefName = null;
 		// - Case: DefName sequence chain - X: X+Y, Y: Y+Z, Z: 1
 		let oDefNameX = new Asc.asc_CDefName("x", ws.getName() + "!$A$1018");
 		let oDefNameY = new Asc.asc_CDefName("y", ws.getName() + "!$B$1018");
@@ -822,22 +990,40 @@ $(function () {
 		assert.strictEqual(ws.getRange2("A1018").getValue(), "45", "Test: DefName sequence chain - X: X+Y, Y: Y+Z, Z: 1. X - 45");
 		assert.strictEqual(ws.getRange2("B1018").getValue(), "10", "Test: DefName sequence chain - X: X+Y, Y: Y+Z, Z: 1. Y - 10");
 		assert.strictEqual(ws.getRange2("C1018").getValue(), "1", "Test: DefName sequence chain - X: X+Y, Y: Y+Z, Z: 1. Z - 1");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("A1018");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: DefName sequence chain - X: X+Y, Y: Y+Z, Z: 1. isFormulaRecursion test. A1018(X) - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("B1018");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: DefName sequence chain - X: X+Y, Y: Y+Z, Z: 1. isFormulaRecursion test. B1018(Y) - flag ca: true");
+		bCaFromSelectedCell = null;
 		// Clean define name
 		wb.delDefinesNames(oDefNameX);
 		wb.delDefinesNames(oDefNameY);
 		wb.delDefinesNames(oDefNameZ);
+		oDefNameX = null;
+		oDefNameY = null;
+		oDefNameZ = null;
 		// - Case: Area recursive formula SUM(A1019:D1019)
 		ws.getRange2("A1019").setValue("1");
 		ws.getRange2("B1019").setValue("2");
 		ws.getRange2("C1019").setValue("3");
 		ws.getRange2("D1019").setValue("=SUM(A1019:D1019)");
 		assert.strictEqual(ws.getRange2("D1019").getValue(), "60", "Test: Area recursive formula SUM(A1019:D1019). D1019 - 60");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("D1019");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Area recursive formula SUM(A1019:D1019). isFormulaRecursion test. D1019 - flag ca: true");
+		bCaFromSelectedCell = null;
 		// - Case: Area recursive formula SUM(D1020, A1020:C1020)
 		ws.getRange2("A1020").setValue("1");
 		ws.getRange2("B1020").setValue("2");
 		ws.getRange2("C1020").setValue("3");
 		ws.getRange2("D1020").setValue("=SUM(D1020, A1020:C1020)");
 		assert.strictEqual(ws.getRange2("D1020").getValue(), "60", "Test: Area recursive formula SUM(D1020, A1020:C1020). D1020 - 60");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("D1020");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Area recursive formula SUM(D1020, A1020:C1020). isFormulaRecursion test. D1020 - flag ca: true");
+		bCaFromSelectedCell = null;
 		// - Case: 3D Area recursive formula SUM(A1021, Sheet2!A1000:C1000)
 		ws2 = wb.createWorksheet(0, "Sheet2");
 		ws2.getRange2("A1000").setValue("1");
@@ -845,6 +1031,10 @@ $(function () {
 		ws2.getRange2("C1000").setValue("3");
 		ws.getRange2("A1021").setValue("=SUM(A1021, Sheet2!A1000:C1000)");
 		assert.strictEqual(ws.getRange2("A1021").getValue(), "60", "Test: 3D Area recursive formula SUM(A1021, Sheet2!A1000:C1000). A1021 - 60");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("A1021");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: 3D Area recursive formula SUM(A1021, Sheet2!A1000:C1000). isFormulaRecursion test. A1021 - flag ca: true");
+		bCaFromSelectedCell = null;
 		// Remove created sheets.
 		wb.removeWorksheet(0);
 		// - Case: DefName Area recursive formula SUM(Range)
@@ -855,8 +1045,13 @@ $(function () {
 		ws.getRange2("C1022").setValue("3");
 		ws.getRange2("D1022").setValue("=SUM(Range)");
 		assert.strictEqual(ws.getRange2("D1022").getValue(), "60", "Test: DefName Area recursive formula SUM(Range). D1022 - 60");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("D1022");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: DefName Area recursive formula SUM(Range). isFormulaRecursion test. D1022 - flag ca: true");
+		bCaFromSelectedCell = null;
 		// Clean define name
 		wb.delDefinesNames(oDefNameRange);
+		oDefNameRange = null;
 		// - Case: DefName Area 3D recursive formula SUM(А1000,Range3D)
 		ws2 = wb.createWorksheet(0, "Sheet2");
 		let oDefNameRange3D = new Asc.asc_CDefName("Range3D", ws.getName() + "!$A$1023:$C$1023");
@@ -866,17 +1061,78 @@ $(function () {
 		ws.getRange2("C1023").setValue("3");
 		ws2.getRange2("A1000").setValue("=SUM(A1000, Range3D)");
 		assert.strictEqual(ws2.getRange2("A1000").getValue(), "60", "Test: DefName Area 3D recursive formula SUM(А1000,Range3D). Sheet2!A1000 - 60");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("A1000", ws2);
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: DefName Area 3D recursive formula SUM(А1000,Range3D). isFormulaRecursion test. Sheet2!A1000 - flag ca: true");
+		bCaFromSelectedCell = null;
 		// Clean define name
 		wb.delDefinesNames(oDefNameRange3D);
+		oDefNameRange3D = null;
 		// Remove created sheets.
 		wb.removeWorksheet(0);
 		// - Case: Chain recursive formula without outStack link. A1024: A1024+1, B1024: A1024+B1024, C1024: B1024+C1024
 		ws.getRange2("A1024").setValue("=A1024+1");
 		ws.getRange2("B1024").setValue("=A1024+B1024");
 		ws.getRange2("C1024").setValue("=B1024+C1024");
-		assert.strictEqual(ws.getRange2("A1024").getValue(), "10", "Test: Chain recursive formula without outStack link. A1024 - 10");
-		assert.strictEqual(ws.getRange2("B1024").getValue(), "100", "Test: Chain recursive formula without outStack link. B1024 - 100");
-		assert.strictEqual(ws.getRange2("C1024").getValue(), "1000", "Test: Chain recursive formula without outStack link. C1024 - 1000");
+		assert.strictEqual(ws.getRange2("A1024").getValue(), "30", "Test: Chain recursive formula without outStack link. A1024 - 10");
+		assert.strictEqual(ws.getRange2("B1024").getValue(), "410", "Test: Chain recursive formula without outStack link. B1024 - 100");
+		assert.strictEqual(ws.getRange2("C1024").getValue(), "2870", "Test: Chain recursive formula without outStack link. C1024 - 1000");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("C1024");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Chain recursive formula without outStack link. isFormulaRecursion test. C1024 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("B1024");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Chain recursive formula without outStack link. isFormulaRecursion test. B1024 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("A1024");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Chain recursive formula without outStack link. isFormulaRecursion test. A1024 - flag ca: true");
+		bCaFromSelectedCell = null;
+		// - Case: Not recursive formula A1025: SUM(B1025:C1025)
+		ws.getRange2("A1025").setValue("=SUM(B1025:C1025)");
+		ws.getRange2("B1025").setValue("1");
+		ws.getRange2("C1025").setValue("2");
+		assert.strictEqual(ws.getRange2("A1025").getValue(), "3", "Test: Not recursive formula A1025 - 3");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("A1025");
+		assert.strictEqual(bCaFromSelectedCell, false, "Test: Not recursive formula A1025. isFormulaRecursion test. A1025 - flag ca: false");
+		bCaFromSelectedCell = null;
+		// - Case: Area recursive formula SUM(Y:Z)
+		ws.getRange2("Y1000").setValue("1");
+		ws.getRange2("Z1000").setValue("2");
+		ws.getRange2("Y1001").setValue("=SUM(Y:Z)");
+		assert.strictEqual(ws.getRange2("Y1001").getValue(), "30", "Test: Area recursive formula SUM(Y:Z). Y1001 - 30");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("Y1001");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Area recursive formula SUM(Y:Z). isFormulaRecursion test. Y1001 - flag ca: true");
+		bCaFromSelectedCell = null;
+		// - Case: Def name area recursive formula SUM(All)
+		let oDefNameAll = new Asc.asc_CDefName("All", ws.getName() + "!$Z:$Z");
+		wb.editDefinesNames(null, oDefNameAll);
+		ws.getRange2("Z1000").setValue("1");
+		ws.getRange2("Z1001").setValue("2");
+		ws.getRange2("Z1002").setValue("=SUM(All)");
+		assert.strictEqual(ws.getRange2("Z1002").getValue(), "30", "Test: Def name area recursive formula SUM(All). Z1002 - 30");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("Z1002");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Def name area recursive formula SUM(All). isFormulaRecursion test. Z1002 - flag ca: true");
+		bCaFromSelectedCell = null;
+		// Clean define name
+		wb.delDefinesNames(oDefNameAll);
+		oDefNameAll = null;
+		// - Case: Def name area non-recursive formula SUM(XAll)
+		let oDefNameABAll = new Asc.asc_CDefName("ABAll", ws.getName() + "!$AB:$AB");
+		wb.editDefinesNames(null, oDefNameABAll);
+		ws.getRange2("AB1000").setValue("1");
+		ws.getRange2("AB1001").setValue("2");
+		ws.getRange2("A1026").setValue("=SUM(ABAll)");
+		assert.strictEqual(ws.getRange2("A1026").getValue(), "3", "Test: Def name area non-recursive formula SUM(ABAll). A1026 - 3");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("A1026");
+		assert.strictEqual(bCaFromSelectedCell, false, "Test: Def name area non-recursive formula SUM(ABAll). isFormulaRecursion test. A1026 - flag ca: false");
+		bCaFromSelectedCell = null;
+		// Clean define name
+		wb.delDefinesNames(oDefNameABAll);
+		oDefNameABAll = null;
 		// -- Test changeLinkedCell method.
 		oCell = selectCell("A1000");
 		let oCellNeedEnableRecalc = selectCell("B1000");
@@ -996,7 +1252,8 @@ $(function () {
 		ws.getRange2("A7").setValue("1");
 		ws.getRange2("A8").setValue("2");
 		ws.getRange2("A9").setValue("3");
-		oParser = new parserFormula('A7:A9', null, ws);
+		let cellWithFormula = new AscCommonExcel.CCellWithFormula(ws, 0, 9);
+		oParser = new parserFormula('A7:A9', cellWithFormula, ws);
 		assert.ok(oParser.parse());
 		assert.strictEqual(oParser.calculate().cross(new Asc.Range(0, 5, 0, 5), ws.getId()).getValue(), "#VALUE!");
 		assert.strictEqual(oParser.calculate().cross(new Asc.Range(0, 6, 0, 6), ws.getId()).getValue(), 1);

@@ -609,22 +609,6 @@ NullState.prototype =
 
 		    }
 	    }
-
-        if (this.drawingObjects.handleEventMode !== HANDLE_EVENT_MODE_CURSOR) {
-            // Нашел все шейпы со свойством vmlDrawing
-            const myButtons = Asc.editor.getDrawingObjects().getDrawingObjects()
-                .map(obj => obj.graphicObject)
-                .filter(shape => shape.vmlDrawing);
-
-            // Для каждого такого шейпа обновил поле bPressed
-            myButtons.forEach((btn) => {
-                btn.bPressed = btn.hit(x, y);
-            });
-
-            // Перерисовал
-            Asc.editor.drawingObject.showDrawingObjects();
-        }
-
         return null;
     },
 

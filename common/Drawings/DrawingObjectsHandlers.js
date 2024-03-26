@@ -454,6 +454,13 @@ function handleShapeImage(drawing, drawingObjectsController, e, x, y, group, pag
     let hit_in_text_rect = drawing.hitInTextRect && drawing.hitInTextRect(x, y);
     if(hit_in_inner_area || hit_in_path || hit_in_text_rect)
     {
+		const isFormControl = !!drawing.vmlDrawing;
+		const isHandleMode = drawingObjectsController.handleEventMode === HANDLE_EVENT_MODE_HANDLE;
+		if (isFormControl && isHandleMode) {
+			drawing.bPressed = true;
+			Asc.editor.getDrawingObjects().showDrawingObjects();
+		}
+
         let oCheckResult = drawingObjectsController.checkDrawingHyperlinkAndMacro(drawing, e, hit_in_text_rect, x, y, pageIndex);
         if(oCheckResult)
         {

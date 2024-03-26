@@ -3958,77 +3958,77 @@ $(function () {
 		QUnit.test("Test: Histogram aggregation calculations", function (assert) {
 
 			let chartsDrawer = new AscFormat.CChartsDrawer();
-			let cachedData = {aggregation : {}};
+			let clusteredColumn = {aggregation : {}};
 			let axisProperties = {
 				cat : {max: null, min:null, scale : []},
 				val : {max: null, min:null, scale : []},
 			};
 			let numArr = [{val: 7}, {val: 9}];
 			let strArr = [{val: "c"}, {val: "#"}];
-			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, strArr, axisProperties);
+			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, strArr, axisProperties);
 			result = [['c', '#'], [7, 9]];
-			let keys = Object.keys(cachedData.aggregation);
-			let values = Object.values(cachedData.aggregation);
+			let keys = Object.keys(clusteredColumn.aggregation);
+			let values = Object.values(clusteredColumn.aggregation);
 
 			assert.ok(areSameStrings(result[0], keys), "Histogram; aggregation keys calculated incorrectly:" + result[0] + ', got:' + keys);
 			assert.ok(areSame(result[1], values), "Histogram; aggregation values calculated incorrectly:" + result[1] + ', got:' + values);
 
-			cachedData = {aggregation : {}};
+			clusteredColumn = {aggregation : {}};
 			axisProperties = {
 				cat : {max: null, min:null, scale : []},
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
 			strArr = [{val: "c"}, {val: "#"}, {val: "f"}, {val: "c"}, {val: "c"}, {val: "c"}, {val: "c"}, {val: "f"}, {val: "f"}, {val: "d"}, {val: "f"}, {val: "d"}, {val: "d"}];
-			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, strArr, axisProperties);
+			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, strArr, axisProperties);
 			result = [['c', '#', 'f', 'd'], [247, 9, 381, 451]];
-			keys = Object.keys(cachedData.aggregation);
-			values = Object.values(cachedData.aggregation);
+			keys = Object.keys(clusteredColumn.aggregation);
+			values = Object.values(clusteredColumn.aggregation);
 
 			assert.ok(areSameStrings(result[0], keys), "Histogram; aggregation keys calculated incorrectly:" + result[0] + ', got:' + keys);
 			assert.ok(areSame(result[1], values), "Histogram; aggregation values calculated incorrectly:" + result[1] + ', got:' + values);
 
-			cachedData = {aggregation : {}};
+			clusteredColumn = {aggregation : {}};
 			axisProperties = {
 				cat : {max: null, min:null, scale : []},
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7},];
 			strArr = [];
-			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, strArr, axisProperties);
+			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, strArr, axisProperties);
 			result = [[''], [7]];
-			keys = Object.keys(cachedData.aggregation);
-			values = Object.values(cachedData.aggregation);
+			keys = Object.keys(clusteredColumn.aggregation);
+			values = Object.values(clusteredColumn.aggregation);
 
 			assert.ok(areSameStrings(result[0], keys), "Histogram; aggregation keys calculated incorrectly:" + result[0] + ', got:' + keys);
 			assert.ok(areSame(result[1], values), "Histogram; aggregation values calculated incorrectly:" + result[1] + ', got:' + values);
 
-			cachedData = {aggregation : {}};
+			clusteredColumn = {aggregation : {}};
 			axisProperties = {
 				cat : {max: null, min:null, scale : []},
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
 			strArr = [{val: "7"}, {val: "7"}, {val: "31"}, {val: "31"}, {val: "47"}, {val: "75"}, {val: "87"}, {val: "115"}, {val: "116"}, {val: "119"}, {val: "119"}, {val: "155"}, {val: "177"}];
-			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, strArr, axisProperties);
+			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, strArr, axisProperties);
 			result = [['7', '31', '47', '75', '87', '115', '116', '119', '155', '177'], [16, 62, 47, 75, 87, 115, 116, 238, 155, 177]];
-			keys = Object.keys(cachedData.aggregation);
-			values = Object.values(cachedData.aggregation);
+			keys = Object.keys(clusteredColumn.aggregation);
+			values = Object.values(clusteredColumn.aggregation);
 
 			assert.ok(areSameStrings(result[0], keys), "Histogram; aggregation keys calculated incorrectly:" + result[0] + ', got:' + keys);
 			assert.ok(areSame(result[1], values), "Histogram; aggregation values calculated incorrectly:" + result[1] + ', got:' + values);
 
-			cachedData = {aggregation : {}};
+			clusteredColumn = {aggregation : {}};
 			axisProperties = {
 				cat : {max: null, min:null, scale : []},
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 0}, {val: 9}, {val: 31}, {val: 0}];
 			strArr = [{val: "c"}, {val: "#"}, {val: "f"}, {val: "c"}];
-			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, strArr, axisProperties);
+			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, strArr, axisProperties);
 			result = [['c', '#', 'f'], [0, 9, 31]];
-			keys = Object.keys(cachedData.aggregation);
-			values = Object.values(cachedData.aggregation);
+			keys = Object.keys(clusteredColumn.aggregation);
+			values = Object.values(clusteredColumn.aggregation);
 
 			assert.ok(areSameStrings(result[0], keys), "Histogram; aggregation keys calculated incorrectly:" + result[0] + ', got:' + keys);
 			assert.ok(areSame(result[1], values), "Histogram; aggregation values calculated incorrectly:" + result[1] + ', got:' + values);
@@ -4040,66 +4040,66 @@ $(function () {
 		QUnit.test("Test: Histogram aggregation min and max calculations", function (assert) {
 
 			let chartsDrawer = new AscFormat.CChartsDrawer();
-			let cachedData = {aggregation : {}};
+			let clusteredColumn = {aggregation : {}};
 			let axisProperties = {
 				cat : {max: null, min:null, scale : []},
 				val : {max: null, min:null, scale : []},
 			};
 			let numArr = [{val: 7}, {val: 9}];
 			let strArr = [{val: "c"}, {val: "#"}];
-			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, strArr, axisProperties);
+			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, strArr, axisProperties);
 			result = [7, 9];
 
 			assert.ok(isEqual(result[0], axisProperties.val.min), "Histogram; aggregation keys calculated incorrectly:" + result[0] + ', got:' + axisProperties.val.min);
 			assert.ok(isEqual(result[1], axisProperties.val.max), "Histogram; aggregation values calculated incorrectly:" + result[1] + ', got:' + axisProperties.val.max);
 
-			cachedData = {aggregation : {}};
+			clusteredColumn = {aggregation : {}};
 			axisProperties = {
 				cat : {max: null, min:null, scale : []},
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
 			strArr = [{val: "c"}, {val: "#"}, {val: "f"}, {val: "c"}, {val: "c"}, {val: "c"}, {val: "c"}, {val: "f"}, {val: "f"}, {val: "d"}, {val: "f"}, {val: "d"}, {val: "d"}];
-			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, strArr, axisProperties);
+			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, strArr, axisProperties);
 			result = [7, 451];
 
 			assert.ok(isEqual(result[0], axisProperties.val.min), "Histogram; aggregation keys calculated incorrectly:" + result[0] + ', got:' + axisProperties.val.min);
 			assert.ok(isEqual(result[1], axisProperties.val.max), "Histogram; aggregation values calculated incorrectly:" + result[1] + ', got:' + axisProperties.val.max);
 
-			cachedData = {aggregation : {}};
+			clusteredColumn = {aggregation : {}};
 			axisProperties = {
 				cat : {max: null, min:null, scale : []},
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7},];
 			strArr = [];
-			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, strArr, axisProperties);
+			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, strArr, axisProperties);
 			result = [7, 7];
 
 			assert.ok(isEqual(result[0], axisProperties.val.min), "Histogram; aggregation keys calculated incorrectly:" + result[0] + ', got:' + axisProperties.val.min);
 			assert.ok(isEqual(result[1], axisProperties.val.max), "Histogram; aggregation values calculated incorrectly:" + result[1] + ', got:' + axisProperties.val.max);
 
-			cachedData = {aggregation : {}};
+			clusteredColumn = {aggregation : {}};
 			axisProperties = {
 				cat : {max: null, min:null, scale : []},
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
 			strArr = [{val: "7"}, {val: "7"}, {val: "31"}, {val: "31"}, {val: "47"}, {val: "75"}, {val: "87"}, {val: "115"}, {val: "116"}, {val: "119"}, {val: "119"}, {val: "155"}, {val: "177"}];
-			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, strArr, axisProperties);
+			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, strArr, axisProperties);
 			result = [7, 238];
 
 			assert.ok(isEqual(result[0], axisProperties.val.min), "Histogram; aggregation keys calculated incorrectly:" + result[0] + ', got:' + axisProperties.val.min);
 			assert.ok(isEqual(result[1], axisProperties.val.max), "Histogram; aggregation values calculated incorrectly:" + result[1] + ', got:' + axisProperties.val.max);
 
-			cachedData = {aggregation : {}};
+			clusteredColumn = {aggregation : {}};
 			axisProperties = {
 				cat : {max: null, min:null, scale : []},
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 0}, {val: 9}, {val: 31}, {val: 0}];
 			strArr = [{val: "c"}, {val: "#"}, {val: "f"}, {val: "c"}];
-			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, strArr, axisProperties);
+			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, strArr, axisProperties);
 			result = [0, 31];
 
 			assert.ok(isEqual(result[0], axisProperties.val.min), "Histogram; aggregation keys calculated incorrectly:" + result[0] + ', got:' + axisProperties.val.min);
@@ -4136,7 +4136,7 @@ $(function () {
 		QUnit.test("Test: Histogram binning calculations", function (assert) {
 
 			let chartsDrawer = new AscFormat.CChartsDrawer();
-			let cachedData = {
+			let clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			let axisProperties = {
@@ -4144,13 +4144,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			let numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			let result = [{min : 7, max : 89, occurrence: 7}, {min : 89, max : 171, occurrence: 5}, {min : 171, max : 253, occurrence: 1}];
-			let isProblematic = checkArraysOfObjects(result, cachedData.results);
+			let isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			let message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4158,13 +4158,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 78, occurrence: 6}, {min : 78, max : 149, occurrence: 5}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4172,13 +4172,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 78, occurrence: 6}, {min : 78, max : 149, occurrence: 3}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4186,13 +4186,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 63, occurrence: 5}, {min : 63, max : 119, occurrence: 2}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4200,13 +4200,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 41, occurrence: 4}, {min : 41, max : 75, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4214,13 +4214,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 39, occurrence: 3}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4228,13 +4228,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 10.9, occurrence: 2}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4242,13 +4242,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 12, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4256,13 +4256,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 12, occurrence: 8}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: 26},
 				results: []};
 			axisProperties = {
@@ -4270,13 +4270,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 33, occurrence: 4}, {min : 33, max : 59, occurrence: 1}, {min : 59, max : 85, occurrence: 1}, {min : 85, max : 111, occurrence: 1}, {min : 111, max : 137, occurrence: 4}, {min : 137, max : 163, occurrence: 1}, {min : 163, max : 189, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: 5},
 				results: []};
 			axisProperties = {
@@ -4284,13 +4284,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 12, occurrence: 2}, {min : 12, max : 17, occurrence: 0}, {min : 17, max : 22, occurrence: 0}, {min : 22, max : 27, occurrence: 0}, {min : 27, max : 32, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: 10},
 				results: []};
 			axisProperties = {
@@ -4298,13 +4298,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 18}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 17, occurrence: 1}, {min : 17, max : 27, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: 1, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4312,13 +4312,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 177, occurrence: 13}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: 3, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4326,13 +4326,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 7.666666667, occurrence: 1}, {min : 7.666666667, max : 8.3333333333, occurrence: 0}, {min : 8.3333333333, max : 9, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: 2, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4340,13 +4340,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 31, max : 31, occurrence: 1}, {min : 31, max : 31, occurrence: 0}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7.1, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4354,13 +4354,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 7.1, occurrence: 1}, {min : 7.1, max : 89.1, occurrence: 6}, {min : 89.1, max : 171.1, occurrence: 5}, {min : 171.1, max : 253.1, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 25, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4368,13 +4368,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 25, occurrence: 2}, {min : 25, max : 96, occurrence: 5}, {min : 96, max : 167, occurrence: 4}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 78, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4382,13 +4382,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 78, occurrence: 6}, {min : 78, max : 149, occurrence: 3}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 86.9999, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4396,13 +4396,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 86.9999, occurrence: 6}, {min : 86.9999, max : 142.9999, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4410,13 +4410,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 41, occurrence: 4}, {min : 41, max : 75, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 30, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4424,13 +4424,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 30, occurrence: 2}, {min : 30, max : 62, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7.4, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4438,13 +4438,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 7.5}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 7.4, occurrence: 1}, {min : 7.4, max : 8.38, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 6.99999, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4452,13 +4452,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 12, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4466,13 +4466,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 12, occurrence: 8}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7.5, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4480,13 +4480,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 7.5, occurrence: 1}, {min : 7.5, max : 11.4, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 8, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4494,13 +4494,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 8}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 8, occurrence: 2}, {min : 8, max : 10, occurrence: 0}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 176.99, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4508,13 +4508,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 89, occurrence: 7}, {min : 89, max : 171, occurrence: 5}, {min : 171, max : 176.99, occurrence: 0}, {min : 176.99, max : null, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 116, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4522,13 +4522,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 78, occurrence: 6}, {min : 78, max : 116, occurrence: 3}, {min : 116, max : null, occurrence: 2}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 78, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4536,13 +4536,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 78, occurrence: 6}, {min : 78, max : null, occurrence: 3}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 7, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4550,13 +4550,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 7, occurrence: 1}, {min : 7, max : null, occurrence: 6}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 47, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4564,13 +4564,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 41, occurrence: 4}, {min : 41, max : 75, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 8, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4578,13 +4578,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 8, occurrence: 1}, {min : 8, max : null, occurrence: 2}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 8.9, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4592,13 +4592,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 8.9, occurrence: 1}, {min : 8.9, max : null, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 7.111111, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4606,13 +4606,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 12, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 7.111111, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4620,13 +4620,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 12, occurrence: 8}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 8, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4634,13 +4634,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 8}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 9, occurrence: 2}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 176.99, underflow: 7.1, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4648,13 +4648,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 7.1, occurrence: 1}, {min : 7.1, max : 89.1, occurrence: 6}, {min : 89.1, max : 171.1, occurrence: 5}, {min : 171.1, max : 176.99, occurrence: 0}, {min : 176.99, max : null, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 116, underflow: 25, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4662,13 +4662,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 25, occurrence: 2}, {min : 25, max : 96, occurrence: 5}, {min : 96, max : 116, occurrence: 2}, {min : 116, max : null, occurrence: 2}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 78, underflow: 78, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4676,13 +4676,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 78, occurrence: 6}, {min : 78, max : 78, occurrence: 0}, {min : 78, max : null, occurrence: 3}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 7, underflow: 86.999, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4690,13 +4690,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 86.999, occurrence: 6}, {min : 86.999, max : 142.999, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 47, underflow: 7, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4704,13 +4704,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 41, occurrence: 4}, {min : 41, max : 75, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 8, underflow: 30, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4718,13 +4718,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 30, occurrence: 2}, {min : 30, max : 62, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 8.9, underflow: 7.4, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4732,13 +4732,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 7.4, occurrence: 1}, {min : 7.4, max : 8.9, occurrence: 0}, {min : 8.9, max : null, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 6.999, underflow: 7.1111, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4746,13 +4746,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 12, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 7.0, underflow: 7.1111, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4760,13 +4760,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 12, occurrence: 8}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7.1, binCount: null, binSize: 40},
 				results: []};
 			axisProperties = {
@@ -4774,13 +4774,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 7.1, occurrence: 1}, {min : 7.1, max : 47.1, occurrence: 4}, {min : 47.1, max : 87.1, occurrence: 2}, {min : 87.1, max : 127.1, occurrence: 4}, {min : 127.1, max : 167.1, occurrence: 1}, {min : 167.1, max : 207.1, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 20, binCount: null, binSize: 15},
 				results: []};
 			axisProperties = {
@@ -4788,13 +4788,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 20, occurrence: 2}, {min : 20, max : 35, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 18, binCount: null, binSize: 110},
 				results: []};
 			axisProperties = {
@@ -4802,13 +4802,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 18}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 18, occurrence: 2}, {min : 18, max : 128, occurrence: 0}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7, binCount: null, binSize: 50},
 				results: []};
 			axisProperties = {
@@ -4816,13 +4816,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 57, occurrence: 5}, {min : 57, max : 107, occurrence: 2}, {min : 107, max : 157, occurrence: 5}, {min : 157, max : 207, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 169.9, underflow: null, binCount: null, binSize: 40},
 				results: []};
 			axisProperties = {
@@ -4830,13 +4830,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 47, occurrence: 5}, {min : 47, max : 87, occurrence: 2}, {min : 87, max : 127, occurrence: 4}, {min : 127, max : 167, occurrence: 1}, {min : 167, max : 169.9, occurrence: 0}, {min : 169.9, max : null, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 20, underflow: null, binCount: null, binSize: 8},
 				results: []};
 			axisProperties = {
@@ -4844,13 +4844,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 15, occurrence: 2}, {min : 15, max : 20, occurrence: 0}, {min : 20, max : null, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 7, underflow: null, binCount: null, binSize: 15},
 				results: []};
 			axisProperties = {
@@ -4858,13 +4858,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 18}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 7, occurrence: 1}, {min : 7, max : null, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 177, underflow: null, binCount: null, binSize: 50},
 				results: []};
 			axisProperties = {
@@ -4872,13 +4872,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 57, occurrence: 5}, {min : 57, max : 107, occurrence: 2}, {min : 107, max : 157, occurrence: 5}, {min : 157, max : 207, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 176.9, underflow: 7.9, binCount: null, binSize: 70},
 				results: []};
 			axisProperties = {
@@ -4886,13 +4886,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 7.9, occurrence: 1}, {min : 7.9, max : 77.9, occurrence: 5}, {min : 77.9, max : 147.9, occurrence: 5}, {min : 147.9, max : 176.9, occurrence: 1}, {min : 176.9, max : null, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 20, underflow: 20, binCount: null, binSize: 10},
 				results: []};
 			axisProperties = {
@@ -4900,13 +4900,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 20, occurrence: 2}, {min : 20, max : 20, occurrence: 0}, {min : 20, max : null, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4914,13 +4914,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 18}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 29, occurrence: 2}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 177, underflow: 7, binCount: null, binSize: 50},
 				results: []};
 			axisProperties = {
@@ -4928,13 +4928,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 57, occurrence: 5}, {min : 57, max : 107, occurrence: 2}, {min : 107, max : 157, occurrence: 5}, {min : 157, max : 207, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7.1, binCount: 2, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4942,13 +4942,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 7.1, occurrence: 1}, {min : 7.1, max : 177, occurrence: 12}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7.1, binCount: 1, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4956,13 +4956,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 7.1, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 18, binCount: 3, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4970,13 +4970,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 18}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 18, occurrence: 2}, {min : 18, max : 18, occurrence: 0}, {min : 18, max : 18, occurrence: 0}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 176.9, underflow: null, binCount: 2, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4984,13 +4984,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 176.9, occurrence: 12}, {min : 176.9, max : null, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 30.9, underflow: null, binCount: 1, binSize: null},
 				results: []};
 			axisProperties = {
@@ -4998,13 +4998,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 30.9, max : null, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 7, underflow: null, binCount: 3, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5012,13 +5012,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 18}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 7, occurrence: 1}, {min : 7, max : 7, occurrence: 0}, {min : 7, max : null, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 169.9, underflow: 7.1, binCount: 1, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5026,13 +5026,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 7.1, occurrence: 1}, {min : 169.9, max : null, occurrence: 12}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 28, underflow: 28, binCount: 3, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5040,13 +5040,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 28, occurrence: 2}, {min : 28, max : 28, occurrence: 0}, {min : 28, max : null, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 17.5, underflow: 8.5, binCount: 2, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5054,13 +5054,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 18}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 8.5, occurrence: 1}, {min : 17.5, max : null, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 10, underflow: 8, binCount: 2, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5068,9 +5068,9 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 8, occurrence: 1}, {min : 10, max : null, occurrence: 2}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 		})
@@ -5080,66 +5080,66 @@ $(function () {
 		QUnit.test("Test: Histogram aggregation min and max calculations", function (assert) {
 
 			let chartsDrawer = new AscFormat.CChartsDrawer();
-			let cachedData = {aggregation : {}};
+			let clusteredColumn = {aggregation : {}};
 			let axisProperties = {
 				cat : {max: null, min:null, scale : []},
 				val : {max: null, min:null, scale : []},
 			};
 			let numArr = [{val: 7}, {val: 9}];
 			let strArr = [{val: "c"}, {val: "#"}];
-			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, strArr, axisProperties);
+			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, strArr, axisProperties);
 			result = [7, 9];
 
 			assert.ok(isEqual(result[0], axisProperties.val.min), "Histogram; aggregation keys calculated incorrectly:" + result[0] + ', got:' + axisProperties.val.min);
 			assert.ok(isEqual(result[1], axisProperties.val.max), "Histogram; aggregation values calculated incorrectly:" + result[1] + ', got:' + axisProperties.val.max);
 
-			cachedData = {aggregation : {}};
+			clusteredColumn = {aggregation : {}};
 			axisProperties = {
 				cat : {max: null, min:null, scale : []},
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
 			strArr = [{val: "c"}, {val: "#"}, {val: "f"}, {val: "c"}, {val: "c"}, {val: "c"}, {val: "c"}, {val: "f"}, {val: "f"}, {val: "d"}, {val: "f"}, {val: "d"}, {val: "d"}];
-			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, strArr, axisProperties);
+			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, strArr, axisProperties);
 			result = [7, 451];
 
 			assert.ok(isEqual(result[0], axisProperties.val.min), "Histogram; aggregation keys calculated incorrectly:" + result[0] + ', got:' + axisProperties.val.min);
 			assert.ok(isEqual(result[1], axisProperties.val.max), "Histogram; aggregation values calculated incorrectly:" + result[1] + ', got:' + axisProperties.val.max);
 
-			cachedData = {aggregation : {}};
+			clusteredColumn = {aggregation : {}};
 			axisProperties = {
 				cat : {max: null, min:null, scale : []},
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7},];
 			strArr = [];
-			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, strArr, axisProperties);
+			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, strArr, axisProperties);
 			result = [7, 7];
 
 			assert.ok(isEqual(result[0], axisProperties.val.min), "Histogram; aggregation keys calculated incorrectly:" + result[0] + ', got:' + axisProperties.val.min);
 			assert.ok(isEqual(result[1], axisProperties.val.max), "Histogram; aggregation values calculated incorrectly:" + result[1] + ', got:' + axisProperties.val.max);
 
-			cachedData = {aggregation : {}};
+			clusteredColumn = {aggregation : {}};
 			axisProperties = {
 				cat : {max: null, min:null, scale : []},
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
 			strArr = [{val: "7"}, {val: "7"}, {val: "31"}, {val: "31"}, {val: "47"}, {val: "75"}, {val: "87"}, {val: "115"}, {val: "116"}, {val: "119"}, {val: "119"}, {val: "155"}, {val: "177"}];
-			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, strArr, axisProperties);
+			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, strArr, axisProperties);
 			result = [7, 238];
 
 			assert.ok(isEqual(result[0], axisProperties.val.min), "Histogram; aggregation keys calculated incorrectly:" + result[0] + ', got:' + axisProperties.val.min);
 			assert.ok(isEqual(result[1], axisProperties.val.max), "Histogram; aggregation values calculated incorrectly:" + result[1] + ', got:' + axisProperties.val.max);
 
-			cachedData = {aggregation : {}};
+			clusteredColumn = {aggregation : {}};
 			axisProperties = {
 				cat : {max: null, min:null, scale : []},
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 0}, {val: 9}, {val: 31}, {val: 0}];
 			strArr = [{val: "c"}, {val: "#"}, {val: "f"}, {val: "c"}];
-			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, strArr, axisProperties);
+			chartsDrawer._chartExHandleAggregation(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, strArr, axisProperties);
 			result = [0, 31];
 
 			assert.ok(isEqual(result[0], axisProperties.val.min), "Histogram; aggregation keys calculated incorrectly:" + result[0] + ', got:' + axisProperties.val.min);
@@ -5176,7 +5176,7 @@ $(function () {
 		QUnit.test("Test: Histogram binning min and max and scale", function (assert) {
 
 			let chartsDrawer = new AscFormat.CChartsDrawer();
-			let cachedData = {
+			let clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			let axisProperties = {
@@ -5184,7 +5184,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			let numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			let resultMax = 7;
 			let resultMin = 1; 
 			let resultScale = [7, 89, 171, 253];
@@ -5195,7 +5195,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5203,7 +5203,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 6;
 			resultMin = 1; 
 			resultScale = [7, 78, 149];
@@ -5214,7 +5214,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5222,7 +5222,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 6;
 			resultMin = 1; 
 			resultScale = [7, 78, 149];
@@ -5233,7 +5233,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5241,7 +5241,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 5;
 			resultMin = 1; 
 			resultScale = [7, 63, 119];
@@ -5252,7 +5252,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5260,7 +5260,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 4;
 			resultMin = 1; 
 			resultScale = [7, 41, 75];
@@ -5271,7 +5271,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5279,7 +5279,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 3;
 			resultMin = 1; 
 			resultScale = [7, 39];
@@ -5290,7 +5290,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5298,7 +5298,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 2;
 			resultMin = 1; 
 			resultScale = [7, 10.9];
@@ -5309,7 +5309,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5317,7 +5317,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 1;
 			resultMin = 1; 
 			resultScale = [7, 12];
@@ -5328,7 +5328,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5336,7 +5336,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 8;
 			resultMin = 1; 
 			resultScale = [7, 12];
@@ -5347,7 +5347,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: 26},
 				results: []};
 			axisProperties = {
@@ -5355,7 +5355,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 4;
 			resultMin = 1; 
 			resultScale = [7, 33, 59, 85, 111, 137, 163, 189];
@@ -5366,7 +5366,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: 5},
 				results: []};
 			axisProperties = {
@@ -5374,7 +5374,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 2;
 			resultMin = 1; 
 			resultScale = [7, 12, 17, 22, 27, 32];
@@ -5385,7 +5385,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: 10},
 				results: []};
 			axisProperties = {
@@ -5393,7 +5393,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 18}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 1;
 			resultMin = 1; 
 			resultScale = [7, 17, 27];
@@ -5404,7 +5404,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: 1, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5412,7 +5412,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 13;
 			resultMin = 1; 
 			resultScale = [7, 177];
@@ -5423,7 +5423,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: 3, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5431,7 +5431,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 1;
 			resultMin = 1; 
 			resultScale = [7, 7.666666667, 8.333333333, 9];
@@ -5442,7 +5442,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: 2, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5450,7 +5450,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 1;
 			resultMin = 1; 
 			resultScale = [31, 31, 31];
@@ -5461,7 +5461,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 			
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7.1, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5469,7 +5469,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 6;
 			resultMin = 1; 
 			resultScale = [7.1, 89.1, 171.1, 253.1];
@@ -5480,7 +5480,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 25, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5488,7 +5488,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 5;
 			resultMin = 1; 
 			resultScale = [25, 96, 167];
@@ -5499,7 +5499,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 78, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5507,7 +5507,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 6;
 			resultMin = 1; 
 			resultScale = [78, 149];
@@ -5518,7 +5518,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 86.9999, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5526,7 +5526,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 6;
 			resultMin = 1; 
 			resultScale = [86.9999, 142.9999];
@@ -5537,7 +5537,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5545,13 +5545,13 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 41, occurrence: 4}, {min : 41, max : 75, occurrence: 1}];
-			isProblematic = checkArraysOfObjects(result, cachedData.results);
+			isProblematic = checkArraysOfObjects(result, clusteredColumn.results);
 			message = isProblematic ? "Histogram; binning ranges calculated incorrectly at index: " + isProblematic[0] + ", Expected value were: " + JSON.stringify(isProblematic[1]) + ', got:' + JSON.stringify(isProblematic[2]) : 'test passed';
 			assert.ok(!isProblematic, message);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 30, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5559,7 +5559,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 2;
 			resultMin = 1; 
 			resultScale = [30, 62];
@@ -5570,7 +5570,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7.4, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5578,7 +5578,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 7.5}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 1;
 			resultMin = 1; 
 			resultScale = [7.4, 8.38];
@@ -5589,7 +5589,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 6.99999, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5597,7 +5597,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 12, occurrence: 1}];
 			resultMax = 1;
 			resultMin = 1; 
@@ -5609,7 +5609,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5617,7 +5617,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 8;
 			resultMin = 1; 
 			resultScale = [7, 12];
@@ -5628,7 +5628,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7.5, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5636,7 +5636,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 1;
 			resultMin = 1; 
 			resultScale = [7.5, 11.4];
@@ -5647,7 +5647,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 8, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5655,7 +5655,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 8}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 2;
 			resultMin = 1; 
 			resultScale = [8, 10];
@@ -5666,7 +5666,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 176.99, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5674,7 +5674,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 7;
 			resultMin = 1; 
 			resultScale = [7, 89, 171, 176.99];
@@ -5685,7 +5685,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 116, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5693,7 +5693,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 6;
 			resultMin = 1; 
 			resultScale = [7, 78, 116];
@@ -5704,7 +5704,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 78, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5712,7 +5712,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 6;
 			resultMin = 1; 
 			resultScale = [7, 78];
@@ -5723,7 +5723,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 7, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5731,7 +5731,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 6;
 			resultMin = 1; 
 			resultScale = [7, 7];
@@ -5742,7 +5742,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 47, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5750,7 +5750,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 4;
 			resultMin = 1; 
 			resultScale = [7, 41, 75];
@@ -5761,7 +5761,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 8, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5769,7 +5769,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 2;
 			resultMin = 1; 
 			resultScale = [7, 8];
@@ -5780,7 +5780,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 8.9, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5788,7 +5788,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 1;
 			resultMin = 1; 
 			resultScale = [7, 8.9];
@@ -5799,7 +5799,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 7.111111, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5807,7 +5807,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 1;
 			resultMin = 1; 
 			resultScale = [7, 12];
@@ -5818,7 +5818,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 7.111111, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5826,7 +5826,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 8;
 			resultMin = 1; 
 			resultScale = [7, 12];
@@ -5837,7 +5837,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 8, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5845,7 +5845,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 8}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 2;
 			resultMin = 1; 
 			resultScale = [7, 9];
@@ -5856,7 +5856,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 176.99, underflow: 7.1, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5864,7 +5864,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 6;
 			resultMin = 1; 
 			resultScale = [7.1, 89.1, 171.1, 176.99];
@@ -5875,7 +5875,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 116, underflow: 25, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5883,7 +5883,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 5;
 			resultMin = 1; 
 			resultScale = [25, 96, 116];
@@ -5894,7 +5894,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 78, underflow: 78, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5902,7 +5902,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 6;
 			resultMin = 1; 
 			resultScale = [78, 78];
@@ -5913,7 +5913,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 7, underflow: 86.999, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5921,7 +5921,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 6;
 			resultMin = 1; 
 			resultScale = [86.999, 142.999];
@@ -5932,7 +5932,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 47, underflow: 7, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5940,7 +5940,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 4;
 			resultMin = 1; 
 			resultScale = [7, 41, 75];
@@ -5951,7 +5951,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 8, underflow: 30, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5959,7 +5959,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 2;
 			resultMin = 1; 
 			resultScale = [30, 62];
@@ -5970,7 +5970,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 8.9, underflow: 7.4, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5978,7 +5978,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 1;
 			resultMin = 1; 
 			resultScale = [7.4, 8.9];
@@ -5989,7 +5989,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 6.999, underflow: 7.1111, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -5997,7 +5997,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 1;
 			resultMin = 1; 
 			resultScale = [7, 12];
@@ -6008,7 +6008,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 7.0, underflow: 7.1111, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -6016,7 +6016,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}, {val: 7}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 8;
 			resultMin = 1; 
 			resultScale = [7, 12];
@@ -6027,7 +6027,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7.1, binCount: null, binSize: 40},
 				results: []};
 			axisProperties = {
@@ -6035,7 +6035,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 4;
 			resultMin = 1; 
 			resultScale = [7.1, 47.1, 87.1, 127.1, 167.1, 207.1];
@@ -6046,7 +6046,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 20, binCount: null, binSize: 15},
 				results: []};
 			axisProperties = {
@@ -6054,7 +6054,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 2;
 			resultMin = 1; 
 			resultScale = [20, 35];
@@ -6065,7 +6065,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 18, binCount: null, binSize: 110},
 				results: []};
 			axisProperties = {
@@ -6073,7 +6073,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 18}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 2;
 			resultMin = 1; 
 			resultScale = [18, 128];
@@ -6084,7 +6084,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7, binCount: null, binSize: 50},
 				results: []};
 			axisProperties = {
@@ -6092,7 +6092,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 5;
 			resultMin = 1; 
 			resultScale = [7, 57, 107, 157, 207];
@@ -6103,7 +6103,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 169.9, underflow: null, binCount: null, binSize: 40},
 				results: []};
 			axisProperties = {
@@ -6111,7 +6111,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 5;
 			resultMin = 1; 
 			resultScale = [7, 47, 87, 127, 167, 169.9];
@@ -6122,7 +6122,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 20, underflow: null, binCount: null, binSize: 8},
 				results: []};
 			axisProperties = {
@@ -6130,7 +6130,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : 7, max : 15, occurrence: 2}, {min : 15, max : 20, occurrence: 0}, {min : 20, max : null, occurrence: 1}];
 			resultMax = 2;
 			resultMin = 1; 
@@ -6142,7 +6142,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 7, underflow: null, binCount: null, binSize: 15},
 				results: []};
 			axisProperties = {
@@ -6150,7 +6150,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 18}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 1;
 			resultMin = 1; 
 			resultScale = [7, 7];
@@ -6161,7 +6161,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 177, underflow: null, binCount: null, binSize: 50},
 				results: []};
 			axisProperties = {
@@ -6169,7 +6169,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 5;
 			resultMin = 1; 
 			resultScale = [7, 57, 107, 157, 207];
@@ -6180,7 +6180,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 176.9, underflow: 7.9, binCount: null, binSize: 70},
 				results: []};
 			axisProperties = {
@@ -6188,7 +6188,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 5;
 			resultMin = 1; 
 			resultScale = [7.9, 77.9, 147.9, 176.9];
@@ -6199,7 +6199,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 20, underflow: 20, binCount: null, binSize: 10},
 				results: []};
 			axisProperties = {
@@ -6207,7 +6207,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 2;
 			resultMin = 1; 
 			resultScale = [20, 20];
@@ -6218,7 +6218,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: null, binCount: null, binSize: null},
 				results: []};
 			axisProperties = {
@@ -6226,7 +6226,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 18}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 2;
 			resultMin = 1; 
 			resultScale = [7, 29];
@@ -6237,7 +6237,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 177, underflow: 7, binCount: null, binSize: 50},
 				results: []};
 			axisProperties = {
@@ -6245,7 +6245,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 5;
 			resultMin = 1; 
 			resultScale = [7, 57, 107, 157, 207];
@@ -6256,7 +6256,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7.1, binCount: 2, binSize: null},
 				results: []};
 			axisProperties = {
@@ -6264,7 +6264,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 12;
 			resultMin = 1; 
 			resultScale = [7.1, 177];
@@ -6275,7 +6275,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 7.1, binCount: 1, binSize: null},
 				results: []};
 			axisProperties = {
@@ -6283,7 +6283,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 1;
 			resultMin = 1; 
 			resultScale = [7.1];
@@ -6294,7 +6294,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: null, underflow: 18, binCount: 3, binSize: null},
 				results: []};
 			axisProperties = {
@@ -6302,7 +6302,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 18}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 2;
 			resultMin = 1; 
 			resultScale = [18, 18, 18];
@@ -6313,7 +6313,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 176.9, underflow: null, binCount: 2, binSize: null},
 				results: []};
 			axisProperties = {
@@ -6321,7 +6321,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 12;
 			resultMin = 1; 
 			resultScale = [7, 176.9];
@@ -6332,7 +6332,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 30.9, underflow: null, binCount: 1, binSize: null},
 				results: []};
 			axisProperties = {
@@ -6340,7 +6340,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 1;
 			resultMin = 1; 
 			resultScale = [7];
@@ -6351,7 +6351,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 7, underflow: null, binCount: 3, binSize: null},
 				results: []};
 			axisProperties = {
@@ -6359,7 +6359,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 18}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 1;
 			resultMin = 1; 
 			resultScale = [7, 7, 7];
@@ -6370,7 +6370,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 169.9, underflow: 7.1, binCount: 1, binSize: null},
 				results: []};
 			axisProperties = {
@@ -6378,7 +6378,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}, {val: 31}, {val: 47}, {val: 75}, {val: 87}, {val: 115}, {val: 116}, {val: 119}, {val: 119}, {val: 155}, {val: 177}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 12;
 			resultMin = 1; 
 			resultScale = [7.1, 169.9];
@@ -6389,7 +6389,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 28, underflow: 28, binCount: 3, binSize: null},
 				results: []};
 			axisProperties = {
@@ -6397,7 +6397,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 2;
 			resultMin = 1; 
 			resultScale = [28, 28];
@@ -6408,7 +6408,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 17.5, underflow: 8.5, binCount: 2, binSize: null},
 				results: []};
 			axisProperties = {
@@ -6416,7 +6416,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 18}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			resultMax = 1;
 			resultMin = 1; 
 			resultScale = [8.5, 17.5];
@@ -6427,7 +6427,7 @@ $(function () {
 			assert.ok(test2, test2 ? 'test passed' : "Histogram; binning val min calculated incorrectly: " + resultMin + ", got: " + axisProperties.val.min);
 			assert.ok(test3, test3 ? 'test passed' : "Histogram; binning cat scale calculated incorrectly: " + resultScale + ", got: " + axisProperties.cat.scale);
 
-			cachedData = {
+			clusteredColumn = {
 				binning : { intervalClosed : 1, overflow: 10, underflow: 8, binCount: 2, binSize: null},
 				results: []};
 			axisProperties = {
@@ -6435,7 +6435,7 @@ $(function () {
 				val : {max: null, min:null, scale : []},
 			};
 			numArr = [{val: 7}, {val: 9}, {val: 31}];
-			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, cachedData, numArr, axisProperties);
+			chartsDrawer._chartExHandleBinning(AscFormat.SERIES_LAYOUT_CLUSTERED_COLUMN, clusteredColumn, numArr, axisProperties);
 			result = [{min : null, max : 8, occurrence: 1}, {min : 10, max : null, occurrence: 2}];
 			resultMax = 2;
 			resultMin = 1; 

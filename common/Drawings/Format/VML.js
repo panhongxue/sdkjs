@@ -375,6 +375,15 @@
 			return null;
 		}
 
+		function CorrectXmlString2(strText) {
+			strText = strText.replace(new RegExp("&apos;", 'g'), "'");
+			strText = strText.replace(new RegExp("&lt;", 'g'), "<");
+			strText = strText.replace(new RegExp("&gt;", 'g'), ">");
+			strText = strText.replace(new RegExp("&quot;", 'g'), "\"");
+			strText = strText.replace(new RegExp("&amp;", 'g'), "&");
+			return strText;
+		}
+
 
 		/* Classes */
 		function CVmlCommonElements() {

@@ -44,6 +44,312 @@
 		const IC = AscFormat.InitClass;
 
 
+		/* Constants */
+		const EExt = {
+			extBackwardCompatible: 0,
+			extEdit: 1,
+			extView: 2,
+		};
+
+		const EVmlClientDataObjectType = {
+			vmlclientdataobjecttypeButton: 0,
+			vmlclientdataobjecttypeCheckbox: 1,
+			vmlclientdataobjecttypeDialog: 2,
+			vmlclientdataobjecttypeDrop: 3,
+			vmlclientdataobjecttypeEdit: 4,
+			vmlclientdataobjecttypeGBox: 5,
+			vmlclientdataobjecttypeGroup: 6,
+			vmlclientdataobjecttypeLabel: 7,
+			vmlclientdataobjecttypeLineA: 8,
+			vmlclientdataobjecttypeList: 9,
+			vmlclientdataobjecttypeMovie: 10,
+			vmlclientdataobjecttypeNote: 11,
+			vmlclientdataobjecttypePict: 12,
+			vmlclientdataobjecttypeRadio: 13,
+			vmlclientdataobjecttypeRect: 14,
+			vmlclientdataobjecttypeRectA: 15,
+			vmlclientdataobjecttypeScroll: 16,
+			vmlclientdataobjecttypeShape: 17,
+			vmlclientdataobjecttypeSpin: 18,
+		};
+
+		const EStrokeJoinStyle = {
+			strokejoinstyleBevel: 0,
+			strokejoinstyleMiter: 1,
+			strokejoinstyleRound: 2,
+		};
+
+		const EConnectType = {
+			connecttypeCustom: 0,
+			connecttypeNone: 1,
+			connecttypeRect: 2,
+			connecttypeSegments: 3,
+		};
+
+		const EInsetMode = {
+			insetmodeAuto: 0,
+			insetmodeCustom: 1,
+		};
+
+		const EColorType = {
+			colortypeNone: 0,
+			colortypeRGB: 1,
+			colortypeAqua: 2,
+			colortypeBlack: 3,
+			colortypeBlue: 4,
+			colortypeFuchsia: 5,
+			colortypeGray: 6,
+			colortypeGreen: 7,
+			colortypeLime: 8,
+			colortypeMaroon: 9,
+			colortypeNavy: 10,
+			colortypeOlive: 11,
+			colortypePurple: 12,
+			colortypeRed: 13,
+			colortypeSilver: 14,
+			colortypeTeal: 15,
+			colortypeWhite: 16,
+			colortypeYellow: 17,
+		};
+
+		const ECssPropertyType = {
+			cssptUnknown: 0,
+			cssptFlip: 1000,
+			cssptHeight: 1001,
+			cssptLeft: 1002,
+			cssptMarginBottom: 1003,
+			cssptMarginLeft: 1004,
+			cssptMarginRight: 1005,
+			cssptMarginTop: 1006,
+			cssptMsoPositionHorizontal: 1007,
+			cssptMsoPositionHorizontalRelative: 1008,
+			cssptMsoPositionVertical: 1009,
+			cssptMsoPositionVerticalRelative: 1010,
+			cssptMsoWrapDistanceBottom: 1011,
+			cssptMsoWrapDistanceLeft: 1012,
+			cssptMsoWrapDistanceRight: 1013,
+			cssptMsoWrapDistanceTop: 1014,
+			cssptMsoWrapEdited: 1015,
+			cssptMsoWrapStyle: 1016,
+			cssptPosition: 1017,
+			cssptRotation: 1018,
+			cssptTop: 1019,
+			cssptVisibility: 1020,
+			cssptWidth: 1021,
+			cssptZIndex: 1022,
+			csspctMsoWidthPercent: 1023,
+			csspctMsoHeightPercent: 1024,
+
+			cssptDirection: 1100,
+			cssptLayoutFlow: 1101,
+			cssptMsoDirectionAlt: 1102,
+			cssptMsoFitShapeToText: 1103,
+			cssptMsoFitTextToShape: 1104,
+			cssptMsoLayoutFlowAlt: 1105,
+			cssptMsoNextTextbox: 1106,
+			cssptMsoRotate: 1107,
+			cssptMsoTextScale: 1108,
+			cssptVTextAnchor: 1109,
+
+			cssptFont: 1200,
+			cssptFontFamily: 1201,
+			cssptFontSize: 1202,
+			cssptFontStyle: 1203,
+			cssptFontVariant: 1204,
+			cssptFontWeight: 1205,
+			cssptMsoTextShadow: 1206,
+			cssptTextDecoration: 1207,
+			cssptVRotateLetters: 1208,
+			cssptVSameLetterHeights: 1209,
+			cssptVTextAlign: 1210,
+			cssptVTextKern: 1211,
+			cssptVTextReverse: 1212,
+			cssptVTextSpacingMode: 1213,
+			cssptVTextSpacing: 1214,
+			cssptHTextAlign: 1215,
+		};
+
+		const ECssFlip = {
+			cssflipX: 0,
+			cssflipY: 1,
+			cssflipXY: 2,
+			cssflipYX: 3,
+		};
+
+		const ECssUnitsType = {
+			cssunitstypeAuto: 0,
+			cssunitstypeUnits: 1,
+			cssunitstypePerc: 2,
+			cssunitstypeAbsolute: 3,
+		};
+
+		const ECssMsoPosHorRel = {
+			cssmsoposhorrelMargin: 0,
+			cssmsoposhorrelPage: 1,
+			cssmsoposhorrelText: 2,
+			cssmsoposhorrelChar: 3,
+			cssmsoposhorrelLeftMargin: 4,
+			cssmsoposhorrelRightMargin: 5,
+		};
+
+		const ECssMsoPosHor = {
+			cssmsoposhorAbsolute: 0,
+			cssmsoposhorLeft: 1,
+			cssmsoposhorCenter: 2,
+			cssmsoposhorRight: 3,
+			cssmsoposhorInside: 4,
+			cssmsoposhorOutside: 5,
+		};
+
+		const ECssMsoPosVer = {
+			cssmsoposverAbsolute: 0,
+			cssmsoposverTop: 1,
+			cssmsoposverCenter: 2,
+			cssmsoposverBottom: 3,
+			cssmsoposverInside: 4,
+			cssmsoposverOutside: 5,
+		};
+
+		const ECssMsoPosVerRel = {
+			cssmsoposverrelMargin: 0,
+			cssmsoposverrelPage: 1,
+			cssmsoposverrelText: 2,
+			cssmsoposverrelLine: 3,
+			cssmsoposverrelTopMargin: 4,
+			cssmsoposverrelBottomMargin: 5,
+		};
+
+		const ECssMsoWrapStyle = {
+			cssmsowrapstyleSqaure: 0,
+			cssmsowrapstyleNone: 1,
+		};
+
+		const ECssPosition = {
+			csspositionStatic: 0,
+			csspositionAbsolute: 1,
+			csspositionRelative: 2,
+		};
+
+		const ECssVisibility = {
+			cssvisibilityHidden: 0,
+			cssvisibilityInherit: 1,
+		};
+
+		const ECssZIndexType = {
+			csszindextypeAuto: 0,
+			csszindextypeOrder: 1,
+		};
+
+		const ECssDirection = {
+			cssdirectionLTR: 0,
+			cssdirectionRTL: 1,
+		};
+
+		const ECssLayoutFlow = {
+			csslayoutflowHorizontal: 0,
+			csslayoutflowVertical: 1,
+			csslayoutflowVerticalIdeographic: 2,
+			csslayoutflowHorizontalIdeographic: 3,
+		};
+
+		const ECssDirectionAlt = {
+			cssdirectionaltContext: 0,
+		};
+
+		const ECssLayoutFlowAlt = {
+			csslayoutflowaltBottomToTop: 0,
+		};
+
+		const ECssMsoRotate = {
+			cssmsorotate0: 0,
+			cssmsorotate90: 90,
+			cssmsorotate180: 180,
+			cssmsorotate270: -90,
+		};
+
+		const ECssVTextAnchor = {
+			cssvtextanchorTop: 0,
+			cssvtextanchorMiddle: 1,
+			cssvtextanchorBottom: 2,
+			cssvtextanchorTopCenter: 3,
+			cssvtextanchorMiddleCenter: 4,
+			cssvtextanchorBottomCenter: 5,
+			cssvtextanchorTopBaseline: 6,
+			cssvtextanchorBottomBaseline: 7,
+			cssvtextanchorTopCenterBaseline: 8,
+			cssvtextanchorBottomCenterBaseline: 9,
+		};
+
+		const ECssFontStyle = {
+			cssfontstyleNormal: 0,
+			cssfontstyleItalic: 1,
+			cssfontstyleOblique: 2,
+		};
+
+		const ECssFontVarian = {
+			cssfontvariantNormal: 0,
+			cssfontvariantSmallCaps: 1,
+		};
+
+		const ECssFontWeight = {
+			cssfontweightNormal: 0,
+			cssfontweightLighter: 1,
+			cssfontweight100: 100,
+			cssfontweight200: 200,
+			cssfontweight300: 300,
+			cssfontweight400: 400,
+			cssfontweightBold: 550,
+			cssfontweightBolder: 750,
+			cssfontweight500: 500,
+			cssfontweight600: 600,
+			cssfontweight700: 700,
+			cssfontweight800: 800,
+			cssfontweight900: 900,
+		};
+
+		const ECssTextDecoration = {
+			csstextdecorationNone: 0,
+			csstextdecorationUnderline: 1,
+			csstextdecorationOverline: 2,
+			csstextdecorationLineThrough: 3,
+			csstextdecorationBlink: 4,
+		};
+
+		const ECssVTextAlign = {
+			cssvtextalignLeft: 0,
+			cssvtextalignRight: 1,
+			cssvtextalignCenter: 2,
+			cssvtextalignJustify: 3,
+			cssvtextalignLetterJustify: 4,
+			cssvtextalignStretchJustify: 5,
+		};
+
+		const ECssVTextSpacingMode = {
+			cssvtextspacingmodeTightening: 0,
+			cssvtextspacingmodeTracking: 1,
+		};
+
+		const EHorizontalAlignment = {
+			horizontalalignmentCenter: 0,
+			horizontalalignmentContinuous: 1,
+			horizontalalignmentDistributed: 2,
+			horizontalalignmentFill: 3,
+			horizontalalignmentGeneral: 4,
+			horizontalalignmentJustify: 5,
+			horizontalalignmentLeft: 6,
+			horizontalalignmentRight: 7,
+			horizontalalignmentCenterContinuous: 8,
+		};
+
+		const EVerticalAlignment = {
+			verticalalignmentBottom: 0,
+			verticalalignmentCenter: 1,
+			verticalalignmentDistributed: 2,
+			verticalalignmentJustify: 3,
+			verticalalignmentTop: 4,
+		};
+
+
 		/* Functions */
 		function parseShapeType(sValue) {
 			if (!(typeof sValue === "string" && sValue.length > 0)) {

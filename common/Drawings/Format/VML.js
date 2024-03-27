@@ -1269,33 +1269,124 @@
 
 				function createShapeLayout() {
 					const shapeLayout = new CShapeLayout();
-					shapeLayout.m_oIdMap = new CIdMap();
+					shapeLayout.m_oExt = EExt.extEdit;
+
+					const idMap = new CIdMap();
+					idMap.m_oExt = EExt.extEdit;
+					idMap.m_sData = '1';
+
+					shapeLayout.m_oIdMap = idMap;
 					return shapeLayout;
 				}
 
 				function createShapeType() {
 					const shapeType = new CShapeType();
-					shapeType.items.push(new CStroke(), new CPath(), new CLock());
+					shapeType.m_sId = '_x0000_t201';
+					shapeType.m_oCoordSize = new CVmlVector2D('21600,21600');
+					shapeType.m_oSpt = 201;
+					shapeType.m_oPath = 'm,l,21600r21600,l21600,xe';
+
+					const stroke = new CStroke();
+					stroke.m_oJoinStyle = EStrokeJoinStyle.strokejoinstyleMiter;
+
+					const path = new CPath();
+					path.m_oShadowOk = false;
+					path.m_oExtrusionOk = false;
+					path.m_oStrokeOk = false;
+					path.m_oFillOk = false;
+					path.m_oConnectType = EConnectType.connecttypeRect;
+
+					const lock = new CLock();
+					lock.m_oExt = EExt.extEdit;
+					lock.m_oShapeType = true;
+
+					shapeType.items.push(stroke, path, lock);
 					return shapeType;
 				}
 
 				function createShape() {
 					const shape = new CShape();
-					shape.items.push(
-						new CFill(),
-						new CLock(),
-						createTextBox(),
-						new CClientData()
-					);
+					shape.m_sId = '_x0000_s1025';
+					shape.m_sType = '#_x0000_t201';
+					const styleString = calculateStyleString();
+					shape.m_oStyle = new CCssStyle(styleString);
+					shape.m_oButton = true;
+					shape.m_oFillColor = new CColor('#f0f0f0');
+					shape.m_oStrokeColor = new CColor('black');
+					shape.m_oInsetMode = EInsetMode.insetmodeAuto;
+
+					const fill = new CFillVml();
+					fill.m_oColor2 = new CColor('#f0f0f0');
+					fill.m_oDetectMouseClick = true;
+
+					const lock = new CLock();
+					lock.m_oExt = EExt.extEdit;
+					lock.m_oRotation = true;
+
+					const textBox = createTextBox();
+
+					const clientData = new CClientData();
+					clientData.m_oObjectType = EVmlClientDataObjectType.vmlclientdataobjecttypeButton;
+					clientData.m_oAnchor = calculateAnchorString();
+					clientData.m_oPrintObject = false; 			// <x:PrintObject>False</x:PrintObject>
+					clientData.m_oAutoFill = false; 			// <x:AutoFill>False</x:AutoFill>
+					clientData.m_oTextHAlign = EHorizontalAlignment.horizontalalignmentCenter;
+					clientData.m_oTextVAlign = EVerticalAlignment.verticalalignmentCenter;
+					clientData.m_oFmlaMacro = getCorrespondingMacroName();
+
+					shape.items.push(fill, lock, textBox, clientData);
 					return shape;
+
+					function calculateStyleString() {
+						// TODO: Расчитать стили на основании размеров шейпа
+						return 'position:absolute' +
+							';margin-left:0' +
+							';margin-top:0' +
+							';width:100.1pt' +
+							';height:100.1pt' +
+							';z-index:1' +
+							';mso-wrap-style:tight';
+					}
+
+					function calculateAnchorString() {
+						// TODO: Вычислить значения по шейпу
+						const from = { col: 0, colOff: 0, row: 0, rowOff: 0 };
+						const to = { col: 1, colOff: 0, row: 1, rowOff: 0 };
+						const anchorArray = [
+							from.col, from.colOff, from.row, from.rowOff,
+							to.col, to.colOff, to.row, to.rowOff
+						];
+						return anchorArray.join(' ');
+					}
+
+					function getCorrespondingMacroName() {
+						// TODO: Получить название макроса (или переделать на ссылку)
+						return null;
+					}
 				}
 
 				function createTextBox() {
 					const textBox = new CTextbox();
-					const textBoxDiv = new CDiv();
-					textBoxDiv.items.push(new CFont());
-					textBox.items.push(textBoxDiv);
+					textBox.m_oStyle = new CCssStyle('mso-direction-alt:auto');
+					textBox.m_oSingleClick = false;
+
+					const div = new CDiv();
+					div.m_oStyle = new CCssStyle('text-align:center');
+
+					const font = new CFont();
+					font.m_sFace = 'Calibri';
+					font.m_nSize = 200;
+					font.m_oColor = new CColor('black');
+					font.m_sText = calculateButtonText();
+
+					textBox.items.push(div);
+					div.items.push(font);
 					return textBox;
+
+					function calculateButtonText() {
+						// TODO: Получить из шейпа надпись на кнопке
+						return 'Button';
+					}
 				}
 			}
 		}
@@ -1303,7 +1394,9 @@
 		function CShapeLayout() {
 			CBaseNoId.call(this);
 
+			// Attributes
 			this.m_oExt = null;
+
 			// Children
 			this.m_oIdMap = null;
 			this.m_oRegroupTable = null;
@@ -1315,6 +1408,7 @@
 		function CShapeType() {
 			CVmlCommonElements.call(this);
 
+			// Attributes
 			this.m_sAdj = null;
 			this.m_oPath = null;
 			this.m_oMaster = null;
@@ -1345,6 +1439,7 @@
 		function CIdMap() {
 			CBaseNoId.call(this);
 
+			// Attributes
 			this.m_sData = null;
 			this.m_oExt = null;
 		}
@@ -1482,6 +1577,10 @@
 
 		function CPath() {
 			CBaseNoId.call(this);
+			// Объявлены как объект, но являются boolean:
+			// m_oArrowOk, m_oExtrusionOk, m_oFillOk, m_oGradientShapeOk,
+			// m_oInsetPenOk, m_oShadowOk, m_oStrokeOk m_oTextPathOk
+
 			this.m_oArrowOk = null;
 			this.m_oConnectAngles = null;
 			this.m_oConnectLocs = null;
@@ -1622,7 +1721,7 @@
 
 			this.items = [];
 
-			this.style = null;
+			this.m_oStyle = null;
 		}
 
 		IC(CDiv, CBaseNoId, 0);
@@ -1630,11 +1729,13 @@
 		function CFont() {
 			CBaseNoId.call(this);
 
-			this.items = [];
+			// Attributes
+			this.m_sFace = null;
+			this.m_nSize = null;
+			this.m_oColor = null;
 
-			this.face = null;
-			this.size = null;
-			this.color = null;
+			// Child
+			this.m_sText = null;
 		}
 
 		IC(CFont, CBaseNoId, 0);

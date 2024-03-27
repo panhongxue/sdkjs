@@ -779,14 +779,7 @@
 				case "onPluginMessage":
 				{
 					if (window.Asc.plugin.onPluginMessage)
-					{
-						// we can receive anwer by callback function or call window.Asc.plugin.answer into a plugin
-						function callback (data) {
-							window.Asc.plugin.answer(data);
-						};
-
-						window.Asc.plugin.onPluginMessage(pluginData.message, callback);
-					}
+						window.Asc.plugin.onPluginMessage(pluginData.message);
 					break;
 				}
 				case "onMethodReturn":

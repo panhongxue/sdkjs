@@ -518,9 +518,8 @@
 		{
 			let runObject = this.runnedPluginsMap[guid];
 			if (!runObject) {
-				// return undefined if plugins isn't runned
-				window.g_asc_plugins &&	window.g_asc_plugins.onPluginMethodReturn();
-				return;
+				// return false if plugins isn't runned
+				return false;
 			}
 
 			let pluginData = runObject.startData;
@@ -533,10 +532,12 @@
 			if (frame)
 			{
 				frame.contentWindow.postMessage(pluginData.serialize(), "*");
-			} else
+				return true;
+			}
+			else
 			{
-				// return undefined in this case
-				window.g_asc_plugins &&	window.g_asc_plugins.onPluginMethodReturn();
+				// return false in this case
+				return false;
 			}
 		},
 
@@ -1571,11 +1572,6 @@
 				pluginData.setAttribute("eventData", value);
 
 				window.g_asc_plugins.sendMessageToFrame(runObject.isConnector ? "" : runObject.frameId, pluginData);
-				break;
-			}
-			case "answer":
-			{
-				window.g_asc_plugins && window.g_asc_plugins.onPluginMethodReturn(value);
 				break;
 			}
 			default:

@@ -998,7 +998,6 @@
 			CBaseNoId.call(this);
 
 			this.m_oExt = null;
-
 			// Children
 			this.m_oIdMap = null;
 			this.m_oRegroupTable = null;
@@ -1333,6 +1332,1099 @@
 		}
 
 		IC(CFont, CBaseNoId, 0);
+
+		function CFillVml() {
+			CBaseNoId.call(this);
+
+			// Attributes
+			this.m_oAlignShape = null;
+			this.m_sAltHref = null;
+			this.m_oAngle = null;
+			this.m_oAspect = null;
+			this.m_oColor = null;
+			this.m_oColor2 = null;
+			this.m_arrColors = null;
+			this.m_oDetectMouseClick = null;
+			this.m_oFocus = null;
+			this.m_oFocusPosition = null;
+			this.m_oFocusSize = null;
+			this.m_sHref = null;
+			this.m_rId = null;
+			this.m_sId = null;
+			this.m_oMethod = null;
+			this.m_oOn = null;
+			this.m_oOpacity = null;
+			this.m_oOpacity2 = null;
+			this.m_oOrigin = null;
+			this.m_oPosition = null;
+			this.m_oRecolor = null;
+			this.m_oRelId = null;
+			this.m_oRotate = null;
+			this.m_oSize = null;
+			this.m_sSrc = null;
+			this.m_sTitle = null;
+			this.m_oType = null;
+
+			// Children
+			this.m_oFill = null;
+		}
+
+		IC(CFillVml, CBaseNoId, 0);
+
+		CFillVml.prototype.isGradient = function () {
+			return (this.m_oType === EFillType.filltypeGradient || this.m_oType === EFillType.filltypeGradientRadial);
+		};
+		CFillVml.prototype.getOOXMLFill = function (oContext, oFirstColor) {
+			let oFill = null;
+			if (this.isGradient()) {
+				oFill = new AscFormat.CUniFill();
+				let oGradFill = new AscFormat.CGradFill();
+				oFill.fill = oGradFill;
+				let oGs;
+				let oStartColor = this.m_oColor || oFirstColor;
+				if (oStartColor) {
+					oGs = new AscFormat.CGs();
+					oGs.setColor(oStartColor.getOOXMLColor());
+					oGradFill.addColor(oGs);
+				}
+				if (this.m_oColor2) {
+
+					oGs = new AscFormat.CGs();
+					oGs.pos = 100000;
+					oGs.setColor(this.m_oColor2.getOOXMLColor());
+					oGradFill.addColor(oGs);
+				}
+				if (oGradFill.getColorsCount() === 1) {//Sindicatum.docx
+
+					let oGs_ = new AscFormat.CGs();
+					oGs_.setColor(AscFormat.CreateUniColorRGB(0xFF, 0xFF, 0xFF));
+					if (oGs.pos === 0) {
+						oGs_.pos = 100 * 1000;
+					}
+					oGradFill.addColor(oGs_);
+				}
+				if (this.m_oRotate === true) {
+					oGradFill.rotateWithShape = true;
+				}
+				let nAngle = 90;
+				let nFocus = 0;
+				if (this.m_oAngle !== null) {
+					nAngle = (-1) * this.m_oAngle + 90;
+				}
+				if (this.m_oFocus && this.m_oFocus.m_dValue) {
+					nFocus = parseInt(this.m_oFocus / 100);
+				}
+				let oGradLin = new AscFormat.GradLin();
+				oGradLin.angle = (nAngle * 60000 + 0.5) >> 0;
+				oGradFill.lin = oGradLin;
+			}
+			else if (typeof this.m_rId === "string" && this.m_rId.length > 0) {
+				oFill = new AscFormat.CreateBlipFillUniFillFromUrl("");
+
+				AscFormat.fReadXmlRasterImageId(oContext.reader, this.m_rId, oFill.fill);
+				if (EFillType.filltypeTile === this.m_oType || EFillType.filltypePattern) {
+					oFill.fill.tile = new AscFormat.CBlipFillTile();
+				}
+				else {
+					oFill.fill.stretch = true;
+				}
+			}
+			else if (this.m_oColor) {
+				return this.m_oColor.getOOXMLFill();
+			}
+			if (!oFill) {
+				oFill = AscFormat.CreateSolidFillRGB(0xFF, 0xFF, 0xFF);
+			}
+			if (this.m_oOpacity !== null) {
+				oFill.addAlpha(this.m_oOpacity);
+			}
+			return oFill;
+		};
+
+		function CVmlVector2D(sVal) {
+			this.x = 0;
+			this.y = 0;
+
+			if (sVal) {
+				this.fromString(sVal);
+			}
+		}
+
+		CVmlVector2D.prototype.fromString = function (sValue) {
+			let nLen = sValue.length;
+			if (nLen <= 0)
+				return 0;
+
+			let nPos = sValue.indexOf(",");
+			let strX, strY;
+			if (-1 === nPos) {//only x coord
+				strX = sValue;
+			} else {
+				strX = sValue.substring(0, nPos);
+				strY = sValue.substring(nPos + 1);
+			}
+			strY.replace("@", "");
+			strX.replace("@", "");
+			this.x = strX.length === 0 ? 0 : parseInt(strX);
+			this.y = strY.length === 0 ? 0 : parseInt(strY);
+			return 0;
+		};
+		CVmlVector2D.prototype.ToString = function () {
+			return "" + this.x + "," + this.y;
+		};
+
+		function CColor(sVal) {
+			this.type = EColorType.colortypeRGB;
+			this.val = sVal;
+			this.r = 0;
+			this.g = 0;
+			this.b = 0;
+			if (sVal) {
+				this.fromString(sVal);
+			}
+		}
+
+		CColor.prototype.fromString = function (sVal) {
+			this.val = sVal;
+			if (sVal.charAt(0) === '#') {
+				this.byHexColor(sVal)
+			} else {
+				this.byColorName(sVal);
+			}
+		};
+		CColor.prototype.toString = function () {
+			return this.val;
+		};
+		CColor.prototype.Get_R = function () {
+			return this.r;
+		};
+		CColor.prototype.Get_G = function () {
+			return this.g;
+		};
+		CColor.prototype.Get_B = function () {
+			return this.b;
+		};
+		CColor.prototype.setRGB = function () {
+
+			if (this.type === EColorType.colortypeRGB) return;
+
+			switch (this.type) {
+				case EColorType.colortypeAqua: {
+					this.r = 0x00;
+					this.g = 0xff;
+					this.b = 0xff;
+				}
+					break;
+				case EColorType.colortypeBlack: {
+					this.r = 0x00;
+					this.g = 0x00;
+					this.b = 0x00;
+				}
+					break;
+				case EColorType.colortypeBlue: {
+					this.r = 0x00;
+					this.g = 0x00;
+					this.b = 0xff;
+				}
+					break;
+				case EColorType.colortypeFuchsia: {
+					this.r = 0xff;
+					this.g = 0x00;
+					this.b = 0xff;
+				}
+					break;
+				case EColorType.colortypeGray: {
+					this.r = 0x80;
+					this.g = 0x80;
+					this.b = 0x80;
+				}
+					break;
+				case EColorType.colortypeGreen: {
+					this.r = 0x00;
+					this.g = 0x80;
+					this.b = 0x00;
+				}
+					break;
+				case EColorType.colortypeLime: {
+					this.r = 0x00;
+					this.g = 0xff;
+					this.b = 0x00;
+				}
+					break;
+				case EColorType.colortypeMaroon: {
+					this.r = 0x80;
+					this.g = 0x00;
+					this.b = 0x00;
+				}
+					break;
+				case EColorType.colortypeNavy: {
+					this.r = 0x00;
+					this.g = 0x00;
+					this.b = 0x80;
+				}
+					break;
+				case EColorType.colortypeOlive: {
+					this.r = 0x80;
+					this.g = 0x80;
+					this.b = 0x00;
+				}
+					break;
+				case EColorType.colortypePurple: {
+					this.r = 0x80;
+					this.g = 0x00;
+					this.b = 0x80;
+				}
+					break;
+				case EColorType.colortypeRed: {
+					this.r = 0xff;
+					this.g = 0x00;
+					this.b = 0x00;
+				}
+					break;
+				case EColorType.colortypeSilver: {
+					this.r = 0xc0;
+					this.g = 0xc0;
+					this.b = 0xc0;
+				}
+					break;
+				case EColorType.colortypeTeal: {
+					this.r = 0x00;
+					this.g = 0x80;
+					this.b = 0x80;
+				}
+					break;
+				case EColorType.colortypeWhite: {
+					this.r = 0xff;
+					this.g = 0xff;
+					this.b = 0xff;
+				}
+					break;
+				case EColorType.colortypeYellow: {
+					this.r = 0xff;
+					this.g = 0xff;
+					this.b = 0;
+				}
+					break;
+				case EColorType.colortypeNone:
+				default: {
+					this.r = 0;
+					this.g = 0;
+					this.b = 0;
+				}
+					break;
+			}
+		};
+		CColor.prototype.byHexColor = function (sVal) {
+			this.type = EColorType.colortypeRGB;
+			let oRGBA = AscCommon.RgbaHexToRGBA(sVal);
+			this.r = oRGBA.R;
+			this.g = oRGBA.G;
+			this.b = oRGBA.B;
+		};
+		CColor.prototype.byColorName = function (sVal) {
+			this.type = EColorType.colortypeNone;
+
+			if (sVal.indexOf("aqua") > -1) this.type = EColorType.colortypeAqua;
+			else if (sVal.indexOf("black") > -1) this.type = EColorType.colortypeBlack;
+			else if (sVal.indexOf("blue") > -1) this.type = EColorType.colortypeBlue;
+			else if (sVal.indexOf("fuchsia") > -1) this.type = EColorType.colortypeFuchsia;
+			else if (sVal.indexOf("gray") > -1) this.type = EColorType.colortypeGray;
+			else if (sVal.indexOf("green") > -1) this.type = EColorType.colortypeGreen;
+			else if (sVal.indexOf("lime") > -1) this.type = EColorType.colortypeLime;
+			else if (sVal.indexOf("maroon") > -1) this.type = EColorType.colortypeMaroon;
+			else if (sVal.indexOf("navy") > -1) this.type = EColorType.colortypeNavy;
+			else if (sVal.indexOf("olive") > -1) this.type = EColorType.colortypeOlive;
+			else if (sVal.indexOf("purple") > -1) this.type = EColorType.colortypePurple;
+			else if (sVal.indexOf("red") > -1) this.type = EColorType.colortypeRed;
+			else if (sVal.indexOf("silver") > -1) this.type = EColorType.colortypeSilver;
+			else if (sVal.indexOf("teal") > -1) this.type = EColorType.colortypeTeal;
+			else if (sVal.indexOf("white") > -1) this.type = EColorType.colortypeWhite;
+			else if (sVal.indexOf("yellow") > -1) this.type = EColorType.colortypeYellow;
+			else if (sVal.indexOf("fill") > -1) {
+				this.type = EColorType.colortypeRGB;
+
+				let sColorEffect = sVal;
+				let sColor = sVal;
+				if (sColorEffect.length > 5)
+					sColorEffect = sColorEffect.substring(5);
+
+				let resR, resG, resB;
+
+				resR = this.r;
+				resG = this.g;
+				resB = this.b;
+
+				let param = 0;
+				let pos1 = sColor.indexOf('(');
+				let pos2 = sColor.indexOf(')');
+				if (pos1 === -1 || pos2 === -1)
+					return;
+				if (pos2 < (pos1 + 2))
+					return;
+
+				let s = sColor.substring(pos1 + 1, pos2);
+				param = parseInt(s);
+				let isEffect = false;
+
+				if (0 === sColorEffect.indexOf("darken")) {
+					resR = (this.r * param / 255);
+					resG = (this.g * param / 255);
+					resB = (this.b * param / 255);
+					isEffect = true;
+				}
+				else if (0 === sColorEffect.indexOf("lighten")) {
+					resR = 255 - ((255 - this.r) * param / 255);
+					resG = 255 - ((255 - this.g) * param / 255);
+					resB = 255 - ((255 - this.b) * param / 255);
+					isEffect = true;
+				}
+				else if (0 === sColorEffect.indexOf("add")) {
+					resR = this.r + param;
+					resG = this.g + param;
+					resB = this.b + param;
+					isEffect = true;
+				}
+				else if (0 === sColorEffect.indexOf("subtract")) {
+					resR = this.r - param;
+					resG = this.g - param;
+					resB = this.b - param;
+					isEffect = true;
+				}
+				else if (0 === sColorEffect.indexOf("reversesubtract")) {
+					resR = param - this.r;
+					resG = param - this.g;
+					resB = param - this.b;
+					isEffect = true;
+				}
+				else if (0 === sColorEffect.indexOf("blackwhite")) {
+					resR = (this.r < param) ? 0 : 255;
+					resG = (this.g < param) ? 0 : 255;
+					resB = (this.b < param) ? 0 : 255;
+					isEffect = true;
+				}
+
+				if (isEffect) {
+					resR = (resR < 0) ? 0 : resR;
+					resR = (resR > 255) ? 255 : resR;
+
+					resG = (resG < 0) ? 0 : resG;
+					resG = (resG > 255) ? 255 : resG;
+
+					resB = (resB < 0) ? 0 : resB;
+					resB = (resB > 255) ? 255 : resB;
+				}
+				this.r = resR;
+				this.g = resG;
+				this.b = resB;
+			}
+			else if (sVal.indexOf("[") > -1 && sVal.indexOf("]") > -1) {
+				let p1 = sVal.indexOf("[");
+				let p2 = sVal.indexOf("]");
+				let sIndex = p2 > p1 ? sVal.substring(p1 + 1, p2) : "";
+
+				if (sIndex.length > 0) {
+					let index = parseInt(sIndex);
+					let nRGB = 0;
+					if (index < 64) {
+						nRGB = shemeDefaultColor[index];
+					} else if (index > 64 && index < 92) {
+						nRGB = controlPanelColors1[index - 65];
+					}
+					this.r = ((nRGB >> 16) & 0xff);
+					this.g = ((nRGB >> 8) & 0xff);
+					this.b = (nRGB & 0xff);
+					this.type = EColorType.colortypeRGB;
+				}
+			}
+			this.setRGB();
+		};
+		CColor.prototype.getOOXMLColor = function () {
+			return AscFormat.CreateUniColorRGB(this.r, this.g, this.b);
+			//todo: fill
+			// if (sColor2->find("fill") != -1)
+			// {
+			// 	std::wstring sColorEffect = *sColor2;
+			// 	if (sColorEffect.length() > 5)
+			// 		sColorEffect = sColorEffect.substr(5);
+			//
+			// 	int resR, resG, resB;
+			// 	GetColorWithEffect(sColorEffect, R, G, B, resR, resG, resB);
+			//
+			// 	Gs_.color.Color->SetRGB(resR, resG, resB);
+		};
+		CColor.prototype.getOOXMLFill = function () {
+			return AscFormat.CreateUniFillByUniColor(this.getOOXMLColor());
+		};
+
+		function CCssStyle(sValue) {
+			this.m_arrProperties = [];
+			this.m_sCss = null;
+			if (sValue) {
+				this.FromString(sValue);
+			}
+		}
+
+		CCssStyle.prototype.Clear = function () {
+			this.m_arrProperties.length = 0;
+		}
+		CCssStyle.prototype.FromString = function (sValue) {
+			this.Clear();
+
+			let sValue_ = CorrectXmlString2(sValue);
+			this.m_sCss = sValue_;
+			this.ParseProperties();
+
+			return this.m_sCss;
+		};
+		CCssStyle.prototype.ToString = function () {
+			return this.m_sCss;
+		};
+		CCssStyle.prototype.ParseProperties = function () {
+			let sTemp = this.m_sCss;
+			while (sTemp.length > 0) {
+				let nPos = sTemp.indexOf(';');
+				if (-1 === nPos) {
+					let oProperty = new CCssProperty(sTemp);
+					this.m_arrProperties.push(oProperty);
+					sTemp = "";
+				} else {
+					let oProperty = new CCssProperty(sTemp.substring(0, nPos));
+					this.m_arrProperties.push(oProperty);
+					sTemp = sTemp.substring(nPos + 1);
+				}
+			}
+			return true;
+		};
+		CCssStyle.prototype.GetProperty = function (nType) {
+			for (let nPr = 0; nPr < this.m_arrProperties.length; ++nPr) {
+				if (this.m_arrProperties[nPr].m_eType === nType) {
+					return this.m_arrProperties[nPr];
+				}
+			}
+			return null;
+		};
+		CCssStyle.prototype.GetPropertyByStringType = function (sType) {
+			for (let nPr = 0; nPr < this.m_arrProperties.length; ++nPr) {
+				if (this.m_arrProperties[nPr].m_sType === sType) {
+					return this.m_arrProperties[nPr];
+				}
+			}
+			return null;
+		};
+		CCssStyle.prototype.GetPropertyValueString = function (sType) {
+			let oPr = this.GetPropertyByStringType(sType);
+			if (oPr) {
+				return oPr.m_sValue;
+			}
+			return null;
+		};
+		CCssStyle.prototype.GetZIndex = function () {
+			let oPr = this.GetProperty(ECssPropertyType.cssptZIndex);
+			if (oPr === null) {
+				return null;
+			}
+
+			let oZIndex = oPr && oPr.m_oValue && oPr.m_oValue.oZIndex;
+			if (oZIndex && oZIndex && AscFormat.isRealNumber(oZIndex.nOrder)) {
+				return oZIndex.nOrder;
+			}
+		};
+		CCssStyle.prototype.GetNumberValueInMM = function (nType) {
+			let dNumVal = this.GetNumberValue(nType)
+			if (AscFormat.isRealNumber(dNumVal)) {
+				return Pt_To_Mm(dNumVal / 36000);
+			}
+			return null;
+		};
+		CCssStyle.prototype.GetNumberValue = function (nType) {
+			let oPr = this.GetProperty(nType);
+			if (oPr === null) {
+				return null;
+			}
+			let oValue = oPr && oPr.m_oValue && oPr.m_oValue.oValue;
+			if (oValue && AscFormat.isRealNumber(oValue.dValue)) {
+				return oValue.dValue;
+			}
+			return null;
+		};
+		CCssStyle.prototype.GetStringValue = function (nType) {
+			let oPr = this.GetProperty(nType);
+			if (oPr === null) {
+				return null;
+			}
+			let oValue = oPr && oPr.m_oValue;
+			if (oValue && oValue.wsValue) {
+				return oValue.wsValue;
+			}
+			return null;
+		};
+		CCssStyle.prototype.GetMarginLeftInMM = function () {
+			return this.GetNumberValueInMM(ECssPropertyType.cssptMarginLeft);
+		};
+		CCssStyle.prototype.GetMarginTopInMM = function () {
+			return this.GetNumberValueInMM(ECssPropertyType.cssptMarginTop);
+		};
+		CCssStyle.prototype.GetMarginRightInMM = function () {
+			return this.GetNumberValueInMM(ECssPropertyType.cssptMarginRight);
+		};
+		CCssStyle.prototype.GetMarginBottomInMM = function () {
+			return this.GetNumberValueInMM(ECssPropertyType.cssptMarginBottom);
+		};
+		CCssStyle.prototype.GetLeftInMM = function () {
+			return this.GetNumberValueInMM(ECssPropertyType.cssptLeft);
+		};
+		CCssStyle.prototype.GetTopInMM = function () {
+			return this.GetNumberValueInMM(ECssPropertyType.cssptTop);
+		};
+		CCssStyle.prototype.GetWidthInMM = function () {
+			return this.GetNumberValueInMM(ECssPropertyType.cssptWidth);
+		};
+		CCssStyle.prototype.GetHeightInMM = function () {
+			return this.GetNumberValueInMM(ECssPropertyType.cssptHeight);
+		};
+		CCssStyle.prototype.GetFontStyle = function () {
+			return this.GetStringValue(ECssPropertyType.cssptFont);
+		};
+
+		function CCssProperty(sBuffer) {
+			this.m_eType = ECssPropertyType.cssptUnknown;
+			this.m_oValue = new UCssValue();
+			this.m_sType = "unknown";
+			this.m_sValue = "";
+			if (sBuffer) {
+				this.Parse(sBuffer);
+			}
+		}
+
+		CCssProperty.prototype.get_Value = function () {
+			return this.m_oValue;
+		}
+		CCssProperty.prototype.get_Type = function () {
+			return this.m_eType;
+		}
+		CCssProperty.prototype.Parse = function (sBuffer) {
+			let nPos = sBuffer.indexOf(':');
+			let sValue;
+
+			if (-1 === nPos) {
+				this.m_eType = ECssPropertyType.cssptUnknown;
+			} else {
+				let sProperty = sBuffer.substring(0, nPos);
+				sValue = sBuffer.substring(nPos + 1);
+
+				sProperty = sProperty.replace(/\s/g, "");
+
+				if (sProperty.length <= 2) {
+					this.m_eType = ECssPropertyType.cssptUnknown;
+					return;
+				}
+				this.m_sType = sProperty;
+				this.m_sValue = sValue;
+
+				if ("direction" === sProperty) this.m_eType = ECssPropertyType.cssptDirection;
+				else if ("flip" === sProperty) this.m_eType = ECssPropertyType.cssptFlip;
+				else if ("font" === sProperty) this.m_eType = ECssPropertyType.cssptFont;
+				else if ("font-family" === sProperty) this.m_eType = ECssPropertyType.cssptFontFamily;
+				else if ("font-size" === sProperty) this.m_eType = ECssPropertyType.cssptFontSize;
+				else if ("font-style" === sProperty) this.m_eType = ECssPropertyType.cssptFontStyle;
+				else if ("font-variant" === sProperty) this.m_eType = ECssPropertyType.cssptFontVariant;
+				else if ("font-weight" === sProperty) this.m_eType = ECssPropertyType.cssptFontWeight;
+				else if ("height" === sProperty) this.m_eType = ECssPropertyType.cssptHeight;
+				else if ("layout-flow" === sProperty) this.m_eType = ECssPropertyType.cssptLayoutFlow;
+				else if ("left" === sProperty) this.m_eType = ECssPropertyType.cssptLeft;
+				else if ("margin-bottom" === sProperty) this.m_eType = ECssPropertyType.cssptMarginBottom;
+				else if ("margin-left" === sProperty) this.m_eType = ECssPropertyType.cssptMarginLeft;
+				else if ("margin-right" === sProperty) this.m_eType = ECssPropertyType.cssptMarginRight;
+				else if ("margin-top" === sProperty) this.m_eType = ECssPropertyType.cssptMarginTop;
+				else if ("mso-direction-alt" === sProperty) this.m_eType = ECssPropertyType.cssptMsoDirectionAlt;
+				else if ("mso-fit-shape-to-text" === sProperty) this.m_eType = ECssPropertyType.cssptMsoFitShapeToText;
+				else if ("mso-fit-text-to-shape" === sProperty) this.m_eType = ECssPropertyType.cssptMsoFitTextToShape;
+				else if ("mso-layout-flow-alt" === sProperty) this.m_eType = ECssPropertyType.cssptMsoLayoutFlowAlt;
+				else if ("mso-next-textbox" === sProperty) this.m_eType = ECssPropertyType.cssptMsoNextTextbox;
+				else if ("mso-position-horizontal" === sProperty) this.m_eType = ECssPropertyType.cssptMsoPositionHorizontal;
+				else if ("mso-position-horizontal-relative" === sProperty) this.m_eType = ECssPropertyType.cssptMsoPositionHorizontalRelative;
+				else if ("mso-position-vertical" === sProperty) this.m_eType = ECssPropertyType.cssptMsoPositionVertical;
+				else if ("mso-position-vertical-relative" === sProperty) this.m_eType = ECssPropertyType.cssptMsoPositionVerticalRelative;
+				else if ("mso-rotate" === sProperty) this.m_eType = ECssPropertyType.cssptMsoRotate;
+				else if ("mso-text-scale" === sProperty) this.m_eType = ECssPropertyType.cssptMsoTextScale;
+				else if ("mso-text-shadow" === sProperty) this.m_eType = ECssPropertyType.cssptMsoTextShadow;
+				else if ("mso-wrap-distance-bottom" === sProperty) this.m_eType = ECssPropertyType.cssptMsoWrapDistanceBottom;
+				else if ("mso-wrap-distance-left" === sProperty) this.m_eType = ECssPropertyType.cssptMsoWrapDistanceLeft;
+				else if ("mso-wrap-distance-right" === sProperty) this.m_eType = ECssPropertyType.cssptMsoWrapDistanceRight;
+				else if ("mso-wrap-distance-top" === sProperty) this.m_eType = ECssPropertyType.cssptMsoWrapDistanceTop;
+				else if ("mso-wrap-edited" === sProperty) this.m_eType = ECssPropertyType.cssptMsoWrapEdited;
+				else if ("mso-wrap-style" === sProperty) this.m_eType = ECssPropertyType.cssptMsoWrapStyle;
+				else if ("mso-height-percent" === sProperty) this.m_eType = ECssPropertyType.csspctMsoHeightPercent;
+				else if ("mso-width-percent" === sProperty) this.m_eType = ECssPropertyType.csspctMsoWidthPercent;
+				else if ("position" === sProperty) this.m_eType = ECssPropertyType.cssptPosition;
+				else if ("rotation" === sProperty) this.m_eType = ECssPropertyType.cssptRotation;
+				else if ("text-decoration" === sProperty) this.m_eType = ECssPropertyType.cssptTextDecoration;
+				else if ("top" === sProperty) this.m_eType = ECssPropertyType.cssptTop;
+				else if ("text-align" === sProperty) this.m_eType = ECssPropertyType.cssptHTextAlign;
+				else if ("visibility" === sProperty) this.m_eType = ECssPropertyType.cssptVisibility;
+				else if ("v-rotate-letters" === sProperty) this.m_eType = ECssPropertyType.cssptVRotateLetters;
+				else if ("v-same-letter-heights" === sProperty) this.m_eType = ECssPropertyType.cssptVSameLetterHeights;
+				else if ("v-text-align" === sProperty) this.m_eType = ECssPropertyType.cssptVTextAlign;
+				else if ("v-text-anchor" === sProperty) this.m_eType = ECssPropertyType.cssptVTextAnchor;
+				else if ("v-text-kern" === sProperty) this.m_eType = ECssPropertyType.cssptVTextKern;
+				else if ("v-text-reverse" === sProperty) this.m_eType = ECssPropertyType.cssptVTextReverse;
+				else if ("v-text-spacing-mode" === sProperty) this.m_eType = ECssPropertyType.cssptVTextSpacingMode;
+				else if ("v-text-spacing" === sProperty) this.m_eType = ECssPropertyType.cssptVTextSpacing;
+				else if ("width" === sProperty) this.m_eType = ECssPropertyType.cssptWidth;
+				else if ("z-index" === sProperty) this.m_eType = ECssPropertyType.cssptZIndex;
+
+				switch (this.m_eType) {
+					case ECssPropertyType.cssptUnknown:
+						this.ReadValue_Unknown(sValue);
+						break;
+					case ECssPropertyType.cssptFlip:
+						this.ReadValue_Flip(sValue);
+						break;
+					case ECssPropertyType.cssptHeight:
+						this.ReadValue_Units(sValue);
+						break;
+					case ECssPropertyType.cssptLeft:
+						this.ReadValue_Units(sValue);
+						break;
+					case ECssPropertyType.cssptMarginBottom:
+						this.ReadValue_Units(sValue);
+						break;
+					case ECssPropertyType.cssptMarginLeft:
+						this.ReadValue_Units(sValue);
+						break;
+					case ECssPropertyType.cssptMarginRight:
+						this.ReadValue_Units(sValue);
+						break;
+					case ECssPropertyType.cssptMarginTop:
+						this.ReadValue_Units(sValue);
+						break;
+					case ECssPropertyType.cssptMsoPositionHorizontal:
+						this.ReadValue_MsoPosHor(sValue);
+						break;
+					case ECssPropertyType.cssptMsoPositionHorizontalRelative:
+						this.ReadValue_MsoPosHorRel(sValue);
+						break;
+					case ECssPropertyType.cssptMsoPositionVertical:
+						this.ReadValue_MsoPosVer(sValue);
+						break;
+					case ECssPropertyType.cssptMsoPositionVerticalRelative:
+						this.ReadValue_MsoPosVerRel(sValue);
+						break;
+					case ECssPropertyType.cssptMsoWrapDistanceBottom:
+						this.ReadValue_Units(sValue);
+						break;
+					case ECssPropertyType.cssptMsoWrapDistanceLeft:
+						this.ReadValue_Units(sValue);
+						break;
+					case ECssPropertyType.cssptMsoWrapDistanceRight:
+						this.ReadValue_Units(sValue);
+						break;
+					case ECssPropertyType.cssptMsoWrapDistanceTop:
+						this.ReadValue_Units(sValue);
+						break;
+					case ECssPropertyType.cssptMsoWrapEdited:
+						this.ReadValue_Boolean(sValue);
+						break;
+					case ECssPropertyType.cssptMsoWrapStyle:
+						this.ReadValue_MsoWrapStyle(sValue);
+						break;
+					case ECssPropertyType.cssptPosition:
+						this.ReadValue_Position(sValue);
+						break;
+					case ECssPropertyType.cssptRotation:
+						this.ReadValue_Rotation(sValue);
+						break;
+					case ECssPropertyType.cssptTop:
+						this.ReadValue_Units(sValue);
+						break;
+					case ECssPropertyType.cssptVisibility:
+						this.ReadValue_Visibility(sValue);
+						break;
+					case ECssPropertyType.cssptWidth:
+						this.ReadValue_Units(sValue);
+						break;
+					case ECssPropertyType.cssptZIndex:
+						this.ReadValue_ZIndex(sValue);
+						break;
+
+					case ECssPropertyType.cssptDirection:
+						this.ReadValue_Direction(sValue);
+						break;
+					case ECssPropertyType.cssptLayoutFlow:
+						this.ReadValue_LayoutFlow(sValue);
+						break;
+					case ECssPropertyType.cssptMsoDirectionAlt:
+						this.ReadValue_DirectionAlt(sValue);
+						break;
+					case ECssPropertyType.cssptMsoFitShapeToText:
+						this.ReadValue_Boolean(sValue);
+						break;
+					case ECssPropertyType.cssptMsoFitTextToShape:
+						this.ReadValue_Boolean(sValue);
+						break;
+					case ECssPropertyType.cssptMsoLayoutFlowAlt:
+						this.ReadValue_LayoutFlowAlt(sValue);
+						break;
+					case ECssPropertyType.cssptMsoNextTextbox:
+						this.ReadValue_String(sValue);
+						break;
+					case ECssPropertyType.cssptMsoRotate:
+						this.ReadValue_MsoRotate(sValue);
+						break;
+					case ECssPropertyType.cssptMsoTextScale:
+						this.ReadValue_Units(sValue);
+						break;
+					case ECssPropertyType.cssptVTextAnchor:
+						this.ReadValue_VTextAnchor(sValue);
+						break;
+
+					case ECssPropertyType.cssptFont:
+						this.ReadValue_String(sValue);
+						break;
+					case ECssPropertyType.cssptFontFamily:
+						this.ReadValue_String(sValue);
+						break;
+					case ECssPropertyType.cssptFontSize:
+						this.ReadValue_Units(sValue);
+						break;
+					case ECssPropertyType.cssptFontStyle:
+						this.ReadValue_FontStyle(sValue);
+						break;
+					case ECssPropertyType.cssptFontVariant:
+						this.ReadValue_FontVariant(sValue);
+						break;
+					case ECssPropertyType.cssptFontWeight:
+						this.ReadValue_FontWeight(sValue);
+						break;
+					case ECssPropertyType.cssptMsoTextShadow:
+						this.ReadValue_Boolean(sValue);
+						break;
+					case ECssPropertyType.cssptTextDecoration:
+						this.ReadValue_TextDecoration(sValue);
+						break;
+					case ECssPropertyType.cssptVRotateLetters:
+						this.ReadValue_Boolean(sValue);
+						break;
+					case ECssPropertyType.cssptVSameLetterHeights:
+						this.ReadValue_Boolean(sValue);
+						break;
+					case ECssPropertyType.cssptVTextAlign:
+						this.ReadValue_VTextAlign(sValue);
+						break;
+					case ECssPropertyType.cssptVTextKern:
+						this.ReadValue_Boolean(sValue);
+						break;
+					case ECssPropertyType.cssptVTextReverse:
+						this.ReadValue_Boolean(sValue);
+						break;
+					case ECssPropertyType.cssptVTextSpacingMode:
+						this.ReadValue_VTextSpacingMode(sValue);
+						break;
+					case ECssPropertyType.cssptVTextSpacing:
+						this.ReadValue_Units(sValue);
+						break;
+					case ECssPropertyType.csspctMsoWidthPercent:
+						this.ReadValue_Units(sValue);
+						break;
+					case ECssPropertyType.csspctMsoHeightPercent:
+						this.ReadValue_Units(sValue);
+						break;
+					case ECssPropertyType.cssptHTextAlign:
+						this.ReadValue_VTextAlign(sValue);
+						break;
+				}
+			}
+		};
+		CCssProperty.prototype.ReadValue_Unknown = function (sValue) {
+
+		};
+		CCssProperty.prototype.ReadValue_Flip = function (sValue) {
+			if ("x" === sValue) this.m_oValue.eFlip = ECssFlip.cssflipX;
+			else if ("y" === sValue) this.m_oValue.eFlip = ECssFlip.cssflipY;
+			else if ("xy" === sValue) this.m_oValue.eFlip = ECssFlip.cssflipXY;
+			else if ("yx" === sValue) this.m_oValue.eFlip = ECssFlip.cssflipYX;
+			else
+				this.m_eType = ECssPropertyType.cssptUnknown;
+		};
+		CCssProperty.prototype.ReadValue_Units = function (sValue) {
+			let nPos;
+			if (-1 !== (nPos = sValue.indexOf("auto"))) {
+				this.m_oValue.oValue.m_eType = ECssUnitsType.cssunitstypeAuto;
+			} else if (-1 !== (nPos = sValue.indexOf("in"))) {
+				this.m_oValue.oValue.m_eType = ECssUnitsType.cssunitstypeUnits;
+
+				let strValue = sValue.substring(0, nPos);
+				let dValue = parseFloat(sValue);
+
+				this.m_oValue.oValue.dValue = Inch_To_Pt(dValue);
+			} else if (-1 !== (nPos = sValue.indexOf("cm"))) {
+				this.m_oValue.oValue.m_eType = ECssUnitsType.cssunitstypeUnits;
+
+				let strValue = sValue.substring(0, nPos);
+				let dValue = parseFloat(sValue);
+
+				this.m_oValue.oValue.dValue = Cm_To_Pt(dValue);
+			} else if (-1 !== (nPos = sValue.indexOf("mm"))) {
+				this.m_oValue.oValue.m_eType = ECssUnitsType.cssunitstypeUnits;
+
+				let strValue = sValue.substring(0, nPos);
+				let dValue = parseFloat(sValue);
+
+				this.m_oValue.oValue.dValue = Mm_To_Pt(dValue);
+			} else if (-1 !== (nPos = sValue.indexOf("em"))) {
+			} else if (-1 !== (nPos = sValue.indexOf("ex"))) {
+			} else if (-1 !== (nPos = sValue.indexOf("pt"))) {
+				this.m_oValue.oValue.m_eType = ECssUnitsType.cssunitstypeUnits;
+
+				let strValue = sValue.substring(0, nPos);
+				let dValue = parseFloat(sValue);
+
+				this.m_oValue.oValue.dValue = dValue;
+			} else if (-1 !== (nPos = sValue.indexOf("pc"))) {
+				this.m_oValue.oValue.m_eType = ECssUnitsType.cssunitstypeUnits;
+
+				let strValue = sValue.substring(0, nPos);
+				let dValue = parseFloat(sValue);
+
+				this.m_oValue.oValue.dValue = dValue * 12;
+			} else if (-1 !== (nPos = sValue.indexOf("%"))) {
+				this.m_oValue.oValue.m_eType = ECssUnitsType.cssunitstypePerc;
+
+				let strValue = sValue.substring(0, nPos);
+				this.m_oValue.oValue.dValue = strValue.length === 0 ? 0 : parseFloat(strValue);
+			} else if (-1 !== (nPos = sValue.indexOf("px"))) {
+				this.m_oValue.oValue.m_eType = ECssUnitsType.cssunitstypeUnits;
+
+				let strValue = sValue.substring(0, nPos);
+				let dValue = parseFloat(sValue);
+
+				this.m_oValue.oValue.dValue = Px_To_Pt(dValue);
+			} else {
+				this.m_oValue.oValue.m_eType = ECssUnitsType.cssunitstypeAbsolute;
+				this.m_oValue.oValue.dValue = parseFloat(sValue);
+			}
+		};
+		CCssProperty.prototype.ReadValue_MsoPosHor = function (sValue) {
+			if ("absolute" === sValue) this.m_oValue.eMsoPosHor = ECssMsoPosHor.cssmsoposhorAbsolute;
+			else if ("left" === sValue) this.m_oValue.eMsoPosHor = ECssMsoPosHor.cssmsoposhorLeft;
+			else if ("center" === sValue) this.m_oValue.eMsoPosHor = ECssMsoPosHor.cssmsoposhorCenter;
+			else if ("right" === sValue) this.m_oValue.eMsoPosHor = ECssMsoPosHor.cssmsoposhorRight;
+			else if ("inside" === sValue) this.m_oValue.eMsoPosHor = ECssMsoPosHor.cssmsoposhorInside;
+			else if ("outside" === sValue) this.m_oValue.eMsoPosHor = ECssMsoPosHor.cssmsoposhorOutside;
+			else
+				this.m_oValue.eMsoPosHor = ECssMsoPosHor.cssmsoposhorAbsolute;
+		};
+		CCssProperty.prototype.ReadValue_MsoPosHorRel = function (sValue) {
+			if ("left-margin-area" === sValue) this.m_oValue.eMsoPosHorRel = ECssMsoPosHorRel.cssmsoposhorrelLeftMargin;
+			else if ("right-margin-area" === sValue) this.m_oValue.eMsoPosHorRel = ECssMsoPosHorRel.cssmsoposhorrelRightMargin;
+			else if ("margin" === sValue) this.m_oValue.eMsoPosHorRel = ECssMsoPosHorRel.cssmsoposhorrelMargin;
+			else if ("page" === sValue) this.m_oValue.eMsoPosHorRel = ECssMsoPosHorRel.cssmsoposhorrelPage;
+			else if ("text" === sValue) this.m_oValue.eMsoPosHorRel = ECssMsoPosHorRel.cssmsoposhorrelText;
+			else if ("char" === sValue) this.m_oValue.eMsoPosHorRel = ECssMsoPosHorRel.cssmsoposhorrelChar;
+			else
+				this.m_oValue.eMsoPosHorRel = ECssMsoPosHorRel.cssmsoposhorrelText;
+		};
+		CCssProperty.prototype.ReadValue_MsoPosVer = function (sValue) {
+			if ("absolute" === sValue) this.m_oValue.eMsoPosVer = ECssMsoPosVer.cssmsoposverAbsolute;
+			else if ("top" === sValue) this.m_oValue.eMsoPosVer = ECssMsoPosVer.cssmsoposverTop;
+			else if ("center" === sValue) this.m_oValue.eMsoPosVer = ECssMsoPosVer.cssmsoposverCenter;
+			else if ("bottom" === sValue) this.m_oValue.eMsoPosVer = ECssMsoPosVer.cssmsoposverBottom;
+			else if ("inside" === sValue) this.m_oValue.eMsoPosVer = ECssMsoPosVer.cssmsoposverInside;
+			else if ("outside" === sValue) this.m_oValue.eMsoPosVer = ECssMsoPosVer.cssmsoposverOutside;
+			else
+				this.m_oValue.eMsoPosVer = ECssMsoPosVer.cssmsoposverAbsolute;
+		};
+		CCssProperty.prototype.ReadValue_MsoPosVerRel = function (sValue) {
+			if ("bottom-margin-area" === sValue) this.m_oValue.eMsoPosVerRel = ECssMsoPosVerRel.cssmsoposverrelBottomMargin;
+			else if ("top-margin-area" === sValue) this.m_oValue.eMsoPosVerRel = ECssMsoPosVerRel.cssmsoposverrelTopMargin;
+			else if ("margin" === sValue) this.m_oValue.eMsoPosVerRel = ECssMsoPosVerRel.cssmsoposverrelMargin;
+			else if ("page" === sValue) this.m_oValue.eMsoPosVerRel = ECssMsoPosVerRel.cssmsoposverrelPage;
+			else if ("text" === sValue) this.m_oValue.eMsoPosVerRel = ECssMsoPosVerRel.cssmsoposverrelText;
+			else if ("line" === sValue) this.m_oValue.eMsoPosVerRel = ECssMsoPosVerRel.cssmsoposverrelLine;
+			else
+				this.m_oValue.eMsoPosVerRel = ECssMsoPosVerRel.cssmsoposverrelText;
+		};
+		CCssProperty.prototype.ReadValue_Rotation = function (sValue) {
+			this.m_oValue.oValue.m_eType = ECssUnitsType.cssunitstypeAbsolute;
+			this.m_oValue.oValue.dValue = sValue.length === 0 ? 0 : parseFloat(sValue);
+
+			if (sValue.indexOf("fd") !== -1) {
+				this.m_oValue.oValue.dValue /= 6000.;
+			} else if (sValue.endsWith("f")) {
+				this.m_oValue.oValue.dValue /= 65536.;
+			}
+		};
+		CCssProperty.prototype.ReadValue_Boolean = function (sValue) {
+			if ("true" === sValue || "t" === sValue || "1" === sValue)
+				this.m_oValue.bValue = true;
+			else
+				this.m_oValue.bValue = false;
+		};
+		CCssProperty.prototype.ReadValue_MsoWrapStyle = function (sValue) {
+			if ("square" === sValue) this.m_oValue.eMsoWrapStyle = ECssMsoWrapStyle.cssmsowrapstyleSqaure;
+			else if ("none" === sValue) this.m_oValue.eMsoWrapStyle = ECssMsoWrapStyle.cssmsowrapstyleNone;
+			else
+				this.m_oValue.eMsoWrapStyle = ECssMsoWrapStyle.cssmsowrapstyleSqaure;
+		};
+		CCssProperty.prototype.ReadValue_Position = function (sValue) {
+			if ("static" === sValue) this.m_oValue.ePosition = ECssPosition.csspositionStatic;
+			else if ("absolute" === sValue) this.m_oValue.ePosition = ECssPosition.csspositionAbsolute;
+			else if ("relative" === sValue) this.m_oValue.ePosition = ECssPosition.csspositionRelative;
+			else
+				this.m_oValue.ePosition = ECssPosition.csspositionAbsolute;
+		};
+		CCssProperty.prototype.ReadValue_Visibility = function (sValue) {
+			if ("hidden" === sValue) this.m_oValue.eVisibility = ECssVisibility.cssvisibilityHidden;
+			else if ("inherit" === sValue) this.m_oValue.eVisibility = ECssVisibility.cssvisibilityInherit;
+			else
+				this.m_oValue.eVisibility = ECssVisibility.cssvisibilityInherit;
+		};
+		CCssProperty.prototype.ReadValue_ZIndex = function (sValue) {
+			if ("auto" === sValue) this.m_oValue.oZIndex.m_eType = ECssZIndexType.csszindextypeAuto;
+			else {
+				this.m_oValue.oZIndex.m_eType = ECssZIndexType.csszindextypeOrder;
+				this.m_oValue.oZIndex.nOrder = parseInt(sValue);
+
+			}
+		};
+		CCssProperty.prototype.ReadValue_Direction = function (sValue) {
+			if ("ltr" === sValue) this.m_oValue.eDirection = ECssDirection.cssdirectionLTR;
+			else if ("rtl" === sValue) this.m_oValue.eDirection = ECssDirection.cssdirectionRTL;
+			else
+				this.m_oValue.eDirection = ECssDirection.cssdirectionLTR;
+		};
+		CCssProperty.prototype.ReadValue_LayoutFlow = function (sValue) {
+			if ("horizontal" === sValue) this.m_oValue.eLayoutFlow = ECssLayoutFlow.csslayoutflowHorizontal;
+			else if ("vertical" === sValue) this.m_oValue.eLayoutFlow = ECssLayoutFlow.csslayoutflowVertical;
+			else if ("vertical-ideographic" === sValue) this.m_oValue.eLayoutFlow = ECssLayoutFlow.csslayoutflowVerticalIdeographic;
+			else if ("horizontal-ideographic" === sValue) this.m_oValue.eLayoutFlow = ECssLayoutFlow.csslayoutflowHorizontalIdeographic;
+			else
+				this.m_oValue.eLayoutFlow = ECssLayoutFlow.csslayoutflowHorizontal;
+		};
+		CCssProperty.prototype.ReadValue_DirectionAlt = function (sValue) {
+			this.m_oValue.eDirectionAlt = ECssDirectionAlt.cssdirectionaltContext;
+		};
+		CCssProperty.prototype.ReadValue_LayoutFlowAlt = function (sValue) {
+			this.m_oValue.eLayoutFlowAlt = ECssLayoutFlowAlt.csslayoutflowaltBottomToTop;
+		};
+		CCssProperty.prototype.ReadValue_String = function (sValue) {
+			this.m_oValue.wsValue = sValue;
+		};
+		CCssProperty.prototype.ReadValue_MsoRotate = function (sValue) {
+			if ("0" === sValue) this.m_oValue.eRotate = ECssMsoRotate.cssmsorotate0;
+			else if ("90" === sValue) this.m_oValue.eRotate = ECssMsoRotate.cssmsorotate90;
+			else if ("180" === sValue) this.m_oValue.eRotate = ECssMsoRotate.cssmsorotate180;
+			else if ("-90" === sValue) this.m_oValue.eRotate = ECssMsoRotate.cssmsorotate270;
+			else
+				this.m_oValue.eRotate = ECssMsoRotate.cssmsorotate0;
+		};
+		CCssProperty.prototype.ReadValue_VTextAnchor = function (sValue) {
+			if ("top" === sValue) this.m_oValue.eVTextAnchor = ECssVTextAnchor.cssvtextanchorTop;
+			else if ("middle" === sValue) this.m_oValue.eVTextAnchor = ECssVTextAnchor.cssvtextanchorMiddle;
+			else if ("bottom" === sValue) this.m_oValue.eVTextAnchor = ECssVTextAnchor.cssvtextanchorBottom;
+			else if ("top-center" === sValue) this.m_oValue.eVTextAnchor = ECssVTextAnchor.cssvtextanchorTopCenter;
+			else if ("middle-center" === sValue) this.m_oValue.eVTextAnchor = ECssVTextAnchor.cssvtextanchorMiddleCenter;
+			else if ("bottom-center" === sValue) this.m_oValue.eVTextAnchor = ECssVTextAnchor.cssvtextanchorBottomCenter;
+			else if ("top-baseline" === sValue) this.m_oValue.eVTextAnchor = ECssVTextAnchor.cssvtextanchorTopBaseline;
+			else if ("bottom-baseline" === sValue) this.m_oValue.eVTextAnchor = ECssVTextAnchor.cssvtextanchorBottomBaseline;
+			else if ("top-center-baseline" === sValue) this.m_oValue.eVTextAnchor = ECssVTextAnchor.cssvtextanchorTopCenterBaseline;
+			else if ("bottom-center-baseline" === sValue) this.m_oValue.eVTextAnchor = ECssVTextAnchor.cssvtextanchorBottomCenterBaseline;
+			else
+				this.m_oValue.eVTextAnchor = ECssVTextAnchor.cssvtextanchorTop;
+		};
+		CCssProperty.prototype.ReadValue_FontStyle = function (sValue) {
+			if ("normal" === sValue) this.m_oValue.eFontStyle = ECssFontStyle.cssfontstyleNormal;
+			else if ("italic" === sValue) this.m_oValue.eFontStyle = ECssFontStyle.cssfontstyleItalic;
+			else if ("oblique" === sValue) this.m_oValue.eFontStyle = ECssFontStyle.cssfontstyleOblique;
+			else
+				this.m_oValue.eFontStyle = ECssFontStyle.cssfontstyleNormal;
+		};
+		CCssProperty.prototype.ReadValue_FontVariant = function (sValue) {
+			if ("normal" === sValue) this.m_oValue.eFontVariant = ECssFontVarian.cssfontvariantNormal;
+			else if ("small-caps" === sValue) this.m_oValue.eFontVariant = ECssFontVarian.cssfontvariantSmallCaps;
+			else
+				this.m_oValue.eFontVariant = ECssFontVarian.cssfontvariantNormal;
+		};
+		CCssProperty.prototype.ReadValue_FontWeight = function (sValue) {
+			if ("normal" === sValue) this.m_oValue.eFontWeight = ECssFontWeight.cssfontweightNormal;
+			else if ("lighter" === sValue) this.m_oValue.eFontWeight = ECssFontWeight.cssfontweightLighter;
+			else if ("100" === sValue) this.m_oValue.eFontWeight = ECssFontWeight.cssfontweight100;
+			else if ("200" === sValue) this.m_oValue.eFontWeight = ECssFontWeight.cssfontweight200;
+			else if ("300" === sValue) this.m_oValue.eFontWeight = ECssFontWeight.cssfontweight300;
+			else if ("400" === sValue) this.m_oValue.eFontWeight = ECssFontWeight.cssfontweight400;
+			else if ("bold" === sValue) this.m_oValue.eFontWeight = ECssFontWeight.cssfontweightBold;
+			else if ("bolder" === sValue) this.m_oValue.eFontWeight = ECssFontWeight.cssfontweightBolder;
+			else if ("500" === sValue) this.m_oValue.eFontWeight = ECssFontWeight.cssfontweight500;
+			else if ("600" === sValue) this.m_oValue.eFontWeight = ECssFontWeight.cssfontweight600;
+			else if ("700" === sValue) this.m_oValue.eFontWeight = ECssFontWeight.cssfontweight700;
+			else if ("800" === sValue) this.m_oValue.eFontWeight = ECssFontWeight.cssfontweight800;
+			else if ("900" === sValue) this.m_oValue.eFontWeight = ECssFontWeight.cssfontweight900;
+			else
+				this.m_oValue.eFontWeight = ECssFontWeight.cssfontweightNormal;
+		};
+		CCssProperty.prototype.ReadValue_TextDecoration = function (sValue) {
+			if ("none" === sValue) this.m_oValue.eTextDecoration = ECssTextDecoration.csstextdecorationNone;
+			else if ("underline" === sValue) this.m_oValue.eTextDecoration = ECssTextDecoration.csstextdecorationUnderline;
+			else if ("overline" === sValue) this.m_oValue.eTextDecoration = ECssTextDecoration.csstextdecorationOverline;
+			else if ("line-through" === sValue) this.m_oValue.eTextDecoration = ECssTextDecoration.csstextdecorationLineThrough;
+			else if ("blink" === sValue) this.m_oValue.eTextDecoration = ECssTextDecoration.csstextdecorationBlink;
+			else
+				this.m_oValue.eTextDecoration = ECssTextDecoration.csstextdecorationNone;
+		};
+		CCssProperty.prototype.ReadValue_VTextAlign = function (sValue) {
+			if ("left" === sValue) this.m_oValue.eVTextAlign = ECssVTextAlign.cssvtextalignLeft;
+			else if ("right" === sValue) this.m_oValue.eVTextAlign = ECssVTextAlign.cssvtextalignRight;
+			else if ("center" === sValue) this.m_oValue.eVTextAlign = ECssVTextAlign.cssvtextalignCenter;
+			else if ("justify" === sValue) this.m_oValue.eVTextAlign = ECssVTextAlign.cssvtextalignJustify;
+			else if ("letter-justify" === sValue) this.m_oValue.eVTextAlign = ECssVTextAlign.cssvtextalignLetterJustify;
+			else if ("stretch-justify" === sValue) this.m_oValue.eVTextAlign = ECssVTextAlign.cssvtextalignStretchJustify;
+			else
+				this.m_oValue.eVTextAlign = ECssVTextAlign.cssvtextalignLeft;
+		};
+		CCssProperty.prototype.ReadValue_VTextSpacingMode = function (sValue) {
+			if ("tightening" === sValue) this.m_oValue.eVTextSpacingMode = ECssVTextSpacingMode.cssvtextspacingmodeTightening;
+			else if ("tracking" === sValue) this.m_oValue.eVTextSpacingMode = ECssVTextSpacingMode.cssvtextspacingmodeTracking;
+			else
+				this.m_oValue.eVTextSpacingMode = ECssVTextSpacingMode.cssvtextspacingmodeTightening;
+		};
+
+		function UCssValue() {
+			this.eFlip = null;
+			this.oValue = new TCssUnitsValue();
+			this.eMsoPosHor = null;
+			this.eMsoPosHorRel = null;
+			this.eMsoPosVer = null;
+			this.eMsoPosVerRel = null;
+			this.bValue = null;
+			this.eMsoWrapStyle = null;
+			this.ePosition = null;
+			this.eVisibility = null;
+			this.oZIndex = new TCssZIndexValue();
+			this.eDirection = null;
+			this.eLayoutFlow = null;
+			this.eDirectionAlt = null;
+			this.eLayoutFlowAlt = null;
+			this.wsValue = null;
+			this.eRotate = null;
+			this.eVTextAnchor = null;
+			this.eFontStyle = null;
+			this.eFontVariant = null;
+			this.eFontWeight = null;
+			this.eTextDecoration = null;
+			this.eVTextAlign = null;
+			this.eVTextSpacingMode = null;
+			this.eHTextAlign = null;
+		}
+
+		function TCssUnitsValue() {
+			this.eType = null;
+			this.dValue = null;
+		}
+
+		function TCssZIndexValue() {
+			this.eType = null;
+			this.nOrder = null;
+		}
 
 
 		/* Exports */

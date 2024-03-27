@@ -1850,7 +1850,7 @@
 	 * @memberof Api
 	 * @typeofeditors ["CDE", "CSE", "CPE"]
 	 * @alias GetAllRunnedPlugins
-	 * @returns {Array.<string>} - Document language.
+	 * @returns {Array.<string>}
 	 * @since 8.1.0
 	 */
 	Api.prototype["pluginMethod_GetAllRunnedPlugins"] = function()
@@ -1863,19 +1863,17 @@
 	};
 
 	/**
-	 * Sends a message to a other plugin.
+	 * Sends a message to a other plugin by guid.
 	 * @memberof Api
 	 * @typeofeditors ["CDE", "CSE", "CPE"]
-	 * @param {string} guid - plugin guid.
- 	 * @param {object} data - The event data.
+	 * @param {string} guid - The plugin guid wich will receive a message.
+	 * @param {object | string | number | boolean | array} data - The event data.
 	 * @alias SendMessageToPlugin
+	 * @returns {boolean} - Returns true if the message was successfully sent
 	 * @since 8.1.0
 	 */
 	Api.prototype["pluginMethod_SendMessageToPlugin"] = function(guid, data)
 	{
-		window.g_asc_plugins && window.g_asc_plugins.setPluginMethodReturnAsync();
-		window.g_asc_plugins.onPluginMessage(data, guid);
-		// we will return data after we will have received an answer
-		// window.g_asc_plugins &&	window.g_asc_plugins.onPluginMethodReturn(true);
+		return window.g_asc_plugins.onPluginMessage(data, guid);
 	};
 })(window);

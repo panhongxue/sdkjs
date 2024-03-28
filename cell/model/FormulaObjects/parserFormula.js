@@ -8456,6 +8456,7 @@ function parserFormula( formula, parent, _ws ) {
 	};
 	/**
 	 * Method sets a relative error.
+	 * @memberof CalcRecursion
 	 * @param {number} nRelativeError
 	 */
 	CalcRecursion.prototype.setRelativeError = function (nRelativeError) {
@@ -8463,6 +8464,7 @@ function parserFormula( formula, parent, _ws ) {
 	};
 	/**
 	 * Method returns a relative error.
+	 * @memberof CalcRecursion
 	 * @returns {number}
 	 */
 	CalcRecursion.prototype.getRelativeError = function () {
@@ -8470,6 +8472,7 @@ function parserFormula( formula, parent, _ws ) {
 	};
 	/**
 	 * Method sets a grouped changed cells.
+	 * @memberof CalcRecursion
 	 * @param {{wsName:{cellId: {cellId: number, wsName: string}[]}}|null} oGroupChangedCells
 	 */
 	CalcRecursion.prototype.setGroupChangedCells = function (oGroupChangedCells) {
@@ -8477,6 +8480,7 @@ function parserFormula( formula, parent, _ws ) {
 	};
 	/**
 	 * Method returns a grouped changed cells.
+	 * @memberof CalcRecursion
 	 * @returns {{wsName:{cellId: {cellId: number, wsName: string}[]}}|null}
 	 */
 	CalcRecursion.prototype.getGroupChangedCells = function () {
@@ -8484,6 +8488,7 @@ function parserFormula( formula, parent, _ws ) {
 	};
 	/**
 	 * Method initializes an object for grouped changed cells.
+	 * @memberof CalcRecursion
 	 * @param {Cell} oCell
 	 */
 	CalcRecursion.prototype.initGroupChangedCells = function (oCell) {
@@ -8494,6 +8499,7 @@ function parserFormula( formula, parent, _ws ) {
 	};
 	/**
 	 * Method returns an array of cells with recursive formula.
+	 * @memberof CalcRecursion
 	 * @param {Cell} oCell
 	 * @returns {{cellId: number, wsName: string}[]}
 	 */
@@ -8504,8 +8510,8 @@ function parserFormula( formula, parent, _ws ) {
 
 		for (let sSheetName in oGroupChangedCell) {
 			let oGroupChangedSheet = oGroupChangedCell[sSheetName];
-			for (let nLinkedCellIndex in oGroupChangedSheet) {
-				const aLinkedCells = oGroupChangedSheet[nLinkedCellIndex];
+			for (let sLinkedCellIndex in oGroupChangedSheet) {
+				const aLinkedCells = oGroupChangedSheet[sLinkedCellIndex];
 				let bHasCell = aLinkedCells.some(function (oCellIndex) {
 					return oCellIndex.cellId === nCellIndex && oCellIndex.wsName === sCellWsName;
 				})
@@ -8519,6 +8525,7 @@ function parserFormula( formula, parent, _ws ) {
 	};
 	/**
 	 * Method updates start cell index.
+	 * @memberof CalcRecursion
 	 * @param {{cellId: number, wsName: string}[]} aRecursiveCells
 	 */
 	CalcRecursion.prototype.updateStartCellIndex = function (aRecursiveCells) {
@@ -8537,6 +8544,7 @@ function parserFormula( formula, parent, _ws ) {
 	};
 	/**
 	 * Method adds array with recursive cells in the group changed cells object.
+	 * @memberof CalcRecursion
 	 * @param {Cell} oCell
 	 * @param {{cellId: number, wsName: string}[]} aRecursiveCells
 	 */
@@ -8552,6 +8560,7 @@ function parserFormula( formula, parent, _ws ) {
 	};
 	/**
 	 * Method returns a flag that checks a recursive call is needed.
+	 * @memberof CalcRecursion
 	 * @returns {boolean}
 	 */
 	CalcRecursion.prototype.needRecursiveCall = function () {
@@ -8560,10 +8569,10 @@ function parserFormula( formula, parent, _ws ) {
 		const bMaxStepNotExceeded = this.getIterStep() < this.getMaxIterations() && this.getIterStep() <= this.getMaxRecursion();
 		let bHasRecursiveCell = false;
 
-		for (let nSheetId in oGroupChangedCells) {
-			let oGroupChangedSheet = oGroupChangedCells[nSheetId];
-			for (let nCellIndex in oGroupChangedSheet) {
-				let aRecursiveCells = oGroupChangedSheet[nCellIndex];
+		for (let sSheetName in oGroupChangedCells) {
+			let oGroupChangedSheet = oGroupChangedCells[sSheetName];
+			for (let sCellIndex in oGroupChangedSheet) {
+				let aRecursiveCells = oGroupChangedSheet[sCellIndex];
 				if (aRecursiveCells.length) {
 					bHasRecursiveCell = true;
 					break;

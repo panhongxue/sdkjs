@@ -1869,6 +1869,10 @@
 										cellId: getCellIndex(oCell.nRow, oCell.nCol),
 										wsName: oCell.ws.getName().toLowerCase()
 									};
+									let aPrevRecursiveCell = g_cCalcRecursion.getRecursiveCells(oCell);
+									if (aPrevRecursiveCell.length) {
+										return;
+									}
 									let bDuplicateElem = aRecursiveCells.some(function (oElem) {
 										return oElem.cellId === oCellIndex.cellId && oElem.wsName === oCellIndex.wsName;
 									});
@@ -1908,7 +1912,12 @@
 					});
 					if (aRecursiveCells.length && bLinkedCell) {
 						oCell.changeLinkedCell(function (oCell) {
-							if (!oCell.getIsDirty()) {
+							const nCellIndex = getCellIndex(oCell.nRow, oCell.nCol);
+							const sCellWsName = oCell.ws.getName().toLowerCase();
+							let bLinkedCell = aRecursiveCells.some(function (oCellIndex) {
+								return oCellIndex.cellId === nCellIndex && oCellIndex.wsName === sCellWsName;
+							});
+							if (bLinkedCell && !oCell.getIsDirty()) {
 								oCell.setIsDirty(true);
 							}
 						}, false);
@@ -14375,7 +14384,10 @@
 				let nCellIndex = AscCommonExcel.getCellIndex(oCell.nRow, oCell.nCol);
 				let sCellWsName = oCell.ws.getName().toLowerCase();
 				let sThisWsName = oThis.ws.getName().toLowerCase();
-				if (oCell.isFormula() && ((nCellIndex !== nThisIndex && nCellIndex > nThisIndex) || sCellWsName > sThisWsName)) {
+				if (!oCell.isFormula()) {
+					return;
+				}
+				if ((nCellIndex !== nThisIndex && nCellIndex > nThisIndex) || sCellWsName > sThisWsName) {
 					let res = fAction(oCell);
 					if (res != null) {
 						return true;

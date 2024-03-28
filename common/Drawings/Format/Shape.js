@@ -3008,6 +3008,7 @@
 
 			// Проверка на то, что это кнопка
 			if (this.vmlDrawing) {
+				// TODO: Взять цвет из vmlDrawing
 				this.brush = AscFormat.CreateSolidFillRGBA(240, 240, 240, 255);
 			}
 
@@ -3049,7 +3050,8 @@
 				this.pen.calculate(parents.theme, parents.slide, parents.layout, parents.master, RGBA);
 			}
 			if (this.vmlDrawing) {
-				this.pen = null;
+				// TODO: Взять цвет обводки из vmlDrawing
+				this.pen.Fill = AscFormat.CreateSolidFillRGBA(0, 0, 0, 255);
 			}
 		};
 
@@ -5372,15 +5374,17 @@
 			const height = this.GetHeight();
 
 			const alignCenter = 1;
-			const penWidth = 20 * AscCommon.g_dKoef_pix_to_mm;
+			const penWidth = 2 * AscCommon.g_dKoef_pix_to_mm;
 
-			bPressed ? graphics.p_color(0, 0, 0, 255) : graphics.p_color(255, 255, 255, 255);
-			graphics.drawHorLine(alignCenter, 0, 0, width, penWidth);
-			graphics.drawVerLine(alignCenter, 0, 0, height, penWidth);
+			graphics.p_color(255, 255, 255, 255);
 
-			bPressed ? graphics.p_color(255, 255, 255, 255) : graphics.p_color(0, 0, 0, 255);
-			graphics.drawHorLine(alignCenter, height, 0, width, penWidth);
-			graphics.drawVerLine(alignCenter, width, 0, height, penWidth);
+			if (bPressed) {
+				graphics.drawHorLine(alignCenter, height, 0, width, penWidth);
+				graphics.drawVerLine(alignCenter, width, 0, height, penWidth);
+			} else {
+				graphics.drawHorLine(alignCenter, 0, 0, width, penWidth);
+				graphics.drawVerLine(alignCenter, 0, 0, height, penWidth);
+			}
 
 			graphics.RestoreGrState();
 		};

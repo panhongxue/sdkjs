@@ -8283,7 +8283,8 @@ function parserFormula( formula, parent, _ws ) {
 
 		this.bIsEnabledRecursion = true;
 		this.nMaxIterations = 10; // Max iterations of recursion calculations. Default value: 100.
-		this.nRelativeError = 1e-4; // Relative error between current and previous cell value. Default value: 1e-4.
+		this.nRelativeError = 1e-3; // Relative error between current and previous cell value. Default value: 1e-3.
+		this.nCalcMode = Asc.c_oAscCalcMode.auto; // Calculation mode. Default value: Asc.c_oAscCalcMode.auto
 		/*for chrome63(real maximum call stack size is 12575) nMaxRecursion that cause exception is 783
 		by measurement: stack size in doctrenderer is one fourth smaller than chrome*/
 		this.nMaxRecursion = 300; // Default value: 300
@@ -8471,6 +8472,22 @@ function parserFormula( formula, parent, _ws ) {
 		return this.nRelativeError;
 	};
 	/**
+	 * Method sets a calculation mode.
+	 * @memberof CalcRecursion
+	 * @param {Asc.c_oAscCalcMode} nCalcMode
+	 */
+	CalcRecursion.prototype.setCalcMode = function (nCalcMode) {
+		this.nCalcMode = nCalcMode;
+	};
+	/**
+	 * Method returns a calculation mode.
+	 * @memberof CalcRecursion
+	 * @returns {Asc.c_oAscCalcMode}
+	 */
+	CalcRecursion.prototype.getCalcMode = function () {
+		return this.nCalcMode;
+	};
+	/**
 	 * Method sets a grouped changed cells.
 	 * @memberof CalcRecursion
 	 * @param {{wsName:{cellId: {cellId: number, wsName: string}[]}}|null} oGroupChangedCells
@@ -8585,6 +8602,25 @@ function parserFormula( formula, parent, _ws ) {
 
 		return this.getIsEnabledRecursion() && (oStartCellIndex || bHasRecursiveCell) && bMaxStepNotExceeded;
 	};
+	/**
+	 * Method initializes calculation properties.
+	 * @memberof CalcRecursion
+	 * @param {CCalcPr} oCalcPr
+	 */
+	CalcRecursion.prototype.initCalcProperties = function (oCalcPr) {
+		if (oCalcPr.getIterate()) {
+			this.setIsEnabledRecursion(oCalcPr.getIterate());
+		}
+		if (oCalcPr.getIterateDelta()) {
+			this.setRelativeError(oCalcPr.getIterateDelta());
+		}
+		if (oCalcPr.getIterateCount()) {
+			this.setMaxIterations(oCalcPr.getIterateCount());
+		}
+		if (oCalcPr.getCalcMode()) {
+			this.setCalcMode(oCalcPr.getCalcMode());
+		}
+	}
 
 	const g_cCalcRecursion = new CalcRecursion();
 

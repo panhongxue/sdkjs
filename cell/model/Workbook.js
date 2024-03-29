@@ -2475,6 +2475,8 @@
 		if (bSnapshot) {
 			this.snapshot = this._getSnapshot();
 		}
+
+		g_cCalcRecursion.initCalcProperties(this.calcPr);
 	};
 	Workbook.prototype.addImages = function (aImages, obj) {
 		const oApi = Asc.editor;

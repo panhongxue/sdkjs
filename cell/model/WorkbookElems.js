@@ -16955,6 +16955,10 @@ function RangeDataManagerElem(bbox, data)
 		return res;
 	};
 
+	/**
+	 * Class representing "Formulas" properties specifies calculation options
+	 * @constructor
+	 */
 	function CCalcPr() {
 		this.calcId = null;
 		this.calcMode = null;
@@ -16970,6 +16974,12 @@ function RangeDataManagerElem(bbox, data)
 		this.concurrentManualCount = null;
 		this.forceFullCalc = null;
 	}
+
+	/**
+	 * Method clones calculation options
+	 * @memberOf CCalcPr
+	 * @returns {CCalcPr}
+	 */
 	CCalcPr.prototype.clone = function () {
 		var res = new CCalcPr();
 
@@ -16988,6 +16998,40 @@ function RangeDataManagerElem(bbox, data)
 		res.forceFullCalc = this.forceFullCalc;
 
 		return res;
+	};
+	/**
+	 * Method returns "iterate" attribute specifies whether the application should attempt to calculate formulas
+	 * that contain circular references.
+	 * @memberOf CCalcPr
+	 * @returns {boolean}
+	 */
+	CCalcPr.prototype.getIterate = function () {
+		return this.iterate;
+	};
+	/**
+	 * Method returns "iterateCount" attribute specifies the number of iterations attempts when calculating a
+	 * workbook with circular references, when the "iterate" attribute is true.
+	 * @memberOf CCalcPr
+	 * @returns {number}
+	 */
+	CCalcPr.prototype.getIterateCount = function () {
+		return this.iterateCount;
+	};
+	/**
+	 * Method returns "iterateDelta" attribute specifies the maximum change for iterative calculations.
+	 * @memberOf CCalcPr
+	 * @returns {number}
+	 */
+	CCalcPr.prototype.getIterateDelta = function () {
+		return this.iterateDelta;
+	};
+	/**
+	 * Method returns "calcMode" attribute specifies when the application should calculate formulas in the workbook.
+	 * @memberOf CCalcPr
+	 * @returns {Asc.c_oAscCalcMode}
+	 */
+	CCalcPr.prototype.getCalcMode = function () {
+		return this.calcMode;
 	};
 
 

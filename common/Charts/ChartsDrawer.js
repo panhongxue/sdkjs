@@ -1961,8 +1961,10 @@ CChartsDrawer.prototype =
 		let arrayValues;
 		if(AscDFH.historyitem_type_CatAx === axis.getObjectType() || AscDFH.historyitem_type_DateAx === axis.getObjectType()) {
 			arrayValues = [];
-			let max = axis.max;
-			for(let i = axis.min; i <= max; i++) {
+			let min = Math.ceil(axis.min);
+			// Math.round will round number 5.5 to 6 
+			// but i < axis.max + 0.5 will round 5.5 to 5
+			for(let i = min; i < axis.max + 0.5; i++) {
 				arrayValues.push(i);
 			}
 			return arrayValues;

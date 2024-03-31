@@ -6913,7 +6913,7 @@
 		};
 
 		CShape.prototype.setVmlDrawing = function (vmlDrawing) {
-			History.Add(new AscDFH.CChangesDrawingsObject(this, AscDFH.historyitem_ShapeSetVmlDrawing, this.vmlDrawing, vmlDrawing));
+			History.Add(new AscDFH.CChangesDrawingsObjectNoId(this, AscDFH.historyitem_ShapeSetVmlDrawing, this.vmlDrawing, vmlDrawing));
 			this.vmlDrawing = vmlDrawing;
 		}
 

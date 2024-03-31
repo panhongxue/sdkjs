@@ -6201,6 +6201,9 @@
 				case AscDFH.historyitem_ShapeSetNvSpPr: {
 					break;
 				}
+				case AscDFH.historyitem_ShapeSetVmlDrawing: {
+					break;
+				}
 				case AscDFH.historyitem_ShapeSetSpPr: {
 					break;
 				}

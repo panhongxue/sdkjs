@@ -1105,6 +1105,7 @@
 
 		function CVMLDrawing() {
 			CBaseNoId.call(this);
+			this.testString = 'testString';
 
 			this.items = [];
 
@@ -1398,7 +1399,27 @@
 					}
 				}
 			}
-		}
+		};
+		CVMLDrawing.prototype.Write_ToBinary = function (writer) {
+			AscFormat.writeString(writer, this.testString);
+
+			// AscFormat.writeLong();
+			// AscFormat.writeDouble();
+			// AscFormat.writeBool();
+			// AscFormat.writeString();
+			// AscFormat.writeObject();
+		};
+		CVMLDrawing.prototype.Read_FromBinary = function (reader) {
+			this.testString = AscFormat.readString(reader);
+
+			// AscFormat.readLong();
+			// AscFormat.readDouble();
+			// AscFormat.readBool();
+			// AscFormat.readString();
+			// AscFormat.readObject();
+		};
+
+		AscDFH.drawingsConstructorsMap[AscDFH.historyitem_ShapeSetVmlDrawing] = CVMLDrawing;
 
 		function CShapeLayout() {
 			CBaseNoId.call(this);

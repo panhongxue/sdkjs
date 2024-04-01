@@ -1871,7 +1871,11 @@
 									};
 									let aPrevRecursiveCell = g_cCalcRecursion.getRecursiveCells(oCell);
 									if (aPrevRecursiveCell.length) {
-										return;
+										const oPrevStartCellIndex = aPrevRecursiveCell[0];
+										aPrevRecursiveCell = aPrevRecursiveCell.filter(function (oPrevCellIndex) {
+											return oPrevCellIndex.cellId !== oCellIndex.cellId || oPrevCellIndex.wsName !== oCellIndex.wsName;
+										})
+										g_cCalcRecursion.updateRecursiveCells(oPrevStartCellIndex, aPrevRecursiveCell);
 									}
 									let bDuplicateElem = aRecursiveCells.some(function (oElem) {
 										return oElem.cellId === oCellIndex.cellId && oElem.wsName === oCellIndex.wsName;

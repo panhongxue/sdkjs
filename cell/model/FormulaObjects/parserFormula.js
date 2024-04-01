@@ -8576,6 +8576,18 @@ function parserFormula( formula, parent, _ws ) {
 		oGroupChangedCell[sCellWsName][nCellIndex] = aRecursiveCells;
 	};
 	/**
+	 * Method updates array with recursive cells in the group changed cells object.
+	 * @param {{cellId: number, wsName: string}} oCellIndex
+	 * @param {{cellId: number, wsName: string}[]} aRecursiveCells
+	 */
+	CalcRecursion.prototype.updateRecursiveCells = function (oCellIndex, aRecursiveCells) {
+		const oGroupChangedCell = this.getGroupChangedCells();
+		const sCellWsName = oCellIndex.wsName;
+		const nCellIndex = oCellIndex.cellId;
+
+		oGroupChangedCell[sCellWsName][nCellIndex] = aRecursiveCells;
+	};
+	/**
 	 * Method returns a flag that checks a recursive call is needed.
 	 * @memberof CalcRecursion
 	 * @returns {boolean}

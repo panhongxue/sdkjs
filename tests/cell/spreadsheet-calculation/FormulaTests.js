@@ -1133,6 +1133,16 @@ $(function () {
 		// Clean define name
 		wb.delDefinesNames(oDefNameABAll);
 		oDefNameABAll = null;
+		// - Case: Cross recursive chain formula. B1027: B1027+B1028, B1028: B1028+B1029, A1028: A1028+B1028, C1028: B1028+C1028, B1029: 1
+		ws.getRange2("B1027").setValue("=B1027+B1028");
+		ws.getRange2("B1028").setValue("=B1028+B1029");
+		ws.getRange2("A1028").setValue("=A1028+B1028");
+		ws.getRange2("C1028").setValue("=B1028+C1028");
+		ws.getRange2("B1029").setValue("1");
+		assert.strictEqual(ws.getRange2("B1027").getValue(), "45", "Test: Cross recursive chain formula. B1027 - 45");
+		assert.strictEqual(ws.getRange2("B1028").getValue(), "10", "Test: Cross recursive chain formula. B1028 - 10");
+		assert.strictEqual(ws.getRange2("A1028").getValue(), "45", "Test: Cross recursive chain formula. A1028 - 45");
+		assert.strictEqual(ws.getRange2("C1028").getValue(), "55", "Test: Cross recursive chain formula. C1028 - 55");
 		// -- Test changeLinkedCell method.
 		oCell = selectCell("A1000");
 		let oCellNeedEnableRecalc = selectCell("B1000");

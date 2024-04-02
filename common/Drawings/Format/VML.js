@@ -1105,7 +1105,6 @@
 
 		function CVMLDrawing() {
 			CBaseNoId.call(this);
-			this.testString = 'testString';
 
 			this.items = [];
 
@@ -1401,7 +1400,11 @@
 			}
 		};
 		CVMLDrawing.prototype.Write_ToBinary = function (writer) {
-			AscFormat.writeString(writer, this.testString);
+			// TODO: Пока запись только для кнопки
+			for (let nItem = 0; nItem < this.items.length; ++nItem) {
+				const item = this.items[nItem];
+				item.Write_ToBinary(writer);
+			}
 
 			// AscFormat.writeLong();
 			// AscFormat.writeDouble();
@@ -1410,7 +1413,12 @@
 			// AscFormat.writeObject();
 		};
 		CVMLDrawing.prototype.Read_FromBinary = function (reader) {
-			this.testString = AscFormat.readString(reader);
+			this.items = [];
+			this.items.push(new CShapeLayout, new CShapeType, new CShape);
+			for (let nItem = 0; nItem < this.items.length; ++nItem) {
+				const item = this.items[nItem];
+				item.Read_FromBinary(reader);
+			}
 
 			// AscFormat.readLong();
 			// AscFormat.readDouble();
@@ -1435,6 +1443,16 @@
 
 		IC(CShapeLayout, CBaseNoId, 0);
 
+		CShapeLayout.prototype.Write_ToBinary = function (writer) {
+			AscFormat.writeDouble(writer, this.m_oExt);
+			this.m_oIdMap.Write_ToBinary(writer);
+		}
+		CShapeLayout.prototype.Read_FromBinary = function (reader) {
+			this.m_oExt = AscFormat.readDouble(reader);
+			this.m_oIdMap = new CIdMap();
+			this.m_oIdMap.Read_FromBinary(reader);
+		}
+
 		function CShapeType() {
 			CVmlCommonElements.call(this);
 
@@ -1449,6 +1467,30 @@
 		CShapeType.prototype.getShapeType = function () {
 			return this.m_oSpt;
 		};
+		CShapeType.prototype.Write_ToBinary = function (writer) {
+			AscFormat.writeString(writer, this.m_sId);
+			AscFormat.writeString(writer, this.m_oPath);
+			AscFormat.writeDouble(writer, this.m_oSpt);
+			AscFormat.writeString(writer, this.m_oCoordSize.ToString());
+
+			for (let nItem = 0; nItem < this.items.length; ++nItem) {
+				const item = this.items[nItem];
+				item.Write_ToBinary(writer);
+			}
+		}
+		CShapeType.prototype.Read_FromBinary = function (reader) {
+			this.m_sId = AscFormat.readString(reader);
+			this.m_oPath = AscFormat.readString(reader);
+			this.m_oSpt = AscFormat.readDouble(reader);
+			this.m_oCoordSize = new CVmlVector2D(AscFormat.readString(reader));
+
+			this.items = [];
+			this.items.push(new CStroke, new CPath, new CLock);
+			for (let nItem = 0; nItem < this.items.length; ++nItem) {
+				const item = this.items[nItem];
+				item.Read_FromBinary(reader);
+			}
+		}
 
 		function CShape() {
 			CVmlCommonElements.call(this);
@@ -1465,6 +1507,36 @@
 		CShape.prototype.getShapeType = function () {
 			return parseShapeType(this.m_sType);
 		};
+		CShape.prototype.Write_ToBinary = function (writer) {
+			AscFormat.writeString(writer, this.m_sId);
+			AscFormat.writeString(writer, this.m_sType);
+			AscFormat.writeBool(writer, this.m_oButton);
+			AscFormat.writeDouble(writer, this.m_oInsetMode);
+			AscFormat.writeString(writer, this.m_oStyle.ToString());
+			AscFormat.writeString(writer, this.m_oFillColor.toString());
+			AscFormat.writeString(writer, this.m_oStrokeColor.toString());
+
+			for (let nItem = 0; nItem < this.items.length; ++nItem) {
+				const item = this.items[nItem];
+				item.Write_ToBinary(writer);
+			}
+		}
+		CShape.prototype.Read_FromBinary = function (reader) {
+			this.m_sId = AscFormat.readString(reader);
+			this.m_sType = AscFormat.readString(reader);
+			this.m_oButton = AscFormat.readBool(reader);
+			this.m_oInsetMode = AscFormat.readDouble(reader);
+			this.m_oStyle = new CCssStyle(AscFormat.readString(reader));
+			this.m_oFillColor = new CColor(AscFormat.readString(reader));
+			this.m_oStrokeColor = new CColor(AscFormat.readString(reader));
+
+			this.items = [];
+			this.items.push(new CFillVml, new CLock, new CTextbox, new CClientData);
+			for (let nItem = 0; nItem < this.items.length; ++nItem) {
+				const item = this.items[nItem];
+				item.Read_FromBinary(reader);
+			}
+		}
 
 		function CIdMap() {
 			CBaseNoId.call(this);
@@ -1475,6 +1547,15 @@
 		}
 
 		IC(CIdMap, CBaseNoId, 0);
+
+		CIdMap.prototype.Write_ToBinary = function (writer) {
+			AscFormat.writeDouble(writer, this.m_oExt);
+			AscFormat.writeString(writer, this.m_sData);
+		}
+		CIdMap.prototype.Read_FromBinary = function (reader) {
+			this.m_oExt = AscFormat.readDouble(reader);
+			this.m_sData = AscFormat.readString(reader);
+		}
 
 		function CStroke() {
 			CBaseNoId.call(this);
@@ -1604,6 +1685,13 @@
 			}
 			return oStroke;
 		};
+		CStroke.prototype.Write_ToBinary = function (writer) {
+			AscFormat.writeDouble(writer, this.m_oJoinStyle);
+		}
+		CStroke.prototype.Read_FromBinary = function (reader) {
+			this.m_oJoinStyle = AscFormat.readDouble(reader);
+		}
+
 
 		function CPath() {
 			CBaseNoId.call(this);
@@ -1630,6 +1718,21 @@
 
 		IC(CPath, CBaseNoId, 0);
 
+		CPath.prototype.Write_ToBinary = function (writer) {
+			AscFormat.writeBool(writer, this.m_oShadowOk)
+			AscFormat.writeBool(writer, this.m_oExtrusionOk)
+			AscFormat.writeBool(writer, this.m_oStrokeOk)
+			AscFormat.writeBool(writer, this.m_oFillOk)
+			AscFormat.writeDouble(writer, this.m_oConnectType)
+		}
+		CPath.prototype.Read_FromBinary = function (reader) {
+			this.m_oShadowOk = AscFormat.readBool(reader);
+			this.m_oExtrusionOk = AscFormat.readBool(reader);
+			this.m_oStrokeOk = AscFormat.readBool(reader);
+			this.m_oFillOk = AscFormat.readBool(reader);
+			this.m_oConnectType = AscFormat.readDouble(reader);
+		}
+
 		function CLock() {
 			CBaseNoId.call(this);
 
@@ -1648,6 +1751,17 @@
 		}
 
 		IC(CLock, CBaseNoId, 0);
+
+		CLock.prototype.Write_ToBinary = function (writer) {
+			AscFormat.writeDouble(writer, this.m_oExt);
+			AscFormat.writeBool(writer, this.m_oShapeType);
+			AscFormat.writeBool(writer, this.m_oRotation);
+		}
+		CLock.prototype.Read_FromBinary = function (reader) {
+			this.m_oExt = AscFormat.readDouble(reader);
+			this.m_oShapeType = AscFormat.readBool(reader);
+			this.m_oRotation = AscFormat.readBool(reader);
+		}
 
 		function CFill() {
 			CBaseNoId.call(this);
@@ -1675,6 +1789,25 @@
 		}
 
 		IC(CTextbox, CBaseNoId, 0);
+
+		CTextbox.prototype.Write_ToBinary = function (writer) {
+			AscFormat.writeString(writer, this.m_oStyle.ToString());
+			AscFormat.writeBool(writer, this.m_oSingleClick);
+
+			for (let nItem = 0; nItem < this.items.length; ++nItem) {
+				const item = this.items[nItem];
+				item.Write_ToBinary(writer);
+			}
+		}
+		CTextbox.prototype.Read_FromBinary = function (reader) {
+			this.m_oStyle = new CCssStyle(AscFormat.readString(reader));
+			this.m_oSingleClick = AscFormat.readBool(reader);
+
+			this.items = [];
+			const newDiv = new CDiv();
+			newDiv.Read_FromBinary(reader);
+			this.items.push(newDiv);
+		}
 
 		function CClientData() {
 			CBaseNoId.call(this);
@@ -1746,6 +1879,25 @@
 			throw new Error('CClientData.prototype.toFormControlPr not implemented');
 		};
 
+		CClientData.prototype.Write_ToBinary = function (writer) {
+			AscFormat.writeDouble(writer, this.m_oObjectType);
+			AscFormat.writeString(writer, this.m_oAnchor);
+			AscFormat.writeBool(writer, this.m_oPrintObject);
+			AscFormat.writeBool(writer, this.m_oAutoFill);
+			AscFormat.writeDouble(writer, this.m_oTextHAlign);
+			AscFormat.writeDouble(writer, this.m_oTextVAlign);
+			AscFormat.writeString(writer, this.m_oFmlaMacro);
+		}
+		CClientData.prototype.Read_FromBinary = function (reader) {
+			this.m_oObjectType = AscFormat.readDouble(reader);
+			this.m_oAnchor = AscFormat.readString(reader);
+			this.m_oPrintObject = AscFormat.readBool(reader);
+			this.m_oAutoFill = AscFormat.readBool(reader);
+			this.m_oTextHAlign = AscFormat.readDouble(reader);
+			this.m_oTextVAlign = AscFormat.readDouble(reader);
+			this.m_oFmlaMacro = AscFormat.readString(reader);
+		}
+
 		function CDiv() {
 			CBaseNoId.call(this);
 
@@ -1755,6 +1907,23 @@
 		}
 
 		IC(CDiv, CBaseNoId, 0);
+
+		CDiv.prototype.Write_ToBinary = function (writer) {
+			AscFormat.writeString(writer, this.m_oStyle.ToString());
+
+			for (let nItem = 0; nItem < this.items.length; ++nItem) {
+				const item = this.items[nItem];
+				item.Write_ToBinary(writer);
+			}
+		}
+		CDiv.prototype.Read_FromBinary = function (reader) {
+			this.m_oStyle = new CCssStyle(AscFormat.readString(reader));
+
+			this.items = []
+			const newFont = new CFont();
+			newFont.Read_FromBinary(reader);
+			this.items.push(newFont);
+		}
 
 		function CFont() {
 			CBaseNoId.call(this);
@@ -1769,6 +1938,19 @@
 		}
 
 		IC(CFont, CBaseNoId, 0);
+
+		CFont.prototype.Write_ToBinary = function (writer) {
+			AscFormat.writeString(writer, this.m_sFace);
+			AscFormat.writeDouble(writer, this.m_nSize);
+			AscFormat.writeString(writer, this.m_oColor.toString());
+			AscFormat.writeString(writer, this.m_sText);
+		}
+		CFont.prototype.Read_FromBinary = function (reader) {
+			this.m_sFace = AscFormat.readString(reader);
+			this.m_nSize = AscFormat.readDouble(reader);
+			this.m_oColor = new CColor(AscFormat.readString(reader));
+			this.m_sText = AscFormat.readString(reader);
+		}
 
 		function CFillVml() {
 			CBaseNoId.call(this);
@@ -1877,6 +2059,14 @@
 			}
 			return oFill;
 		};
+		CFillVml.prototype.Write_ToBinary = function (writer) {
+			AscFormat.writeString(writer, this.m_oColor2.toString());
+			AscFormat.writeBool(writer, this.m_oDetectMouseClick);
+		}
+		CFillVml.prototype.Read_FromBinary = function (reader) {
+			this.m_oColor2 = new CColor(AscFormat.readString(reader));
+			this.m_oDetectMouseClick = AscFormat.readBool(reader);
+		}
 
 		function CVmlVector2D(sVal) {
 			this.x = 0;

@@ -103,7 +103,7 @@ function CTable(DrawingDocument, Parent, Inline, Rows, Cols, TableGrid, bPresent
 		&& AscCommon.CollaborativeEditing
 		&& !AscCommon.CollaborativeEditing.Is_SingleUser())
 	{
-		this.Lock.Set_Type(AscCommon.locktype_Mine, false);
+		this.Lock.Set_Type(AscCommon.c_oAscLockTypes.kLockTypeMine, false);
 		AscCommon.CollaborativeEditing.Add_Unlock2(this);
 	}
 
@@ -8538,7 +8538,7 @@ CTable.prototype.Internal_Compile_Pr = function()
 	
 	let logicDocument = this.GetLogicDocument();
 	if (logicDocument && logicDocument.IsDocumentEditor())
-		Pr.TablePr.TableInd = logicDocument.Layout.calculateIndent(Pr.TablePr.TableInd, this.Get_SectPr());
+		Pr.TablePr.TableInd = logicDocument.Layout.calculateIndent(Pr.TablePr.TableInd, this);
 
 	return Pr;
 };

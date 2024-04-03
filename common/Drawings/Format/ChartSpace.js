@@ -787,12 +787,12 @@ function(window, undefined) {
 			this.extY = fMaxHeight - fDistance;
 		}
 	};
-	CLabelsBox.prototype.layoutHorRotated = function (fAxisY, fDistance, fXStart, fXEnd, fInterval, bOnTickMark) {
+	CLabelsBox.prototype.layoutHorRotated = function (fAxisY, fDistance, fXStart, fXEnd, fInterval, bOnTickMark, rot) {
 		this.bRotated = true;
 		this.align = (fDistance >= 0);
 		var bTickLblSkip = AscFormat.isRealNumber(this.axis.tickLblSkip);
 		if (bTickLblSkip) {
-			this.layoutHorRotated2(this.aLabels, fAxisY, fDistance, fXStart, fInterval, bOnTickMark);
+			this.layoutHorRotated2(this.aLabels, fAxisY, fDistance, fXStart, fInterval, bOnTickMark, rot);
 		} else {
 
 			var fAngle = Math.PI / 4.0, fMultiplier = Math.sin(fAngle);
@@ -812,7 +812,7 @@ function(window, undefined) {
 				var fInset = fMultiplier * (oSize.h);
 				fInset *= 2;
 				if (fInset <= fInterval) {
-					this.layoutHorRotated2(this.aLabels, fAxisY, fDistance, fXStart, fInterval, bOnTickMark);
+					this.layoutHorRotated2(this.aLabels, fAxisY, fDistance, fXStart, fInterval, bOnTickMark, rot);
 				} else {
 
 
@@ -831,19 +831,22 @@ function(window, undefined) {
 							}
 						}
 					}
-					this.layoutHorRotated2(aLabels, fAxisY, fDistance, fXStart, fInterval, bOnTickMark);
+					this.layoutHorRotated2(aLabels, fAxisY, fDistance, fXStart, fInterval, bOnTickMark, rot);
 				}
 			}
 		}
 
 	};
-	CLabelsBox.prototype.layoutHorRotated2 = function (aLabels, fAxisY, fDistance, fXStart, fInterval, bOnTickMark) {
+	CLabelsBox.prototype.layoutHorRotated2 = function (aLabels, fAxisY, fDistance, fXStart, fInterval, bOnTickMark, rot) {
 		this.bRotated = true;
 		this.align = (fDistance >= 0);
 		var i;
 		var fMaxHeight = 0.0;
 		var fCurX = bOnTickMark ? fXStart : fXStart + fInterval / 2.0;
-		var fAngle = Math.PI / 4.0, fMultiplier = Math.sin(fAngle);
+		// one degree of rot is equal to 60000, thus we need 360
+		let circleDegree = 180 * 60000
+		let fAngle = AscFormat.isRealNumber(rot) ? (Math.PI * rot) / circleDegree : -Math.PI / 4;
+		let fMultiplier = Math.sin(Math.PI);
 		var fMinLeft = null, fMaxRight = null;
 		for (i = 0; i < aLabels.length; ++i) {
 			if (aLabels[i]) {
@@ -872,7 +875,7 @@ function(window, undefined) {
 				var oTransform = oLabel.localTransformText;
 				oTransform.Reset();
 				global_MatrixTransformer.TranslateAppend(oTransform, -oSize.w / 2.0, -oSize.h / 2.0);
-				global_MatrixTransformer.RotateRadAppend(oTransform, fAngle);
+				global_MatrixTransformer.RotateRadAppend(oTransform, -fAngle);
 				global_MatrixTransformer.TranslateAppend(oTransform, fXC, fYC);
 				oLabel.transformText = oTransform.CreateDublicate();
 				if (null === fMinLeft || (fXC - fBoxW / 2.0) < fMinLeft) {
@@ -1120,6 +1123,13 @@ function(window, undefined) {
 		let fAxisLength = fXEnd - fXStart;
 		let nLabelsCount = oLabelsBox.aLabels.length;
 
+		// find rot responsible for the rotation of axis labels
+		const nAxisType = oLabelsBox && oLabelsBox.axis ? oLabelsBox.axis.getObjectType() : null;
+		let rot = null;
+		if (AscFormat.isRealNumber(nAxisType) && AscDFH.historyitem_type_CatAx) {
+			rot = oLabelsBox.axis.txPr && oLabelsBox.axis.txPr.bodyPr ? oLabelsBox.axis.txPr.bodyPr.rot : null
+		}
+
 		let bOnTickMark_ = bOnTickMark && nLabelsCount > 1;
 		let nIntervalCount = bOnTickMark_ ? nLabelsCount - 1 : nLabelsCount;
 		let fInterval = fAxisLength / nIntervalCount;
@@ -1160,10 +1170,24 @@ function(window, undefined) {
 					}
 				}
 			}
-			if (fMaxMinWidth <= fCheckInterval) {
+			
+			const isVertical = function (rot) {
+				// each degree has value 60000
+				// the range of rotation is [-90;90] or [-5400000:5400000]
+				const limit = 5400000
+				if (!AscFormat.isRealNumber(rot) || rot < -limit) {
+					return true;
+				}
+				if (rot === 0) {
+					return true;
+				}
+
+				return false;
+			}
+			if (fMaxMinWidth <= fCheckInterval && isVertical(rot)) {
 				oLabelsBox.layoutHorNormal(fY, fDistance, fXStart, fInterval, bOnTickMark_, fForceContentWidth_);
 			} else {
-				oLabelsBox.layoutHorRotated(fY, fDistance, fXStart, fXEnd, fInterval, bOnTickMark_);
+				oLabelsBox.layoutHorRotated(fY, fDistance, fXStart, fXEnd, fInterval, bOnTickMark_, rot);
 
 			}
 		}

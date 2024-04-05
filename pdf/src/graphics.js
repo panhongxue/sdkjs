@@ -47,7 +47,7 @@ function CPDFGraphics()
     this.globalAlpha    = 1;
     this.bIntegerGrid   = false;
 
-    this.m_oTransform  = new AscCommon.CMatrixL();
+    this.m_oTransform  = new AscCommon.CMatrix();
 
     this.drawedRect = {};
 }
@@ -76,8 +76,8 @@ CPDFGraphics.prototype.Transform = function(sx,shy,shx,sy,tx,ty)
 CPDFGraphics.prototype.Clip = function() {
     this.context.clip();
 };
-CPDFGraphics.prototype.SetIntegerGrid = function() {
-    this.bIntegerGrid = true;
+CPDFGraphics.prototype.SetIntegerGrid = function(bInteger) {
+    this.bIntegerGrid = bInteger;
 };
 CPDFGraphics.prototype.GetIntegerGrid = function() {
     return this.bIntegerGrid;

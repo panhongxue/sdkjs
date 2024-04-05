@@ -169,6 +169,7 @@ function (window, undefined) {
 	cCell.prototype.ca = true;
 	cCell.prototype.returnValueType = AscCommonExcel.cReturnFormulaType.area_to_ref;
 	cCell.prototype.argumentsType = [argType.text, argType.reference];
+	cCell.prototype.numFormat = AscCommonExcel.cNumFormatNone;
 	cCell.prototype.Calculate = function (arg, opt_bbox, opt_defName, ws) {
 		//специально ввожу ограничения - минимум 2 аргумента
 		//в случае одного аргумента необходимо следить всегда за последней измененной ячейкой
@@ -319,8 +320,17 @@ function (window, undefined) {
 				}
 				case _cCellFunctionLocal["protect"]: {
 					//default - protect, do not support on open
+					let isLocked = true;
 					cell = ws.getCell3(bbox.r1, bbox.c1);
-					if (cell.getLocked()) {
+					cell._foreachNoEmpty(function (cell) {
+						if (cell) {
+							let xfs = cell.xfs ? cell.xfs : cell.getCompiledStyle();
+							if (xfs) {
+								isLocked = xfs.getLocked();
+							}
+						}
+					});
+					if (isLocked) {
 						res = new cNumber(1);
 					} else {
 						res = new cNumber(0);

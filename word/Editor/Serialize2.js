@@ -1095,7 +1095,9 @@ var c_oSerSdt = {
 	FormPrLabel    : 46,
 	FormPrHelpText : 47,
 	FormPrRequired : 48,
-
+	
+	CheckboxGroupKey: 49,
+	
 	TextFormPr              : 50,
 	TextFormPrComb          : 51,
 	TextFormPrCombWidth     : 52,
@@ -1106,8 +1108,6 @@ var c_oSerSdt = {
 	TextFormPrAutoFit       : 57,
 	TextFormPrMultiLine     : 58,
 	TextFormPrFormat        : 59,
-
-	CheckboxGroupKey: 59,
 
 	PictureFormPr                : 60,
 	PictureFormPrScaleFlag       : 61,
@@ -1886,9 +1886,6 @@ function BinaryFileWriter(doc, bMailMergeDocx, bMailMergeHtml, isCompatible, opt
 			jsZlib.create();
 			oform.toZip(jsZlib, this.saveParams.fieldMastersPartMap);
 			let data = jsZlib.save();
-
-			let jsZlib2 = new AscCommon.ZLib();
-			jsZlib2.open(data);
 			this.WriteTable(c_oSerTableTypes.OForm, {Write: function(){
 				t.bs.WriteItemWithLength(function(){t.memory.WriteBuffer(data, 0, data.length);});
 			}});
@@ -11294,7 +11291,7 @@ function Binary_DocumentTableReader(doc, oReadResult, openParams, stream, curNot
         var oThis = this;
         if ( c_oSerParType.Par === type )
         {
-            var oNewParagraph = new Paragraph(this.Document.DrawingDocument, this.Document);
+            var oNewParagraph = new AscWord.Paragraph();
             res = this.bcr.Read1(length, function(t, l){
                 return oThis.ReadParagraph(t,l, oNewParagraph);
             });

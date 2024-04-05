@@ -803,4 +803,17 @@ window.startPluginApi = function() {
 		return true;
 	};
 
+
+	/**
+	 * registerFunction
+	 * @memberof Plugin
+	 * @alias registerFunction
+	 * @description Register custom function.
+	 * @param {string} customFunction - The custom function for register.
+	 * @since 8.1.0
+	 */
+	Plugin.registerFunction = function(customFunction)
+	{
+		this.executeMethod('RegisterFunction', [customFunction]);
+	};
 };

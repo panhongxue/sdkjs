@@ -444,9 +444,9 @@ function (window, undefined)
 		// clear this field on each run
 		delete Api.parsedJSDoc;
 		// check if we add a custom function into this macros we will parse a jsdoc
-		if (value.includes('AddCustomFunction') && value.includes('@customfunction')) {
+		if (value.includes('@customfunction')) {
 			// calculate how any times the function of adding will be called
-			const countOfAdding = (value.match(/\.AddCustomFunction\(/g) || []).length;
+			const countOfAdding = (value.toLocaleLowerCase().match(/@customfunction/g) || []).length;
 			// parse JSDOC and put it to Api
 			Api.parsedJSDoc = AscCommon.parseJSDoc(value);
 			// remove extra parsed JSDOC

@@ -1982,4 +1982,25 @@
 	{
 		this.sendEvent("asc_onPluginWindowMouseMove", frameId, x, y);
 	};
+
+	/**
+	 * Register custom function.
+	 * @memberof Api
+	 * @typeofeditors ["CSE"]
+	 * @alias RegisterFunction
+	 * @description Register custom function.
+	 * @param {string} customFunction - The custom function for register.
+     * @returns {boolean} - Returns false if the custom function has not been added.
+	 * @since 8.1.0
+	 */
+	Api.prototype["pluginMethod_RegisterFunction"] = function(customFunction)
+	{
+		if(!this.AddCustomFunction || typeof customFunction !== "string" || !customFunction.includes("@customfunction") || !AscCommon.isValidJs(customFunction))
+			return false;
+
+		// we should use an anonymous self-calling function
+		const res = AscCommon.safePluginEval(customFunction);
+		this.AddCustomFunction(res);
+		return true;
+	};
 })(window);

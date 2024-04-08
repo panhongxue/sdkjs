@@ -861,8 +861,12 @@ function(window, undefined) {
 		const maxBoxWidth = heightMultiplier * maxHeight;
 		const rotatedMaxWidth = (cosAlpha + sinAlpha) * maxBoxWidth;
 		var fMinLeft = null, fMaxRight = null;
-		const scliceLabel = function (oLabel, maxWidth) {
-			const contents = oLabel.txBody.content.Content[0].Content;
+		const sliceLabel = function (oLabel, maxWidth) {
+			const contents = oLabel && oLabel.txBody && oLabel.txBody.content && oLabel.txBody.content.Content && Array.isAttay(oLabel.txBody.content.Content) ? oLabel.txBody.content.Content[0].Content : null;
+			if (!contents) {
+				return;
+			}
+
 			let trueContents = null;
 			for (let i = 0; i < contents.length; i++) {
 				if (contents[i].Content.length != 0) {
@@ -871,14 +875,17 @@ function(window, undefined) {
 				}
 			}
 
+			// remove all characters after maxWidth achieved
 			if (trueContents) {
 				let sum = 0;
 				let i = 0;
+				// add the sizes of each element, to find the index of last possible element
 				while (sum < maxWidth && i < trueContents.length) {
 					const width = trueContents[i].GetWidth(oLabel.txPr);
 					sum += width;
 					i++;
 				}
+				//count items that must be removed
 				const countItems = trueContents.length - i;
 				trueContents.splice(i, countItems);
 				console.log(trueContents);
@@ -888,7 +895,7 @@ function(window, undefined) {
 		for (i = 0; i < aLabels.length; ++i) {
 			if (aLabels[i]) {
 				var oLabel = aLabels[i];
-				scliceLabel(oLabel, rotatedMaxWidth);
+				sliceLabel(oLabel, rotatedMaxWidth);
 				var oContent = oLabel.tx.rich.content;
 				oContent.SetApplyToAll(true);
 				oContent.SetParagraphAlign(AscCommon.align_Left);

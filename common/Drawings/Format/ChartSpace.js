@@ -862,7 +862,7 @@ function(window, undefined) {
 		const rotatedMaxWidth = (cosAlpha + sinAlpha) * maxBoxWidth;
 		var fMinLeft = null, fMaxRight = null;
 		const sliceLabel = function (oLabel, maxWidth) {
-			const contents = oLabel && oLabel.txBody && oLabel.txBody.content && oLabel.txBody.content.Content && Array.isAttay(oLabel.txBody.content.Content) ? oLabel.txBody.content.Content[0].Content : null;
+			const contents = oLabel && oLabel.txBody && oLabel.txBody.content && oLabel.txBody.content.Content && Array.isArray(oLabel.txBody.content.Content) ? oLabel.txBody.content.Content[0].Content : null;
 			if (!contents) {
 				return;
 			}

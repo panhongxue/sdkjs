@@ -1717,7 +1717,89 @@ CHistory.prototype.private_PostProcessingRecalcData = function()
 				point.Items.push(items[index]);
 			}
 		}
-	};	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	};
+	/**
+	 * Проверяем лок для последних нескольких точек
+	 * @param pointCount
+	 */
+	CHistory.prototype.checkLock = function(pointCount)
+	{
+		if (!pointCount || pointCount - 1 > this.Index)
+			return;
+		
+		let checkFormLockCounter = 1;
+		
+		let lockData = {
+			document : this.Document,
+			locked   : false,
+			
+			
+			isFillingForm : function()
+			{
+				return this.document.IsFillingFormMode();
+			},
+			
+			lock : function()
+			{
+				AscCommon.CollaborativeEditing.Add_CheckLock(true);
+				this.locked = true;
+			},
+			
+			isLocked : function()
+			{
+				return this.locked;
+			},
+			
+			isSkipFormCheck : function()
+			{
+				return checkFormLockCounter <= 0;
+			}
+		};
+		
+		for (let pointIndex = 0; pointIndex < pointCount; ++pointIndex)
+		{
+			let point = this.Points[this.Index - pointIndex];
+			let checkFormLockArray = point.Additional && point.Additional.FormFillingLockCheck ? point.Additional.FormFillingLockCheck : [];
+			let checkFormLockPos   = 0;
+			
+			checkFormLockCounter = 1;
+			
+			for (let changeIndex = 0; changeIndex < point.Items.length; ++changeIndex)
+			{
+				while (checkFormLockPos < checkFormLockArray.length && checkFormLockArray[checkFormLockPos][0] <= changeIndex)
+				{
+					checkFormLockCounter += checkFormLockArray[checkFormLockPos][1];
+					++checkFormLockPos;
+				}
+				
+				point.Items[changeIndex].Data.CheckLock(lockData);
+				if (lockData.isLocked())
+					return;
+			}
+		}
+	};
+	/**
+	 * Помечаем изменения, в которых не нужно проверять возможность заполнения форм в проверке на лок
+	 * @param isSkip
+	 */
+	CHistory.prototype.skipFormFillingLockCheck = function(isSkip)
+	{
+		if (this.Index < 0)
+			return;
+		
+		let point = this.Points[this.Index];
+		if (!point.Additional)
+			point.Additional = {};
+		
+		if (!point.Additional.FormFillingLockCheck)
+			point.Additional.FormFillingLockCheck = [];
+		
+		if (isSkip)
+			point.Additional.FormFillingLockCheck.push([point.Items.length, -1]);
+		else
+			point.Additional.FormFillingLockCheck.push([point.Items.length, 1]);
+	};
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Private area
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	CHistory.prototype.private_UndoPoint = function(point, changes)

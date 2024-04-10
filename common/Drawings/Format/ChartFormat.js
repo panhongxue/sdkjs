@@ -168,9 +168,6 @@
     drawingsChangesMap[AscDFH.historyitem_AreaSeries_SetDLbls] = function(oClass, value) {
         oClass.dLbls = value;
     };
-    drawingsChangesMap[AscDFH.historyitem_AreaSeries_SetErrBars] = function(oClass, value) {
-        oClass.errBars = value;
-    };
     drawingsChangesMap[AscDFH.historyitem_AreaSeries_SetIdx] = function(oClass, value) {
         oClass.idx = value;
     };
@@ -453,9 +450,6 @@
     drawingsChangesMap[AscDFH.historyitem_BarSeries_SetDLbls] = function(oClass, value) {
         oClass.dLbls = value;
     };
-    drawingsChangesMap[AscDFH.historyitem_BarSeries_SetErrBars] = function(oClass, value) {
-        oClass.errBars = value;
-    };
     drawingsChangesMap[AscDFH.historyitem_BarSeries_SetIdx] = function(oClass, value) {
         oClass.idx = value;
     };
@@ -507,9 +501,6 @@
     };
     drawingsChangesMap[AscDFH.historyitem_BubbleSeries_SetDLbls] = function(oClass, value) {
         oClass.dLbls = value;
-    };
-    drawingsChangesMap[AscDFH.historyitem_BubbleSeries_SetErrBars] = function(oClass, value) {
-        oClass.errBars = value;
     };
     drawingsChangesMap[AscDFH.historyitem_BubbleSeries_SetIdx] = function(oClass, value) {
         oClass.idx = value;
@@ -775,9 +766,6 @@
     drawingsChangesMap[AscDFH.historyitem_LineSeries_SetDLbls] = function(oClass, value) {
         oClass.dLbls = value;
     };
-    drawingsChangesMap[AscDFH.historyitem_LineSeries_SetErrBars] = function(oClass, value) {
-        oClass.errBars = value;
-    };
     drawingsChangesMap[AscDFH.historyitem_LineSeries_SetIdx] = function(oClass, value) {
         oClass.idx = value;
     };
@@ -997,9 +985,6 @@
     };
     drawingsChangesMap[AscDFH.historyitem_ScatterSer_SetDLbls] = function(oClass, value) {
         oClass.dLbls = value;
-    };
-    drawingsChangesMap[AscDFH.historyitem_ScatterSer_SetErrBars] = function(oClass, value) {
-        oClass.errBars = value;
     };
     drawingsChangesMap[AscDFH.historyitem_ScatterSer_SetIdx] = function(oClass, value) {
         oClass.idx = value;
@@ -1889,6 +1874,7 @@
     AscDFH.changesFactory[AscDFH.historyitem_CommonChart_RemoveSeries] = window['AscDFH'].CChangesDrawingsContent;
     AscDFH.changesFactory[AscDFH.historyitem_CommonChart_AddSeries] = window['AscDFH'].CChangesDrawingsContent;
     AscDFH.changesFactory[AscDFH.historyitem_CommonChart_AddFilteredSeries] = window['AscDFH'].CChangesDrawingsContent;
+    AscDFH.changesFactory[AscDFH.historyitem_CommonChart_AddErrBars] = window['AscDFH'].CChangesDrawingsContent;
     AscDFH.changesFactory[AscDFH.historyitem_CommonChart_RemoveFilteredSeries] = window['AscDFH'].CChangesDrawingsContent;
     AscDFH.changesFactory[AscDFH.historyitem_BarChart_AddAxId] = window['AscDFH'].CChangesDrawingsContent;
     AscDFH.changesFactory[AscDFH.historyitem_CommonChart_AddAxId] = window['AscDFH'].CChangesDrawingsContent;
@@ -2042,6 +2028,9 @@
         drawingContentChanges[AscDFH.historyitem_CommonChart_RemoveFilteredSeries] = function(oClass) {
             return oClass.filteredSeries;
         };
+    drawingContentChanges[AscDFH.historyitem_CommonChart_AddErrBars] = function(oClass) {
+        return oClass.errBars;
+    };
 
     drawingContentChanges[AscDFH.historyitem_AreaSeries_SetDPt] =
         drawingContentChanges[AscDFH.historyitem_CommonSeries_RemoveDPt] =
@@ -3646,6 +3635,7 @@
         this.tx = null;
         this.spPr = null;
 		this.datalabelsRange = null;
+        this.errBars = [];
     }
 
     InitClass(CSeriesBase, CBaseChartObject, AscDFH.historyitem_type_Unknown);
@@ -3665,8 +3655,8 @@
         if(this.tx) {
             this.tx.clearDataCache();
         }
-        if(this.errBars) {
-            this.errBars.clearDataCache();
+        for(let nIdx = 0; nIdx < this.errBars.length; ++nIdx) {
+            this.errBars[nIdx].clearDataCache();
         }
     };
     CSeriesBase.prototype.updateData = function(displayEmptyCellsAs, displayHidden) {
@@ -3685,8 +3675,8 @@
         if(this.tx) {
             this.tx.updateWithHistory();
         }
-        if(this.errBars) {
-            this.errBars.updateWithHistory();
+        for(let nIdx = 0; nIdx < this.errBars.length; ++nIdx) {
+            this.errBars[nIdx].updateWithHistory();
         }
     };
     CSeriesBase.prototype.Refresh_RecalcData = function(oData) {
@@ -3724,8 +3714,36 @@
         this.datalabelsRange = val;
         this.setParentToChild(val);
     };
+    CSeriesBase.prototype.addErrBars = function(pr, idx) {
+        let pos;
+        if(AscFormat.isRealNumber(idx))
+            pos = idx;
+        else
+            pos = this.errBars.length;
+        History.CanAddChanges() && History.Add(new CChangesDrawingsContent(this, AscDFH.historyitem_CommonChart_AddErrBars, pos, [pr], true));
+        this.errBars.splice(pos, 0, pr);
+        this.setParentToChild(pr);
+    };
+    CSeriesBase.prototype.addErrBarsArray = function(aErrBars) {
+        if(!Array.isArray(aErrBars))
+            return;
+        for(let nIdx = 0; nIdx < aErrBars.length; ++nIdx) {
+            this.addErrBars(aErrBars[nIdx]);
+        }
+    };
+
+    CSeriesBase.prototype.removeErrBars = function(idx) {
+        if(this.errBars[idx]) {
+            this.errBars[idx].setParent(null);
+            History.CanAddChanges() && History.Add(new CChangesDrawingsContent(this, AscDFH.historyitem_CommonChart_AddErrBars, idx, this.errBars.splice(idx, 1), false));
+        }
+    };
     CSeriesBase.prototype.getChildren = function() {
-        return [this.spPr, this.tx, this.cat || this.xVal, this.val || this.yVal];
+        let aResult = [this.spPr, this.tx, this.cat || this.xVal, this.val || this.yVal];
+        for (let nIdx = 0; nIdx < this.errBars.length; ++nIdx) {
+            aResult.push(this.errBars[nIdx]);
+        }
+        return aResult;
     };
     CSeriesBase.prototype.fillObject = function(oCopy, oIdMap) {
         if(AscFormat.isRealNumber(this.idx)) {
@@ -3769,6 +3787,9 @@
         var oVal = this.val || this.yVal;
         if(AscCommon.isRealObject(oVal)) {
             oCopy.setVal(oVal.createDuplicate());
+        }
+        for(let nIdx = 0; nIdx < this.errBars.length; ++nIdx) {
+            oCopy.addErrBars(this.errBars[nIdx].createDuplicate());
         }
     };
     CSeriesBase.prototype.getSeriesName = function() {
@@ -4020,18 +4041,19 @@
         return new CDataRefs([]);
     };
     CSeriesBase.prototype.getErrBarsMinusDataRefs = function() {
-        var oVal = this.errBars;
-        if(oVal) {
-            return oVal.getMinusDataRefs();
+        let aRes = [];
+        for(let nIdx = 0; nIdx < this.errBars.length; ++nIdx) {
+            aRes.push(this.errBars[nIdx].getMinusDataRefs())
         }
-        return new CDataRefs([]);
+        return aRes;
     };
     CSeriesBase.prototype.getErrBarsPlusDataRefs = function() {
-        var oVal = this.errBars;
-        if(oVal) {
-            return oVal.getPlusDataRefs();
+
+        let aRes = [];
+        for(let nIdx = 0; nIdx < this.errBars.length; ++nIdx) {
+            aRes.push(this.errBars[nIdx].getPlusDataRefs())
         }
-        return new CDataRefs([]);
+        return aRes;
     };
     CSeriesBase.prototype.collectRefs = function(oSource, aRefs) {
         if(oSource) {
@@ -4188,8 +4210,9 @@
         if(this.tx) {
             this.tx.handleOnChangeSheetName(sOldSheetName, sNewSheetName);
         }
-        if(this.errBars) {
-            this.errBars.handleOnChangeSheetName(sOldSheetName, sNewSheetName);
+
+        for(let nIdx = 0; nIdx < this.errBars.length; ++nIdx) {
+            this.errBars[nIdx].handleOnChangeSheetName(sOldSheetName, sNewSheetName);
         }
     };
     CSeriesBase.prototype.fillFromAscSeries = function(oAscSeries, bUseCache) {
@@ -4338,8 +4361,8 @@
         if(this.dLbls) {
             this.dLbls.applyChartStyle(oChartStyle, oColors, oAdditionalData, bReset);
         }
-        if(this.errBars) {
-            this.errBars.applyChartStyle(oChartStyle, oColors, oAdditionalData, bReset);
+        for(let nIdx = 0; nIdx < this.errBars.length; ++nIdx) {
+            this.errBars[nIdx].applyChartStyle(oChartStyle, oColors, oAdditionalData, bReset);
         }
         if(this.trendline) {
             this.trendline.applyChartStyle(oChartStyle, oColors, oAdditionalData, bReset);
@@ -4444,8 +4467,18 @@
             arrPt[0].setParent(null);
         }
     };
-    CSeriesBase.prototype.getErrBars = function() {
-        return this.errBars || null;
+    CSeriesBase.prototype.getErrBarById = function(errBarrId) {
+        if (this.errBars) {
+            for (let i = 0; i < this.errBars.length; i++) {
+                if (this.errBars[i].Id === errBarrId) {
+                    return this.errBars[i];
+                }
+            }
+        }
+        return null;
+    };
+    CSeriesBase.prototype.getErrBars = function(errBarrId) {
+        return this.errBars;
     };
 	CSeriesBase.prototype.checkSeriesAfterChangeType = function() {
 
@@ -7445,7 +7478,6 @@
         this.cat = null;
         this.dLbls = null;
         this.dPt = [];
-        this.errBars = null;
         this.pictureOptions = null;
         this.trendline = null;
         this.val = null;
@@ -7455,7 +7487,6 @@
     CAreaSeries.prototype.getChildren = function() {
         var aRet = CSeriesBase.prototype.getChildren.call(this);
         aRet.push(this.dLbls);
-        aRet.push(this.errBars);
         aRet.push(this.pictureOptions);
         aRet.push(this.trendline);
         for(var nDpt = 0; nDpt < this.dPt.length; ++nDpt) {
@@ -7465,8 +7496,6 @@
     };
     CAreaSeries.prototype.fillObject = function(oCopy, oIdMap) {
         CSeriesBase.prototype.fillObject.call(this, oCopy, oIdMap);
-        if(this.errBars && oCopy.setErrBars)
-            oCopy.setErrBars(this.errBars.createDuplicate());
         if(this.pictureOptions && oCopy.setPictureOptions)
             oCopy.setPictureOptions(this.pictureOptions.createDuplicate());
         if(this.trendline && oCopy.setTrendline)
@@ -7486,11 +7515,6 @@
     CAreaSeries.prototype.addDPt = function(pr) {
         History.CanAddChanges() && History.Add(new CChangesDrawingsContent(this, AscDFH.historyitem_AreaSeries_SetDPt, this.dPt.length, [pr], true));
         this.dPt.push(pr);
-        this.setParentToChild(pr);
-    };
-    CAreaSeries.prototype.setErrBars = function(pr) {
-        History.CanAddChanges() && History.Add(new CChangesDrawingsObject(this, AscDFH.historyitem_AreaSeries_SetErrBars, this.errBars, pr));
-        this.errBars = pr;
         this.setParentToChild(pr);
     };
     CAreaSeries.prototype.setPictureOptions = function(pr) {
@@ -8970,7 +8994,6 @@
         this.cat = null;
         this.dLbls = null;
         this.dPt = [];
-        this.errBars = null;
         this.invertIfNegative = null;
         this.pictureOptions = null;
         this.shape = null;
@@ -8985,15 +9008,12 @@
         for(var nDpt = 0; nDpt < this.dPt.length; ++nDpt) {
             aRet.push(this.dPt[nDpt]);
         }
-        aRet.push(this.errBars);
         aRet.push(this.pictureOptions);
         aRet.push(this.trendline);
         return aRet;
     };
     CBarSeries.prototype.fillObject = function(oCopy, oIdMap) {
         CSeriesBase.prototype.fillObject.call(this, oCopy, oIdMap);
-        if(oCopy.setErrBars && this.errBars)
-            oCopy.setErrBars(this.errBars.createDuplicate());
         if(oCopy.setInvertIfNegative && AscFormat.isRealBool(this.invertIfNegative))
             oCopy.setInvertIfNegative(this.invertIfNegative);
         if(oCopy.setPictureOptions && this.pictureOptions)
@@ -9017,11 +9037,6 @@
     CBarSeries.prototype.addDPt = function(pr) {
         History.CanAddChanges() && History.Add(new CChangesDrawingsContent(this, AscDFH.historyitem_BarSeries_SetDPt, this.dPt.length, [pr], true));
         this.dPt.push(pr);
-        this.setParentToChild(pr);
-    };
-    CBarSeries.prototype.setErrBars = function(pr) {
-        History.CanAddChanges() && History.Add(new CChangesDrawingsObject(this, AscDFH.historyitem_BarSeries_SetErrBars, this.errBars, pr));
-        this.errBars = pr;
         this.setParentToChild(pr);
     };
     CBarSeries.prototype.setInvertIfNegative = function(pr) {
@@ -9122,8 +9137,10 @@
                 scatterSer.setDLbls(bubbleSer.dLbls);
             if (null != bubbleSer.trendline)
                 scatterSer.setTrendline(bubbleSer.trendline);
-            if (null != bubbleSer.errBars)
-                scatterSer.setErrBars(bubbleSer.errBars);
+
+            for (var j = 0, length2 = bubbleSer.errBars.length; j < length2; ++j) {
+                scatterSer.addErrBars(bubbleSer.errBars[j]);
+            }
             if (null != bubbleSer.xVal)
                 scatterSer.setXVal(bubbleSer.xVal);
             if (null != bubbleSer.yVal)
@@ -9148,7 +9165,6 @@
         this.bubbleSize = null;
         this.dLbls = null;
         this.dPt = [];
-        this.errBars = null;
         this.invertIfNegative = null;
         this.trendline = null;
         this.xVal = null;
@@ -9163,7 +9179,6 @@
         for(var nDpt = 0; nDpt < this.dPt.length; ++nDpt) {
             aRet.push(this.dPt[nDpt]);
         }
-        aRet.push(this.errBars);
         aRet.push(this.trendline);
         return aRet;
     };
@@ -9174,9 +9189,6 @@
         }
         if(oCopy.setBubbleSize && this.bubbleSize) {
             oCopy.setBubbleSize(this.bubbleSize.createDuplicate());
-        }
-        if(oCopy.setErrBars && this.errBars) {
-            oCopy.setErrBars(this.errBars.createDuplicate());
         }
         if(oCopy.setInvertIfNegative && AscFormat.isRealBool(this.invertIfNegative)) {
             oCopy.setInvertIfNegative(this.invertIfNegative);
@@ -9202,11 +9214,6 @@
     CBubbleSeries.prototype.addDPt = function(pr) {
         History.CanAddChanges() && History.Add(new CChangesDrawingsContent(this, AscDFH.historyitem_BubbleSeries_SetDPt, this.dPt.length, [pr], true));
         this.dPt.push(pr);
-        this.setParentToChild(pr);
-    };
-    CBubbleSeries.prototype.setErrBars = function(pr) {
-        History.CanAddChanges() && History.Add(new CChangesDrawingsObject(this, AscDFH.historyitem_BubbleSeries_SetErrBars, this.errBars, pr));
-        this.errBars = pr;
         this.setParentToChild(pr);
     };
     CBubbleSeries.prototype.setInvertIfNegative = function(pr) {
@@ -10277,12 +10284,12 @@
         return false;
     };
     CLegend.prototype.draw = function(g) {
-        g.bDrawSmart = true;
+        g.IsDrawSmart = true;
         CShape.prototype.draw.call(this, g);
         for(var i = 0; i < this.calcEntryes.length; ++i) {
             this.calcEntryes[i].draw(g);
         }
-        g.bDrawSmart = false;
+        g.IsDrawSmart = false;
     };
     CLegend.prototype.hit = function(x, y) {
         var t_x = this.invertTransform.TransformPointX(x, y);
@@ -10873,7 +10880,6 @@
         this.cat = null;
         this.dLbls = null;
         this.dPt = [];
-        this.errBars = null;
         this.marker = null;
         this.smooth = null;
         this.trendline = null;
@@ -10887,15 +10893,12 @@
             aRet.push(this.dPt[nDpt]);
         }
         aRet.push(this.dLbls);
-        aRet.push(this.errBars);
         aRet.push(this.marker);
         aRet.push(this.trendline);
         return aRet;
     };
     CLineSeries.prototype.fillObject = function(oCopy, oIdMap) {
         CSeriesBase.prototype.fillObject.call(this, oCopy, oIdMap);
-        if(oCopy.setErrBars && this.errBars)
-            oCopy.setErrBars(this.errBars.createDuplicate());
         if(oCopy.setMarker && this.marker)
             oCopy.setMarker(this.marker.createDuplicate());
         if(oCopy.setSmooth && AscFormat.isRealBool(this.smooth))
@@ -10919,11 +10922,6 @@
     CLineSeries.prototype.addDPt = function(pr) {
         History.CanAddChanges() && History.Add(new CChangesDrawingsContent(this, AscDFH.historyitem_LineSeries_SetDPt, this.dPt.length, [pr], true));
         this.dPt.push(pr);
-        this.setParentToChild(pr);
-    };
-    CLineSeries.prototype.setErrBars = function(pr) {
-        History.CanAddChanges() && History.Add(new CChangesDrawingsObject(this, AscDFH.historyitem_LineSeries_SetErrBars, this.errBars, pr));
-        this.errBars = pr;
         this.setParentToChild(pr);
     };
     CLineSeries.prototype.setMarker = function(pr) {
@@ -12397,7 +12395,7 @@
 
     InitClass(CPivotFmt, CBaseChartObject, AscDFH.historyitem_type_PivotFmt);
     CPivotFmt.prototype.getChildren = function() {
-        var aRet = CSeriesBase.prototype.getChildren.call(this);
+        let aRet = [];
         aRet.push(this.dLbl);
         aRet.push(this.marker);
         aRet.push(this.spPr);
@@ -12652,7 +12650,7 @@
 
     InitClass(CRadarSeries, CLineSeries, AscDFH.historyitem_type_RadarSeries);
     CRadarSeries.prototype.getChildren = function() {
-        var aRet = CSeriesBase.prototype.getChildren(this);
+        var aRet = CSeriesBase.prototype.getChildren.call(this);
         aRet.push(this.dLbls);
         for(var i = 0; i < this.dPt.length; ++i) {
             aRet.push(this.dPt[i]);
@@ -13082,7 +13080,6 @@
         CSeriesBase.call(this);
         this.dLbls = null;
         this.dPt = [];
-        this.errBars = null;
         this.marker = null;
         this.smooth = null;
         this.trendline = null;
@@ -13093,9 +13090,6 @@
     InitClass(CScatterSeries, CSeriesBase, AscDFH.historyitem_type_ScatterSer);
     CScatterSeries.prototype.fillObject = function(oCopy, oIdMap) {
         CSeriesBase.prototype.fillObject.call(this, oCopy, oIdMap);
-        if(this.errBars && oCopy.setErrBars) {
-            oCopy.setErrBars(this.errBars.createDuplicate());
-        }
         if(this.marker && oCopy.setMarker) {
             oCopy.setMarker(this.marker.createDuplicate());
         }
@@ -13112,7 +13106,6 @@
         for(var i = 0; i < this.dPt.length; ++i) {
             aRet.push(this.dPt[i]);
         }
-        aRet.push(this.errBars);
         aRet.push(this.marker);
         aRet.push(this.trendline);
         return aRet;
@@ -13125,11 +13118,6 @@
     CScatterSeries.prototype.addDPt = function(pr) {
         History.CanAddChanges() && History.Add(new CChangesDrawingsContent(this, AscDFH.historyitem_ScatterSer_SetDPt, this.dPt.length, [pr], true));
         this.dPt.push(pr);
-        this.setParentToChild(pr);
-    };
-    CScatterSeries.prototype.setErrBars = function(pr) {
-        History.CanAddChanges() && History.Add(new CChangesDrawingsObject(this, AscDFH.historyitem_ScatterSer_SetErrBars, this.errBars, pr));
-        this.errBars = pr;
         this.setParentToChild(pr);
     };
     CScatterSeries.prototype.setMarker = function(pr) {
@@ -17223,8 +17211,8 @@
             this.val = new CDataRefs([]);
             this.cat = new CDataRefs([]);
             this.tx = new CDataRefs([]);
-            this.errBarsMinus = new CDataRefs([]);
-            this.errBarsPlus = new CDataRefs([]);
+            this.errBarsMinus = [];
+            this.errBarsPlus = [];
         }
         this.series = oSeries;
     }
@@ -17362,11 +17350,15 @@
         if(this.tx.hasIntersection(oRange)) {
             return true;
         }
-        if(this.errBarsMinus.hasIntersection(oRange)) {
-            return true;
+        for(let nIdx = 0; nIdx < this.errBarsMinus.length; ++nIdx) {
+            if(this.errBarsMinus[nIdx].hasIntersection(oRange)) {
+                return true;
+            }
         }
-        if(this.errBarsPlus.hasIntersection(oRange)) {
-            return true;
+        for(let nIdx = 0; nIdx < this.errBarsPlus.length; ++nIdx) {
+            if(this.errBarsPlus[nIdx].hasIntersection(oRange)) {
+                return true;
+            }
         }
         return false;
     };
@@ -17374,8 +17366,13 @@
         this.val.collectBoundsByWS(oBounds);
         this.cat.collectBoundsByWS(oBounds);
         this.tx.collectBoundsByWS(oBounds);
-        this.errBarsMinus.collectBoundsByWS(oBounds);
-        this.errBarsPlus.collectBoundsByWS(oBounds);
+
+        for(let nIdx = 0; nIdx < this.errBarsMinus.length; ++nIdx) {
+            this.errBarsMinus[nIdx].collectBoundsByWS(oBounds);
+        }
+        for(let nIdx = 0; nIdx < this.errBarsPlus.length; ++nIdx) {
+            this.errBarsPlus[nIdx].collectBoundsByWS(oBounds);
+        }
     };
     CSeriesDataRefs.prototype.collectRefsInsideRange = function(oRange, aRefs) {
         if(!this.series) {
@@ -17387,15 +17384,24 @@
         this.val.collectRefsInsideRange(oRange, aRefs);
         this.cat.collectRefsInsideRange(oRange, aRefs);
         this.tx.collectRefsInsideRange(oRange, aRefs);
-        this.errBarsMinus.collectRefsInsideRange(oRange, aRefs);
-        this.errBarsPlus.collectRefsInsideRange(oRange, aRefs);
+
+        for(let nIdx = 0; nIdx < this.errBarsMinus.length; ++nIdx) {
+            this.errBarsMinus[nIdx].collectRefsInsideRange(oRange, aRefs);
+        }
+        for(let nIdx = 0; nIdx < this.errBarsPlus.length; ++nIdx) {
+            this.errBarsPlus[nIdx].collectRefsInsideRange(oRange, aRefs);
+        }
     };
     CSeriesDataRefs.prototype.collectIntersectionRefs = function(aRanges, aCollectedRefs) {
         this.val.collectIntersectionRefs(aRanges, aCollectedRefs);
         this.cat.collectIntersectionRefs(aRanges, aCollectedRefs);
         this.tx.collectIntersectionRefs(aRanges, aCollectedRefs);
-        this.errBarsMinus.collectIntersectionRefs(aRanges, aCollectedRefs);
-        this.errBarsPlus.collectIntersectionRefs(aRanges, aCollectedRefs);
+        for(let nIdx = 0; nIdx < this.errBarsMinus.length; ++nIdx) {
+            this.errBarsMinus[nIdx].collectIntersectionRefs(aRanges, aCollectedRefs);
+        }
+        for(let nIdx = 0; nIdx < this.errBarsPlus.length; ++nIdx) {
+            this.errBarsPlus[nIdx].collectIntersectionRefs(aRanges, aCollectedRefs);
+        }
     };
     CSeriesDataRefs.prototype.collectIntersectionRefsForInsertColRow = function(oRange, aCollectedRefs, isInsertCol) {
         this.val.collectRefsIntersectsForInsertColRow(oRange, aCollectedRefs, isInsertCol);

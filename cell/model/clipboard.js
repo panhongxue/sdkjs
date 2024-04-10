@@ -3192,6 +3192,15 @@
 				var oBinaryFileReader = new AscCommonWord.BinaryFileReader(newCDocument, openParams);
 				var oRes = oBinaryFileReader.ReadFromString(sBase64, {excelCopyPaste: true});
 
+				//check parents
+				if (oRes.content) {
+					for (let i = 0; i < oRes.content.length; i++) {
+						if (oRes.content[i] && oRes.content[i].Parent == null) {
+							oRes.content[i].Parent = newCDocument;
+						}
+					}
+				}
+
 				var defrPr = oBinaryFileReader.oReadResult && oBinaryFileReader.oReadResult.DefrPr;
 				if (defrPr && newCDocument.Styles && newCDocument.Styles.Default && newCDocument.Styles.Default.TextPr) {
 					newCDocument.Styles.Default.TextPr.FontSize = defrPr.FontSize;
@@ -3314,7 +3323,7 @@
 			},
 
 			_convertTableFromExcelToDocument: function (worksheet, aContentExcel, documentContent) {
-				var oCurPar = new Paragraph(worksheet.getDrawingDocument(), documentContent);
+				var oCurPar = new AscWord.Paragraph(documentContent);
 
 				var getElem = function (text, format, isAddSpace, isHyperLink) {
 					var result = null;
@@ -3481,7 +3490,7 @@
 						isIntoShape.Remove(1, true, true);
 						var Count = text.length;
 
-						var newParagraph = new Paragraph(isIntoShape.DrawingDocument, isIntoShape);
+						var newParagraph = new AscWord.Paragraph(isIntoShape);
 						var selectedElements = new AscCommonWord.CSelectedContent();
 						var insertText = "";
 						for (var Index = 0; Index < Count; Index++) {
@@ -3501,7 +3510,7 @@
 								selectedElements.Elements.push(selectedElement);
 
 								insertText = "";
-								newParagraph = new Paragraph(isIntoShape.DrawingDocument, isIntoShape);
+								newParagraph = new AscWord.Paragraph(isIntoShape);
 							}
 						}
 

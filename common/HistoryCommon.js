@@ -2310,6 +2310,7 @@
 	window['AscDFH'].historyitem_CommonChart_AddFilteredSeries    = window['AscDFH'].historyitem_type_CommonShape | 313;
 	window['AscDFH'].historyitem_CommonChart_RemoveFilteredSeries = window['AscDFH'].historyitem_type_CommonShape | 314;
 	window['AscDFH'].historyitem_CommonChart_DataLabelsRange      = window['AscDFH'].historyitem_type_CommonShape | 315;
+	window['AscDFH'].historyitem_CommonChart_AddErrBars           = window['AscDFH'].historyitem_type_CommonShape | 316;
 
 	window['AscDFH'].historyitem_Common_AddWatermark = window['AscDFH'].historyitem_type_CommonShape | 401;
 	//------------------------------------------------------------------------------------------------------------------
@@ -4510,6 +4511,7 @@
 	window['AscDFH'].historydescription_Document_UpdateCharts                       = 0x01b0;
 	window['AscDFH'].historydescription_Document_ChangeExternalChartReference       = 0x01b1;
 	window['AscDFH'].historydescription_Document_RemoveExternalChartReferences      = 0x01b2;
+	window['AscDFH'].historydescription_BuilderScript                               = 0x01b3;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4625,6 +4627,9 @@
 	CChangesBase.prototype.IsDescriptionChange = function()
 	{
 		return false;
+	};
+	CChangesBase.prototype.CheckLock = function(lockData)
+	{
 	};
 	window['AscDFH'].CChangesBase = CChangesBase;
 	/**

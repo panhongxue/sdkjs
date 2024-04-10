@@ -326,6 +326,11 @@
 	//внутри пока простой объект {groups: true}
 	this.drawRestrictions = null;
 
+	//for version history - changed ranges
+	this.oHistoryChangedRanges = null;
+
+	this.customFunctionEngine = null;
+
 	return this;
   }
 
@@ -1978,9 +1983,9 @@
     var ct = ws.getCursorTypeFromXY(x, y);
 
     if (ct.target === c_oTargetType.FillHandle) {
-		ws.applyFillHandleDoubleClick();
-    	asc_applyFunction(callback);
-	} else if (ct.target === c_oTargetType.ColumnResize || ct.target === c_oTargetType.RowResize) {
+        ws.applyFillHandleDoubleClick();
+        asc_applyFunction(callback);
+    } else if (ct.target === c_oTargetType.ColumnResize || ct.target === c_oTargetType.RowResize) {
       if (ct.target === c_oTargetType.ColumnResize) {
       	ws.autoFitColumnsWidth(ct.col);
       } else {
@@ -1990,8 +1995,9 @@
     } else {
       // In view mode or click on column | row | all | frozenMove | drawing object do not process
       if (!this.canEdit() || c_oTargetType.ColumnHeader === ct.target || c_oTargetType.RowHeader === ct.target ||
-		  c_oTargetType.Corner === ct.target || c_oTargetType.FrozenAnchorH === ct.target ||
-		  c_oTargetType.FrozenAnchorV === ct.target || ws.objectRender.checkCursorDrawingObject(x, y)) {
+          c_oTargetType.Corner === ct.target || c_oTargetType.FrozenAnchorH === ct.target ||
+          c_oTargetType.FrozenAnchorV === ct.target || ws.objectRender.checkCursorDrawingObject(x, y) ||
+          c_oTargetType.ColumnRowHeaderMove === ct.target) {
         asc_applyFunction(callback);
         return;
       }
@@ -4049,6 +4055,10 @@
     this.arrExcludeFormulas = [cBoolLocal.t, cBoolLocal.f];
   };
 
+  WorkbookView.prototype.addToFormulasList = function(func) {
+    this.formulasList.push(func);
+  };
+
   WorkbookView.prototype._setHintsProps = function(bIsHinting, bIsSubpixHinting) {
     var manager;
     for (var i = 0, length = this.fmgrGraphics.length; i < length; ++i) {
@@ -5017,7 +5027,7 @@
 			let sheetsProps = this.printOptionsJson["spreadsheetLayout"] && this.printOptionsJson["spreadsheetLayout"]["sheetsProps"];
 			var ws = this.model.getWorksheet(index);
 			res = new Asc.CHeaderFooter(ws);
-			if (sheetsProps[index] && sheetsProps[index]["pageSetup"] && sheetsProps[index]["pageSetup"]["headerFooter"]) {
+			if (sheetsProps && sheetsProps[index] && sheetsProps[index]["pageSetup"] && sheetsProps[index]["pageSetup"]["headerFooter"]) {
 				res.initFromJson(sheetsProps[index]["pageSetup"]["headerFooter"]);
 			}
 		}
@@ -5691,6 +5701,61 @@
 	WorkbookView.prototype.stepGoalSeek = function() {
 		this.model.stepGoalSeek();
 	};
+	WorkbookView.prototype.addToHistoryChangedRanges = function(sheetId, range, userColor) {
+		if (!range) {
+			return;
+		}
+		if (Array.isArray(range)) {
+			for (let i in range) {
+				this._addToHistoryChangedRanges(sheetId, range[i], userColor);
+			}
+		} else {
+			this._addToHistoryChangedRanges(sheetId, range, userColor);
+		}
+	};
+	WorkbookView.prototype._addToHistoryChangedRanges = function(sheetId, range, userColor) {
+		if (!range) {
+			return;
+		}
+		if (!this.historyChangedRanges) {
+			this.historyChangedRanges = {};
+		}
+		if (!this.historyChangedRanges[sheetId]) {
+			this.historyChangedRanges[sheetId] = [];
+		}
+		let changedRanges = this.historyChangedRanges[sheetId];
+		if (changedRanges.length) {
+			for (let i in changedRanges) {
+				if (!changedRanges[i]) {
+					continue;
+				}
+				let _addedRange = changedRanges[i].range;
+				let _addedColor = changedRanges[i].color;
+				if (!_addedRange || !_addedColor || (userColor && userColor.IsEqual && !userColor.IsEqual(_addedColor))) {
+					continue;
+				}
+				if (_addedRange.isEqual(range)) {
+					return;
+				} else if (_addedRange.intersection(range)) {
+					let _difference = _addedRange.difference(range);
+					if (_difference) {
+						for (let j in _difference) {
+							changedRanges.push({range: _difference[j], color: userColor});
+						}
+					}
+					return;
+				}
+			}
+		}
+		changedRanges.push({range: range, color: userColor});
+	};
+
+	WorkbookView.prototype.addCustomFunction = function(func, options) {
+		if (!this.customFunctionEngine) {
+			this.customFunctionEngine = new AscCommonExcel.CCustomFunctionEngine(this);
+		}
+		this.customFunctionEngine.add(func, options);
+	};
 
 
 	//временно добавляю сюда. в идеале - использовать общий класс из документов(или сделать базовый, от него наследоваться) - CDocumentSearch
@@ -6062,7 +6127,7 @@
 				this.changeRangeValue(arg1, arg2);
 				break;
 			case AscCommonExcel.docChangedType.sheetContent:
-				this.changeSheetContent(arg1);
+				this.changeSheetContent(arg1, arg2);
 				break;
 			case AscCommonExcel.docChangedType.sheetRemove:
 				this.removeSheet(arg1);
@@ -6097,22 +6162,43 @@
 		}
 	};
 	CDocumentSearchExcel.prototype.changeRangeValue = function (bbox, ws) {
-		if (this.wb.Api.selectSearchingResults && bbox) {
+		if (this.wb.Api.selectSearchingResults && bbox && this.props) {
 			let t = this;
+			let aCells;
 			ws.getRange3(bbox.r1, bbox.c1, bbox.r2, bbox.c2)._foreachNoEmpty(function(cell) {
-				t.changeCellValue(cell);
+				if (!aCells) {
+					aCells = [];
+				}
+				if (!aCells[cell.nRow]) {
+					aCells[cell.nRow] = [];
+				}
+				aCells[cell.nRow][cell.nCol] = cell;
 			});
+
+			let newCell = new AscCommonExcel.Cell(ws);
+			for (let i = bbox.c1; i <= bbox.c2; i++) {
+				for (let j = bbox.r1; j <= bbox.r2; j++) {
+					newCell.nCol = i;
+					newCell.nRow = j;
+					let _cell = aCells && aCells[j] && aCells[j][i] ? aCells[j][i] : newCell;
+					this.changeCellValue(_cell);
+				}
+			}
 		}
 	};
-	CDocumentSearchExcel.prototype.changeSheetContent = function (ws) {
+	CDocumentSearchExcel.prototype.changeSheetContent = function (ws, range) {
 		if (this.wb.Api.selectSearchingResults && ws && this.props) {
 			if (this.isNotEmpty()) {
-				for (let i in this.Elements) {
-					if (this.Elements[i] && ws.index === this.Elements[i].index) {
-						this.wb.handlers.trigger("asc_onModifiedDocument");
-						this.setModifiedDocument(true);
-						this.mapFindCells = {};
-						break;
+				if (range) {
+					this.changeRangeValue(range, ws);
+				} else {
+					for (let i in this.Elements) {
+						if (this.Elements[i] && ws.index === this.Elements[i].index) {
+							this.wb.handlers.trigger("asc_onModifiedDocument");
+							this.setModifiedDocument(true);
+							this.mapFindCells = {};
+							break;
+						}
 					}
 				}
 			}

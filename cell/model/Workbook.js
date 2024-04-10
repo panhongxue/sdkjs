@@ -1861,6 +1861,19 @@
 						}
 						let oStartCellIndex = g_cCalcRecursion.getStartCellIndex();
 						if (oStartCellIndex) {
+							// Fill 0 value for empty cells with recursive formula.
+							if (oCell.getNumberValue() == null) {
+								oCell.setValueNumberInternal(0);
+							}
+							// Save current value of cell as result of previous iteration
+							g_cCalcRecursion.setPrevIterResult(oCell);
+							// Check result of the formula is convergent
+							const nDiffBetweenIter = g_cCalcRecursion.getDiffBetweenIter(oCell);
+							if (nDiffBetweenIter && nDiffBetweenIter < g_cCalcRecursion.getRelativeError()) {
+								oCell.setIsDirty(false);
+								g_cCalcRecursion.removeRecursionCell(oCell);
+								return;
+							}
 							// Fill the array with linked cells from the recursive formula
 							if (!aRecursiveCells.length && oStartCellIndex.cellId === nThisCellIndex && oStartCellIndex.wsName === sCellWsName) {
 								aRecursiveCells.unshift(oStartCellIndex); // The first element of the array is always a start cell.
@@ -1887,10 +1900,6 @@
 								}, true);
 								g_cCalcRecursion.addRecursiveCells(oCell, aRecursiveCells);
 							}
-							// Fill 0 value for empty cells with recursive formula.
-							if (oCell.getNumberValue() == null) {
-								oCell.setValueNumberInternal(0);
-							}
 							// Disable calculating formula for linked cells
 							let bRecursiveCell = aRecursiveCells.some(function(oCellIndex) {
 								return oCellIndex.cellId === nThisCellIndex && oCellIndex.wsName === sCellWsName;
@@ -1907,7 +1916,7 @@
 			this._foreachChanged(function(oCell) {
 				oCell && oCell._checkDirty();
 				// Enable calculating formula for next cell in chain
-				if (g_cCalcRecursion.getIsEnabledRecursion()) {
+				if (g_cCalcRecursion.getIsEnabledRecursion() && oCell.isFormula()) {
 					const nThisCellIndex = getCellIndex(oCell.nRow, oCell.nCol);
 					const sCellWsName = oCell.ws.getName().toLowerCase();
 					const aRecursiveCells = g_cCalcRecursion.getRecursiveCells(oCell);
@@ -1925,6 +1934,7 @@
 								oCell.setIsDirty(true);
 							}
 						}, false);
+						g_cCalcRecursion.setDiffBetweenIter(oCell);
 					}
 				}
 			});
@@ -1935,6 +1945,8 @@
 				g_cCalcRecursion.resetIterStep();
 				g_cCalcRecursion.setStartCellIndex(null);
 				g_cCalcRecursion.setGroupChangedCells(null);
+				g_cCalcRecursion.clearPrevIterResult();
+				g_cCalcRecursion.clearDiffBetweenIter();
 			}
 			if (this.changedCell || this.changedRange) {
 				this.changedCell = null;

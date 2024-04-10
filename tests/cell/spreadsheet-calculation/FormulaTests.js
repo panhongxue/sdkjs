@@ -717,8 +717,6 @@ $(function () {
 		bCaFromSelectedCell = getCaFromSelectedCell("D1001", ws2);
 		assert.strictEqual(bCaFromSelectedCell, true, "Test: 3D Loop chain - D1001: Sheet2!A1000/E1001 <-> Sheet2!A1000: Sheet1!D1001+Sheet1!E1001. isFormulaRecursion test. Sheet2!A1000 - flag ca: true");
 		bCaFromSelectedCell = null;
-		// Remove created sheets.
-		wb.removeWorksheet(0);
 		// -  Case: Loop cell - A1001: A1001+1
 		ws.getRange2("A1001").setValue("=A1001+1");
 		assert.strictEqual(ws.getRange2("A1001").getValue(), "10", "Test: Loop cell - A1001: A1001+1. A1001 - 10");
@@ -932,6 +930,8 @@ $(function () {
 		bCaFromSelectedCell = getCaFromSelectedCell("A1014");
 		assert.strictEqual(bCaFromSelectedCell, true, "Test: Vertical sequence chain - A1011: A1011+A1012, A1012: A1012+A1013, A1013: A1013+A1014, A1014: A1014+A1015, A1015: 1. isFormulaRecursion test. A1014 - flag ca: true");
 		bCaFromSelectedCell = null;
+		// Remove created sheets.
+		wb.removeWorksheet(0);
 		// - Case: 3D sequence chain - A1016: A1016+Sheet2!A1000, Sheet2!A1000: Sheet2!A1000+Sheet3!A1000, Sheet3!A1000: 1
 		ws2 = wb.createWorksheet(0, "Sheet2");
 		let ws3 = wb.createWorksheet(1, "Sheet3");

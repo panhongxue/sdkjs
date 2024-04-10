@@ -8280,6 +8280,8 @@ function parserFormula( formula, parent, _ws ) {
 		this.oStartCellIndex = null;
 		this.nRecursionCounter = 0;
 		this.oGroupChangedCells = null;
+		this.oPrevIterResult = null;
+		this.oDiffBetweenIter = null;
 
 		this.bIsEnabledRecursion = true;
 		this.nMaxIterations = 10; // Max iterations of recursion calculations. Default value: 100.
@@ -8509,8 +8511,8 @@ function parserFormula( formula, parent, _ws ) {
 	 * @param {Cell} oCell
 	 */
 	CalcRecursion.prototype.initGroupChangedCells = function (oCell) {
+		const sCellWsName = oCell.ws.getName().toLowerCase();
 		let oGroupChangedCell = {};
-		let sCellWsName = oCell.ws.getName().toLowerCase();
 		oGroupChangedCell[sCellWsName] = {};
 		this.setGroupChangedCells(oGroupChangedCell);
 	};
@@ -8588,12 +8590,114 @@ function parserFormula( formula, parent, _ws ) {
 		oGroupChangedCell[sCellWsName][nCellIndex] = aRecursiveCells;
 	};
 	/**
+	 * Method removes array with recursive cells in the group changed cells object.
+	 * @param {Cell} oCell
+	 */
+	CalcRecursion.prototype.removeRecursionCell = function (oCell) {
+		const oGroupChangedCell = this.getGroupChangedCells();
+		const sCellWsName = oCell.ws.getName().toLowerCase();
+		const nCellIndex = AscCommonExcel.getCellIndex(oCell.nRow, oCell.nCol);
+		if (!oGroupChangedCell[sCellWsName].hasOwnProperty(nCellIndex)) {
+			return;
+		}
+		delete oGroupChangedCell[sCellWsName][nCellIndex];
+	};
+	/**
+	 * Method sets a previous iteration result.
+	 * @memberof CalcRecursion
+	 * @param {Cell} oCell
+	 */
+	CalcRecursion.prototype.setPrevIterResult = function (oCell) {
+		const nCellIndex = AscCommonExcel.getCellIndex(oCell.nRow, oCell.nCol);
+		const sWsName = oCell.ws.getName().toLowerCase();
+
+		if (this.oPrevIterResult == null) {
+			this.oPrevIterResult = {};
+		}
+		if (!this.oPrevIterResult.hasOwnProperty(sWsName)) {
+			this.oPrevIterResult[sWsName] = {};
+		}
+		this.oPrevIterResult[sWsName][nCellIndex] = oCell.getNumberValue();
+	};
+	/**
+	 * Method returns a previous iteration result.
+	 * @memberof CalcRecursion
+	 * @param {Cell} oCell
+	 * @returns {number}
+	 */
+	CalcRecursion.prototype.getPrevIterResult = function (oCell) {
+		const nCellIndex = AscCommonExcel.getCellIndex(oCell.nRow, oCell.nCol);
+		const sWsName = oCell.ws.getName().toLowerCase();
+		const oPrevIterResult = this.oPrevIterResult;
+
+		if (oPrevIterResult == null) {
+			return NaN;
+		}
+		if (!oPrevIterResult.hasOwnProperty(sWsName) || !oPrevIterResult[sWsName].hasOwnProperty(nCellIndex)) {
+			return NaN;
+		}
+
+		return oPrevIterResult[sWsName][nCellIndex];
+	};
+	/**
+	 * Method clears a previous iteration results.
+	 * @memberof CalcRecursion
+	 */
+	CalcRecursion.prototype.clearPrevIterResult = function () {
+		this.oPrevIterResult = null;
+	};
+	/**
+	 * Method sets a result of a difference between iterations.
+	 * @memberof CalcRecursion
+	 * @param {Cell} oCell
+	 */
+	CalcRecursion.prototype.setDiffBetweenIter = function (oCell) {
+		const nCellIndex = AscCommonExcel.getCellIndex(oCell.nRow, oCell.nCol);
+		const sWsName = oCell.ws.getName().toLowerCase();
+		const nPrevIterResult = this.getPrevIterResult(oCell);
+		const nCurrentIterResult = oCell.getNumberValue();
+
+		if (this.oDiffBetweenIter == null) {
+			this.oDiffBetweenIter = {};
+		}
+		if (!this.oDiffBetweenIter.hasOwnProperty(sWsName)) {
+			this.oDiffBetweenIter[sWsName] = {};
+		}
+		this.oDiffBetweenIter[sWsName][nCellIndex] = Math.abs(nCurrentIterResult - nPrevIterResult);
+	};
+	/**
+	 * Method returns a result of a difference between iterations.
+	 * @memberof CalcRecursion
+	 * @param {Cell} oCell
+	 * @returns {number}
+	 */
+	CalcRecursion.prototype.getDiffBetweenIter = function (oCell) {
+		const nCellIndex = AscCommonExcel.getCellIndex(oCell.nRow, oCell.nCol);
+		const sWsName = oCell.ws.getName().toLowerCase();
+		const oDiffBetweenIter = this.oDiffBetweenIter;
+
+		if (oDiffBetweenIter == null) {
+			return NaN;
+		}
+		if (!oDiffBetweenIter.hasOwnProperty(sWsName) && !oDiffBetweenIter[sWsName].hasOwnProperty(nCellIndex)) {
+			return NaN;
+		}
+
+		return oDiffBetweenIter[sWsName][nCellIndex];
+	};
+	/**
+	 * Method clears a result of a difference between iterations.
+	 * @memberof CalcRecursion
+	 */
+	CalcRecursion.prototype.clearDiffBetweenIter = function () {
+		this.oDiffBetweenIter = null;
+	};
+	/**
 	 * Method returns a flag that checks a recursive call is needed.
 	 * @memberof CalcRecursion
 	 * @returns {boolean}
 	 */
 	CalcRecursion.prototype.needRecursiveCall = function () {
-		const oStartCellIndex = this.getStartCellIndex();
 		const oGroupChangedCells = this.getGroupChangedCells();
 		const bMaxStepNotExceeded = this.getIterStep() < this.getMaxIterations() && this.getIterStep() <= this.getMaxRecursion();
 		let bHasRecursiveCell = false;
@@ -8612,7 +8716,7 @@ function parserFormula( formula, parent, _ws ) {
 			}
 		}
 
-		return this.getIsEnabledRecursion() && (oStartCellIndex || bHasRecursiveCell) && bMaxStepNotExceeded;
+		return this.getIsEnabledRecursion() && bHasRecursiveCell && bMaxStepNotExceeded;
 	};
 	/**
 	 * Method initializes calculation properties.

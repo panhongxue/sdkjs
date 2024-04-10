@@ -448,6 +448,7 @@ CChartSpace.prototype.Get_ColorMap = CShape.prototype.Get_ColorMap;
 		if (!oWs)
 			return;
 
+		const oCellPasteHelper = oWs.cellPasteHelper;
 
 		const oMockWb = oWbModel.getTemporaryExternalWb();
 		//todo: do we want to read already created links when copy-pasting?
@@ -462,7 +463,7 @@ CChartSpace.prototype.Get_ColorMap = CShape.prototype.Get_ColorMap;
 			const oRange = new Asc.Range(0, 0, oCachedWorksheets[sSheetName].maxC, oCachedWorksheets[sSheetName].maxR);
 
 
-			const oPastedLinkInfo = oWs._getPastedLinkInfo(oPastedWb, oPastedWS);
+			const oPastedLinkInfo = oCellPasteHelper.getPastedLinkInfo(oPastedWb, oPastedWS);
 
 			if (oPastedLinkInfo)
 			{

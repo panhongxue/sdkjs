@@ -26120,7 +26120,7 @@
 
 		var _getPasteLinkIndex = function () {
 			var pastedWb = val.workbook;
-			var linkInfo = t.getPastedLinkInfo(pastedWb);
+			var linkInfo = t.getPastedLinkInfo(pastedWb, pastedWb && pastedWb.aWorksheets[0]);
 			pasteLinkIndex = null;
 			if (linkInfo) {
 				if (linkInfo.type === -1) {
@@ -26959,7 +26959,7 @@
 		}
 	};
 
-	CCellPasteHelper.prototype.getPastedLinkInfo = function (pastedWb) {
+	CCellPasteHelper.prototype.getPastedLinkInfo = function (pastedWb, pastedWs) {
 		//0 - вставляем в эту же книгу и в этот же лист
 		//1 - вставляем в эту же книгу и на другой лист
 		//-1 - вставляем в другую книгу и сслыка на неё уже есть
@@ -26978,10 +26978,10 @@
 
 			//TODO обработать: при вставке из одного и того же документа(открытого разными юзерами) с листа, который ещё не был добавлен другим юзером в режиме строго совместного редактирования
 			let sameDoc = AscCommonExcel.g_clipboardExcel && AscCommonExcel.g_clipboardExcel.pasteProcessor && AscCommonExcel.g_clipboardExcel.pasteProcessor._checkPastedInOriginalDoc(pastedWb, true);
-			let sameSheet = sameDoc && pastedWb.aWorksheets[0].sName === ws.model.sName;
+			let sameSheet = sameDoc && pastedWs.sName === ws.model.sName;
 			let externalSheetSameWb;
 			if (!sameSheet && sameDoc) {
-				let sName = pastedWb.aWorksheets[0].sName;
+				let sName = pastedWs.sName;
 				for (let i = 0; i < ws.model.workbook.aWorksheets.length; i++) {
 					if (ws.model.workbook.aWorksheets[i].sName === sName) {
 						externalSheetSameWb = sName;
@@ -27024,7 +27024,7 @@
 				} else {
 					type = -1;
 					index = externalReference;
-					sheet = pastedWb.aWorksheets[0].sName;
+					sheet = pastedWs.sName;
 				}
 			}
 		}
@@ -27051,7 +27051,8 @@
 
 		//отдельный лок для этого не делаю, а лочу всё перед вставкой новой ссылки
 		if (specialPasteProps && specialPasteProps.property === Asc.c_oSpecialPasteProps.link) {
-			var linkInfo = this.getPastedLinkInfo(pasteContent.workbook);
+			const workbook = pasteContent.workbook;
+			var linkInfo = this.getPastedLinkInfo(workbook, workbook && workbook.aWorksheets[0]);
 			if (linkInfo && linkInfo.type === -2) {
 				return true;
 			}

@@ -19853,6 +19853,28 @@ $(function () {
 		assert.ok(oParser.parse(), 'VLOOKUP(A215,A201:B216,2,0)');
 		assert.strictEqual(oParser.calculate().getValue(), 5, 'Result of VLOOKUP(A215,A201:B216,2,0)');
 
+		ws.getRange2("N1000:N1100").setValue("Test");
+		ws.getRange2("N1005").setValue("10");
+		ws.getRange2("O1005").setValue("1");
+		ws.getRange2("N1010").setValue("Test1");
+		ws.getRange2("O1010").setValue("Res1");
+
+		oParser = new parserFormula('VLOOKUP(10,N:N,1,0)', "A2", ws);
+		assert.ok(oParser.parse(), 'VLOOKUP(10,N:N,1,0)');
+		assert.strictEqual(oParser.calculate().getValue(), 10, 'Result of VLOOKUP(10,N:N,1,0)');
+
+		oParser = new parserFormula('VLOOKUP(10,N:O,2,0)', "A2", ws);
+		assert.ok(oParser.parse(), 'VLOOKUP(10,N:O,2,0)');
+		assert.strictEqual(oParser.calculate().getValue(), 1, 'Result of VLOOKUP(10,N:O,2,0)');
+
+		oParser = new parserFormula('VLOOKUP("Test1",N:N,1,0)', "A2", ws);
+		assert.ok(oParser.parse(), 'VLOOKUP("Test1",N:N,1,0)');
+		assert.strictEqual(oParser.calculate().getValue(), "Test1", 'Result of VLOOKUP("Test1",N:N,1,0)');
+
+		oParser = new parserFormula('VLOOKUP("Test1",N:O,2,0)', "A2", ws);
+		assert.ok(oParser.parse(), 'VLOOKUP("Test1",N:O,2,0)');
+		assert.strictEqual(oParser.calculate().getValue(), "Res1", 'Result of VLOOKUP("Test1",N:O,2,0)');
+
 		// perfomance tests 
 		// ws.getRange2("A1:A100000").setValue("22");
 		// ws.getRange2("A1000:A21199").setValue("TRUE");

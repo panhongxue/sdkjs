@@ -1802,7 +1802,7 @@ function CDocument(DrawingDocument, isMainLogicDocument)
     this.IdCounter            = AscCommon.g_oIdCounter;
     this.TableId              = AscCommon.g_oTableId;
     this.CollaborativeEditing = (("undefined" !== typeof(AscCommon.CWordCollaborativeEditing) && AscCommon.CollaborativeEditing instanceof AscCommon.CWordCollaborativeEditing) ? AscCommon.CollaborativeEditing : null);
-    this.Api                  = editor;
+    this.Api                  = Asc.editor;
     //------------------------------------------------------------------------------------------------------------------
     //  Выставляем ссылки на главный класс
     //------------------------------------------------------------------------------------------------------------------

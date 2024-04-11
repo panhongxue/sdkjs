@@ -2810,7 +2810,7 @@ function CPresentation(DrawingDocument) {
 	this.IdCounter = AscCommon.g_oIdCounter;
 	this.TableId = g_oTableId;
 	this.CollaborativeEditing = (("undefined" !== typeof (CCollaborativeEditing) && AscCommon.CollaborativeEditing instanceof CCollaborativeEditing) ? AscCommon.CollaborativeEditing : null);
-	this.Api = editor;
+	this.Api = Asc.editor;
 	this.TurnOffInterfaceEvents = false;
 	//------------------------------------------------------------------------
 	if (DrawingDocument) {

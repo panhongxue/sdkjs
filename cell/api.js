@@ -1710,8 +1710,7 @@ var editor;
 	this._openOnClient();
   };
 
-	spreadsheet_api.prototype.asc_CloseFile = function()
-	{
+	spreadsheet_api.prototype.asc_CloseFile = function () {
 		History.Clear();
 		g_oIdCounter.Clear();
 		g_oTableId.Clear();
@@ -1722,7 +1721,7 @@ var editor;
 		this.openingEnd = {bin: false, xlsxStart: false, xlsx: false, data: null};
 		this.isApplyChangesOnOpenEnabled = true;
 		this.isDocumentLoadComplete = false;
-        this.turnOffSpecialModes();
+		this.turnOffSpecialModes();
 
 		//удаляю весь handlersList, добавленный при инициализации wbView
 		//потому что старый при открытии использовать нельзя(в случае с истрией версий при повторном открытии файла там остаются старые функции от предыдущего workbookview)
@@ -1741,9 +1740,11 @@ var editor;
 			this.wbModel.DrawingDocument.CloseFile();
 		}
 
-        if(this.wb.MobileTouchManager) {
-            this.wb.MobileTouchManager.Destroy();
-        }
+		if (this.wb.MobileTouchManager) {
+			this.wb.MobileTouchManager.Destroy();
+		}
+		this.wb = null;
+		this.wbModel = null;
 	};
 
 	spreadsheet_api.prototype.openDocumentFromZip = function (wb, data) {

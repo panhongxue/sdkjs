@@ -243,6 +243,23 @@ MasterSlide.prototype.recalculateBackground = function() {
     this.backgroundFill = _back_fill;
 }
 
+MasterSlide.prototype.drawNoPlaceholders = function(graphics, slide) {
+    if(slide) {
+        if(slide.num !== this.lastRecalcSlideIndex) {
+            this.lastRecalcSlideIndex = slide.num;
+            this.cSld.refreshAllContentsFields();
+        }
+    }
+    this.recalculate();
+
+    DrawBackground(graphics, this.backgroundFill, this.Width, this.Height);
+    this.cSld.forEachSp(function(oSp) {
+        if ( !AscCommon.IsHiddenObj(oSp) && !oSp.isPlaceholder()) {
+            oSp.draw(graphics);
+        }
+    });
+};
+
 MasterSlide.prototype.draw = function (graphics, slide) {
 	if(slide) {
 		if(slide.num !== this.lastRecalcSlideIndex) {
@@ -799,7 +816,7 @@ function CMasterThumbnailDrawer()
                 {
                     _master.recalculate();
                 }
-                _master.draw(g);
+                _master.drawNoPlaceholders(g);
             }
             else
             {
@@ -809,10 +826,10 @@ function CMasterThumbnailDrawer()
                     {
                         _master.recalculate();
                     }
-                    _master.draw(g);
+                    _master.drawNoPlaceholders(g);
                 }
                 _layout.recalculate();
-                _layout.draw(g);
+                _layout.drawNoPlaceholders(g);
             }
         }
         g.reset();
@@ -970,7 +987,7 @@ function CMasterThumbnailDrawer()
                 {
                     _master.recalculate();
                 }
-                _master.draw(g);
+                _master.drawNoPlaceholders(g);
             }
             else
             {
@@ -980,10 +997,10 @@ function CMasterThumbnailDrawer()
                     {
                         _master.recalculate();
                     }
-                    _master.draw(g);
+                    _master.drawNoPlaceholders(g);
                 }
                 _layout.recalculate();
-                _layout.draw(g);
+                _layout.drawNoPlaceholders(g);
             }
         }
         g.reset();

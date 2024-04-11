@@ -1311,7 +1311,7 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
                 graphics.rect(_bounds.l, _bounds.t, _bounds.w, _bounds.h);
             }
             else {
-                this.Layout.Master.draw(graphics, this);
+                this.Layout.Master.drawNoPlaceholders(graphics, this);
             }
         }
         if(this.needLayoutSpDraw()) {
@@ -1320,7 +1320,7 @@ AscFormat.InitClass(Slide, AscFormat.CBaseFormatObject, AscDFH.historyitem_type_
                 graphics.rect(_bounds.l, _bounds.t, _bounds.w, _bounds.h);
             }
             else {
-                this.Layout.draw(graphics, this);
+                this.Layout.drawNoPlaceholders(graphics, this);
             }
         }
     };

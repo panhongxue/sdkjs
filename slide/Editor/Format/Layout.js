@@ -429,6 +429,24 @@ SlideLayout.prototype.getTheme = function(){
 
         this.backgroundFill = _back_fill;
     };
+
+    SlideLayout.prototype.drawNoPlaceholders = function(graphics, slide) {
+        if(slide) {
+            if(slide.num !== this.lastRecalcSlideIndex) {
+                this.lastRecalcSlideIndex = slide.num;
+                this.cSld.refreshAllContentsFields();
+            }
+        }
+        this.recalculate();
+
+        DrawBackground(graphics, this.backgroundFill, this.Width, this.Height);
+        this.cSld.forEachSp(function(oSp) {
+            if ( !AscCommon.IsHiddenObj(oSp) && !oSp.isPlaceholder()) {
+                oSp.draw(graphics);
+            }
+        });
+    };
+
     SlideLayout.prototype.draw = function (graphics, slide) {
         if(slide){
             if(slide.num !== this.lastRecalcSlideIndex){
@@ -437,17 +455,13 @@ SlideLayout.prototype.getTheme = function(){
 
             }
         }
-
         this.recalculate();
-
         DrawBackground(graphics, this.backgroundFill, this.Width, this.Height);
-        for (let nSp = 0; nSp < this.cSld.spTree.length; ++nSp) {
-            let oSp = this.cSld.spTree[nSp];
-            if(AscCommon.IsHiddenObj(oSp)) {
-                continue;
+        this.cSld.forEachSp(function(oSp) {
+            if (!AscCommon.IsHiddenObj(oSp)) {
+                oSp.draw(graphics);
             }
-            oSp.draw(graphics);
-        }
+        });
     };
     SlideLayout.prototype.calculateType = function()
     {

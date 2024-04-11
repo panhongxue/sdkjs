@@ -1706,13 +1706,15 @@ function CEditorPage(api)
 			return;
 
 		var oWordControl = oThis;
-		if ((oWordControl.m_oDrawingDocument.SlidesCount - 1) > oWordControl.m_oDrawingDocument.SlideCurrent)
+
+		let SlidesCount = this.GetSlidesCount();
+		if ((SlidesCount - 1) > oWordControl.m_oDrawingDocument.SlideCurrent)
 		{
 			oWordControl.GoToPage(oWordControl.m_oDrawingDocument.SlideCurrent + 1);
 		}
-		else if (oWordControl.m_oDrawingDocument.SlidesCount > 0)
+		else if (SlidesCount > 0)
 		{
-			oWordControl.GoToPage(oWordControl.m_oDrawingDocument.SlidesCount - 1);
+			oWordControl.GoToPage(SlidesCount - 1);
 		}
 	};
 
@@ -1900,7 +1902,7 @@ function CEditorPage(api)
 	this.UpdateHorRulerBack = function(isattack)
 	{
 		var drDoc = this.m_oDrawingDocument;
-		if (0 <= drDoc.SlideCurrent && drDoc.SlideCurrent < drDoc.SlidesCount)
+		if (0 <= drDoc.SlideCurrent && drDoc.SlideCurrent < drDoc.GetSlidesCount())
 		{
 			this.CreateBackgroundHorRuler(undefined, isattack);
 		}
@@ -1909,7 +1911,7 @@ function CEditorPage(api)
 	this.UpdateVerRulerBack = function(isattack)
 	{
 		var drDoc = this.m_oDrawingDocument;
-		if (0 <= drDoc.SlideCurrent && drDoc.SlideCurrent < drDoc.SlidesCount)
+		if (0 <= drDoc.SlideCurrent && drDoc.SlideCurrent < drDoc.GetSlidesCount())
 		{
 			this.CreateBackgroundVerRuler(undefined, isattack);
 		}
@@ -2454,15 +2456,15 @@ function CEditorPage(api)
 		size.m_dDocumentPageHeight = one_slide_height;
 
 		size.m_dDocumentWidth  = one_slide_width;
-		size.m_dDocumentHeight = (one_slide_height * this.m_oDrawingDocument.SlidesCount) >> 0;
+		size.m_dDocumentHeight = (one_slide_height * this.m_oDrawingDocument.GetSlidesCount()) >> 0;
 
-		if (0 == this.m_oDrawingDocument.SlidesCount)
+		if (0 == this.m_oDrawingDocument.GetSlidesCount())
 			size.m_dDocumentHeight = one_slide_height >> 0;
 
 		size.SlideScrollMIN = this.m_oDrawingDocument.SlideCurrent * one_slide_height;
 		size.SlideScrollMAX = size.SlideScrollMIN + one_slide_height - _srcH;
 
-		if (0 == this.m_oDrawingDocument.SlidesCount)
+		if (0 == this.m_oDrawingDocument.GetSlidesCount())
 		{
 			size.SlideScrollMIN = 0;
 			size.SlideScrollMAX = size.SlideScrollMIN + one_slide_height - _srcH;
@@ -2511,7 +2513,6 @@ function CEditorPage(api)
 
 		this.Thumbnails.SlideWidth  = this.m_oLogicDocument.GetWidthMM();
 		this.Thumbnails.SlideHeight = this.m_oLogicDocument.GetHeightMM();
-		this.Thumbnails.SlidesCount = this.m_oDrawingDocument.SlidesCount;
 		this.Thumbnails.CheckSizes();
 
 		if (this.MobileTouchManager)
@@ -2706,9 +2707,9 @@ function CEditorPage(api)
 				this.VerticalScrollOnMouseUp.ScrollY     = scrollPositionY;
 				this.VerticalScrollOnMouseUp.ScrollY_max = maxY;
 
-				this.VerticalScrollOnMouseUp.SlideNum = (scrollPositionY * this.m_oDrawingDocument.SlidesCount / Math.max(1, maxY)) >> 0;
-				if (this.VerticalScrollOnMouseUp.SlideNum >= this.m_oDrawingDocument.SlidesCount)
-					this.VerticalScrollOnMouseUp.SlideNum = this.m_oDrawingDocument.SlidesCount - 1;
+				this.VerticalScrollOnMouseUp.SlideNum = (scrollPositionY * this.m_oDrawingDocument.GetSlidesCount() / Math.max(1, maxY)) >> 0;
+				if (this.VerticalScrollOnMouseUp.SlideNum >= this.m_oDrawingDocument.GetSlidesCount())
+					this.VerticalScrollOnMouseUp.SlideNum = this.m_oDrawingDocument.GetSlidesCount() - 1;
 
 				this.m_oApi.sendEvent("asc_onPaintSlideNum", this.VerticalScrollOnMouseUp.SlideNum);
 				return;
@@ -4460,7 +4461,7 @@ function CEditorPage(api)
 	this.SetCurrentPage = function()
 	{
 		var drDoc = this.m_oDrawingDocument;
-		if (0 <= drDoc.SlideCurrent && drDoc.SlideCurrent < drDoc.SlidesCount)
+		if (0 <= drDoc.SlideCurrent && drDoc.SlideCurrent < drDoc.GetSlidesCount())
 		{
 			this.CreateBackgroundHorRuler();
 			this.CreateBackgroundVerRuler();
@@ -4472,6 +4473,10 @@ function CEditorPage(api)
 		this.OnScroll();
 
 		this.m_oApi.sync_currentPageCallback(drDoc.m_lCurrentPage);
+	};
+	this.GetSlidesCount = function()
+	{
+		return this.m_oDrawingDocument.GetSlidesCount();
 	};
 
 	this.GoToPage = function(lPageNum, isFromZoom, bIsAttack, isReporterUpdateSlide)
@@ -4529,7 +4534,7 @@ function CEditorPage(api)
 		if (this.m_oLogicDocument.IsStartedPreview())
 			this.m_oApi.asc_StopAnimationPreview();
 
-		if (lPageNum != -1 && (lPageNum < 0 || lPageNum >= drDoc.SlidesCount))
+		if (lPageNum != -1 && (lPageNum < 0 || lPageNum >= drDoc.GetSlidesCount()))
 			return;
 
 		this.Thumbnails.LockMainObjType = true;

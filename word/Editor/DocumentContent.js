@@ -1328,6 +1328,7 @@ CDocumentContent.prototype.RecalculateContent = function(fWidth, fHeight, nStart
     var nCurPage = 0;
     while ( recalcresult2_End !== nRecalcResult  )
         nRecalcResult = this.Recalculate_Page( nCurPage++, true );
+	console.log(nCurPage, nRecalcResult)
 };
 CDocumentContent.prototype.RecalculateMinMaxContentWidth = function(isRotated)
 {

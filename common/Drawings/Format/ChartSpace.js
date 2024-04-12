@@ -881,32 +881,56 @@ function(window, undefined) {
 
 		const sliceLabel = function (oLabel, maxWidth) {
 			const contents = oLabel && oLabel.txBody && oLabel.txBody.content && oLabel.txBody.content.Content && Array.isArray(oLabel.txBody.content.Content) ? oLabel.txBody.content.Content[0].Content : null;
+			const oSize = oLabel.tx.rich.getContentOneStringSizes();
 			if (!contents || !maxWidth) {
 				return;
 			}
 
-			let trueContents = null;
-			for (let i = 0; i < contents.length; i++) {
-				if (contents[i].Content.length != 0) {
-					trueContents = contents[i].Content;
-					break;
+			let runTexts = contents[0].Content;
+			oLabel.txBody.content.RecalculateContent(maxWidth, oSize.h, 2);
+
+			// obtain some parameter that indicates overWidth -> XPar
+			let xPar = 0;
+
+			// create dot paraTexts
+			const dot = new AscWord.CRunText(46)
+
+			if (runTexts && xPar) {
+				contents[0].Content = [];
+				let left = 0;
+				let right = runTexts.length;
+				let mid = null;
+				while(right - left > 1) {
+					mid = (right + left) / 2 + 0.5 >> 0;
+					contents[0].Content = runTexts.slice(0, mid - 1);
+					// add dot paraText
+				}
+				oLabel.txBody.content.RecalculateContent(maxWidth, oSize.h, 2);
+
+				// update xPar
+				xPar = 1
+				if(xPar) {
+					right = mid;
+				}
+				else {
+					right = (mid + right) / 2 + 0.5 >> 0;
 				}
 			}
 
-			// remove all characters after maxWidth achieved
-			if (trueContents) {
-				let sum = 0;
-				let i = 0;
-				// add the sizes of each element, to find the index of last possible element
-				while (sum < maxWidth && i < trueContents.length) {
-					const width = trueContents[i].GetWidth(oLabel.txPr);
-					sum += width;
-					i++;
-				}
-				//count items that must be removed
-				const countItems = trueContents.length - i;
-				trueContents.splice(i, countItems);
-			}
+			// // remove all characters after maxWidth achieved
+			// if (runTexts) {
+			// 	let sum = 0;
+			// 	let i = 0;
+			// 	// add the sizes of each element, to find the index of last possible element
+			// 	while (sum < maxWidth && i < runTexts.length) {
+			// 		const width = runTexts[i].GetWidth(oLabel.txPr);
+			// 		sum += width;
+			// 		i++;
+			// 	}
+			// 	//count items that must be removed
+			// 	const countItems = runTexts.length - i;
+			// 	runTexts.splice(i, countItems);
+			// }
 		}
 
 		for (let i = 0; i < aLabels.length; ++i) {
@@ -930,7 +954,7 @@ function(window, undefined) {
 					var fX1, fY0, fXC, fYC;
 					fY0 = fAxisY + fDistance;
 					if (fDistance >= 0.0) {
-						fXC = parameters ? fCurX + (direction * fBoxW) / 2.0 : fCurX - oSize.w * fMultiplier / 2.0;
+						fXC = parameters ? fCurX : fCurX - oSize.w * fMultiplier / 2.0;
 						fYC = fY0 + fBoxH / 2.0;
 					} else {
 						//fX1 = fCurX - oSize.h*fMultiplier;

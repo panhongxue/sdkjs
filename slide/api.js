@@ -4823,6 +4823,17 @@ background-repeat: no-repeat;\
     };
 
 
+	asc_docs_api.prototype.asc_uniteSelectedShapes = function () {
+		// get out paths
+		// convert to paperjs format
+		// create paperjs path-objects
+		// unite using paperjs
+		// convert result to our format
+		// remove old shapes
+		// add result shapes (merged)
+		// update interface
+	};
+
     // signatures
     asc_docs_api.prototype.asc_addSignatureLine = function (oPr, Width, Height, sImgUrl) {
         if (editor.WordControl.m_oLogicDocument.Document_Is_SelectionLocked(changestype_Drawing_Props) === false){

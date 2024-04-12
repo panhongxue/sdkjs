@@ -33,6 +33,15 @@
 "use strict";
 
 (function (window) {
+
+	function getLocalFileLink(path) {
+		if (path) {
+			path = path.replace(/^file:\/\/\//, '');
+			path = path.replace(/^file:\/\//, '');
+		}
+		return path;
+	}
+
 	function CExternalDataLoader(arrExternalReference, oApi, fCallback) {
 		this.externalReferences = arrExternalReference || [];
 		this.api = oApi;
@@ -154,15 +163,6 @@
 		});
 	};
 
-	CExternalDataPromiseGetter.prototype.getLocalFileLink = function () {
-		let res = this.externalReference;
-		if (res) {
-			res = res.replace(/^file:\/\/\//, '');
-			res = res.replace(/^file:\/\//, '');
-		}
-		return res;
-	};
-
 	CExternalDataPromiseGetter.prototype.isExternalLink = function () {
 		const p = /^(?:http:|https:)/;
 		return this.externalReference.match(p);
@@ -170,7 +170,7 @@
 
 	CExternalDataPromiseGetter.prototype.getFileUrl = function () {
 		if (this.isLocalDesktop() && !this.isExternalLink()) {
-			return this.getLocalFileLink();
+			return getLocalFileLink(this.externalReference);
 		} else if (this.data && !this.data["error"]) {
 			return this.data["url"];
 		}
@@ -231,5 +231,7 @@
 	};
 
 	AscCommon.CExternalDataLoader = CExternalDataLoader;
+	AscCommon.getLocalFileLink = getLocalFileLink;
+
 })(window);
 

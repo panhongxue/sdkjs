@@ -4955,7 +4955,7 @@
 		let t = this;
 		let isLocalDesktop = window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]();
 		if (isLocalDesktop) {
-			window["AscDesktopEditor"]["openExternalReference"](externalReference.externalReference.Id, function(error) {
+			window["AscDesktopEditor"]["openExternalReference"](AscCommon.getLocalFileLink(externalReference.externalReference.Id), function(error) {
 				let internalError = Asc.c_oAscError.ID.No;
 				switch (error) {
 					case 0: internalError = Asc.c_oAscError.ID.ConvertationOpenError; break;

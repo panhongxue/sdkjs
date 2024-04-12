@@ -14927,6 +14927,8 @@ function RangeDataManagerElem(bbox, data)
 			//need -> file:///C:\root\from1.xlsx
 			sPath = sPath.replace(/\//g,"\\");
 			sPath = "file:///" + sPath;
+		} else if (sPath && -1 === sPath.indexOf("file:///")) {
+			sPath = "file:///" + sPath;
 		}
 
 		return sPath;

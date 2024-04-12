@@ -457,12 +457,28 @@ CChartSpace.prototype.Get_ColorMap = CShape.prototype.Get_ColorMap;
 		let bNeedConvert = false;
 
 		let oMainExternalReference;
+		const sChartRange = this.getCommonRange();
+		const arrChartRanges = AscFormat.fParseChartFormulaExternal(sChartRange);
+		if (!(arrChartRanges && arrChartRanges.length)) {
+			return;
+		}
+		const mapRangeWorksheets = {};
+		for (let i = 0; i < arrChartRanges.length; i++) {
+			const oRange = arrChartRanges[i];
+			const oRangeWorksheet = oRange.worksheet;
+			const sWorksheetName = oRangeWorksheet.getName();
+			if (!mapRangeWorksheets[sWorksheetName]) {
+				mapRangeWorksheets[sWorksheetName] = [];
+			}
+			mapRangeWorksheets[sWorksheetName].push(oRange.bbox);
+		}
 		for (let sSheetName in oCachedWorksheets)
 		{
+			const arrRanges = mapRangeWorksheets[sSheetName];
+			if (!arrRanges) {
+				continue;
+			}
 			const oPastedWS = oCachedWorksheets[sSheetName].ws;
-			const oRange = new Asc.Range(0, 0, oCachedWorksheets[sSheetName].maxC, oCachedWorksheets[sSheetName].maxR);
-
-
 			const oPastedLinkInfo = oCellPasteHelper.getPastedLinkInfo(oPastedWb, oPastedWS);
 
 			if (oPastedLinkInfo)
@@ -474,7 +490,8 @@ CChartSpace.prototype.Get_ColorMap = CShape.prototype.Get_ColorMap;
 					oMainExternalReference = oWbModel.externalReferences[oPastedLinkInfo.index - 1];
 					if (oMainExternalReference)
 					{
-						oMainExternalReference.updateSheetData(pasteSheetLinkName, oPastedWS, [oRange]);
+						oMainExternalReference.updateSheetData(pasteSheetLinkName, oPastedWS, arrRanges);
+						oWbModel.changeExternalReference(oPastedLinkInfo.index, oMainExternalReference);
 					}
 					bNeedConvert = true;
 				}
@@ -503,7 +520,8 @@ CChartSpace.prototype.Get_ColorMap = CShape.prototype.Get_ColorMap;
 						oMainExternalReference.Id = name;
 					}
 
-					oMainExternalReference.addSheet(oPastedWS, [oRange]);
+					oMainExternalReference.addSheet(oPastedWS, arrRanges);
+					oWbModel.addExternalReferences([oMainExternalReference]);
 					bNeedConvert = true;
 				}
 			}

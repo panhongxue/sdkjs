@@ -2841,7 +2841,7 @@ background-repeat: no-repeat;\
 		const oLogicDocument = this.private_GetLogicDocument();
 		if (!oLogicDocument)
 			return;
-		if(false === oLogicDocument.Document_Is_SelectionLocked(changestype_Drawing_Props))
+		if(false === oLogicDocument.Document_Is_SelectionLocked(AscCommon.changestype_Drawing_Props))
 		{
 			oLogicDocument.OpenOleEditor();
 		}
@@ -8996,7 +8996,7 @@ background-repeat: no-repeat;\
 		if (!oLogicDocument)
 			return;
 
-		if(false === oLogicDocument.Document_Is_SelectionLocked(changestype_Drawing_Props))
+		if(false === oLogicDocument.Document_Is_SelectionLocked(AscCommon.changestype_Drawing_Props))
 		{
 			oLogicDocument.OpenChartEditor();
 		}

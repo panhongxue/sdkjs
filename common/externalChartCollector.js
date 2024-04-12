@@ -116,7 +116,7 @@ function (window, undefined) {
 			return true;
 		}
 
-		return this.logicDocument.Document_Is_SelectionLocked(AscCommon.changestype_None, {Type: AscCommon.changestype_2_ElementsArray_and_Type, CheckType: changestype_Drawing_Props, Elements:arrCharts});
+		return this.logicDocument.Document_Is_SelectionLocked(AscCommon.changestype_None, {Type: AscCommon.changestype_2_ElementsArray_and_Type, CheckType: AscCommon.changestype_Drawing_Props, Elements:arrCharts});
 	}
 	CExternalChartCollector.prototype.updateExternalReferences = function (arrExternalReferences, fCallback) {
 		if (!this.isInit) {

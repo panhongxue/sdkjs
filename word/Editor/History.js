@@ -1900,6 +1900,9 @@ CHistory.prototype.private_PostProcessingRecalcData = function()
 		this.PosInCurPoint = null;
 	};
 
+	CHistory.prototype.StartTransaction = function () {};
+	CHistory.prototype.EndTransaction = function () {};
+
 	//----------------------------------------------------------export--------------------------------------------------
 	window['AscCommon']          = window['AscCommon'] || {};
 	window['AscCommon'].CHistory = CHistory;

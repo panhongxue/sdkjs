@@ -15287,6 +15287,7 @@ function RangeDataManagerElem(bbox, data)
 			var ws = this.worksheets[sheetName];
 			if (!this.worksheets[sheetName]) {
 				var wb = new AscCommonExcel.Workbook(null, window["Asc"]["editor"]);
+				wb.dependencyFormulas.lockRecal();
 				ws = new AscCommonExcel.Worksheet(wb);
 				ws.sName = sheetName;
 				wb.aWorksheets.push(ws);

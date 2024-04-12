@@ -2784,6 +2784,7 @@ function (window, undefined) {
 		if (cElementType.cell3D === arg0.type || cElementType.cell === arg0.type) {
 			arg0 = arg0.getValue();
 		}
+
 		if (cElementType.error === arg0.type) {
 			return arg0;
 		}

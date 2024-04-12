@@ -5081,7 +5081,7 @@
 			var _transform_text2 = options.transformText2 || this.transformText2;
 			var geometry = this.getGeometry();
 
-			if (graphics.IsSlideBoundsCheckerType === true) {
+			if (graphics.isBoundsChecker()) {
 
 				this.drawShdw && this.drawShdw(graphics);
 				graphics.transform3(_transform);
@@ -5124,7 +5124,7 @@
 				graphics.StartDrawShape(undefined, this.isForm && this.isForm() ? true : false);
 			}
 			var oClipRect;
-			if (!graphics.IsSlideBoundsCheckerType && this.getClipRect) {
+			if (!graphics.isBoundsChecker() && this.getClipRect) {
 				oClipRect = this.getClipRect();
 			}
 			if (oClipRect) {
@@ -5154,9 +5154,9 @@
 				shape_drawer.draw(geometry);
 			}
 
-			if (!graphics.isSmartArtPreviewDrawer && !graphics.RENDERER_PDF_FLAG && !this.bWordShape && this.isEmptyPlaceholder() && !(this.parent && this.parent.kind === AscFormat.TYPE_KIND.NOTES) && !(this.pen && this.pen.Fill && this.pen.Fill.fill && !(this.pen.Fill.fill instanceof AscFormat.CNoFill)) && graphics.IsNoDrawingEmptyPlaceholder !== true && !AscCommon.IsShapeToImageConverter) {
+			if (!graphics.isSmartArtPreviewDrawer && !graphics.isPdf() && !this.bWordShape && this.isEmptyPlaceholder() && !(this.parent && this.parent.kind === AscFormat.TYPE_KIND.NOTES) && !(this.pen && this.pen.Fill && this.pen.Fill.fill && !(this.pen.Fill.fill instanceof AscFormat.CNoFill)) && graphics.IsNoDrawingEmptyPlaceholder !== true && !AscCommon.IsShapeToImageConverter) {
 				var drawingObjects = this.getDrawingObjectsController();
-				if (typeof editor !== "undefined" && editor && graphics.m_oContext !== undefined && graphics.m_oContext !== null && graphics.IsTrack === undefined && (!drawingObjects || AscFormat.getTargetTextObject(drawingObjects) !== this)) {
+				if (typeof editor !== "undefined" && editor && graphics.m_oContext !== undefined && graphics.m_oContext !== null && !graphics.isTrack() && (!drawingObjects || AscFormat.getTargetTextObject(drawingObjects) !== this)) {
 					var angle = _transform.GetRotation();
 					if (AscFormat.fApproxEqual(angle, 0.0, 0.0) ||
 						AscFormat.fApproxEqual(angle, 90.0, 0.0) ||
@@ -5254,7 +5254,7 @@
 						graphics.RestoreGrState();
 					}
 
-					if (this.textBoxContent && !graphics.IsNoSupportTextDraw && this.transformText) {
+					if (this.textBoxContent && graphics.isSupportTextDraw() && this.transformText) {
 						var old_start_page = this.textBoxContent.Get_StartPage_Relative();
 						this.textBoxContent.Set_StartPage(pageIndex);
 
@@ -5285,7 +5285,7 @@
 					var oTheme = this.getParentObjects().theme;
 					var oColorMap = this.Get_ColorMap();
 					if (!this.bWordShape && (!this.txBody.content || this.txBody.content.Is_Empty()) && !AscCommon.IsShapeToImageConverter && this.txBody.content2 != null && !this.txBody.checkCurrentPlaceholder() && (this.isEmptyPlaceholder ? this.isEmptyPlaceholder() : false)) {
-						if (graphics.IsNoDrawingEmptyPlaceholder !== true && graphics.IsNoDrawingEmptyPlaceholderText !== true && !graphics.RENDERER_PDF_FLAG) {
+						if (graphics.IsNoDrawingEmptyPlaceholder !== true && graphics.IsNoDrawingEmptyPlaceholderText !== true && !graphics.isPdf()) {
 							if (editor && editor.ShowParaMarks) {
 								this.txWarpStructParamarks2.draw(graphics, this.transformTextWordArt2, oTheme, oColorMap);
 							} else {
@@ -6698,25 +6698,28 @@
 			if(oDrawing) {
 				this.pasteDrawingFormatting(oFormatData.Drawing);
 			}
-			if(oFormatData.ParaPr || oFormatData.TextPr) {
-				let oContent = this.getDocContent();
-				if(oContent) {
-					let bApplyToAll = true;
-					let oController = this.getDrawingObjectsController && this.getDrawingObjectsController();
-					if(oController) {
-						if(AscFormat.getTargetTextObject(oController) === this) {
-							bApplyToAll = false;
-						}
+			let oContent = this.getDocContent();
+			if(oContent) {
+				let bApplyToAll = true;
+				let oController = this.getDrawingObjectsController && this.getDrawingObjectsController();
+				if(oController) {
+					if(AscFormat.getTargetTextObject(oController) === this) {
+						bApplyToAll = false;
 					}
-					if(bApplyToAll) {
-						oContent.SetApplyToAll(true);
-					}
+				}
+				if(bApplyToAll) {
+					oContent.SetApplyToAll(true);
+				}
+				let fDocContentMethod = AscCommonWord.CDocumentContent.prototype.ClearParagraphFormatting;
+				let fTableMethod = AscCommonWord.CTable.prototype.ClearParagraphFormatting;
+				this.applyTextFunction(fDocContentMethod, fTableMethod, [oFormatData]);
+				if(oFormatData.ParaPr || oFormatData.TextPr) {
 					let fDocContentMethod = AscCommonWord.CDocumentContent.prototype.PasteFormatting;
 					let fTableMethod = AscCommonWord.CTable.prototype.PasteFormatting;
 					this.applyTextFunction(fDocContentMethod, fTableMethod, [oFormatData]);
-					if(bApplyToAll) {
-						oContent.SetApplyToAll(false);
-					}
+				}
+				if(bApplyToAll) {
+					oContent.SetApplyToAll(false);
 				}
 			}
 		};

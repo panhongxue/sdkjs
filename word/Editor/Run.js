@@ -5992,9 +5992,7 @@ ParaRun.prototype.RecalculateMinMaxContentWidth = function(MinMax)
                 }
                 else if (true === Item.Use_TextWrap())
                 {
-                    var DrawingW = Item.getXfrmExtX();
-                    if (DrawingW > nMinWidth)
-                        nMinWidth = DrawingW;
+					nMinWidth = Math.max(nMinWidth, Item.getExtX());
                 }
 
                 if ((true === Item.Is_Inline() || true === this.Paragraph.Parent.Is_DrawingShape()) && Item.getHeight() > nMaxHeight)
@@ -6003,9 +6001,7 @@ ParaRun.prototype.RecalculateMinMaxContentWidth = function(MinMax)
                 }
                 else if (true === Item.Use_TextWrap())
                 {
-                    var DrawingH = Item.getXfrmExtY();
-                    if (DrawingH > nMaxHeight)
-                        nMaxHeight = DrawingH;
+					nMaxHeight = Math.max(nMaxHeight, Item.getExtY());
                 }
 
                 if ( nSpaceLen > 0 )
@@ -8241,7 +8237,7 @@ ParaRun.prototype.AddPrChange = function()
 				PrChange   : this.Pr.PrChange,
 				ReviewInfo : this.Pr.ReviewInfo
 			}));
-		this.private_UpdateTrackRevisions();
+		this.updateTrackRevisions();
     }
 };
 
@@ -8257,7 +8253,7 @@ ParaRun.prototype.SetPrChange = function(PrChange, ReviewInfo)
 			ReviewInfo : ReviewInfo ? ReviewInfo.Copy() : undefined
 		}));
 	this.Pr.SetPrChange(PrChange, ReviewInfo);
-    this.private_UpdateTrackRevisions();
+    this.updateTrackRevisions();
 };
 
 ParaRun.prototype.RemovePrChange = function()
@@ -8274,7 +8270,7 @@ ParaRun.prototype.RemovePrChange = function()
 				ReviewInfo : undefined
 			}));
 		this.Pr.RemovePrChange();
-		this.private_UpdateTrackRevisions();
+		this.updateTrackRevisions();
 	}
 };
 
@@ -10366,7 +10362,7 @@ ParaRun.prototype.RemoveReviewMoveType = function()
 	}));
 
 	this.ReviewInfo = oInfo;
-	this.private_UpdateTrackRevisions();
+	this.updateTrackRevisions();
 };
 ParaRun.prototype.GetReviewInfo = function()
 {
@@ -10425,7 +10421,7 @@ ParaRun.prototype.SetReviewType = function(nType, isCheckDeleteAdded)
 			ReviewType : this.ReviewType,
 			ReviewInfo : this.ReviewInfo.Copy()
 		}));
-		this.private_UpdateTrackRevisions();
+		this.updateTrackRevisions();
 	}
 };
 /**
@@ -10462,7 +10458,7 @@ ParaRun.prototype.SetReviewTypeWithInfo = function(nType, oInfo, isCheckLastPara
 	this.ReviewType = nType;
 	this.ReviewInfo = oInfo;
 
-	this.private_UpdateTrackRevisions();
+	this.updateTrackRevisions();
 };
 ParaRun.prototype.Get_Parent = function()
 {
@@ -10611,7 +10607,7 @@ ParaRun.prototype.private_UpdateTrackRevisionOnChangeContent = function(bUpdateI
 {
     if (reviewtype_Common !== this.GetReviewType())
     {
-        this.private_UpdateTrackRevisions();
+        this.updateTrackRevisions();
 
         if (true === bUpdateInfo && this.Paragraph && this.Paragraph.LogicDocument && this.Paragraph.bFromDocument && true === this.Paragraph.LogicDocument.IsTrackRevisions() && this.ReviewInfo && true === this.ReviewInfo.IsCurrentUser())
         {
@@ -10625,7 +10621,7 @@ ParaRun.prototype.private_UpdateTrackRevisionOnChangeTextPr = function(bUpdateIn
 {
     if (true === this.HavePrChange())
     {
-        this.private_UpdateTrackRevisions();
+        this.updateTrackRevisions();
 
         if (true === bUpdateInfo && this.Paragraph && this.Paragraph.bFromDocument && this.Paragraph.LogicDocument && true === this.Paragraph.LogicDocument.IsTrackRevisions())
         {
@@ -10633,14 +10629,6 @@ ParaRun.prototype.private_UpdateTrackRevisionOnChangeTextPr = function(bUpdateIn
             this.Pr.ReviewInfo.Update();
             History.Add(new CChangesRunPrReviewInfo(this, OldReviewInfo, this.Pr.ReviewInfo.Copy()));
         }
-    }
-};
-ParaRun.prototype.private_UpdateTrackRevisions = function()
-{
-    if (this.Paragraph && this.Paragraph.bFromDocument && this.Paragraph.LogicDocument && this.Paragraph.LogicDocument.GetTrackRevisionsManager)
-    {
-        var RevisionsManager = this.Paragraph.LogicDocument.GetTrackRevisionsManager();
-        RevisionsManager.CheckElement(this.Paragraph);
     }
 };
 ParaRun.prototype.AcceptRevisionChanges = function(nType, bAll)

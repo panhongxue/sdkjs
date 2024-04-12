@@ -1886,9 +1886,6 @@ function BinaryFileWriter(doc, bMailMergeDocx, bMailMergeHtml, isCompatible, opt
 			jsZlib.create();
 			oform.toZip(jsZlib, this.saveParams.fieldMastersPartMap);
 			let data = jsZlib.save();
-
-			let jsZlib2 = new AscCommon.ZLib();
-			jsZlib2.open(data);
 			this.WriteTable(c_oSerTableTypes.OForm, {Write: function(){
 				t.bs.WriteItemWithLength(function(){t.memory.WriteBuffer(data, 0, data.length);});
 			}});
@@ -7071,8 +7068,8 @@ function BinarySettingsTableWriter(memory, doc, saveParams)
 		var flags1 = 0;
 		flags1 |= (oSettings.BalanceSingleByteDoubleByteWidth ? 1 : 0) << 6;
 		flags1 |= (oSettings.UlTrailSpace ? 1 : 0) << 9;
-		if (this.saveParams.isCompatible) {
-			flags1 |= (oSettings.DoNotExpandShiftReturn ? 1 : 0) << 10;
+		if (oSettings.DoNotExpandShiftReturn) {
+			flags1 |= 1 << 10;
 		}
 		this.bs.WriteItem(c_oSerCompat.Flags1, function() {oThis.memory.WriteULong(flags1);});
 		var flags2 = 0;

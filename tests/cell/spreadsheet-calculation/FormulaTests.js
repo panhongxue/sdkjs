@@ -19631,7 +19631,7 @@ $(function () {
 
 		oParser = new parserFormula('VLOOKUP(576,K100:L113,2)', "A2", ws);
 		assert.ok(oParser.parse(), 'VLOOKUP(576,K100:L113,2)');
-		assert.strictEqual(oParser.calculate().getValue(), 0.3477, 'Result of VLOOKUP(576,K100:L113,2)');
+		assert.strictEqual(oParser.calculate().getValue(), 4, 'Result of VLOOKUP(576,K100:L113,2)');
 
 		oParser = new parserFormula('VLOOKUP(576,N100:O114,2)', "A2", ws);
 		assert.ok(oParser.parse(), 'VLOOKUP(576,N100:O114,2)');

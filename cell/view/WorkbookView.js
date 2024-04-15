@@ -326,6 +326,11 @@
 	//внутри пока простой объект {groups: true}
 	this.drawRestrictions = null;
 
+	//for version history - changed ranges
+	this.oHistoryChangedRanges = null;
+
+	this.customFunctionEngine = null;
+
 	return this;
   }
 
@@ -2798,11 +2803,16 @@
 			return res;
 		};
 
+		let oThis = this;
+		let getCompleteMenu = function (_name, _type) {
+			return new AscCommonExcel.asc_CCompleteMenu(_name, _type);
+		};
+
 		let defNamesList, defName, defNameStr, _lastFNameLength, _type;
 		fName = fName.toUpperCase();
 		for (let i = 0; i < this.formulasList.length; ++i) {
 			if (0 === this.formulasList[i].indexOf(fName)) {
-				arrResult.push(new AscCommonExcel.asc_CCompleteMenu(this.formulasList[i], c_oAscPopUpSelectorType.Func));
+				arrResult.push(getCompleteMenu(this.formulasList[i], c_oAscPopUpSelectorType.Func));
 			}
 		}
 
@@ -2822,7 +2832,7 @@
 				} else if (defName.type === Asc.c_oAscDefNameType.table) {
 					_type = c_oAscPopUpSelectorType.Table;
 				}
-				arrResult.push(new AscCommonExcel.asc_CCompleteMenu(defNameStr, _type));
+				arrResult.push(getCompleteMenu(defNameStr, _type));
 			} else if (defName.type === Asc.c_oAscDefNameType.table && 0 === fName.indexOf(defNameStr.toLowerCase())) {
 				if (-1 !== fName.indexOf("[")) {
 					var tableNameParse = fName.split("[");
@@ -2837,7 +2847,7 @@
 									_str = table.TableColumns[j].Name;
 									_type = c_oAscPopUpSelectorType.TableColumnName;
 									if (sTableInner === "" || 0 === _str.toLowerCase().indexOf(sTableInner)) {
-										arrResult.push(new AscCommonExcel.asc_CCompleteMenu(_str, _type));
+										arrResult.push(getCompleteMenu(_str, _type));
 									}
 								}
 
@@ -2861,7 +2871,7 @@
 											_type = c_oAscPopUpSelectorType.TableTotals;
 										}
 										if (sTableInner === "" || (0 === _str.toLocaleLowerCase().indexOf(sTableInner) && _type !== c_oAscPopUpSelectorType.TableThisRow)) {
-											arrResult.push(new AscCommonExcel.asc_CCompleteMenu(_str, _type));
+											arrResult.push(getCompleteMenu(_str, _type));
 										}
 									}
 								}
@@ -3081,6 +3091,7 @@
 			if (!res) {
 				res = name ? new AscCommonExcel.CFunctionInfo(name) : null;
 			}
+
 			t.handlers.trigger("asc_onSendFunctionWizardInfo", res);
         };
 
@@ -4047,6 +4058,10 @@
       this.formulasList.push(f);
     }
     this.arrExcludeFormulas = [cBoolLocal.t, cBoolLocal.f];
+  };
+
+  WorkbookView.prototype.addToFormulasList = function(func) {
+    this.formulasList.push(func);
   };
 
   WorkbookView.prototype._setHintsProps = function(bIsHinting, bIsSubpixHinting) {
@@ -5017,7 +5032,7 @@
 			let sheetsProps = this.printOptionsJson["spreadsheetLayout"] && this.printOptionsJson["spreadsheetLayout"]["sheetsProps"];
 			var ws = this.model.getWorksheet(index);
 			res = new Asc.CHeaderFooter(ws);
-			if (sheetsProps[index] && sheetsProps[index]["pageSetup"] && sheetsProps[index]["pageSetup"]["headerFooter"]) {
+			if (sheetsProps && sheetsProps[index] && sheetsProps[index]["pageSetup"] && sheetsProps[index]["pageSetup"]["headerFooter"]) {
 				res.initFromJson(sheetsProps[index]["pageSetup"]["headerFooter"]);
 			}
 		}
@@ -5690,6 +5705,68 @@
 	WorkbookView.prototype.stepGoalSeek = function() {
 		this.model.stepGoalSeek();
 	};
+	WorkbookView.prototype.addToHistoryChangedRanges = function(sheetId, range, userColor) {
+		if (!range) {
+			return;
+		}
+		if (Array.isArray(range)) {
+			for (let i in range) {
+				this._addToHistoryChangedRanges(sheetId, range[i], userColor);
+			}
+		} else {
+			this._addToHistoryChangedRanges(sheetId, range, userColor);
+		}
+	};
+	WorkbookView.prototype._addToHistoryChangedRanges = function(sheetId, range, userColor) {
+		if (!range) {
+			return;
+		}
+		if (!this.historyChangedRanges) {
+			this.historyChangedRanges = {};
+		}
+		if (!this.historyChangedRanges[sheetId]) {
+			this.historyChangedRanges[sheetId] = [];
+		}
+		let changedRanges = this.historyChangedRanges[sheetId];
+		if (changedRanges.length) {
+			for (let i in changedRanges) {
+				if (!changedRanges[i]) {
+					continue;
+				}
+				let _addedRange = changedRanges[i].range;
+				let _addedColor = changedRanges[i].color;
+				if (!_addedRange || !_addedColor || (userColor && userColor.IsEqual && !userColor.IsEqual(_addedColor))) {
+					continue;
+				}
+				if (_addedRange.isEqual(range)) {
+					return;
+				} else if (_addedRange.intersection(range)) {
+					let _difference = _addedRange.difference(range);
+					if (_difference) {
+						for (let j in _difference) {
+							changedRanges.push({range: _difference[j], color: userColor});
+						}
+					}
+					return;
+				}
+			}
+		}
+		changedRanges.push({range: range, color: userColor});
+	};
+
+	WorkbookView.prototype.addCustomFunction = function(func, options) {
+		if (!this.customFunctionEngine) {
+			this.initCustomEngine();
+		}
+		this.customFunctionEngine.add(func, options);
+	};
+
+	WorkbookView.prototype.initCustomEngine = function() {
+		if (!this.customFunctionEngine) {
+			this.customFunctionEngine = new AscCommonExcel.CCustomFunctionEngine(this);
+		}
+	};
+
 
 
 	//временно добавляю сюда. в идеале - использовать общий класс из документов(или сделать базовый, от него наследоваться) - CDocumentSearch
@@ -6061,7 +6138,7 @@
 				this.changeRangeValue(arg1, arg2);
 				break;
 			case AscCommonExcel.docChangedType.sheetContent:
-				this.changeSheetContent(arg1);
+				this.changeSheetContent(arg1, arg2);
 				break;
 			case AscCommonExcel.docChangedType.sheetRemove:
 				this.removeSheet(arg1);
@@ -6096,22 +6173,43 @@
 		}
 	};
 	CDocumentSearchExcel.prototype.changeRangeValue = function (bbox, ws) {
-		if (this.wb.Api.selectSearchingResults && bbox) {
+		if (this.wb.Api.selectSearchingResults && bbox && this.props) {
 			let t = this;
+			let aCells;
 			ws.getRange3(bbox.r1, bbox.c1, bbox.r2, bbox.c2)._foreachNoEmpty(function(cell) {
-				t.changeCellValue(cell);
+				if (!aCells) {
+					aCells = [];
+				}
+				if (!aCells[cell.nRow]) {
+					aCells[cell.nRow] = [];
+				}
+				aCells[cell.nRow][cell.nCol] = cell;
 			});
+
+			let newCell = new AscCommonExcel.Cell(ws);
+			for (let i = bbox.c1; i <= bbox.c2; i++) {
+				for (let j = bbox.r1; j <= bbox.r2; j++) {
+					newCell.nCol = i;
+					newCell.nRow = j;
+					let _cell = aCells && aCells[j] && aCells[j][i] ? aCells[j][i] : newCell;
+					this.changeCellValue(_cell);
+				}
+			}
 		}
 	};
-	CDocumentSearchExcel.prototype.changeSheetContent = function (ws) {
+	CDocumentSearchExcel.prototype.changeSheetContent = function (ws, range) {
 		if (this.wb.Api.selectSearchingResults && ws && this.props) {
 			if (this.isNotEmpty()) {
-				for (let i in this.Elements) {
-					if (this.Elements[i] && ws.index === this.Elements[i].index) {
-						this.wb.handlers.trigger("asc_onModifiedDocument");
-						this.setModifiedDocument(true);
-						this.mapFindCells = {};
-						break;
+				if (range) {
+					this.changeRangeValue(range, ws);
+				} else {
+					for (let i in this.Elements) {
+						if (this.Elements[i] && ws.index === this.Elements[i].index) {
+							this.wb.handlers.trigger("asc_onModifiedDocument");
+							this.setModifiedDocument(true);
+							this.mapFindCells = {};
+							break;
+						}
 					}
 				}
 			}

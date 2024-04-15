@@ -329,12 +329,38 @@ window.startPluginApi = function() {
 	 */
 
 	/**
+	 * The context menu type:
+	 * * <b>None</b> - not used,
+	 * * <b>Target</b> - nothing is selected,
+	 * * <b>Selection</b> - text is selected,
+	 * * <b>Image</b> - image is selected,
+	 * * <b>Shape</b> - shape is selected,
+	 * * <b>OleObject</b> - OLE object is selected.
+	 * @typedef {("None" | "Target" | "Selection" | "Image" | "Shape" | "OleObject")} ContextMenuType
+	 * */
+
+	/**
+	 * @typedef {Object} ContextMenuOptions
+	 * @description Defines the context menu options.
+	 * @property {ContextMenuType} Type - The context menu type.
+	 * @property {boolean} [header] - Specifies if the context menu is opened inside the header.
+	 * @property {boolean} [footer] - Specifies if the context menu is opened inside the footer.
+	 * @property {boolean} [headerArea] - Specifies if the context menu is opened over the header.
+	 * @property {boolean} [footerArea] - Specifies if the context menu is opened over the footer.
+	 */
+
+	/**
 	 * Event: onContextMenuShow
+	 * WARNING! If plugin is listening this event, it MUST call AddContextMenuItem method (synchronously or not),
+	 * because editor wait answers from ALL plugins and then and only then fill contextmenu.
 	 * @event Plugin#onContextMenuShow
 	 * @memberof Plugin
 	 * @alias onContextMenuShow
 	 * @description The function called when the context menu has been shown.
-	 * @param {Object} options - Defines the options for the current selection.
+	 * 
+	 * <note>If a plugin is listening for this event, it must call the {@link /plugin/executeMethod/common/addcontextmenuitem AddContextMenuItem} method (synchronously or not),
+	 * because the editor waits for responses from all plugins before filling the context menu.</note>
+	 * @param {ContextMenuOptions} options - Defines the context menu information.
 	 * @since 7.4.0
 	 */
 
@@ -346,6 +372,16 @@ window.startPluginApi = function() {
 	 * @description The function called when the context menu item has been clicked.
 	 * @param {string} id - Item ID.
 	 * @since 7.4.0
+	 */
+
+	/**
+	 * Event: onToolbarMenuClick
+	 * @event Plugin#onToolbarMenuClick
+	 * @memberof Plugin
+	 * @alias onToolbarMenuClick
+	 * @description The function called when the toolbar menu item has been clicked.
+	 * @param {string} id - Item ID.
+	 * @since 8.1.0
 	 */
 
 	/**

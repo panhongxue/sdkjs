@@ -3607,17 +3607,20 @@ ParaRun.prototype.Recalculate_Range = function(PRS, ParaPr, Depth)
 				var oInstrText = Item;
 				if (!PRS.ComplexFields.isComplexFieldCode())
 				{
-					if (32 === Item.Value)
+					if (AscCommon.IsSpace(Item.Value))
 					{
-						Item     = new AscWord.CRunSpace();
+						Item     = new AscWord.CRunSpace(Item.Value);
 						ItemType = para_Space;
+						Item.Measure(g_oTextMeasurer, this.getCompiledPr());
 					}
 					else
 					{
+						// TODO: Пока для такого текста не шейпим по-нормальному, а как по-старому по одному отдельному символу
 						Item     = new AscWord.CRunText(Item.Value);
 						ItemType = para_Text;
+						AscWord.ParagraphTextShaper.ShapeRunTextItem(Item, this.getCompiledPr());
 					}
-					Item.Measure(g_oTextMeasurer, this.Get_CompiledPr(false));
+					
 					oInstrText.SetReplacementItem(Item);
 				}
 				else
@@ -5992,9 +5995,7 @@ ParaRun.prototype.RecalculateMinMaxContentWidth = function(MinMax)
                 }
                 else if (true === Item.Use_TextWrap())
                 {
-                    var DrawingW = Item.getXfrmExtX();
-                    if (DrawingW > nMinWidth)
-                        nMinWidth = DrawingW;
+					nMinWidth = Math.max(nMinWidth, Item.getExtX());
                 }
 
                 if ((true === Item.Is_Inline() || true === this.Paragraph.Parent.Is_DrawingShape()) && Item.getHeight() > nMaxHeight)
@@ -6003,9 +6004,7 @@ ParaRun.prototype.RecalculateMinMaxContentWidth = function(MinMax)
                 }
                 else if (true === Item.Use_TextWrap())
                 {
-                    var DrawingH = Item.getXfrmExtY();
-                    if (DrawingH > nMaxHeight)
-                        nMaxHeight = DrawingH;
+					nMaxHeight = Math.max(nMaxHeight, Item.getExtY());
                 }
 
                 if ( nSpaceLen > 0 )

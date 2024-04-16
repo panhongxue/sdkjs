@@ -3035,14 +3035,13 @@
             }
 		}
 	};
-	baseEditorsApi.prototype.hideVideoControl = function()
+	baseEditorsApi.prototype.hideMediaControl = function()
 	{
 
-		this.callMediaPlayerCommand("hideMediaControl");
-
-        if (!window["AscDesktopEditor"] || !window["AscDesktopEditor"]["MediaEnd"])
-            return;
-        window["AscDesktopEditor"]["MediaEnd"]();
+		if(this.mediaData)
+		{
+			this.callMediaPlayerCommand("hideMediaControl", null);
+		}
 	};
 
 
@@ -3057,8 +3056,12 @@
 		return this.mediaData;
 	};
 
-	baseEditorsApi.prototype.onUpdateMediaPlayer = function()
+	baseEditorsApi.prototype.getPlayerData = function (sCmd)
 	{
+		if(!sCmd) return null;
+		if(!this.mediaData) return {"Cmd": sCmd};
+
+		let oPlayerData = null;
 		switch (this.editorId)
 		{
 			case c_oEditorId.Word:
@@ -3067,7 +3070,9 @@
 			}
 			case c_oEditorId.Presentation:
 			{
-				this.WordControl.OnUpdateMediaPlayer();
+				oPlayerData = this.WordControl.GetMediaPlayerData(this.mediaData);
+				if(oPlayerData)
+					oPlayerData["Cmd"] = sCmd;
 				break;
 			}
 			case c_oEditorId.Spreadsheet:
@@ -3075,48 +3080,36 @@
 				break;
 			}
 		}
+		return oPlayerData;
+	};
+
+	baseEditorsApi.prototype.onUpdateMediaPlayer = function()
+	{
+		if(this.mediaData)
+		{
+			this.callMediaPlayerCommand("update", this.mediaData);
+		}
 	};
 	baseEditorsApi.prototype.callMediaPlayerCommand = function(sCmd, oMediaData)
 	{
 		this.mediaData = oMediaData;
-
 		if(!sCmd) return;
-		console.log(sCmd);
-		switch (sCmd)
+		if (window["AscDesktopEditor"] && window["AscDesktopEditor"]["CallMediaPlayerCommand"])
 		{
-			case "play":
+			let oData = this.getPlayerData(sCmd);
+			if(!AscFormat.IsEqualObjects(this.lastPlCompareOayerData, oData))
 			{
-				break;
+				window["AscDesktopEditor"]["CallMediaPlayerCommand"](oData);
+				this.lastPlCompareOayerData = oData;
 			}
-			case "playFrom":
+		}
+		else
+		{
+			let oData = this.getPlayerData(sCmd);
+			if(!AscFormat.IsEqualObjects(this.lastPlCompareOayerData, oData))
 			{
-				break;
-			}
-			case "pause":
-			{
-				break;
-			}
-			case "resume":
-			{
-				break;
-			}
-			case "stop":
-			{
-				break;
-			}
-			case "togglePause":
-			{
-				break;
-			}
-			case "showMediaControl":
-			{
-				this.onUpdateMediaPlayer();
-				break;
-			}
-			case "hideMediaControl":
-			{
-				this.onUpdateMediaPlayer();
-				break;
+				console.log(this.getPlayerData(sCmd));
+				this.lastPlCompareOayerData = oData;
 			}
 		}
 	};
@@ -4597,7 +4590,10 @@
 	// ---------------------------------------------------- interface events ---------------------------------------------
 	baseEditorsApi.prototype["asc_onShowPopupWindow"] = function()
 	{
-		this.callMediaPlayerCommand("hideMediaControl");
+		if(this.mediaData)
+		{
+			this.callMediaPlayerCommand("hideMediaControl", null);
+		}
 	};
 
 

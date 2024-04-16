@@ -1590,14 +1590,13 @@ function(window, undefined) {
 
 	AscFormat.InitClass(CChartSpace, AscFormat.CGraphicObjectBase, AscDFH.historyitem_type_ChartSpace);
 	CChartSpace.prototype.getPlotArea = function () {
-		return this.chart ? this.chart.plotArea : null;
+		if(!this.chart) return null;
+		return this.chart.plotArea;
 	};
 	CChartSpace.prototype.isChartEx = function () {
-		const plotArea = this.getPlotArea();
-		if (plotArea) {
-			return this.getPlotArea().isChartEx();
-		}
-		return false;
+		let oPlotArea = this.getPlotArea();
+		if(!oPlotArea) return false;
+		return oPlotArea.isChartEx();
 	};
 	CChartSpace.prototype.fromOther = function(oChartSpace) {
 		if(oChartSpace.nvGraphicFramePr) {

@@ -4822,11 +4822,85 @@ background-repeat: no-repeat;\
             this.WordControl.m_oLogicDocument.Slides[this.WordControl.m_oLogicDocument.CurPage].graphicObjects.startEditCurrentOleObject();
     };
 
-
 	asc_docs_api.prototype.asc_uniteSelectedShapes = function () {
-		// get out paths
-		// convert to paperjs format
-		// create paperjs path-objects
+		/* Get our selected shapes (paths) */
+		const graphicController = this.getGraphicController();
+		if (!graphicController) { return }
+
+		const selectedShapes = graphicController.getSelectedArray();
+		if (selectedShapes.length < 2) { return }
+
+		const pathLists = selectedShapes.map(function (shape) {
+			return shape.getGeometry().pathLst;
+		});
+
+		/* Create paperjs path-objects (for each path that we have) */
+		paper.setup();
+		const paperGroups = pathLists.map(function (pathList) {
+			// Each paperGroup corresponds to a certain shape
+			const paperGroup = new paper.Group();
+
+			pathList.forEach(function (path) {
+				const paperCompoundPath = new paper.CompoundPath();
+
+				let paperCurrentPath = new paper.Path();
+				path.ArrPathCommand.forEach(function (pathCommand) {
+					switch (pathCommand.id) {
+						case AscFormat.moveTo:
+							paperCurrentPath.moveTo(pathCommand.X, pathCommand.Y)
+							break;
+
+						case AscFormat.lineTo:
+							paperCurrentPath.lineTo(pathCommand.X, pathCommand.Y)
+							break;
+
+						case AscFormat.arcTo:
+							// I am here (^-^)
+							break;
+
+						case AscFormat.bezier3:
+
+							break;
+
+						case AscFormat.bezier4:
+
+							break;
+
+						case AscFormat.close:
+
+							break;
+					}
+				});
+
+				paperGroup.addChild(compoundPath);
+			});
+
+			return paperGroup;
+		});
+		debugger
+		paper.clear();
+
+
+		// const paperPaths = pathLists.map(function (pathList) {
+		// 	if (pathList.length > 1) {
+		// 		const paperCompoundPath = new paper.CompoundPath();
+
+		// 		pathList.forEach(function (path) {
+		// 			path.forEach(function (pathCommand) {
+		// 				switch (pathCommand.id) {
+		// 					case AscFormat.moveTo: break;
+		// 					case AscFormat.lineTo: break;
+		// 					case AscFormat.arcTo: break;
+		// 					case AscFormat.bezier3: break;
+		// 					case AscFormat.bezier4: break;
+		// 					case AscFormat.close: break;
+		// 				}
+		// 			})
+		// 		})
+		// 	} else {
+		// 		const paperPath = new paper.Path();
+		// 	}
+		// });
 		// unite using paperjs
 		// convert result to our format
 		// remove old shapes

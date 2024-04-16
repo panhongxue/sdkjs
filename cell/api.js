@@ -9696,6 +9696,7 @@ var editor;
   prot["asc_CancelFillCells"] = prot.asc_CancelFillCells;
 
   prot["asc_GetCalcSettings"] = prot.asc_GetCalcSettings;
+  prot["asc_UpdateCalcSettings"] = prot.asc_UpdateCalcSettings;
 
 
 

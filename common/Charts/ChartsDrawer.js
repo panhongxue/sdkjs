@@ -6625,8 +6625,6 @@ drawBarChart.prototype = {
 
 					cubeCount++;
 				} else {
-					console.log(startX + (individualBarWidth) / 2)
-					console.log((startX + (individualBarWidth) / 2) / this.chartProp.pxToMM);
 					paths = this.cChartDrawer._calculateRect(startX, startY, individualBarWidth, height);
 				}
 

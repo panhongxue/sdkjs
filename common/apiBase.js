@@ -3113,15 +3113,6 @@
 				this.lastPlCompareOayerData = oData;
 			}
 		}
-		else
-		{
-			let oData = this.getPlayerData(sCmd);
-			if(!AscFormat.IsEqualObjects(this.lastPlCompareOayerData, oData))
-			{
-				console.log(this.getPlayerData(sCmd));
-				this.lastPlCompareOayerData = oData;
-			}
-		}
 	};
 
 	// plugins

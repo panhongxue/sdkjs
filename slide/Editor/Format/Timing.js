@@ -8311,7 +8311,7 @@
         fullScreen: bFullScreen, //show on fullscreen or not
         mute: false,
         vol: 100,
-        isVideo: true
+        video: true
         }*/
 
         let oSp = this.getTargetObject();
@@ -8338,11 +8338,12 @@
                 }
             });
             if(oMediaNode) {
+                let oPr = oMediaNode.cMediaNode;
                 let oAdditionalData = new CAdditionalMediaData();
-                oAdditionalData.fullScreen = !!oMediaNode.fullScrn;
-                oAdditionalData.mute = !!oMediaNode.mute;
-                oAdditionalData.vol = oMediaNode.vol !== null ? oMediaNode.vol : null;
-                oAdditionalData.isVideo = oMediaNode.isVideo();
+                oAdditionalData.fullScreen = !!oPr.fullScrn;
+                oAdditionalData.mute = !!oPr.mute;
+                oAdditionalData.vol = oPr.vol !== null ? oPr.vol : null;
+                oAdditionalData.video = oPr.isVideo();
                 oData.setAdditionalData(oAdditionalData);
 
             }
@@ -8375,7 +8376,7 @@
         this.fullScreen = null;
         this.mute = null;
         this.vol = null;
-        this.isVideo = null;
+        this.video = null;
     }
     CAdditionalMediaData.prototype.isFullScreen = function () {
         return this.fullScreen === true;
@@ -8387,7 +8388,7 @@
         return this.vol;
     };
     CAdditionalMediaData.prototype.isVideo = function () {
-        return this.isVideo !== false;
+        return this.video !== false;
     };
 
     changesFactory[AscDFH.historyitem_TimeNodeContainerCTn] = CChangeObject;

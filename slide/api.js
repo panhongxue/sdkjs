@@ -4830,78 +4830,58 @@ background-repeat: no-repeat;\
 		const selectedShapes = graphicController.getSelectedArray();
 		if (selectedShapes.length < 2) { return }
 
-		const pathLists = selectedShapes.map(function (shape) {
-			return shape.getGeometry().pathLst;
-		});
-
-		/* Create paperjs path-objects (for each path that we have) */
+		/* Create structure of paper classes */
 		paper.setup();
-		const paperGroups = pathLists.map(function (pathList) {
-			// Each paperGroup corresponds to a certain shape
+		const paperShapes = selectedShapes.map(function (shape) {
 			const paperGroup = new paper.Group();
 
-			pathList.forEach(function (path) {
+			const pathLst = shape.getGeometry().pathLst;
+			pathLst.forEach(function (path) {
+				const convertedPath = new AscFormat.Path();
+				path.convertToBezierCurves(convertedPath, shape.transform, true);
+
 				const paperCompoundPath = new paper.CompoundPath();
 
 				let paperCurrentPath = new paper.Path();
-				path.ArrPathCommand.forEach(function (pathCommand) {
+				convertedPath.ArrPathCommand.forEach(function (pathCommand) {
 					switch (pathCommand.id) {
 						case AscFormat.moveTo:
-							paperCurrentPath.moveTo(pathCommand.X, pathCommand.Y)
+							paperCurrentPath.moveTo(pathCommand.X, pathCommand.Y);
 							break;
-
 						case AscFormat.lineTo:
-							paperCurrentPath.lineTo(pathCommand.X, pathCommand.Y)
+							paperCurrentPath.lineTo(pathCommand.X, pathCommand.Y);
 							break;
-
-						case AscFormat.arcTo:
-							// I am here (^-^)
-							break;
-
-						case AscFormat.bezier3:
-
-							break;
-
 						case AscFormat.bezier4:
-
+							paperCurrentPath.cubicCurveTo(
+								pathCommand.X0, pathCommand.Y0,
+								pathCommand.X1, pathCommand.Y1,
+								pathCommand.X2, pathCommand.Y2
+							);
 							break;
-
 						case AscFormat.close:
-
+							paperCurrentPath.closePath();
+							paperCompoundPath.addChild(paperCurrentPath);
+							paperCurrentPath = new paper.Path();
 							break;
 					}
 				});
 
-				paperGroup.addChild(compoundPath);
+				if (!paperCurrentPath.isEmpty()) {
+					paperCompoundPath.addChild(paperCurrentPath);
+				}
+
+				paperGroup.addChild(paperCompoundPath);
 			});
 
-			return paperGroup;
+			const paperShape = new paper.CompoundPath();
+			paperShape.addChildren(paperGroup.children);
+			paperShape.fillColor = 'red';
+			return paperShape;
 		});
-		debugger
-		paper.clear();
 
+		/* Get paper shapes union */
+		// Continue from here
 
-		// const paperPaths = pathLists.map(function (pathList) {
-		// 	if (pathList.length > 1) {
-		// 		const paperCompoundPath = new paper.CompoundPath();
-
-		// 		pathList.forEach(function (path) {
-		// 			path.forEach(function (pathCommand) {
-		// 				switch (pathCommand.id) {
-		// 					case AscFormat.moveTo: break;
-		// 					case AscFormat.lineTo: break;
-		// 					case AscFormat.arcTo: break;
-		// 					case AscFormat.bezier3: break;
-		// 					case AscFormat.bezier4: break;
-		// 					case AscFormat.close: break;
-		// 				}
-		// 			})
-		// 		})
-		// 	} else {
-		// 		const paperPath = new paper.Path();
-		// 	}
-		// });
-		// unite using paperjs
 		// convert result to our format
 		// remove old shapes
 		// add result shapes (merged)

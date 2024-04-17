@@ -4822,7 +4822,7 @@ background-repeat: no-repeat;\
             this.WordControl.m_oLogicDocument.Slides[this.WordControl.m_oLogicDocument.CurPage].graphicObjects.startEditCurrentOleObject();
     };
 
-	asc_docs_api.prototype.asc_uniteSelectedShapes = function () {
+	asc_docs_api.prototype.asc_mergeSelectedShapes = function (operation) {
 		/* Get our selected shapes (paths) */
 		const graphicController = this.getGraphicController();
 		if (!graphicController) { return }
@@ -4880,7 +4880,9 @@ background-repeat: no-repeat;\
 		});
 
 		/* Get paper shapes union */
-		// Continue from here
+		const paperResult = paperShapes.reduce(function (accumulator, currentPath) {
+			return accumulator[operation](currentPath);
+		});
 
 		// convert result to our format
 		// remove old shapes

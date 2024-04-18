@@ -2924,6 +2924,7 @@ function CPresentation(DrawingDocument) {
 	// Добавляем данный класс в таблицу Id (обязательно в конце конструктора)
 	g_oTableId.Add(this, this.Id);
 	//
+	this.hdrFtrLock = new PropLocker(this.Id);
 	this.themeLock = new PropLocker(this.Id);
 	this.schemeLock = new PropLocker(this.Id);
 	this.slideSizeLock = new PropLocker(this.Id);
@@ -3416,8 +3417,7 @@ CPresentation.prototype.getHFProperties = function () {
 
 
 CPresentation.prototype.setHFProperties = function (oProps, bAll) {
-	const arrIndexes = bAll ? this.GetAllSlideIndexes() : this.GetSelectedSlides();
-	if (this.Document_Is_SelectionLocked(AscCommon.changestype_HdrFtr, arrIndexes)) {
+	if (bAll && this.Document_Is_SelectionLocked(AscCommon.changestype_HdrFtr)) {
 		return;
 	}
 
@@ -5227,7 +5227,7 @@ CPresentation.prototype.checkGridCache = function (oGraphics) {
 		oGraphics.IsThumbnail ||
 		oGraphics.animationDrawer ||
 		oGraphics.IsDemonstrationMode ||
-		oGraphics.IsSlideBoundsCheckerType) {
+		oGraphics.isBoundsChecker()) {
 		return;
 	}
 	let nWidth = (oCoordTr.sx * this.GetWidthMM() + 0.5) >> 0;
@@ -5453,7 +5453,7 @@ CPresentation.prototype.GetTargetPosition = function () {
 
 // Отрисовка содержимого Документа
 CPresentation.prototype.Draw = function (nPageIndex, pGraphics) {
-	if (!pGraphics.IsSlideBoundsCheckerType) {
+	if (!pGraphics.isBoundsChecker()) {
 		AscCommon.CollaborativeEditing.Update_ForeignCursorsPositions();
 	}
 	this.Slides[nPageIndex] && this.Slides[nPageIndex].draw(pGraphics);
@@ -6271,13 +6271,6 @@ CPresentation.prototype.GetFocusObjType = function () {
 		return FOCUS_OBJECT_THUMBNAILS;
 	}
 };
-CPresentation.prototype.GetAllSlideIndexes = function () {
-	const arrIndexes = [];
-	for (let i = 0; i < this.Slides.length; i++) {
-		arrIndexes.push(i);
-	}
-	return arrIndexes;
-};
 CPresentation.prototype.GetSelectedSlides = function () {
 	if (!window["NATIVE_EDITOR_ENJINE"] && this.Api.WordControl.Thumbnails) {
 		return this.Api.WordControl.Thumbnails.GetSelectedArray();
@@ -6404,10 +6397,15 @@ CPresentation.prototype.ResolveAllComments = function (isMine, isCurrent, arrIds
 	}
 };
 CPresentation.prototype.GetAllComments = function (aAllComments, isMine, isCurrent, aIds) {
-	this.comments.getAllComments(aAllComments, isMine, isCurrent, aIds);
-	for (var i = 0; i < this.Slides.length; ++i) {
-		this.Slides[i].getAllComments(aAllComments, isMine, isCurrent, aIds);
+	let aResult = aAllComments;
+	if(!Array.isArray(aAllComments)) {
+		aResult = [];
 	}
+	this.comments.getAllComments(aResult, isMine, isCurrent, aIds);
+	for (var i = 0; i < this.Slides.length; ++i) {
+		this.Slides[i].getAllComments(aResult, isMine, isCurrent, aIds);
+	}
+	return aResult;
 };
 
 CPresentation.prototype.Remove = function (Count, bOnlyText, bRemoveOnlySelection, bOnTextAdd, isWord) {
@@ -8501,10 +8499,10 @@ CPresentation.prototype.Document_Format_Copy = function () {
 
 CPresentation.prototype.Document_Format_Paste = function () {
 	let oData = this.Api.getFormatPainterData();
-	if (!oData || !oData.TextPr)
-		return;
+	if(!oData) return;
 	let oController = this.GetCurrentController();
-	oController && oController.pasteFormattingWithPoint(oData);
+	if(!oController) return;
+	oController.pasteFormattingWithPoint(oData);
 };
 
 // Возвращаем выделенный текст, если в выделении не более 1 параграфа, и там нет картинок, нумерации страниц и т.д.
@@ -9176,7 +9174,7 @@ CPresentation.prototype.Notes_GetHeight = function () {
 
 CPresentation.prototype.Notes_Draw = function (SlideIndex, graphics) {
 	if (this.Slides[SlideIndex]) {
-		if (!graphics.IsSlideBoundsCheckerType) {
+		if (!graphics.isBoundsChecker()) {
 			AscCommon.CollaborativeEditing.Update_ForeignCursorsPositions();
 		}
 		this.Slides[SlideIndex].drawNotes(graphics);
@@ -11304,7 +11302,7 @@ CPresentation.prototype.Document_Is_SelectionLocked = function (CheckType, Addit
 	}
 
 	if (CheckType === AscCommon.changestype_Drawing_Props) {
-		if (cur_slide.deleteLock.Lock.Type !== AscCommon.locktype_Mine && cur_slide.deleteLock.Lock.Type !== AscCommon.locktype_None)
+		if (cur_slide.deleteLock.Lock.Type !== AscCommon.c_oAscLockTypes.kLockTypeMine && cur_slide.deleteLock.Lock.Type !== AscCommon.c_oAscLockTypes.kLockTypeNone)
 			return true;
 		var selected_objects = oController.selectedObjects;
 		for (var i = 0; i < selected_objects.length; ++i) {
@@ -11342,7 +11340,7 @@ CPresentation.prototype.Document_Is_SelectionLocked = function (CheckType, Addit
 				};
 			this.commentsLock.Lock.Check(check_obj);
 		} else {
-			if (cur_slide.deleteLock.Lock.Type !== AscCommon.locktype_Mine && cur_slide.deleteLock.Lock.Type !== AscCommon.locktype_None)
+			if (cur_slide.deleteLock.Lock.Type !== AscCommon.c_oAscLockTypes.kLockTypeMine && cur_slide.deleteLock.Lock.Type !== AscCommon.c_oAscLockTypes.kLockTypeNone)
 				return true;
 			var check_obj =
 				{
@@ -11355,7 +11353,7 @@ CPresentation.prototype.Document_Is_SelectionLocked = function (CheckType, Addit
 		}
 	}
 	if (CheckType === AscCommon.changestype_AddShapes) {
-		if (cur_slide.deleteLock.Lock.Type !== AscCommon.locktype_Mine && cur_slide.deleteLock.Lock.Type !== AscCommon.locktype_None)
+		if (cur_slide.deleteLock.Lock.Type !== AscCommon.c_oAscLockTypes.kLockTypeMine && cur_slide.deleteLock.Lock.Type !== AscCommon.c_oAscLockTypes.kLockTypeNone)
 			return true;
 		for (var i = 0; i < AdditionalData.length; ++i) {
 			var check_obj =
@@ -11374,7 +11372,7 @@ CPresentation.prototype.Document_Is_SelectionLocked = function (CheckType, Addit
 			for (var i = 0; i < AdditionalData.length; ++i) {
 				var oCheckData = AdditionalData[i];
 				if (oCheckData.slide) {
-					if (oCheckData.slide.deleteLock.Lock.Type !== AscCommon.locktype_Mine && oCheckData.slide.deleteLock.Lock.Type !== AscCommon.locktype_None)
+					if (oCheckData.slide.deleteLock.Lock.Type !== AscCommon.c_oAscLockTypes.kLockTypeMine && oCheckData.slide.deleteLock.Lock.Type !== AscCommon.c_oAscLockTypes.kLockTypeNone)
 						return true;
 					var check_obj =
 						{
@@ -11410,16 +11408,13 @@ CPresentation.prototype.Document_Is_SelectionLocked = function (CheckType, Addit
 		}
 	}
 	if (CheckType === AscCommon.changestype_HdrFtr) {
-		const selectedSlideIndexes = AdditionalData;
-		for (let i = 0; i < selectedSlideIndexes.length; ++i) {
-			const check_obj =
-				{
-					"type": c_oAscLockTypeElemPresentation.Slide,
-					"val": this.Slides[selectedSlideIndexes[i]].headerLock.Get_Id(),
-					"guid": this.Slides[selectedSlideIndexes[i]].headerLock.Get_Id()
-				};
-			this.Slides[selectedSlideIndexes[i]].headerLock.Lock.Check(check_obj);
-		}
+		const check_obj =
+			{
+				"type": c_oAscLockTypeElemPresentation.Slide,
+				"val": this.hdrFtrLock.Get_Id(),
+				"guid": this.hdrFtrLock.Get_Id()
+			};
+		this.hdrFtrLock.Lock.Check(check_obj);
 	}
 	if (CheckType === AscCommon.changestype_SlideHide) {
 		var selected_slides = AdditionalData;
@@ -11473,7 +11468,7 @@ CPresentation.prototype.Document_Is_SelectionLocked = function (CheckType, Addit
 	}
 
 	if (CheckType === AscCommon.changestype_Text_Props) {
-		if (cur_slide.deleteLock.Lock.Type !== AscCommon.locktype_Mine && cur_slide.deleteLock.Lock.Type !== AscCommon.locktype_None)
+		if (cur_slide.deleteLock.Lock.Type !== AscCommon.c_oAscLockTypes.kLockTypeMine && cur_slide.deleteLock.Lock.Type !== AscCommon.c_oAscLockTypes.kLockTypeNone)
 			return true;
 		var selected_objects = oController.selectedObjects;
 		for (var i = 0; i < selected_objects.length; ++i) {
@@ -12647,16 +12642,7 @@ CPresentation.prototype.setShowMasterSp = function(bShow, arrSlideIndexes) {
 CPresentation.prototype.getLockApplyBackgroundToAll = function() {
 	for (let i = 0; i < this.Slides.length; i++) {
 		const oSlide = this.Slides[i];
-		if (!(oSlide.backgroundLock.Lock.Type === AscCommon.locktype_Mine || oSlide.backgroundLock.Lock.Type === AscCommon.locktype_None)) {
-			return true;
-		}
-	}
-	return false;
-};
-CPresentation.prototype.getLockApplyHeaderToAll = function() {
-	for (let i = 0; i < this.Slides.length; i++) {
-		const oSlide = this.Slides[i];
-		if (!(oSlide.headerLock.Lock.Type === AscCommon.locktype_Mine || oSlide.headerLock.Lock.Type === AscCommon.locktype_None)) {
+		if (!(oSlide.backgroundLock.Lock.Type === AscCommon.c_oAscLockTypes.kLockTypeMine || oSlide.backgroundLock.Lock.Type === AscCommon.c_oAscLockTypes.kLockTypeNone)) {
 			return true;
 		}
 	}

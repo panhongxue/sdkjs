@@ -73,7 +73,7 @@ function (window, undefined) {
 		cUNIQUE, cVLOOKUP, cXLOOKUP, cVSTACK, cHSTACK, cTOROW, cTOCOL, cWRAPROWS, cWRAPCOLS, cXMATCH);
 
 	cFormulaFunctionGroup['NotRealised'] = cFormulaFunctionGroup['NotRealised'] || [];
-	cFormulaFunctionGroup['NotRealised'].push(cAREAS, cGETPIVOTDATA, cRTD);
+	cFormulaFunctionGroup['NotRealised'].push(cAREAS, cRTD);
 
 	function searchRegExp(str, flags) {
 		var vFS = str
@@ -999,7 +999,7 @@ function (window, undefined) {
 
 			for (let i = 0; i < rows; i++) {
 				for (let j = 0; j < columns; j++) {
-					let val = arg1.getValueByRowCol ? arg1.getValueByRowCol(i, j) : arg1.getElementRowCol(i, j);
+					let val = arg1.getValueByRowCol ? arg1.getValueByRowCol(i, j) : arg1.getElementRowCol(i, j, true);
 
 					val = val.tocBool();
 					val = val.toBool ? val.toBool() : new cError(cErrorType.wrong_value_type);
@@ -1064,10 +1064,10 @@ function (window, undefined) {
 		}
 
 		if (rangeMode) {
-			const initialArrayDimensions = arg0.getDimensions(),
+			const initialArrayDimensions = arg0.getDimensions(true),
 				initRows = initialArrayDimensions.row,
 				initColumns = initialArrayDimensions.col,
-				lookingArrayDimensions = arg1.getDimensions();
+				lookingArrayDimensions = arg1.getDimensions(true);
 
 			// check for matching array sizes
 			if (lookingArrayDimensions.row === 1 && lookingArrayDimensions.col === initColumns) {
@@ -1156,7 +1156,111 @@ function (window, undefined) {
 	cGETPIVOTDATA.prototype = Object.create(cBaseFunction.prototype);
 	cGETPIVOTDATA.prototype.constructor = cGETPIVOTDATA;
 	cGETPIVOTDATA.prototype.name = 'GETPIVOTDATA';
+	cGETPIVOTDATA.prototype.argumentsMin = 2;
+	cGETPIVOTDATA.prototype.argumentsMax = 254;
+	cGETPIVOTDATA.prototype.arrayIndexes = {0: 1, 1: 1};
 	cGETPIVOTDATA.prototype.argumentsType = [argType.text, argType.text, [argType.text, argType.any]];
+	cGETPIVOTDATA.prototype.numFormat = AscCommonExcel.cNumFormatNone;
+	cGETPIVOTDATA.prototype.Calculate = function (arg) {
+		// arg0 - data_field - pivot table name
+		//The name can be entered exactly like the existing field name or only the root of the name, for example, if you enter "second" in the argument, a field named "Sum of second", "Count of second", etc. will be returned.
+		// arg1 - pivot_table - pivot table range
+		// // If none of the cells in the range touch the table, then return #REF
+		// ...arg2 - [field1,item1] - [field name, element] - the name and element pair point to an element in the field
+
+
+		const getPivotData = function (looking_field, pivot_table_ref, items_array) {
+			if (cElementType.cell !== pivot_table_ref.type && cElementType.cell3D !== pivot_table_ref.type && cElementType.cellsRange !== pivot_table_ref.type && cElementType.cellsRange3D !== pivot_table_ref.type) {
+				return refError;
+			}
+			let worksheet = pivot_table_ref.ws;
+			let bbox = pivot_table_ref.getBBox0();
+
+			let pivotTables = worksheet.getPivotTablesIntersectingRange(bbox);
+			let pivotTable = pivotTables && pivotTables.length > 0 && pivotTables[pivotTables.length - 1];
+			if (pivotTable) {
+				let cell = pivotTable.getCellByGetPivotDataParams({
+					dataFieldName: looking_field,
+					optParams: prepareItemsArray(items_array)
+				});
+				if (cell) {
+					res = new cRef(worksheet.getCell3(cell.row, cell.col).getName(), worksheet);
+					return res.tocNumber();
+				}
+			}
+			return refError;
+		};
+
+		const getPivotDataByTwoArgs = function(pivotTableRef, stringOrCell) {
+			const bbox = pivotTableRef.getBBox0();
+			const worksheet = pivotTableRef.ws;
+			const pivotTables = worksheet.getPivotTablesIntersectingRange(bbox);
+			const pivotTable = pivotTables && pivotTables.length > 0 && pivotTables[pivotTables.length - 1];
+			if (pivotTable) {
+				return pivotTable.getCellByGetPivotDataString(stringOrCell);
+			}
+			return refError;
+		};
+
+		const prepareItemsArray = function (array) {
+			return array.map(function(elem) {
+				return elem.getValue();
+			});
+		};
+
+		const t = this;
+		let arg0 = arg[0], arg1 = arg[1], arg2 = arg.slice(2);
+		let refError = new cError(cErrorType.bad_reference);
+		let ws = arguments[3], res;
+
+		if (ws) {
+			if (arg.length === 2) {
+				if (cElementType.cell === arg0.type || cElementType.cell3D === arg0.type || cElementType.cellsRange === arg0.type || cElementType.cellsRange3D === arg0.type) {
+					return getPivotDataByTwoArgs(arg0, arg1);
+				}
+			}
+			
+			if (cElementType.cellsRange === arg0.type || cElementType.cellsRange3D === arg0.type) {
+				return refError;
+			}
+
+			if (cElementType.array === arg0.type) {
+				if (!arg0.isOneElement()) {
+					let resArr = new cArray();
+					arg0.foreach(function (elem, r, c) {
+						if (!resArr.array[r]) {
+							resArr.addRow();
+						}
+
+						let looking_data_field = elem.tocString();
+						if (cElementType.error === looking_data_field.type) {
+							// return arg0;
+							// push error in to arr and go to the next value
+							resArr.addElement(looking_data_field);
+						} else {
+							resArr.addElement(getPivotData(looking_data_field.getValue(), arg1, arg));
+						}
+					});
+
+					return resArr;
+				}
+				arg0 = arg0.getFirstElement();
+			}
+
+			arg0 = arg0.tocString();
+			if (cElementType.error === arg0.type) {
+				return arg0;
+			}
+
+			res = getPivotData(arg0.getValue(), arg1, arg2);
+		}
+
+		if (res) {
+			return res
+		}
+
+		return refError;
+	};
 
 	/**
 	 * @constructor

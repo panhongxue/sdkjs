@@ -142,7 +142,7 @@
 	 * @typeofeditors ["PDF"]
 	 */
     CListBoxField.prototype.SyncField = function() {
-        let aFields = this._doc.GetFields(this.GetFullName());
+        let aFields = this.GetDocument().GetAllWidgets(this.GetFullName());
         
         TurnOffHistory();
 
@@ -173,15 +173,12 @@
 	 * @typeofeditors ["PDF"]
 	 */
     CListBoxField.prototype.Commit = function() {
-        let aFields = this._doc.GetFields(this.GetFullName());
+        let aFields = this.GetDocument().GetAllWidgets(this.GetFullName());
         let oThis = this;
         
-        this.CheckFormViewWindow();
-        this.RevertContentViewToOriginal();
-
         let oThisBounds = this.getFormRelRect();
+        let aCurIdxs    = this.GetCurIdxs();
 
-        let aCurIdxs = this.GetCurIdxs();
         if (this.GetApiValue() != this.GetValue()) {
             if (this.GetDocument().IsNeedSkipHistory() == false && true != editor.getDocumentRenderer().isOnUndoRedo) {
                 this.CreateNewHistoryPoint();
@@ -304,8 +301,8 @@
             }
 
             if (sCaption !== "") {
-                let oPara = new AscCommonWord.Paragraph(this.content.DrawingDocument, this.content, false);
-                let oRun = new AscCommonWord.ParaRun(oPara, false);
+                let oPara = new AscWord.Paragraph(this.content, false);
+                let oRun = new AscWord.ParaRun(oPara, false);
                 this.content.Internal_Content_Add(i, oPara);
                 oPara.Add(oRun);
                 oRun.AddText(sCaption);
@@ -398,8 +395,8 @@
 
         this._options = this._options.splice(nIdx, 0, optToInsert);
         
-        let oPara = new AscCommonWord.Paragraph(this.content.DrawingDocument, this.content, false);
-        let oRun = new AscCommonWord.ParaRun(oPara, false);
+        let oPara = new AscWord.Paragraph(this.content, false);
+        let oRun = new AscWord.ParaRun(oPara, false);
         this.content.Internal_Content_Add(nIdx, oPara);
         oPara.Add(oRun);
         oRun.AddText(sName);
@@ -453,16 +450,16 @@
                 this.SelectOption(nPos, true);
             }
 
+            oDoc.activeForm = this;
+
             if (this.IsNeedCommit()) {
                 this._bAutoShiftContentView = true;
                 this.UnionLastHistoryPoints(false);
 
                 if (this.IsCommitOnSelChange() == true) {
-                    this.Commit();
+                    oDoc.EnterDownActiveField();
                 }
             }
-
-            oDoc.activeForm = this;
         }
 
         // вызываем выставление курсора после onFocus, если уже в фокусе, тогда сразу.
@@ -774,6 +771,7 @@
     CListBoxField.prototype.SetAlign = function(nAlignType) {
         this._alignment = nAlignType;
 		this.content.SetAlign(nAlignType);
+        this.SetWasChanged(true);
 		this.SetNeedRecalc(true);
 	};
 	CListBoxField.prototype.GetAlign = function() {

@@ -3514,6 +3514,10 @@ function(window, undefined) {
 			oRecalcInfo.recalcTransform = true;
 			oRecalcInfo.recalculateTransformText = true;
 			oRecalcInfo.recalculateGeometry = true;
+			let oContent = oTitle.getDocContent();
+			if(oContent) {
+				oContent.Recalc_AllParagraphs_CompiledPr();
+			}
 		}
 	};
 	CChartSpace.prototype.recalcTitles2 = function () {
@@ -3526,6 +3530,10 @@ function(window, undefined) {
 			oRecalcInfo.recalculateTransformText = true;
 			oRecalcInfo.recalculateTxBody = true;
 			oRecalcInfo.recalculateGeometry = true;
+			let oContent = oTitle.getDocContent();
+			if(oContent) {
+				oContent.Recalc_AllParagraphs_CompiledPr();
+			}
 		}
 	};
 	CChartSpace.prototype.refreshRecalcData2 = function (pageIndex, object) {
@@ -8131,10 +8139,10 @@ function(window, undefined) {
 		}
 	};
 	CChartSpace.prototype.checkDrawingCache = function (graphics) {
-		if (window["NATIVE_EDITOR_ENJINE"] || graphics.RENDERER_PDF_FLAG || this.isSparkline || this.bPreview || graphics.PrintPreview) {
+		if (window["NATIVE_EDITOR_ENJINE"] || graphics.isPdf() || this.isSparkline || this.bPreview || graphics.IsPrintPreview) {
 			return false;
 		}
-		if (graphics.IsSlideBoundsCheckerType) {
+		if (graphics.isBoundsChecker()) {
 			return false;
 		}
 		if (!this.transform.IsIdentity2()) {
@@ -8280,7 +8288,7 @@ function(window, undefined) {
 		if (this.checkNeedRecalculate && this.checkNeedRecalculate()) {
 			return;
 		}
-		if (graphics.IsSlideBoundsCheckerType) {
+		if (graphics.isBoundsChecker()) {
 			graphics.transform3(this.transform);
 			graphics._s();
 			graphics._m(0, 0);
@@ -8731,6 +8739,7 @@ function(window, undefined) {
 			this.checkDlblsPosition();
 			this.resetToChartStyleSoft();
 		}
+		return this.getChartType() === nType;
 	};
 	CChartSpace.prototype.canChangeToStockChart = function () {
 		return this.chart.plotArea.canChangeToStockChart();

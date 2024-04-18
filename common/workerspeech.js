@@ -129,7 +129,13 @@
 				return;
 
 			if (!AscCommon.g_inputContext)
+			{
+				var worker = this;
+				AscCommon.inputMethodAddInitEvent(function() {
+					worker.setEnabled(isEnabled);
+				});
 				return;
+			}
 
 			this.isEnabled = isEnabled;
 			if (this.isEnabled)
@@ -247,9 +253,20 @@
 
 		this._setValue = this._setValuePermanentlyDiffEqual;
 
-		this.speech = function(type, obj)
+		this.isSpeechEnabled = function()
 		{
 			if (!this.isEnabled)
+				return false;
+
+			if (AscCommon.g_inputContext && AscCommon.g_inputContext.isCompositionProcess())
+				return false;
+
+			return true;
+		};
+
+		this.speech = function(type, obj)
+		{
+			if (!this.isSpeechEnabled())
 				return;
 
 			if (undefined === obj)
@@ -470,6 +487,9 @@
 		this.isApplyChanges = false;
 		this.isKeyDown      = false;
 		this.isUndoRedo     = false;
+
+		if (AscCommon.EditorActionSpeakerInitData && AscCommon.EditorActionSpeakerInitData.isEnabled)
+			this.run();
 	}
 	EditorActionSpeaker.prototype.toggle = function()
 	{

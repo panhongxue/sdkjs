@@ -40,11 +40,11 @@
 {
 // Import
 	var AscBrowser = AscCommon.AscBrowser;
-	var locktype_None = AscCommon.locktype_None;
-	var locktype_Mine = AscCommon.locktype_Mine;
-	var locktype_Other = AscCommon.locktype_Other;
-	var locktype_Other2 = AscCommon.locktype_Other2;
-	var locktype_Other3 = AscCommon.locktype_Other3;
+	var locktype_None = AscCommon.c_oAscLockTypes.kLockTypeNone;
+	var locktype_Mine = AscCommon.c_oAscLockTypes.kLockTypeMine;
+	var locktype_Other = AscCommon.c_oAscLockTypes.kLockTypeOther;
+	var locktype_Other2 = AscCommon.c_oAscLockTypes.kLockTypeOther2;
+	var locktype_Other3 = AscCommon.c_oAscLockTypes.kLockTypeOther3;
 	var contentchanges_Add = AscCommon.contentchanges_Add;
 	var CColor = AscCommon.CColor;
 	var g_oCellAddressUtils = AscCommon.g_oCellAddressUtils;
@@ -53,6 +53,12 @@
 	var availableIdeographLanguages = window['Asc'].availableIdeographLanguages;
 	var availableBidiLanguages = window['Asc'].availableBidiLanguages;
 	const fontslot_ASCII    = 0x01;
+
+	let scriptDirectory = "";
+	if (document.currentScript) {
+		scriptDirectory = document.currentScript.src;
+		scriptDirectory = scriptDirectory.substring(0,scriptDirectory.replace(/[?#].*/,"").lastIndexOf("/") + 1);
+	}
 
 	Number.isInteger = Number.isInteger || function(value) {
 		return typeof value === 'number' && Number.isFinite(value) && !(value % 1);
@@ -1430,7 +1436,8 @@
 		"na": "#N\/A",
 		"getdata": "#GETTING_DATA",
 		"uf": "#UNSUPPORTED_FUNCTION!",
-		"calc": "#CALC!"
+		"calc": "#CALC!",
+		"spill": "#SPILL!",
 	};
 	var cErrorLocal = {};
 	let cCellFunctionLocal = {};
@@ -1524,7 +1531,8 @@
 			"na":      "#N\/A",
 			"getdata": "#GETTING_DATA",
 			"uf":      "#UNSUPPORTED_FUNCTION!",
-			"calc":    "#CALC!"
+			"calc":    "#CALC!",
+			"spill":   "#SPILL!"
 		};
 		cErrorLocal['nil'] = local['nil'];
 		cErrorLocal['div'] = local['div'];
@@ -1536,6 +1544,7 @@
 		cErrorLocal['getdata'] = local['getdata'];
 		cErrorLocal['uf'] = local['uf'];
 		cErrorLocal['calc'] = local['calc'];
+		cErrorLocal['spill'] = local['spill'];
 
 		return new RegExp("^(" + cErrorLocal["nil"] + "|" +
 			cErrorLocal["div"] + "|" +
@@ -1546,7 +1555,8 @@
 			cErrorLocal["na"] + "|" +
 			cErrorLocal["getdata"] + "|" +
 			cErrorLocal["uf"] + "|" +
-			cErrorLocal["calc"] + ")", "i");
+			cErrorLocal["calc"] + "|" +
+			cErrorLocal["spill"] + ")", "i")
 	}
 
 	function build_rx_cell_func(local)
@@ -1566,18 +1576,18 @@
 			"type": "type",
 			"width": "width"
 		};
-		cCellFunctionLocal['address'] = local['address'];
-		cCellFunctionLocal['col'] = local['col'];
-		cCellFunctionLocal['color'] = local['color'];
-		cCellFunctionLocal['contents'] = local['contents'];
-		cCellFunctionLocal['filename'] = local['filename'];
-		cCellFunctionLocal['format'] = local['format'];
-		cCellFunctionLocal['parentheses'] = local['parentheses'];
-		cCellFunctionLocal['prefix'] = local['prefix'];
-		cCellFunctionLocal['protect'] = local['protect'];
-		cCellFunctionLocal['row'] = local['row'];
-		cCellFunctionLocal['type'] = local['type'];
-		cCellFunctionLocal['width'] = local['width'];
+		cCellFunctionLocal['address'] = local['address'] && local['address'].toLowerCase();
+		cCellFunctionLocal['col'] =  local['col'] && local['col'].toLowerCase();
+		cCellFunctionLocal['color'] = local['color'] && local['color'].toLowerCase();
+		cCellFunctionLocal['contents'] = local['contents'] && local['contents'].toLowerCase();
+		cCellFunctionLocal['filename'] = local['filename'] && local['filename'].toLowerCase();
+		cCellFunctionLocal['format'] = local['format'] && local['format'].toLowerCase();
+		cCellFunctionLocal['parentheses'] = local['parentheses'] && local['parentheses'].toLowerCase();
+		cCellFunctionLocal['prefix'] = local['prefix'] && local['prefix'].toLowerCase();
+		cCellFunctionLocal['protect'] = local['protect'] && local['protect'].toLowerCase();
+		cCellFunctionLocal['row'] =  local['row'] && local['row'].toLowerCase();
+		cCellFunctionLocal['type'] = local['type'] && local['type'].toLowerCase();
+		cCellFunctionLocal['width'] = local['width'] && local['width'].toLowerCase();
 
 		return new RegExp("^(" + cCellFunctionLocal["address"] + "|" +
 			cCellFunctionLocal["col"] + "|" +
@@ -1662,7 +1672,7 @@
 
 	var c_oAscSpreadsheetUploadProp = {
 		MaxFileSize:      104857600, //100 mb
-		SupportedFormats: ["xlsx", "xlsm", "xls", "ods", "csv", "xltx", "xltm", "xlt", "fods", "ots"]
+		SupportedFormats: ["xlsx", "xlsm", "xls", "ods", "csv", "xltx", "xltm", "xlsb", "xlt", "fods", "ots"]
 	};
 
 	var c_oAscTextUploadProp = {
@@ -1816,6 +1826,9 @@
 			case c_oAscFileType.XLTM:
 				return 'xltm';
 				break;
+			case c_oAscFileType.XLSB:
+				return 'xlsb';
+				break;
 			case c_oAscFileType.FODS:
 				return 'fods';
 				break;
@@ -1901,6 +1914,141 @@
 				break;
 		}
 		return '';
+	}
+
+	function getFormatByExtention(ext)
+	{
+		switch (ext.toLowerCase()) {
+			case 'docx':
+				return c_oAscFileType.DOCX;
+			case 'doc':
+			case 'wps':
+				return c_oAscFileType.DOC;
+			case 'odt':
+				return c_oAscFileType.ODT;
+			case 'rtf':
+				return c_oAscFileType.RTF;
+			case 'txt':
+			case 'xml':
+			case 'xslt':
+				return c_oAscFileType.TXT;
+			case 'htm':
+			case 'html':
+				return c_oAscFileType.HTML;
+			case 'mht':
+			case 'mhtml':
+				return c_oAscFileType.MHT;
+			case 'epub':
+				return c_oAscFileType.MHT;
+			case 'fb2':
+				return c_oAscFileType.FB2;
+			case 'mobi':
+				return c_oAscFileType.MOBI;
+			case 'docm':
+				return c_oAscFileType.DOCM;
+			case 'dotx':
+				return c_oAscFileType.DOTX;
+			case 'dotm':
+				return c_oAscFileType.DOTM;
+			case 'fodt':
+				return c_oAscFileType.FODT;
+			case 'ott':
+				return c_oAscFileType.OTT;
+			case 'oform':
+				return c_oAscFileType.OFORM;
+			case 'docxf':
+				return c_oAscFileType.DOCXF;
+
+			case 'pptx':
+				return c_oAscFileType.PPTX;
+			case 'ppt':
+			case 'dps':
+				return c_oAscFileType.PPT;
+			case 'odp':
+				return c_oAscFileType.ODP;
+			case 'ppsx':
+				return c_oAscFileType.PPSX;
+			case 'pptm':
+				return c_oAscFileType.PPTM;
+			case 'ppsm':
+				return c_oAscFileType.PPSM;
+			case 'potx':
+				return c_oAscFileType.POTX;
+			case 'potm':
+				return c_oAscFileType.POTM;
+			case 'fodp':
+				return c_oAscFileType.FODP;
+			case 'otp':
+				return c_oAscFileType.OTP;
+
+			case 'xlsx':
+				return c_oAscFileType.XLSX;
+			case 'xls':
+			case 'et':
+				return c_oAscFileType.XLS;
+			case 'ods':
+				return c_oAscFileType.ODS;
+			case 'csv':
+				return c_oAscFileType.CSV;
+			case 'xlsm':
+				return c_oAscFileType.XLSM;
+			case 'xltx':
+				return c_oAscFileType.XLTX;
+			case 'xltm':
+				return c_oAscFileType.XLTM;
+			case 'xltb':
+				return c_oAscFileType.XLSB;
+			case 'fods':
+				return c_oAscFileType.FODS;
+			case 'ots':
+				return c_oAscFileType.OTS;
+
+			case 'jpeg':
+			case 'jpe':
+			case 'jpg':
+				return c_oAscFileType.JPG;
+			case 'tif':
+			case 'tiff':
+				return c_oAscFileType.TIFF;
+			case 'tga':
+				return c_oAscFileType.TGA;
+			case 'gif':
+				return c_oAscFileType.GIF;
+			case 'png':
+				return c_oAscFileType.PNG;
+			case 'emf':
+				return c_oAscFileType.EMF;
+			case 'wmf':
+				return c_oAscFileType.WMF;
+			case 'bmp':
+				return c_oAscFileType.BMP;
+			case 'cr2':
+				return c_oAscFileType.CR2;
+			case 'pcx':
+				return c_oAscFileType.PCX;
+			case 'ras':
+				return c_oAscFileType.RAS;
+			case 'psd':
+				return c_oAscFileType.PSD;
+			case 'ico':
+				return c_oAscFileType.ICO;
+
+			case 'pdf':
+				return c_oAscFileType.PDF;
+			case 'pdfa':
+				return c_oAscFileType.PDFA;
+			case 'djvu':
+				return c_oAscFileType.DJVU;
+			case 'xps':
+				return c_oAscFileType.XPS;
+			case 'doct':
+				return c_oAscFileType.DOCY;
+			case 'xlst':
+				return c_oAscFileType.XLSY;
+			case 'pptt':
+				return c_oAscFileType.PPTY;
+		}
+		return c_oAscFileType.UNKNOWN;
 	}
 
 	function InitOnMessage(callback)
@@ -10270,7 +10418,11 @@
 		}
 		else
 		{
-			loadScript('./../../../../sdkjs/' + sdkName + '/sdk-all.js', onSuccess, onError);
+			if (scriptDirectory) {
+				loadScript(scriptDirectory + 'sdk-all.js', onSuccess, onError);
+			} else {
+				loadScript('./../../../../sdkjs/' + sdkName + '/sdk-all.js', onSuccess, onError);
+			}
 		}
 	}
 
@@ -13614,6 +13766,25 @@
 			this["guid"] = sOlePluginGuid;
 		}
 	}
+	CPluginCtxMenuInfo.prototype.setHdrFtr = function(isHeader) {
+		if (isHeader) {
+			delete this["footer"];
+			this["header"] = true;
+		} else {
+			delete this["header"];
+			this["footer"] = true;
+		}
+	};
+	CPluginCtxMenuInfo.prototype.setHdrFtrArea = function(isHeader) {
+		if (isHeader) {
+			delete this["footerArea"];
+			this["headerArea"] = true;
+		} else {
+			delete this["headerArea"];
+			this["footerArea"] = true;
+		}
+	};
+	
 
 
 	function deg2rad(deg)
@@ -13664,6 +13835,7 @@
 	window["AscCommon"]['GetFileExtension'] = window["AscCommon"].GetFileExtension = GetFileExtension;
 	window["AscCommon"].changeFileExtention = changeFileExtention;
 	window["AscCommon"].getExtentionByFormat = getExtentionByFormat;
+	window["AscCommon"].getFormatByExtention = getFormatByExtention;
 	window["AscCommon"].InitOnMessage = InitOnMessage;
 	window["AscCommon"].ShowImageFileDialog = ShowImageFileDialog;
 	window["AscCommon"].ShowDocumentFileDialog = ShowDocumentFileDialog;

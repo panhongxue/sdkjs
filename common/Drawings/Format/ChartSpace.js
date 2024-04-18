@@ -861,7 +861,7 @@ function(window, undefined) {
 		var fMinLeft = null, fMaxRight = null;
 		let nLblTickSkip = 1;
 		let rotatedMaxWidth = null;
-		let direction = 0;
+		let direction = 1;
 
 		if (parameters) {
 			fAngle = getRotationAngle(parameters.rot);
@@ -871,7 +871,35 @@ function(window, undefined) {
 			// direction = isRot && parameters.rot > 0 ? 1 : -1;
 			rotatedMaxWidth = (cosAlpha + sinAlpha) * parameters.maxHeight;
 			nLblTickSkip = parameters.nLblTickSkip;
-			direction = parameters.rot === -5400000 || parameters.rot === 5400000 ? 0 : parameters.rot > 0 ? 1 : -1
+			direction =  parameters.rot > 0 ? 1 : -1;
+		}
+
+		const getSquareWidth = function (direction, oLabel, labelheight) {
+			const contents = oLabel && oLabel.txBody && oLabel.txBody.content && oLabel.txBody.content.Content && Array.isArray(oLabel.txBody.content.Content) ? oLabel.txBody.content.Content[0].Content : null;
+			let oSize = oLabel.tx.rich.getContentOneStringSizes();
+			if (!contents) {
+				return;
+			}
+
+			let runTexts = contents[0].Content;
+			let squareWidth = 0;
+			let size = runTexts.length;
+			if (size > 0) {
+				if (direction) {
+					squareWidth = runTexts[0].GetWidth(oLabel.txPr);
+				} else {
+					squareWidth = runTexts[size - 1].GetWidth(oLabel.txPr);
+				}
+
+				// we need lowest out of height and width;
+				squareWidth = squareWidth > labelheight ? labelheight : squareWidth;
+			}
+
+			return squareWidth;
+		}
+
+		const getTranslationX = function (direction, squareWidth, labelWidth) {
+			return direction > 0 ? -squareWidth / 2.0 : (squareWidth / 2.0) - labelWidth;
 		}
 
 		const addDots = function (sliced, oLabel) {
@@ -957,6 +985,8 @@ function(window, undefined) {
 					oContent.SetParagraphIndent({FirstLine: 0.0, Left: 0.0});
 					oContent.SetApplyToAll(false);
 					var oSize = oLabel.tx.rich.getContentOneStringSizes();
+					// create a square around which rotation will be made;
+					const squareWidth = getSquareWidth(direction, oLabel, oSize.h);
 					addDots(sliced, oLabel);
 					let fBoxW = parameters ? (cosAlpha * oSize.w) + (sinAlpha * oSize.h) : fMultiplier * (oSize.w + oSize.h);
 					var fBoxH = parameters ? (sinAlpha * oSize.w) + (cosAlpha * oSize.h) : fBoxW;
@@ -966,8 +996,8 @@ function(window, undefined) {
 					var fX1, fY0, fXC, fYC;
 					fY0 = fAxisY + fDistance;
 					if (fDistance >= 0.0) {
-						fXC = parameters ? fCurX + (direction * fBoxW / 2.0) : fCurX - oSize.w * fMultiplier / 2.0;
-						fYC = fY0 + fBoxH / 2.0;
+						fXC = parameters ? fCurX : fCurX - oSize.w * fMultiplier / 2.0;
+						fYC = parameters ? fY0 + squareWidth / 2.0 : fY0 + fBoxH / 2.0;
 					} else {
 						//fX1 = fCurX - oSize.h*fMultiplier;
 						fXC = fCurX + oSize.w * fMultiplier / 2.0;
@@ -976,7 +1006,8 @@ function(window, undefined) {
 					var oTransform = oLabel.localTransformText;
 					oTransform.Reset();
 					
-					global_MatrixTransformer.TranslateAppend(oTransform, -oSize.w / 2.0, -oSize.h / 2.0);
+					const translateInX = parameters ? getTranslationX(direction, squareWidth, oSize.w) : -oSize.w / 2.0;
+					global_MatrixTransformer.TranslateAppend(oTransform, translateInX, -oSize.h / 2.0);
 					global_MatrixTransformer.RotateRadAppend(oTransform, fAngle);
 					global_MatrixTransformer.TranslateAppend(oTransform, fXC, fYC);
 					

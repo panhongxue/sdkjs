@@ -1143,6 +1143,38 @@ $(function () {
 		assert.strictEqual(ws.getRange2("B1028").getValue(), "10", "Test: Cross recursive chain formula. B1028 - 10");
 		assert.strictEqual(ws.getRange2("A1028").getValue(), "45", "Test: Cross recursive chain formula. A1028 - 45");
 		assert.strictEqual(ws.getRange2("C1028").getValue(), "55", "Test: Cross recursive chain formula. C1028 - 55");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("B1027");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Cross recursive chain formula. isFormulaRecursion test. B1027 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("B1028");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Cross recursive chain formula. isFormulaRecursion test. B1028 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("A1028");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Cross recursive chain formula. isFormulaRecursion test. A1028 - flag ca: true");
+		bCaFromSelectedCell = null;
+		bCaFromSelectedCell = getCaFromSelectedCell("C1028");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Cross recursive chain formula. isFormulaRecursion test. C1028 - flag ca: true");
+		bCaFromSelectedCell = null;
+		// - Case: Recrusive cell with IF formula, with empty cell ("")
+		ws.getRange2("A1030").setValue("");
+		ws.getRange2("B1030").setValue("=IF(A1030<>\"\",IF(B1030<>\"\",B1030,NOW()),\"\")");
+		assert.strictEqual(ws.getRange2("B1030").getValue(), "", "Test: Recrusive cell with IF formula, with empty cell (\"\"). B1030 - \"\"");
+		ws.getRange2("A1030").setValue("Test");
+		let date = new cDate();
+		let excelDate = date.getExcelDate();
+		assert.strictEqual(Math.floor(ws.getRange2("B1030").getValue()), excelDate, "Test: Recrusive cell with IF formula, with empty cell (\"\"). B1030 - " + excelDate);
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("B1030");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Recrusive cell with IF formula, with empty cell (\"\"). isFormulaRecursion test. B1030 - flag ca: true");
+		bCaFromSelectedCell = null;
+		// - Case: Recursive convergent formula with IF formula
+		ws.getRange2("A1031").setValue("=IF(A1031=0,-5,A1031-(A1031^3-4*A1031^2-4*A1031+5)/(3*A1031^2-8*A1031-4))");
+		assert.strictEqual(ws.getRange2("A1031").getValue(), "-1.4012223386412388", "Test: Recursive convergent formula with IF formula. A1031 - -1.04122233864124");
+		// Check work isFormulaRecursive function
+		bCaFromSelectedCell = getCaFromSelectedCell("A1031");
+		assert.strictEqual(bCaFromSelectedCell, true, "Test: Recursive convergent formula with IF formula. isFormulaRecursion test. A1031 - flag ca: true");
+		bCaFromSelectedCell = null;
 		// -- Test changeLinkedCell method.
 		oCell = selectCell("A1000");
 		let oCellNeedEnableRecalc = selectCell("B1000");

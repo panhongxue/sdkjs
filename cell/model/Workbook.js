@@ -1862,7 +1862,7 @@
 						let oStartCellIndex = g_cCalcRecursion.getStartCellIndex();
 						if (oStartCellIndex) {
 							// Fill 0 value for empty cells with recursive formula.
-							if (oCell.getNumberValue() == null) {
+							if (oCell.getNumberValue() == null && oCell.getValueText() == null) {
 								oCell.setValueNumberInternal(0);
 							}
 							// Save current value of cell as result of previous iteration

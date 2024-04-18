@@ -17176,7 +17176,7 @@ function RangeDataManagerElem(bbox, data)
 		}
 	};
 	/**
-	 * Method checks if the given CalcSettings object is equal to the current object.
+	 * Method checks if the given CalcPr object is equal to the current object.
 	 * @param {CCalcPr} oCalcPr - The CalcPr to compare with.
 	 * @returns {boolean} - True if the objects are equal, false otherwise.
 	 */

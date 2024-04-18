@@ -861,6 +861,7 @@ function(window, undefined) {
 		var fMinLeft = null, fMaxRight = null;
 		let nLblTickSkip = 1;
 		let rotatedMaxWidth = null;
+		let direction = 0;
 
 		if (parameters) {
 			fAngle = getRotationAngle(parameters.rot);
@@ -870,6 +871,19 @@ function(window, undefined) {
 			// direction = isRot && parameters.rot > 0 ? 1 : -1;
 			rotatedMaxWidth = (cosAlpha + sinAlpha) * parameters.maxHeight;
 			nLblTickSkip = parameters.nLblTickSkip;
+			direction = parameters.rot === -5400000 || parameters.rot === 5400000 ? 0 : parameters.rot > 0 ? 1 : -1
+		}
+
+		const addDots = function (sliced, oLabel) {
+			const contents = oLabel && oLabel.txBody && oLabel.txBody.content && oLabel.txBody.content.Content && Array.isArray(oLabel.txBody.content.Content) ? oLabel.txBody.content.Content[0].Content : null;
+			if (!sliced || !contents) {
+				return;
+			}
+			let size = contents[0].Content.length;
+			contents[0].AddToContent(size++,new AscWord.CRunText(46), true);
+			contents[0].AddToContent(size++,new AscWord.CRunText(46), true);
+			contents[0].AddToContent(size++,new AscWord.CRunText(46), true);
+			oLabel.txBody.content.Recalculate_Page(0, true);
 		}
 
 		const sliceLabel = function (oLabel, maxWidth) {
@@ -880,7 +894,6 @@ function(window, undefined) {
 			}
 
 			let runTexts = contents[0].Content;
-			const dot = new AscWord.CRunText(46);
 			// runTexts.push(dot);
 			oLabel.txBody.content.RecalculateContent(maxWidth, oSize.h, 2);
 
@@ -907,9 +920,12 @@ function(window, undefined) {
 				contents[0].Content = runTexts.slice(0, left);
 				oSize = oLabel.tx.rich.getContentOneStringSizes();
 				if (oSize.w > maxWidth && left > 0) {
-					contents[0].Content = runTexts.slice(0, left - 1);
+					contents[0].Content = runTexts.slice(0, --left);
 				}
+				return true;
 			}
+
+			return false;
 
 			// here is the manual iteration through all the runtext items to find a proper width
 			// // remove all characters after maxWidth achieved
@@ -934,13 +950,14 @@ function(window, undefined) {
 					this.aLabels[i] = null;
 				} else {
 					var oLabel = aLabels[i];
-					sliceLabel(oLabel, rotatedMaxWidth);
+					const sliced = sliceLabel(oLabel, rotatedMaxWidth);
 					var oContent = oLabel.tx.rich.content;
 					oContent.SetApplyToAll(true);
 					oContent.SetParagraphAlign(AscCommon.align_Left);
 					oContent.SetParagraphIndent({FirstLine: 0.0, Left: 0.0});
 					oContent.SetApplyToAll(false);
 					var oSize = oLabel.tx.rich.getContentOneStringSizes();
+					addDots(sliced, oLabel);
 					let fBoxW = parameters ? (cosAlpha * oSize.w) + (sinAlpha * oSize.h) : fMultiplier * (oSize.w + oSize.h);
 					var fBoxH = parameters ? (sinAlpha * oSize.w) + (cosAlpha * oSize.h) : fBoxW;
 					if (fBoxH > fMaxHeight) {
@@ -949,7 +966,7 @@ function(window, undefined) {
 					var fX1, fY0, fXC, fYC;
 					fY0 = fAxisY + fDistance;
 					if (fDistance >= 0.0) {
-						fXC = parameters ? fCurX : fCurX - oSize.w * fMultiplier / 2.0;
+						fXC = parameters ? fCurX + (direction * fBoxW / 2.0) : fCurX - oSize.w * fMultiplier / 2.0;
 						fYC = fY0 + fBoxH / 2.0;
 					} else {
 						//fX1 = fCurX - oSize.h*fMultiplier;

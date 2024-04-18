@@ -6746,9 +6746,9 @@ background-repeat: no-repeat;\
 		this.sendEvent("asc_onCanAddHyperlink", bCanAdd);
 	};
 
-	asc_docs_api.prototype.sync_DialogAddHyperlink = function()
+	asc_docs_api.prototype.sync_DialogAddHyperlink = function(bInternal)
 	{
-		this.sendEvent("asc_onDialogAddHyperlink");
+		this.sendEvent("asc_onDialogAddHyperlink", bInternal);
 	};
 
     //-----------------------------------------------------------------

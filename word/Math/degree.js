@@ -1250,7 +1250,6 @@ CDegreeSubSup.prototype.Can_ModifyArgSize = function()
 CDegreeSubSup.prototype.GetTextOfElement = function(isLaTeX)
 {
 	let strTemp = "";
-	debugger
 	let strBase = this.getBase().GetMultipleContentForGetText(isLaTeX, undefined, true);
 	let strLower = this.getLowerIterator().GetMultipleContentForGetText(isLaTeX);
 	let strUpper = this.getUpperIterator().GetMultipleContentForGetText(isLaTeX);

@@ -153,14 +153,16 @@
 
 		if (this.oLookahead.class === "▒") {
 			this.EatToken("▒");
-			oContent = this.GetElementLiteral()
+			oContent = this.GetSpaceExitFunction(this.GetElementLiteral);
+
+			if (this.oLookahead.class === oLiteralNames.spaceLiteral[0])
+				this.EatToken(this.oLookahead.class);
 
 			if (oContent.type === oLiteralNames.bracketBlockLiteral[num] && oContent.left === "(" && oContent.right === ")")
 			{
 				oContent = oContent.value;
 			}
 		}
-
 
 		return {
 			type: oLiteralNames.opNaryLiteral[num],
@@ -371,7 +373,11 @@
 			this.EatToken(this.oLookahead.class);
 			if (this.IsOperandLiteral())
 			{
-				const oToken = this.GetOperandLiteral();
+				const oToken = this.GetSpaceExitFunction(this.GetOperandLiteral);
+
+				if (this.oLookahead.class === oLiteralNames.spaceLiteral[0])
+					this.EatToken(this.oLookahead.class);
+
 				return {
 					type: oLiteralNames.boxLiteral[num],
 					value: oToken,
@@ -393,7 +399,11 @@
 			this.EatToken(this.oLookahead.class);
 			if (this.IsOperandLiteral())
 			{
-				const oToken = this.GetOperandLiteral();
+				const oToken = this.GetSpaceExitFunction(this.GetOperandLiteral);
+
+				if (this.oLookahead.class === oLiteralNames.spaceLiteral[0])
+					this.EatToken(this.oLookahead.class);
+
 				return {
 					type: oLiteralNames.borderBoxLiteral[num],
 					value: oToken,
@@ -542,7 +552,10 @@
 		}
 		else if (this.IsOperandLiteral())
 		{
-			oContent = this.GetOperandLiteral();
+			oContent = this.GetSpaceExitFunction(this.GetOperandLiteral);
+
+			if (this.oLookahead.class === oLiteralNames.spaceLiteral[0])
+				this.EatToken(this.oLookahead.class);
 		}
 
 		return {
@@ -625,7 +638,10 @@
 			if (this.IsFuncApplySymbol())
 				this.EatToken(this.oLookahead.class);
 
-			oThird = this.GetOperandLiteral();
+			oThird = this.GetSpaceExitFunction(this.GetOperandLiteral);
+
+			if (this.oLookahead.class === oLiteralNames.spaceLiteral[0])
+				this.EatToken(this.oLookahead.class);
 		}
 
 		return {
@@ -680,8 +696,8 @@
 				strOpen = this.GetOpOpenLiteral();
 			}
 
-			if (strOpen === "|" || strOpen === "‖")
-				this.strBreakSymbol.push(strOpen);
+			//if (strOpen === "|" || strOpen === "‖")
+			this.strBreakSymbol.push(strOpen, "|", "‖");
 
 			if (this.IsPreScriptLiteral() && strOpen === "(")
 			{
@@ -724,6 +740,8 @@
 				return this.WriteSavedTokens();
 			}
 
+			this.strBreakSymbol = [];
+
 			return {
 				type: oLiteralNames.bracketBlockLiteral[num],
 				value: oExp,
@@ -735,6 +753,8 @@
 		else if (this.oLookahead.class === "├") {
 			return this.EatCloseOrOpenBracket();
 		}
+
+		this.strBreakSymbol = [];
 
 		return {
 			type: oLiteralNames.bracketBlockLiteral[num],
@@ -789,6 +809,26 @@
 		this.SaveTokensWhileReturn();
 		if (this.oLookahead.data === "_" || this.oLookahead.data === "^")
 			this.EatToken(this.oLookahead.class);
+
+		if (!this.oLookahead.data)
+		{
+			if (strTypeOfPreScript === "_")
+			{
+				return {
+					type: oLiteralNames.subSupLiteral[num],
+					value: {},
+					down: {},
+				}
+			}
+			else if (strTypeOfPreScript === "^")
+			{
+				return {
+					type: oLiteralNames.subSupLiteral[num],
+					value: {},
+					up: {},
+				}
+			}
+		}
 
 		if (this.IsDoubleIteratorDegree())
 		{

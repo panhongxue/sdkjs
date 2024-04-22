@@ -999,11 +999,11 @@
 		["\\mathit", oNamesOfLiterals.mathFontLiteral[0]],
 		["\\mathfrak", oNamesOfLiterals.mathFontLiteral[0]],
 		["\\mathcal", oNamesOfLiterals.mathFontLiteral[0]],
+		["\\mathbf", oNamesOfLiterals.mathFontLiteral[0]],
+		["\\mathbb", oNamesOfLiterals.mathFontLiteral[0]],
 		["\\mathbfit",  oNamesOfLiterals.mathFontLiteral[0]],
 		["\\mathbffrak", oNamesOfLiterals.mathFontLiteral[0]],
 		["\\mathbfcal",  oNamesOfLiterals.mathFontLiteral[0]],
-		["\\mathbf", oNamesOfLiterals.mathFontLiteral[0]],
-		["\\mathbb", oNamesOfLiterals.mathFontLiteral[0]],
 		["\\it", oNamesOfLiterals.mathFontLiteral[0]],
 		["\\frak", oNamesOfLiterals.mathFontLiteral[0]],
 		["\\fraktur", oNamesOfLiterals.mathFontLiteral[0]],
@@ -1063,32 +1063,6 @@
 		["\\\\", true],
 		// ["\\lim", oNamesOfLiterals.opNaryLiteral[0]], LaTeX
 		// ["\\lg", oNamesOfLiterals.opNaryLiteral[0]],
-
-		// ["/<", "≮", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/=", "≠", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/>", "≯", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\exists", "∄", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\in", "∉", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\ni", "∌", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\simeq", "≄", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\cong", "≇", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\approx", "≉", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\asymp", "≭", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\equiv", "≢", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\le", "≰", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\ge", "≱", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\lessgtr", "≸", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\gtrless", "≹", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\succeq", "⋡", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\prec", "⊀", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\succ", "⊁", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\preceq", "⋠", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\subset", "⊄", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\supset", "⊅", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\subseteq", "⊈", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\supseteq", "⊉", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\sqsubseteq", "⋢", oNamesOfLiterals.operatorLiteral[0]],
-		// ["/\\sqsupseteq", "⋣", oNamesOfLiterals.operatorLiteral[0]],
 
 		[",", true],
 		[".", true],
@@ -1601,29 +1575,11 @@
 					break;
 				case oNamesOfLiterals.skewedFractionLiteral[num]:
 				case oNamesOfLiterals.fractionLiteral[num]:
-				case oNamesOfLiterals.binomLiteral[num]:
-					let oFraction;
-					if (oTokens.type === oNamesOfLiterals.binomLiteral[num]) {
-						oFraction = oContext.Add_Fraction(
-							{ctrPrp: new CTextPr(), type: NO_BAR_FRACTION},
-							null,
-							null
-						);
-					}
-					else if (oTokens.type === oNamesOfLiterals.fractionLiteral[num]) {
-						oFraction = oContext.Add_Fraction(
-							{ctrPrp: new CTextPr(), type: oTokens.fracType},
-							null,
-							null
-						);
-					}
-					else if (oTokens.type === oNamesOfLiterals.skewedFractionLiteral[num]) {
-						oFraction = oContext.Add_Fraction(
-							{ctrPrp: new CTextPr(), type: SKEWED_FRACTION},
-							null,
-							null
-						);
-					}
+					let oFraction = oContext.Add_Fraction(
+						{ctrPrp: new CTextPr(), type: oTokens.fracType},
+						null,
+						null
+					);
 					UnicodeArgument(
 						oTokens.up,
 						oNamesOfLiterals.bracketBlockLiteral[num],
@@ -1636,7 +1592,7 @@
 					);
 					break;
 				case oNamesOfLiterals.subSupLiteral[num]:
-					if (oTokens.value && oTokens.value.type === oNamesOfLiterals.functionLiteral[num]) {
+					if (oTokens.value && oTokens.value.type === oNamesOfLiterals.functionLiteral[num] || oTokens.value.type === oNamesOfLiterals.functionWithLimitLiteral[num]) {
 						let oFunc = oContext.Add_Function({}, null, null);
 						let oFuncName = oFunc.getFName();
 
@@ -1678,38 +1634,6 @@
 								oFuncArgument
 							)
 						}
-					}
-					else if (oTokens.value && oTokens.value.type === oNamesOfLiterals.functionWithLimitLiteral[num]){
-						let oFuncWithLimit = oContext.Add_FunctionWithTypeLimit(
-							{},
-							null,
-							null,
-							null,
-							oTokens.up ? LIMIT_UP : LIMIT_LOW
-						);
-						oFuncWithLimit
-							.getFName()
-							.Content[0]
-							.getFName()
-							.Add_Text(oTokens.value.value, Paragraph, STY_PLAIN);
-
-						let oLimitIterator = oFuncWithLimit
-							.getFName()
-							.Content[0]
-							.getIterator();
-
-						if (oTokens.up || oTokens.down) {
-							UnicodeArgument(
-								oTokens.up === undefined ? oTokens.down : oTokens.up,
-								oNamesOfLiterals.bracketBlockLiteral[num],
-								oLimitIterator
-							)
-						}
-						UnicodeArgument(
-							oTokens.third,
-							oNamesOfLiterals.bracketBlockLiteral[num],
-							oFuncWithLimit.getArgument()
-						)
 					}
 					else if (oTokens.value && oTokens.value.type === oNamesOfLiterals.opNaryLiteral[num]) {
 
@@ -2276,6 +2200,38 @@
 	}
 
 	let AutoCorrection = {
+
+		'/<' : '≮',
+		'/=' : '≠',
+		'/>' : '≯',
+
+		'/\\approx' : "≉",
+		'/\\asymp'	: '≭',
+		'/\\cong'	: '≇',
+		'/\\equiv'	: '≢',
+		'/\\exists'	: '∄',
+		'/\\ge'		: '≱',
+		'/\\gtrless': '≹',
+		'/\\in'		: '∉',
+		'/\\le'		: '≰',
+		'/\\lessgtr': '≸',
+		'/\\ni'		: '∌',
+		'/\\prec'	: '⊀',
+		'/\\preceq' : '⋠',
+		'/\\sim'	: '≁',
+		'/\\simeq'	: '≄',
+		'/\\sqsubseteq' : '⋢',
+		'/\\sqsuperseteq': '⋣',
+		'/\\sqsupseteq' : '⋣',
+		'/\\subset': '⊄',
+		'/\\subseteq': '⊈',
+		'/\\succ': '⊁',
+		'/\\succeq': '⋡',
+		'/\\supset': '⊅',
+		'/\\superset': '⊅',
+		'/\\superseteq': '⊉',
+		'/\\supseteq': '⊉',
+
 		"\\above": "┴",
 		"\\acute": "́",
 		"\\aleph": "ℵ",
@@ -2575,18 +2531,91 @@
 		"\\naryand": "▒",
 		"\\nbsp": " ",
 		"\\ndiv": "⊘",
-		"\\ne": "≠",
-		"\\nearrow": "↗",
 		"\\neg": "¬",
-		"\\neq": "≠",
-		"\\ni": "∋",
 		"\\norm": "‖",
 		"\\notcontain": "∌",
 		"\\notelement": "∉",
-		"\\notin": "∉",
 		"\\nu": "ν",
 		"\\Nu": "Ν",
 		"\\nwarrow": "↖",
+
+		"\\nLeftarrow" : "⇍",
+		"\\nLeftrightarrow" : "⇎",
+		"\\nRightarrow" : "⇏",
+		"\\nVDash" : "⊯",
+		"\\nVdash" : "⊮",
+		"\\nVleftarrow" : "⇺",
+		"\\nVleftarrowtail" : "⬺",
+		"\\nVleftrightarrow" : "⇼",
+		"\\nVrightarrow" : "⇻",
+		"\\nVrightarrowtail" : "⤕",
+		"\\nVtwoheadleftarrow" : "⬵",
+		"\\nVtwoheadleftarrowtail" : "⬽",
+		"\\nVtwoheadrightarrow" : "⤁",
+		"\\nVtwoheadrightarrowtail" : "⤘",
+		"\\napprox" : "≉",
+		"\\nasymp" : "≭",
+		"\\ncong" : "≇",
+		"\\ne" : "≠",
+		"\\nearrow" : "↗",
+		"\\neq" : "≠",
+		"\\nequiv" : "≢",
+		"\\neswarrow" : "⤢",
+		"\\ngeq" : "≱",
+		"\\ngtr" : "≯",
+		"\\ngtrless" : "≹",
+		"\\ngtrsim" : "≵",
+		"\\nhpar" : "⫲",
+		"\\ni" : "∋",
+		"\\niobar" : "⋾",
+		"\\nis" : "⋼",
+		"\\nisd" : "⋺",
+		"\\nleftarrow" : "↚",
+		"\\nleftrightarrow" : "↮",
+		"\\nleq" : "≰",
+		"\\nless" : "≮",
+		"\\nlessgtr" : "≸",
+		"\\nlesssim" : "≴",
+		"\\nmid" : "∤",
+		"\\nni" : "∌",
+		"\\notasymp" : "≭",
+		"\\notin" : "∉",
+		"\\notslash" : "⌿",
+		"\\nparallel" : "∦",
+		"\\nprec" : "⊀",
+		"\\npreccurlyeq" : "⋠",
+		"\\npreceq" : "⋠",
+		"\\nrightarrow" : "↛",
+		"\\nsim" : "≁",
+		"\\nsime" : "≄",
+		"\\nsimeq" : "≄",
+		"\\nsqsubseteq" : "⋢",
+		"\\nsqsupseteq" : "⋣",
+		"\\nsubset" : "⊄",
+		"\\nsubseteq" : "⊈",
+		"\\nsucc" : "⊁",
+		"\\nsucccurlyeq" : "⋡",
+		"\\nsucceq" : "⋡",
+		"\\nsupset" : "⊅",
+		"\\nsupseteq" : "⊉",
+		"\\ntriangleleft" : "⋪",
+		"\\ntrianglelefteq" : "⋬",
+		"\\ntriangleright" : "⋫",
+		"\\ntrianglerighteq" : "⋭",
+		"\\nvDash" : "⊭",
+		"\\nvLeftarrow" : "⤂",
+		"\\nvLeftrightarrow" : "⤄",
+		"\\nvRightarrow" : "⤃",
+		"\\nvdash" : "⊬",
+		"\\nvleftarrow" : "⇷",
+		"\\nvleftarrowtail" : "⬹",
+		"\\nvleftrightarrow" : "⇹",
+		"\\nvrightarrow" : "⇸",
+		"\\nvrightarrowtail" : "⤔",
+		"\\nvtwoheadleftarrow" : "⬴",
+		"\\nvtwoheadleftarrowtail" : "⬼",
+		"\\nvtwoheadrightarrow" : "⤀",
+		"\\nvtwoheadrightarrowtail" : "⤗",
 
 		"\\o": "ο",
 		"\\O": "Ο",
@@ -2962,7 +2991,85 @@
 		"⋔" : "\\pitchfork",
 		"≐" : "\\doteq",
 
-		"ⅆ"			:"\\dd"			,
+		"⇍" : "\\nLeftarrow",
+		"⇎" : "\\nLeftrightarrow",
+		"⇏" : "\\nRightarrow",
+		"⊯" : "\\nVDash",
+		"⊮" : "\\nVdash",
+		"⇺" : "\\nVleftarrow",
+		"⬺" : "\\nVleftarrowtail",
+		"⇼" : "\\nVleftrightarrow",
+		"⇻" : "\\nVrightarrow",
+		"⤕" : "\\nVrightarrowtail",
+		"⬵" : "\\nVtwoheadleftarrow",
+		"⬽" : "\\nVtwoheadleftarrowtail",
+		"⤁" : "\\nVtwoheadrightarrow",
+		"⤘" : "\\nVtwoheadrightarrowtail",
+		"≉" : "\\napprox",
+		"≭" : "\\nasymp",
+		"≇" : "\\ncong",
+		"≠" : "\\ne",
+		"↗" : "\\nearrow",
+		"≠" : "\\neq",
+		"≢" : "\\nequiv",
+		"⤢" : "\\neswarrow",
+		"≱" : "\\ngeq",
+		"≯" : "\\ngtr",
+		"≹" : "\\ngtrless",
+		"≵" : "\\ngtrsim",
+		"⫲" : "\\nhpar",
+		"∋" : "\\ni",
+		"⋾" : "\\niobar",
+		"⋼" : "\\nis",
+		"⋺" : "\\nisd",
+		"↚" : "\\nleftarrow",
+		"↮" : "\\nleftrightarrow",
+		"≰" : "\\nleq",
+		"≮" : "\\nless",
+		"≸" : "\\nlessgtr",
+		"≴" : "\\nlesssim",
+		"∤" : "\\nmid",
+		"∌" : "\\nni",
+		"≭" : "\\notasymp",
+		"∉" : "\\notin",
+		"⌿" : "\\notslash",
+		"∦" : "\\nparallel",
+		"⊀" : "\\nprec",
+		"⋠" : "\\npreccurlyeq",
+		"⋠" : "\\npreceq",
+		"↛" : "\\nrightarrow",
+		"≁" : "\\nsim",
+		"≄" : "\\nsime",
+		"≄" : "\\nsimeq",
+		"⋢" : "\\nsqsubseteq",
+		"⋣" : "\\nsqsupseteq",
+		"⊄" : "\\nsubset",
+		"⊈" : "\\nsubseteq",
+		"⊁" : "\\nsucc",
+		"⋡" : "\\nsucccurlyeq",
+		"⋡" : "\\nsucceq",
+		"⊅" : "\\nsupset",
+		"⊉" : "\\nsupseteq",
+		"⋪" : "\\ntriangleleft",
+		"⋬" : "\\ntrianglelefteq",
+		"⋫": "\\ntriangleright",
+		"⋭" : "\\ntrianglerighteq",
+		"⊭" : "\\nvDash",
+		"⤂" : "\\nvLeftarrow",
+		"⤄" : "\\nvLeftrightarrow",
+		"⤃" : "\\nvRightarrow",
+		"⊬" : "\\nvdash",
+		"⇷" : "\\nvleftarrow",
+		"⬹" : "\\nvleftarrowtail",
+		"⇹" : "\\nvleftrightarrow",
+		"⇸" : "\\nvrightarrow",
+		"⤔" : "\\nvrightarrowtail",
+		"⬴" : "\\nvtwoheadleftarrow",
+		"⬼" : "\\nvtwoheadleftarrowtail",
+		"⤀" : "\\nvtwoheadrightarrow",
+		"⤗" : "\\nvtwoheadrightarrowtail",
+
+		"ⅆ"        :"\\dd"			,
 		"ⅅ" 		:"\\Dd"			,
 		"ⅇ" 		:"\\ee"			,
 		"ℓ" 		:"\\ell"		,
@@ -3147,10 +3254,16 @@
 				break;
 		}
 
+		let nSlash = oContent.Next();
+		if (nSlash === 47 && IsLaTeX)
+		{
+			str = "/" + str;
+		}
+
 		let strCorrection = ConvertWord(str, IsLaTeX);
 		if (strCorrection)
 		{
-			let oRun = RemoveCountFormMathContent(oCMathContent,isLastOperator ? oContent.counter - 1 : oContent.counter, isLastOperator);
+			let oRun = RemoveCountFormMathContent(oCMathContent,isLastOperator ? oContent.counter - 1 :  str.length+1, isLastOperator);
 			let nPos = isLastOperator ? oRun.Content.length - 1 : oRun.Content.length;
 
 			for (let i = 0; i < strCorrection.length; i++)
@@ -3191,8 +3304,7 @@
 
 	function CorrectSpecialWordOnCursor(oCMathContent, IsLaTeX)
 	{
-		let oContent= new CMathContentIterator(oCMathContent);
-
+		let oContent = new CMathContentIterator(oCMathContent);
 		if (oContent.IsHasContent())
 		{
 			let nSecond = oContent.Next();
@@ -3202,7 +3314,9 @@
 				let strSecondLetter = String.fromCharCode(nSecond);
 				let strFirstLetter = String.fromCharCode(nFirst);
 
-				if (strFirstLetter !== "\\" && strSecondLetter !== "\\" && CorrectSpecial(oCMathContent, strFirstLetter, strSecondLetter))
+				let oPos = [oContent._index + 1, oContent._nParaRun + 1];
+
+				if (strFirstLetter !== "\\" && strSecondLetter !== "\\" && CorrectSpecial(oCMathContent, strFirstLetter, strSecondLetter, oPos))
 				{
 					oContent._paraRun.MoveCursorToEndPos();
 					return true;
@@ -3299,7 +3413,7 @@
 
 		return isConvert;
 	}
-	function CorrectSpecial(oCMathContent, strPrev, strNext)
+	function CorrectSpecial(oCMathContent, strPrev, strNext, oPos)
 	{
 		for (let i = 0; i < g_DefaultAutoCorrectMathSymbolsList.length; i++)
 		{
@@ -3318,31 +3432,14 @@
 					}
 					str = data.join("");
 				}
-				else {
+				else
+				{
 					str = String.fromCharCode(data);
 				}
 
 				if (str)
 				{
-					let nCounter = 0;
-					for (let i = oCMathContent.Content.length - 1; i >= 0 && nCounter !== strToken.length; i--)
-					{
-						let oCurrentElement = oCMathContent.Content[i];
-						if (!oCurrentElement || !oCurrentElement.Content)
-							return false;
-
-						let oCurrentElementCounter = oCurrentElement.Content.length;
-
-						if (oCurrentElementCounter > strToken.length)
-						{
-							oCurrentElement.RemoveFromContent(oCurrentElementCounter - strToken.length, strToken.length);
-						}
-						else
-						{
-							nCounter += oCurrentElementCounter;
-							oCMathContent.RemoveFromContent(i, 1);
-						}
-					}
+					oCMathContent.CutConvertAndPaste(oPos, undefined, false, true);
 					oCMathContent.Add_TextOnPos(oCMathContent.Content.length, str);
 					return true;
 				}
@@ -3361,6 +3458,7 @@
 				intCode === 95 ||			// _
 				intCode === 94 ||			// ^
 				MathLiterals.lBrackets.IsIncludes(String.fromCodePoint(intCode)) ||
+				MathLiterals.lrBrackets.IsIncludes(String.fromCodePoint(intCode)) ||
 				MathLiterals.rBrackets.IsIncludes(String.fromCodePoint(intCode)) ||
 				intCode === 40 ||			// (
 				intCode === 41 ||			// )
@@ -3410,6 +3508,23 @@
 	{
 		return isGetLaTeX;
 	}
+	function GetFractionType(strToken)
+	{
+		switch (strToken)
+		{
+			case "/"		:	return BAR_FRACTION
+			case "⁄"		:	return SKEWED_FRACTION
+			case "⊘"		:	return BAR_FRACTION
+			case "∕"		:	return LINEAR_FRACTION
+			case "¦"		:	return NO_BAR_FRACTION
+			case "⒞"		:	return NO_BAR_FRACTION
+
+			case "\\binom"	:	return NO_BAR_FRACTION
+			case "\\sfrac"	:	return SKEWED_FRACTION
+			case "\\frac"	:	return BAR_FRACTION
+			case "\\cfrac"	:	return BAR_FRACTION
+		}
+	}
 
 	//--------------------------------------------------------export----------------------------------------------------
 	window["AscMath"] = window["AscMath"] || {};
@@ -3436,6 +3551,7 @@
 	window["AscMath"].SetIsLaTeXGetParaRun 			= SetIsLaTeXGetParaRun;
 	window["AscMath"].GetIsLaTeXGetParaRun 			= GetIsLaTeXGetParaRun;
 	window["AscMath"].GetHBracket 					= GetHBracket;
+	window["AscMath"].GetFractionType 				= GetFractionType;
 	window["AscMath"].GetLaTeXFont					= GetLaTeXFont;
 	window["AscMath"].GetNamesTypeFontLaTeX			= GetNamesTypeFontLaTeX;
 

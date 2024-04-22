@@ -3204,10 +3204,10 @@ ParaMath.prototype.ConvertFromUnicodeMath = function()
     this.Root.CorrectAllMathWords(false);
     this.Root.ConvertAllSpecialWords(false);
 	var strUnicode = this.GetText();
-	if (strUnicode[strUnicode.length - 1] === " ")
-	{
-		strUnicode = strUnicode.slice(0, -1)
-	}
+	// if (strUnicode[strUnicode.length - 1] === " ")
+	// {
+	// 	strUnicode = strUnicode.slice(0, -1)
+	// }
 	this.Root.Remove_Content(0,this.Root.Content.length);
     this.Root.Correct_Content(true);
 	AscMath.CUnicodeConverter(strUnicode, this.Root);
@@ -3216,10 +3216,10 @@ ParaMath.prototype.ConvertFromUnicodeMath = function()
 ParaMath.prototype.ConvertToUnicodeMath = function()
 {
 	var strUnicode = this.GetText();
-    if (strUnicode[strUnicode.length - 1] === " ")
-    {
-        strUnicode = strUnicode.slice(0, -1)
-    }
+    // if (strUnicode[strUnicode.length - 1] === " ")
+    // {
+    //     strUnicode = strUnicode.slice(0, -1)
+    // }
 	this.Root.Remove_Content(0,this.Root.Content.length);
 	this.Root.Add_Text(strUnicode, this.Paragraph);
 };

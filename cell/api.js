@@ -3283,6 +3283,22 @@ var editor;
 			this.handlers.trigger("asc_onNeedUpdateExternalReferenceOnOpen");
 		}
 		//this.asc_Resize(); // Убрал, т.к. сверху приходит resize (http://bugzilla.onlyoffice.com/show_bug.cgi?id=14680)
+
+		this.broadcastChannel = new BroadcastChannel("testChannel");
+		let broadcastChannel = this.broadcastChannel;
+		broadcastChannel.onmessage = function(event) {
+			if ("GetDocuments" === event.data.type) {
+				broadcastChannel.postMessage({
+					type: "DocumentInfo",
+					data: {
+						
+					}
+				});
+			}
+			else if ("Sheets" === event.data.type) {
+
+			}
+		}
 	};
 
 	// Переход на диапазон в листе
@@ -3939,18 +3955,7 @@ var editor;
 		  return false;
 	  }
 
-	  //если выделены все - не перенесим(проверка в интерфейсе)
-	  var sheet, sBinarySheet, res = [];
-      var activeIndex = this.wbModel.nActive;
-	  for (var i = 0; i < arrSheets.length; ++i) {
-		  sheet = this.wbModel.getWorksheet(arrSheets[i]);
-		  this.wbModel.nActive = sheet.getIndex();
-		  sBinarySheet = AscCommonExcel.g_clipboardExcel.copyProcessor.getBinaryForCopy(sheet, null, null, true, true);
-          res.push(sBinarySheet);
-	  }
-	  this.wbModel.nActive = activeIndex;
-
-      return res;
+	  return this.getBinaryContentSheets(arrSheets);
   };
 
   spreadsheet_api.prototype.asc_EndMoveSheet = function(where, arrNames, arrSheets) {
@@ -4016,6 +4021,21 @@ var editor;
 	  addWorksheet(true);
 	  //this.collaborativeEditing.lock([], addWorksheet);
   };
+
+	spreadsheet_api.prototype.getBinaryContentSheets = function (arrSheets) {
+		//если выделены все - не перенесим(проверка в интерфейсе)
+		var sheet, sBinarySheet, res = [];
+		var activeIndex = this.wbModel.nActive;
+		for (var i = 0; i < arrSheets.length; ++i) {
+			sheet = this.wbModel.getWorksheet(arrSheets[i]);
+			this.wbModel.nActive = sheet.getIndex();
+			sBinarySheet = AscCommonExcel.g_clipboardExcel.copyProcessor.getBinaryForCopy(sheet, null, null, true, true);
+			res.push(sBinarySheet);
+		}
+		this.wbModel.nActive = activeIndex;
+
+		return res;
+	};
 
   spreadsheet_api.prototype.asc_cleanSelection = function() {
     this.wb.getWorksheet().cleanSelection();
@@ -9152,6 +9172,30 @@ var editor;
 			return;
 		}
 		return wb.customFunctionEngine && wb.customFunctionEngine.getFunc(sName, !bIgnoreLocal);
+	};
+
+	spreadsheet_api.prototype.asc_getOpeningDocumentsList = function(callback) {
+		this.broadcastChannel.addEventListener("message", function (info) {
+			if ("DocumentInfo" === info.data.type) {
+				callback(info);
+				console.log("DocumentInfo");
+			}
+		});
+		this.broadcastChannel.postMessage({
+			type: "GetDocuments"
+		})
+	};
+	spreadsheet_api.prototype.asc_sendSheetsToOtherBooks = function(aSheets, aBooks) {
+		let aBinary = this.getBinaryContentSheets(aSheets);
+		if (aBinary) {
+			this.broadcastChannel.postMessage({
+				type: "Sheets",
+				data: {
+					aBooks: aBooks,
+					sheets: aBinary
+				}
+			})
+		}
 	};
 
   /*

@@ -58,12 +58,12 @@
         if (this.IsNeedRecalc() == false)
             return;
 
-        this.recalculateTransform();
-        this.updateTransformMatrix();
         this.recalcGeometry();
         this.recalculateContent();
         this.checkExtentsByDocContent(true, true);
         this.recalculate();
+        this.recalculateTransform();
+        this.updateTransformMatrix();
         this.recalculateShdw();
         this.SetNeedRecalc(false);
     };
@@ -124,9 +124,6 @@
         else {
             this.SetNeedRecalc(true);
         }
-    };
-    CPdfShape.prototype.SelectAllText = function() {
-        this.GetDocContent().SelectAll();
     };
 
     CPdfShape.prototype.onMouseUp = function(x, y, e) {
@@ -231,7 +228,8 @@
         let oController = oDoc.GetController();
 
         this.SetControllerTextSelection(oController, this.GetPage());
-        oDoc.SetMouseDownObject(this);
+        if (!this.group)
+            oDoc.SetMouseDownObject(this);
     };
     CPdfShape.prototype.setRecalculateInfo = function() {
         this.recalcInfo =

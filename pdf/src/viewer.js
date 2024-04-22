@@ -228,9 +228,10 @@
 		this.doc = new AscPDF.CPDFDoc(this);
 		AscCommon.History.Document = this.doc;
 
-		this.drawingDocument	= Asc.editor.WordControl.m_oDrawingDocument;
-		this.DrawingObjects		= new AscPDF.CGraphicObjectsPdf(this.doc, this.drawingDocument, this.Api);
-		this.doc.DrawingObjects	= this.DrawingObjects;
+		this.drawingDocument		= Asc.editor.WordControl.m_oDrawingDocument;
+		this.DrawingObjects			= new AscPDF.CGraphicObjectsPdf(this.doc, this.drawingDocument, this.Api);
+		this.doc.DrawingObjects		= this.DrawingObjects;
+		this.doc.DrawingDocument	= this.drawingDocument;
 		Asc.editor.WordControl.m_oLogicDocument = this.doc;
 		Asc.editor.WordControl.m_oDrawingDocument.m_oLogicDocument = this.doc;
 
@@ -756,7 +757,7 @@
 					_t.startTimer();
 				}
 
-				if (_t.isStarted && oDoc.fontLoader.isWorking() == false && _t.IsOpenFormsInProgress == false) {
+				if (_t.isStarted && _t.pageDetector && _t.IsOpenFormsInProgress == false) {
 					_t.sendEvent("onFileOpened");
 
 					_t.sendEvent("onPagesCount", _t.file.pages.length);
@@ -1297,11 +1298,16 @@
 				aRect = [oAnnotInfo["rect"]["x1"], oAnnotInfo["rect"]["y1"], oAnnotInfo["rect"]["x2"], oAnnotInfo["rect"]["y2"]];
 
 				if (oAnnotInfo["RefTo"] == null || oAnnotInfo["Type"] != AscPDF.ANNOTATIONS_TYPES.Text) {
+					let creationDate	= oAnnotInfo["CreationDate"] ? AscPDF.ParsePDFDate(oAnnotInfo["CreationDate"]) : null;
+					let creationStamp	= creationDate ? creationDate.getTime() : undefined;
+					let modDate			= oAnnotInfo["LastModified"] ? AscPDF.ParsePDFDate(oAnnotInfo["LastModified"]) : null;
+					let modStamp		= modDate ? modDate.getTime() : undefined;
+
 					oAnnot = oDoc.AddAnnot({
 						page:			oAnnotInfo["page"],
 						name:			oAnnotInfo["UniqueName"], 
-						creationDate:	oAnnotInfo["CreationDate"] ? AscPDF.ParsePDFDate(oAnnotInfo["CreationDate"]).getTime() : undefined,
-						modDate:		oAnnotInfo["LastModified"] ? AscPDF.ParsePDFDate(oAnnotInfo["LastModified"]).getTime() : undefined,
+						creationDate:	creationStamp,
+						modDate:		modStamp,
 						contents:		oAnnotInfo["Contents"],
 						author:			oAnnotInfo["User"],
 						rect:			aRect,
@@ -1739,6 +1745,13 @@
 
 		this.setCursorType = function(cursor)
 		{
+			let oDoc = this.getPDFDoc();
+			let oDrDoc = oDoc.GetDrawingDocument();
+
+			if (oDrDoc.m_sLockedCursorType) {
+				return;
+			}
+
 			if (this.Api.isDrawInkMode()) {
 				this.id_main.style.cursor = "";
 				return;
@@ -2012,10 +2025,6 @@
 			oThis.isFocusOnThumbnails = false;
 			//if (e && e.preventDefault)
 			//	e.preventDefault();
-
-			var mouseButton = AscCommon.getMouseButton(e || {});
-			if (mouseButton !== 0)
-				return;
 
 			oThis.isMouseDown = false;
 
@@ -2476,6 +2485,9 @@
 				return;
 
 			let oDoc = this.getPDFDoc();
+			if (oDoc.fontLoader.isWorking() || this.IsOpenFormsInProgress)
+				return;
+
 			this.overlay.Clear()
 
 			if (!this.file)
@@ -2538,6 +2550,7 @@
 				}
 
 				this.DrawingObjects.updateSelectionState();
+
 				if (this.DrawingObjects.needUpdateOverlay())
 				{
 					oDrDoc.AutoShapesTrack.PageIndex = -1;
@@ -2581,6 +2594,14 @@
 				ctx.beginPath();
 				oDoc.activeForm.content.DrawSelectionOnPage(0);
 				oDrDoc.private_EndDrawSelection();
+			}
+
+			if (oDrDoc.MathTrack.IsActive())
+			{
+				var dGlobalAplpha = ctx.globalAlpha;
+				ctx.globalAlpha = 1.0;
+				oDrDoc.DrawMathTrack(this.overlay);
+				ctx.globalAlpha = dGlobalAplpha;
 			}
 			
 			ctx.globalAlpha = 1.0;
@@ -3225,7 +3246,8 @@
 				}
 				else if (this.Api.isMarkerFormat)
 				{
-					this.Api.sync_MarkerFormatCallback(false);
+					this.Api.sendEvent("asc_onMarkerFormatChanged", this.Api.curMarkerType, false);
+					this.Api.SetMarkerFormat(this.Api.curMarkerType, false);
 				}
 				
 				oDoc.EscapeForm();

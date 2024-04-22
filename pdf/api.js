@@ -403,13 +403,14 @@
 	PDFEditorApi.prototype.asc_getPdfProps = function() {
 		return  this.DocumentRenderer ? this.DocumentRenderer.getDocumentInfo() : null;
 	};
-	PDFEditorApi.prototype.asc_enterText = function(text) {
+	PDFEditorApi.prototype.asc_enterText = function(codePoints) {
 		if (!this.DocumentRenderer)
 			return false;
 		
-		let viewer	= this.DocumentRenderer;
-		let oDoc	= viewer.getPDFDoc();
-		let oDrDoc	= oDoc.GetDrawingDocument();
+		let viewer		= this.DocumentRenderer;
+		let oDoc		= viewer.getPDFDoc();
+		let oDrDoc		= oDoc.GetDrawingDocument();
+
 		let oActiveForm		= oDoc.activeForm;
 		let oActiveAnnot	= oDoc.mouseDownAnnot;
 		let oActiveDrawing	= oDoc.activeDrawing;
@@ -420,16 +421,27 @@
 
 		let oContent;
 		if (oActiveForm && oDoc.checkFieldFont(oActiveForm) && oActiveForm.IsCanEditText()) {
-			oActiveForm.EnterText(text);
+			oActiveForm.EnterText(codePoints);
 			oContent = oActiveForm.GetDocContent();
 		}
 		else if (oActiveAnnot && oActiveAnnot.IsFreeText() && oActiveAnnot.IsInTextBox()) {
-			oActiveAnnot.EnterText(text);
+			oActiveAnnot.EnterText(codePoints);
 			oContent = oActiveAnnot.GetDocContent();
 		}
 		else if (oActiveDrawing && oActiveDrawing.IsInTextBox()) {
-			oActiveDrawing.EnterText(text);
 			oContent = oActiveDrawing.GetDocContent();
+
+			let nCode, oItem;
+			if (Array.isArray(codePoints)) {
+				for (let nIdx = 0; nIdx < codePoints.length; ++nIdx) {
+					nCode = codePoints[nIdx];
+					oItem = AscCommon.IsSpace(nCode) ? new AscWord.CRunSpace(nCode) : new AscWord.CRunText(nCode);
+					oDoc.AddToParagraph(oItem, false, true);
+				}
+			} else {
+				oItem = AscCommon.IsSpace(codePoints) ? new AscWord.CRunSpace(codePoints) : new AscWord.CRunText(codePoints);
+				oDoc.AddToParagraph(oItem, false, true);
+			}
 		}
 		
 		if (oContent) {
@@ -518,6 +530,11 @@
 
 		let oMathElement = new AscCommonWord.MathMenu(Type, oTextPr ? oTextPr.Copy() : null);
 		oDoc.AddToParagraph(oMathElement, false);
+	};
+	PDFEditorApi.prototype.asc_ConvertMathView = function(isToLinear, isAll)
+	{
+		let oDoc = this.getPDFDoc();
+		oDoc.ConvertMathView(isToLinear, isAll);
 	};
 	PDFEditorApi.prototype.sync_shapePropCallback = function(pr) {
 		let oDoc		= this.getPDFDoc();
@@ -648,25 +665,29 @@
 		this.isMarkerFormat	= value;
 
 		// from edit mode
-		if (nType == undefined) {
+		if (value == true && nType == undefined) {
 			this.getPDFDoc().SetHighlight(r, g, b, opacity);
 			return;
 		}
 
-		this.curMarkerType	= nType;
+		this.curMarkerType	= value ? nType : undefined;
 		let oDoc			= this.getPDFDoc();
+		let oViewer			= oDoc.Viewer;
+		let oDrDoc			= oDoc.GetDrawingDocument();
 		
-		if (value == true)
-			oDoc.BlurActiveObject();
+		oDoc.BlurActiveObject();
+		oDoc.UpdateInterface();
 
 		if (this.isMarkerFormat) {
-			let aSelQuads = this.getDocumentRenderer().file.getSelectionQuads();
+			let aSelQuads = oViewer.file.getSelectionQuads();
         	if (aSelQuads.length == 0) {
 				oDoc.bOffMarkerAfterUsing = false;
 			}
 			else {
 				oDoc.bOffMarkerAfterUsing = true;
 			}
+
+			oDrDoc.LockCursorType(AscCommon.Cursors.MarkerFormat);
 
 			switch (this.curMarkerType) {
 				case AscPDF.ANNOTATIONS_TYPES.Highlight:
@@ -681,6 +702,12 @@
 			}
 		}
 		else {
+			// SetMarkerFormat вызывается при включении ластика/рисовалки, курсор не сбрасываем
+			if (false == this.isDrawInkMode() && false == this.isEraseInkMode()) {
+				oDrDoc.UnlockCursorType();
+				oViewer.setCursorType('default');
+			}
+			
 			oDoc.bOffMarkerAfterUsing = true;
 		}
 	};
@@ -1028,6 +1055,61 @@
 		this.sync_ListType(oParaPr.ListType);
 		this.sync_PrPropCallback(oParaPr);
 	};
+	PDFEditorApi.prototype.paraApply = function(Props) {
+		let oDoc			= this.getPDFDoc();
+		let oController		= oDoc.GetController();
+		let oObjectsByType	= oController.getSelectedObjectsByTypes(true);
+        
+        let aObjects = [];
+        Object.values(oObjectsByType).forEach(function(arr) {
+            arr.forEach(function(drawing) {
+                aObjects.push(drawing);
+            })
+        });
+
+        oDoc.CreateNewHistoryPoint({objects: aObjects});
+
+		let sLoadFont = null, sLoadText = null;
+		let fCallback = function() {
+			oController.paraApplyCallback(Props);
+			
+			aObjects.forEach(function(drawing) {
+				drawing.SetNeedRecalc(true);
+			});
+	
+			oDoc.TurnOffHistory();
+		};
+		
+		let oBullet = Props.asc_getBullet();
+		if(oBullet) {
+			sLoadFont = oBullet.asc_getFont();
+			sLoadText = oBullet.asc_getSymbol();
+		}
+
+		if(typeof sLoadFont === "string" && sLoadFont.length > 0
+		&& typeof sLoadText === "string" && sLoadText.length > 0) {
+			let loader   = AscCommon.g_font_loader;
+			let fontinfo = AscFonts.g_fontApplication.GetFontInfo(sLoadFont);
+			let isasync  = loader.LoadFont(fontinfo);
+
+			if (false === isasync) {
+				AscFonts.FontPickerByCharacter.checkText(sLoadText, this, function () {
+					oController.checkSelectedObjectsAndCallback(fCallback, [], false, AscDFH.historydescription_Presentation_ParaApply);
+				});
+			}
+			else {
+				this.asyncMethodCallback = function() {
+					AscFonts.FontPickerByCharacter.checkText(sLoadText, this, function () {
+						oController.checkSelectedObjectsAndCallback(fCallback, [], false, AscDFH.historydescription_Presentation_ParaApply);
+					});
+				}
+			}
+		}
+		else {
+			oController.checkSelectedObjectsAndCallback(fCallback, [], false, AscDFH.historydescription_Presentation_ParaApply);
+		}
+	};
+
 
 	/////////////////////////////////////////////////////////////
 	///////// For text
@@ -1124,7 +1206,7 @@
 		let sBullet = oBullet.asc_getSymbol();
 
 		let fCallback = function() {
-			oDoc.SetNumbering(oBullet);
+			oDoc.SetParagraphNumbering(oBullet);
 		};
 
 		if(typeof sBullet === "string" && sBullet.length > 0) {
@@ -1134,6 +1216,7 @@
 			fCallback();
 		}
 	};
+	PDFEditorApi.prototype.asc_GetPossibleNumberingLanguage = function(){};
 	PDFEditorApi.prototype._addImageUrl = function(arrUrls, oOptionObject) {
 		let oDoc = this.getPDFDoc();
 		
@@ -1297,6 +1380,8 @@
 	PDFEditorApi.prototype.getAddedTextOnKeyDown = function() {
 		return [];
 	};
+	PDFEditorApi.prototype._autoSaveInner = function() {};
+	PDFEditorApi.prototype.ChangeReaderMode = function() {};
 	PDFEditorApi.prototype.asc_getSelectedDrawingObjectsCount = function() {
 		return this.WordControl.m_oLogicDocument.GetSelectedDrawingObjectsCount();
 	};
@@ -1543,15 +1628,21 @@
 
 		oDoc.RemoveComment(Id);
 	};
+	PDFEditorApi.prototype.asc_remove = function() {
+		let oDoc = this.getPDFDoc();
+		oDoc.Remove(1, false);
+	};
 	PDFEditorApi.prototype.asc_changeComment = function(Id, AscCommentData)
 	{
 		var oDoc = this.getDocumentRenderer().getPDFDoc();
 		if (!oDoc)
 			return;
 
+		oDoc.CreateNewHistoryPoint();
 		var CommentData = new AscCommon.CCommentData();
 		CommentData.Read_FromAscCommentData(AscCommentData);
 		oDoc.EditComment(Id, CommentData);
+		oDoc.TurnOffHistory();
 	};
 	PDFEditorApi.prototype.asc_selectComment = function(Id)
 	{
@@ -1608,10 +1699,7 @@
 		oViewer.DrawingObjects.onInkDrawerChangeState();
 		oDoc.currInkInDrawingProcess = null;
 
-		if (this.isInkDrawerOn()) {
-			this.getPDFDoc().BlurActiveObject();
-		}
-		else {
+		if (false == this.isInkDrawerOn()) {
 			if (oViewer.MouseHandObject) {
 				oViewer.setCursorType("pointer");
 			}
@@ -1794,6 +1882,11 @@
 		}
 		
 		this.EndActionLoadImages = 0;
+		if (false === this.isPasteFonts_Images && false === this.isSaveFonts_Images && false === this.isLoadImagesCustom)
+		{
+			this.ServerImagesWaitComplete = true;
+			this._openDocumentEndCallback();
+		}
 		
 		this.WordControl.m_oDrawingDocument.OpenDocument();
 		
@@ -1841,6 +1934,9 @@
 		this.DocumentRenderer.resize();
 	};
 	PDFEditorApi.prototype._openDocumentEndCallback = function() {
+		if (this.isDocumentLoadComplete || !this.ServerImagesWaitComplete || !this.ServerIdWaitComplete || !this.WordControl || !this.WordControl.m_oLogicDocument)
+			return;
+
 		this.sendMathToMenu();
 		this.sendStandartTextures();
 	};
@@ -1927,6 +2023,7 @@
 	PDFEditorApi.prototype['asc_SelectPDFFormListItem']    = PDFEditorApi.prototype.asc_SelectPDFFormListItem;
 	PDFEditorApi.prototype['asc_SetTextFormDatePickerDate']= PDFEditorApi.prototype.asc_SetTextFormDatePickerDate;
 	PDFEditorApi.prototype['asc_getHeaderFooterProperties']= PDFEditorApi.prototype.asc_getHeaderFooterProperties;
+	PDFEditorApi.prototype['ChangeReaderMode']			   = PDFEditorApi.prototype.ChangeReaderMode;
 
 	PDFEditorApi.prototype['SetDrawingFreeze']             = PDFEditorApi.prototype.SetDrawingFreeze;
 	PDFEditorApi.prototype['OnMouseUp']                    = PDFEditorApi.prototype.OnMouseUp;
@@ -1937,6 +2034,7 @@
 	PDFEditorApi.prototype['asc_showComment']              = PDFEditorApi.prototype.asc_showComment;
 	PDFEditorApi.prototype['asc_hideComments']             = PDFEditorApi.prototype.asc_hideComments;
 	PDFEditorApi.prototype['asc_removeComment']            = PDFEditorApi.prototype.asc_removeComment;
+	PDFEditorApi.prototype['asc_remove']            	   = PDFEditorApi.prototype.asc_remove;
 	PDFEditorApi.prototype['asc_changeComment']            = PDFEditorApi.prototype.asc_changeComment;
 	PDFEditorApi.prototype['asc_selectComment']            = PDFEditorApi.prototype.asc_selectComment;
 	PDFEditorApi.prototype['asc_EditPage']                 = PDFEditorApi.prototype.asc_EditPage;
@@ -1982,8 +2080,14 @@
 	PDFEditorApi.prototype['DecreaseIndent']				= PDFEditorApi.prototype.DecreaseIndent;
 	PDFEditorApi.prototype['ClearFormating']				= PDFEditorApi.prototype.ClearFormating;
 	PDFEditorApi.prototype['UpdateParagraphProp']			= PDFEditorApi.prototype.UpdateParagraphProp;
+	PDFEditorApi.prototype['paraApply']						= PDFEditorApi.prototype.paraApply;
 	PDFEditorApi.prototype['sync_ListType']					= PDFEditorApi.prototype.sync_ListType;
 	PDFEditorApi.prototype['put_ListType']					= PDFEditorApi.prototype.put_ListType;
+	PDFEditorApi.prototype['asc_GetPossibleNumberingLanguage']= PDFEditorApi.prototype.asc_GetPossibleNumberingLanguage;
+
+	// math
+	PDFEditorApi.prototype['asc_AddMath2']			= PDFEditorApi.prototype.asc_AddMath2;
+	PDFEditorApi.prototype['asc_ConvertMathView']	= PDFEditorApi.prototype.asc_ConvertMathView;
 
 	// freetext
 	PDFEditorApi.prototype['AddFreeTextAnnot'] = PDFEditorApi.prototype.AddFreeTextAnnot;

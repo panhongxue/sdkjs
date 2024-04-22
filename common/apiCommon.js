@@ -4483,8 +4483,11 @@ function (window, undefined) {
 	CMouseMoveData.prototype.get_PlaceholderType = function () {
 		return this.PlaceholderType;
 	};
-	CMouseMoveData.prototype.get_Info = function () {
-		return this.Info;
+	CMouseMoveData.prototype.get_EffectText = function () {
+		return this.EffectText;
+	};
+	CMouseMoveData.prototype.get_EffectDescription = function () {
+		return this.EffectDescription;
 	};
 
 
@@ -5537,7 +5540,31 @@ function (window, undefined) {
 		_object["isDisplayedInViewer"] = this.isDisplayedInViewer;
 		_object["EditorsSupport"] = this.EditorsSupport;
 
-		_object["type"] = this.type;
+		switch (this.type) {
+			case PluginType.System:
+				_object["type"] = "system";
+				break;
+
+			case PluginType.Window:
+				_object["type"] = "window";
+				break;
+
+			case PluginType.Panel:
+				_object["type"] = "panel";
+				break;
+
+			case PluginType.PanelRight:
+				_object["type"] = "panelRight";
+				break;
+
+			case PluginType.Invisible:
+				_object["type"] = "invisible";
+				break;
+		
+			default:
+				_object["type"] = "background";
+				break;
+		}
 
 		_object["isCustomWindow"] = this.isCustomWindow;
 		_object["isModal"] = this.isModal;
@@ -6700,7 +6727,8 @@ function (window, undefined) {
 	prot["get_ReviewChange"] = prot.get_ReviewChange;
 	prot["get_EyedropperColor"] = prot.get_EyedropperColor;
 	prot["get_PlaceholderType"] = prot.get_PlaceholderType;
-	prot["get_Info"] = prot.get_Info;
+	prot["get_EffectText"] = prot.get_EffectText;
+	prot["get_EffectDescription"] = prot.get_EffectDescription;
 
 	window["Asc"]["asc_CUserInfo"] = window["Asc"].asc_CUserInfo = asc_CUserInfo;
 	prot = asc_CUserInfo.prototype;

@@ -4432,21 +4432,58 @@
 				ctx.lineVerPrevPx(x, y, y2);
 			}
 		};
+
+		let checkSelectionFirstRowCol = function () {
+			let ranges = t.model.selectionRange && t.model.selectionRange.ranges;
+			if (!ranges) {
+				return false;
+			}
+			let headerCell;
+			if (isColHeader) {
+				let firstRow = t.visibleRange.r1;
+				headerCell = new Asc.Range(index, firstRow, index, firstRow);
+			} else {
+				let firstCol = t.visibleRange.c1;
+				headerCell = new Asc.Range(firstCol, index, firstCol, index);
+			}
+			for (let i = 0, l = ranges.length; i < l; ++i) {
+				if (ranges[i].containsRange(headerCell)) {
+					return true;
+				}
+			}
+			return false;
+		};
+
+		let isFirstRowSelection = isColHeader && checkSelectionFirstRowCol();
+		let isFirstColSelection = !isColHeader && checkSelectionFirstRowCol();
+
 		let drawRightBorder = function (_selected) {
 			if (isColHeader || !window["IS_NATIVE_EDITOR"]) {
-				ctx.lineVerPrevPx(x2, y - (_selected ? (_toRetina(1) + 1) : 0), y2 + (_selected ? _toRetina(1) : 0));
+				let y1Diff = 0;
+				let y2Diff = 0;
+				if (_selected) {
+					y1Diff = (isFirstColSelection ? (_toRetina(1) + 1) : 1);
+					y2Diff = (isFirstColSelection ? _toRetina(1) : 0);
+				}
+				ctx.lineVerPrevPx(x2, y - y1Diff, y2 + y2Diff);
 			}
 		};
 		let drawBottomBorder = function (_selected) {
 			if (!isColHeader || !window["IS_NATIVE_EDITOR"]) {
-				ctx.lineHorPrevPx(x - (_selected ? (_toRetina(1) + 1) : 0), y2, x2 + (_selected ? _toRetina(1) : 0));
+				let x1Diff = 0;
+				let x2Diff = 0;
+				if (_selected) {
+					x1Diff = (isFirstRowSelection ? (_toRetina(1) + 1) : 1);
+					x2Diff = (isFirstRowSelection ? _toRetina(1) : 0);
+				}
+				ctx.lineHorPrevPx(x - x1Diff, y2, x2 + x2Diff);
 			}
 		};
 
 
 		let needSelectTopBorder = false;
-		let needSelectRightBorder = style  === kHeaderActive && !isColHeader;
-		let needSelectBottomBorder = style  === kHeaderActive && isColHeader;
+		let needSelectRightBorder = style  !== kHeaderDefault && !isColHeader;
+		let needSelectBottomBorder = style  !== kHeaderDefault && isColHeader;
 		let needSelectLeftBorder = false;
 
 		let drawBorders = function (_selected) {
@@ -14143,6 +14180,7 @@
             var res;
             var mc, r, cell;
             var expansionTableRange;
+			let changeDigNumFormat;
 
             function makeBorder(b) {
                 var border = new AscCommonExcel.BorderProp();
@@ -14444,11 +14482,13 @@
 
 					case "changeDigNum": {
 						//change format by active cell
-						let colWidth = t.getColumnWidthInSymbols(activeCell.col)
-						let cell = t.model.getRange3(activeCell.row, activeCell.col, activeCell.row, activeCell.col);
-						let newNumFormat = cell.getShiftedNumFormat(val, colWidth);
-						if (newNumFormat) {
-							range.setNumFormat(newNumFormat);
+						if (!changeDigNumFormat && 0 === i) {
+							let colWidth = t.getColumnWidthInSymbols(activeCell.col)
+							let cell = t.model.getRange3(activeCell.row, activeCell.col, activeCell.row, activeCell.col);
+							changeDigNumFormat = cell.getShiftedNumFormat(val, colWidth);
+						}
+						if (changeDigNumFormat) {
+							range.setNumFormat(changeDigNumFormat);
 							canChangeColWidth = c_oAscCanChangeColWidth.numbers;
 						}
 						break;

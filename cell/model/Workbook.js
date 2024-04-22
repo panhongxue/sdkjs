@@ -1871,7 +1871,7 @@
 		_calculateDirty: function() {
 			const t = this;
 			let needUpdateCells = [];
-			this._foreachChanged(function(oCell) {
+			this._foreachChanged(function (oCell) {
 				if (oCell && oCell.isFormula()) {
 					// Logic for iterative calculation
 					if (g_cCalcRecursion.getIsEnabledRecursion()) {
@@ -1944,7 +1944,7 @@
 
 			AscCommonExcel.importRangeLinksState.startBuildImportRangeLinks = false;
 
-			this._foreachChanged(function(oCell) {
+			this._foreachChanged(function (oCell) {
 				oCell && oCell._checkDirty();
 				if (oCell.formulaParsed && AscCommonExcel.bIsSupportDynamicArrays && (oCell.formulaParsed.getDynamicRef() || oCell.formulaParsed.getArrayFormulaRef()) && oCell.formulaParsed.aca && oCell.formulaParsed.ca) {
 					t.addToVolatileArrays(oCell.formulaParsed);
@@ -14519,16 +14519,29 @@
 		const nCellIndex = getCellIndex(this.nRow, this.nCol);
 		const oFormulaParsed = this.getFormulaParsed();
 		const aOutStack = oFormulaParsed && oFormulaParsed.outStack;
+		const oBaseFunction = aOutStack && aOutStack.find(function (oElem) {
+			return oElem.type === cElementType.func;
+		});
 		let sAreaIndex = null;
 		// Logic for recognizing area listeners
-		if (aOutStack && aOutStack.length && aOutStack[aOutStack.length - 1].type === cElementType.func) {
-			let oOutStackElem = aOutStack[0];
-			if (oOutStackElem.type === cElementType.cellsRange || oOutStackElem.type === cElementType.cellsRange3D) {
+		if (aOutStack && aOutStack.length && oBaseFunction) {
+			const aElementTypes = [
+				cElementType.cell,
+				cElementType.cellsRange,
+				cElementType.cellsRange3D,
+				cElementType.name,
+				cElementType.name3D,
+				cElementType.table
+			];
+			let oOutStackElem = aOutStack.find(function (oElem) {
+				return aElementTypes.includes(oElem.type);
+			});
+			if (oOutStackElem && (oOutStackElem.type === cElementType.cellsRange || oOutStackElem.type === cElementType.cellsRange3D)) {
 				let oElemRange = oOutStackElem.getRange();
 				if (oElemRange.containCell2(this)) {
 					sAreaIndex = oOutStackElem.value.replace(/\$/g, "");
 				}
-			} else if (oOutStackElem.type === cElementType.name || oOutStackElem.type === cElementType.name3D) {
+			} else if (oOutStackElem && (oOutStackElem.type === cElementType.name || oOutStackElem.type === cElementType.name3D)) {
 				let oRef = oOutStackElem.toRef();
 				sAreaIndex = oRef.value.replace(/\$/g, "");
 			}

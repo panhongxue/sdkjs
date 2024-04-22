@@ -31884,116 +31884,6 @@ $(function () {
 
 		ws.getRange2("A1:Z10000").cleanAll();
 	});
-	// Mocks for API Testing
-	Asc.spreadsheet_api.prototype._init = function () {
-		this._loadModules();
-	};
-	Asc.spreadsheet_api.prototype._loadFonts = function (fonts, callback) {
-		callback();
-	};
-	AscCommonExcel.WorkbookView.prototype._calcMaxDigitWidth = function () {
-	};
-	AscCommonExcel.WorkbookView.prototype._init = function () {
-	};
-	AscCommonExcel.WorkbookView.prototype._isLockedUserProtectedRange = function (callback) {
-		callback(true);
-	};
-	AscCommonExcel.WorkbookView.prototype._onWSSelectionChanged = function () {
-	};
-	AscCommonExcel.WorkbookView.prototype.showWorksheet = function () {
-	};
-	AscCommonExcel.WorkbookView.prototype.recalculateDrawingObjects = function () {
-	};
-	AscCommonExcel.WorkbookView.prototype.restoreFocus = function () {
-	};
-	AscCommonExcel.WorksheetView.prototype._init = function () {
-	};
-	AscCommonExcel.WorksheetView.prototype.updateRanges = function () {
-	};
-	AscCommonExcel.WorksheetView.prototype._autoFitColumnsWidth = function () {
-	};
-	AscCommonExcel.WorksheetView.prototype.cleanSelection = function () {
-	};
-	AscCommonExcel.WorksheetView.prototype._drawSelection = function () {
-	};
-	AscCommonExcel.WorksheetView.prototype._scrollToRange = function () {
-	};
-	AscCommonExcel.WorksheetView.prototype.draw = function () {
-	};
-	AscCommonExcel.WorksheetView.prototype._prepareDrawingObjects = function () {
-	};
-	AscCommonExcel.WorksheetView.prototype._initCellsArea = function () {
-	};
-	AscCommonExcel.WorksheetView.prototype.getZoom = function () {
-	};
-	AscCommonExcel.WorksheetView.prototype._prepareCellTextMetricsCache = function () {
-	};
-
-	AscCommon.baseEditorsApi.prototype._onEndLoadSdk = function () {
-	};
-	AscCommonExcel.WorksheetView.prototype._isLockedCells = function (oFromRange, subType, callback) {
-		callback(true);
-		return true;
-	};
-	AscCommonExcel.WorksheetView.prototype._isLockedAll = function (callback) {
-		callback(true);
-	};
-	AscCommonExcel.WorksheetView.prototype._isLockedFrozenPane = function (callback) {
-		callback(true);
-	};
-	AscCommonExcel.WorksheetView.prototype._updateVisibleColsCount = function () {
-	};
-	AscCommonExcel.WorksheetView.prototype._calcActiveCellOffset = function () {
-	};
-
-	AscCommon.baseEditorsApi.prototype._onEndLoadSdk = function () {
-	};
-	Asc.ReadDefTableStyles = function () {
-	};
-
-	QUnit.test("Test: API Calculation option", function (assert) {
-		// Init api
-		let api = new Asc.spreadsheet_api({
-			'id-view': 'editor_sdk'
-		});
-		window["Asc"]["editor"] = api;
-		AscCommon.g_oTableId.init();
-		api._onEndLoadSdk();
-		api.isOpenOOXInBrowser = false;
-		api._openDocument(AscCommon.getEmpty());
-		api.collaborativeEditing = new AscCommonExcel.CCollaborativeEditing({});
-		api.wb = new AscCommonExcel.WorkbookView(api.wbModel, api.controller, api.handlers, api.HtmlElement,
-			api.topLineEditorElement, api, api.collaborativeEditing, api.fontRenderingMode);
-		// Test api: GetCalcSettings
-		let oCalcSettings = api.asc_GetCalcSettings();
-		assert.ok(oCalcSettings, "API: GetCalcSettings: Calculation setting object is created");
-		assert.strictEqual(oCalcSettings.bIterativeCalc, false, '"Enable iterative calculation" is "false" as default value');
-		assert.strictEqual(oCalcSettings.nMaxIterations, 100, '"Maximum Iterations" is "100" as default value');
-		assert.strictEqual(oCalcSettings.nMaxChange, 0.001, '"Maximum Change" is "0.001" as default value');
-		// Test api: UpdateCalcSettings
-		// Update  CalcSettings for api test, need to check changes for: CalcSetting, CalcPr, and CalcRecursion
-		oCalcSettings.asc_setIterativeCalc(true);
-		oCalcSettings.asc_setMaxIterations(15);
-
-		api.asc_UpdateCalcSettings(oCalcSettings);
-		// Check CalcPr
-		let oCalcPr = api.wbModel.calcPr;
-		assert.strictEqual(oCalcPr.iterate, true, 'API: UpdateCalcSettings. oCalcPr check: "iterate" is "true"');
-		assert.strictEqual(oCalcPr.iterateCount, 15, 'API: UpdateCalcSettings. oCalcPr check: "iterateCount" is "10"');
-		assert.strictEqual(oCalcPr.iterateDelta, null, 'API: UpdateCalcSettings. oCalcPr check: "iterateDelta" is "null"');
-		// Check CalcRecursion
-		let g_cCalcRecursion = AscCommonExcel.g_cCalcRecursion;
-		assert.strictEqual(g_cCalcRecursion.bIsEnabledRecursion, true, 'API: UpdateCalcSettings. CalcRecursion check: "bIsEnabledRecursion" is "true"');
-		assert.strictEqual(g_cCalcRecursion.nMaxIterations, 15, 'API: UpdateCalcSettings. CalcRecursion check: "nMaxIterations" is "15"');
-		assert.strictEqual(g_cCalcRecursion.nRelativeError, 0.001, 'API: UpdateCalcSettings. CalcRecursion check: "nRelativeError" is "0.001"');
-		// Case: UpdateCalcSettings update Maximum Change
-		oCalcSettings.asc_setMaxChange(0.00001);
-		api.asc_UpdateCalcSettings(oCalcSettings);
-		// Check CalcPr
-		assert.strictEqual(oCalcPr.iterateDelta, 0.00001, 'API: UpdateCalcSettings. oCalcPr check: "iterateDelta" is "0.00001"');
-		// Check CalcRecursion
-		assert.strictEqual(g_cCalcRecursion.nRelativeError, 0.00001, 'API: UpdateCalcSettings. CalcRecursion check: "nRelativeError" is "0.00001"');
-	});
 
 	QUnit.test("Test: \"External reference test: importRange function\"", function (assert) {
 
@@ -33806,7 +33696,116 @@ $(function () {
 
 	});
 
+	// Mocks for API Testing
+	Asc.spreadsheet_api.prototype._init = function () {
+		this._loadModules();
+	};
+	Asc.spreadsheet_api.prototype._loadFonts = function (fonts, callback) {
+		callback();
+	};
+	AscCommonExcel.WorkbookView.prototype._calcMaxDigitWidth = function () {
+	};
+	AscCommonExcel.WorkbookView.prototype._init = function () {
+	};
+	AscCommonExcel.WorkbookView.prototype._isLockedUserProtectedRange = function (callback) {
+		callback(true);
+	};
+	AscCommonExcel.WorkbookView.prototype._onWSSelectionChanged = function () {
+	};
+	AscCommonExcel.WorkbookView.prototype.showWorksheet = function () {
+	};
+	AscCommonExcel.WorkbookView.prototype.recalculateDrawingObjects = function () {
+	};
+	AscCommonExcel.WorkbookView.prototype.restoreFocus = function () {
+	};
+	AscCommonExcel.WorksheetView.prototype._init = function () {
+	};
+	AscCommonExcel.WorksheetView.prototype.updateRanges = function () {
+	};
+	AscCommonExcel.WorksheetView.prototype._autoFitColumnsWidth = function () {
+	};
+	AscCommonExcel.WorksheetView.prototype.cleanSelection = function () {
+	};
+	AscCommonExcel.WorksheetView.prototype._drawSelection = function () {
+	};
+	AscCommonExcel.WorksheetView.prototype._scrollToRange = function () {
+	};
+	AscCommonExcel.WorksheetView.prototype.draw = function () {
+	};
+	AscCommonExcel.WorksheetView.prototype._prepareDrawingObjects = function () {
+	};
+	AscCommonExcel.WorksheetView.prototype._initCellsArea = function () {
+	};
+	AscCommonExcel.WorksheetView.prototype.getZoom = function () {
+	};
+	AscCommonExcel.WorksheetView.prototype._prepareCellTextMetricsCache = function () {
+	};
 
+	AscCommon.baseEditorsApi.prototype._onEndLoadSdk = function () {
+	};
+	AscCommonExcel.WorksheetView.prototype._isLockedCells = function (oFromRange, subType, callback) {
+		callback(true);
+		return true;
+	};
+	AscCommonExcel.WorksheetView.prototype._isLockedAll = function (callback) {
+		callback(true);
+	};
+	AscCommonExcel.WorksheetView.prototype._isLockedFrozenPane = function (callback) {
+		callback(true);
+	};
+	AscCommonExcel.WorksheetView.prototype._updateVisibleColsCount = function () {
+	};
+	AscCommonExcel.WorksheetView.prototype._calcActiveCellOffset = function () {
+	};
+
+	AscCommon.baseEditorsApi.prototype._onEndLoadSdk = function () {
+	};
+	Asc.ReadDefTableStyles = function () {
+	};
+
+	QUnit.test("Test: API Calculation option", function (assert) {
+		// Init api
+		let api = new Asc.spreadsheet_api({
+			'id-view': 'editor_sdk'
+		});
+		window["Asc"]["editor"] = api;
+		AscCommon.g_oTableId.init();
+		api._onEndLoadSdk();
+		api.isOpenOOXInBrowser = false;
+		api._openDocument(AscCommon.getEmpty());
+		api.collaborativeEditing = new AscCommonExcel.CCollaborativeEditing({});
+		api.wb = new AscCommonExcel.WorkbookView(api.wbModel, api.controller, api.handlers, api.HtmlElement,
+			api.topLineEditorElement, api, api.collaborativeEditing, api.fontRenderingMode);
+		// Test api: GetCalcSettings
+		let oCalcSettings = api.asc_GetCalcSettings();
+		assert.ok(oCalcSettings, "API: GetCalcSettings: Calculation setting object is created");
+		assert.strictEqual(oCalcSettings.bIterativeCalc, false, '"Enable iterative calculation" is "false" as default value');
+		assert.strictEqual(oCalcSettings.nMaxIterations, 100, '"Maximum Iterations" is "100" as default value');
+		assert.strictEqual(oCalcSettings.nMaxChange, 0.001, '"Maximum Change" is "0.001" as default value');
+		// Test api: UpdateCalcSettings
+		// Update  CalcSettings for api test, need to check changes for: CalcSetting, CalcPr, and CalcRecursion
+		oCalcSettings.asc_setIterativeCalc(true);
+		oCalcSettings.asc_setMaxIterations(15);
+
+		api.asc_UpdateCalcSettings(oCalcSettings);
+		// Check CalcPr
+		let oCalcPr = api.wbModel.calcPr;
+		assert.strictEqual(oCalcPr.iterate, true, 'API: UpdateCalcSettings. oCalcPr check: "iterate" is "true"');
+		assert.strictEqual(oCalcPr.iterateCount, 15, 'API: UpdateCalcSettings. oCalcPr check: "iterateCount" is "10"');
+		assert.strictEqual(oCalcPr.iterateDelta, null, 'API: UpdateCalcSettings. oCalcPr check: "iterateDelta" is "null"');
+		// Check CalcRecursion
+		let g_cCalcRecursion = AscCommonExcel.g_cCalcRecursion;
+		assert.strictEqual(g_cCalcRecursion.bIsEnabledRecursion, true, 'API: UpdateCalcSettings. CalcRecursion check: "bIsEnabledRecursion" is "true"');
+		assert.strictEqual(g_cCalcRecursion.nMaxIterations, 15, 'API: UpdateCalcSettings. CalcRecursion check: "nMaxIterations" is "15"');
+		assert.strictEqual(g_cCalcRecursion.nRelativeError, 0.001, 'API: UpdateCalcSettings. CalcRecursion check: "nRelativeError" is "0.001"');
+		// Case: UpdateCalcSettings update Maximum Change
+		oCalcSettings.asc_setMaxChange(0.00001);
+		api.asc_UpdateCalcSettings(oCalcSettings);
+		// Check CalcPr
+		assert.strictEqual(oCalcPr.iterateDelta, 0.00001, 'API: UpdateCalcSettings. oCalcPr check: "iterateDelta" is "0.00001"');
+		// Check CalcRecursion
+		assert.strictEqual(g_cCalcRecursion.nRelativeError, 0.00001, 'API: UpdateCalcSettings. CalcRecursion check: "nRelativeError" is "0.00001"');
+	});
 
 	wb.dependencyFormulas.unlockRecal();
 });

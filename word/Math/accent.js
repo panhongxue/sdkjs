@@ -689,14 +689,14 @@ CAccent.prototype.Get_InterfaceProps = function()
     return new CMathMenuAccent(this);
 };
 CAccent.prototype.GetTextOfElement = function(isLaTeX) {
-	var strTemp = "";
-	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX, true);
-	var strAccent = this.Pr.chr === null ? "̂" : String.fromCharCode(this.Pr.chr);
-	var strStartBracet = (strBase.length > 1 || isLaTeX) ? this.GetStartBracetForGetTextContent(isLaTeX) : "";
-	var strCloseBracet = (strBase.length > 1 || isLaTeX) ? this.GetEndBracetForGetTextContent(isLaTeX) : "";
+	let strTemp = "";
+	let strBase = this.getBase().GetMultipleContentForGetText(isLaTeX);
+	let strAccent = this.Pr.chr === null ? "̂" : String.fromCharCode(this.Pr.chr);
+	let strStartBracet = (strBase.length > 1 || isLaTeX) ? this.GetStartBracetForGetTextContent(isLaTeX) : "";
+	let strCloseBracet = (strBase.length > 1 || isLaTeX) ? this.GetEndBracetForGetTextContent(isLaTeX) : "";
 	
 	if (isLaTeX)
-    {
+	{
 		var intAccentCode = strAccent.charCodeAt();
 		switch (intAccentCode) {
 			case 0:		strAccent = '\\hat'; 				break;
@@ -722,11 +722,11 @@ CAccent.prototype.GetTextOfElement = function(isLaTeX) {
 		if (intAccentCode === 831)
 			strTemp += "}";
 	}
-    else
-    {
-        if (strBase.length === 0)
-            strBase = "()";
-	   strTemp = strStartBracet + strBase + strCloseBracet + strAccent;
+	else
+	{
+		if (strBase.length === 0)
+		strBase = "()";
+		strTemp = strStartBracet + strBase + strCloseBracet + strAccent;
 	}
 	return strTemp;
 };

@@ -1038,13 +1038,13 @@ CMathMatrix.prototype.GetTextOfElement = function (isLaTeX, strBrackets)
 //
 // 	На данный момент делаем получение линейного формата всегда в режиме pmatrix, если это возможно (используем обычные скобки)
 
-	var strTemp = isLaTeX
+	let strTemp = isLaTeX
 		? "\\begin{" + strMatrixSymbol + "}"
 		: strMatrixSymbol + strStartBracet;
 
-	for (var nRow = 0; nRow < this.nRow; nRow++)
+	for (let nRow = 0; nRow < this.nRow; nRow++)
 	{
-		for (var nCol = 0; nCol < this.nCol; nCol++)
+		for (let nCol = 0; nCol < this.nCol; nCol++)
 		{
 			strTemp += this.getContentElement(nRow, nCol).GetTextOfElement(isLaTeX);
 
@@ -1607,18 +1607,19 @@ CEqArray.prototype.IsEqArray = function () {
 };
 CEqArray.prototype.GetTextOfElement = function (isLaTeX) {
 	let strStart = isLaTeX ? "\\substack" : "█";
-	var strStartBracet = this.GetStartBracetForGetTextContent(isLaTeX);
-	var strCloseBracet = this.GetEndBracetForGetTextContent(isLaTeX);
+	let strStartBracet = this.GetStartBracetForGetTextContent(isLaTeX);
+	let strCloseBracet = this.GetEndBracetForGetTextContent(isLaTeX);
+	let strTemp = strStart + strStartBracet;
 
-	var strTemp = strStart+ strStartBracet;
-
-	for (var i = 0; i < this.Pr.row; i++) {
+	for (let i = 0; i < this.Pr.row; i++)
+	{
 		strTemp += this.getElement(i).GetTextOfElement(isLaTeX);
-		if (i !== this.Pr.row - 1 ) {
+
+		if (i !== this.Pr.row - 1 )
 			strTemp += isLaTeX ? "\\\\" : '@';
-		}
 	}
 	strTemp += strCloseBracet;
+
 	return strTemp;
 };
 

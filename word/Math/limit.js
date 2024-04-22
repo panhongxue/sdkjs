@@ -316,34 +316,36 @@ CLimit.prototype.Can_ModifyArgSize = function()
     return this.CurPos == 1 && false === this.Is_SelectInside();
 };
 CLimit.prototype.GetTextOfElement = function(isLaTeX) {
-	var strTemp = "";
-	var strLimitSymbol = "";
-	var strFuncName = this.getFName().GetMultipleContentForGetText(isLaTeX, true);
-	var strArgument = this.getIterator().GetMultipleContentForGetText(isLaTeX, true);
-	var strStartBracet = this.GetStartBracetForGetTextContent(isLaTeX);
-	var strCloseBracet = this.GetEndBracetForGetTextContent(isLaTeX);
+	let strTemp = "";
+	let strLimitSymbol = "";
+	let strFuncName = this.getFName().GetMultipleContentForGetText(isLaTeX);
+	let strArgument = this.getIterator().GetMultipleContentForGetText(isLaTeX);
 
 	if (isLaTeX)
-    {
-        strLimitSymbol = (this.Pr.type == 1) ? "\\above" : "\\below";
+	{
+		strLimitSymbol = (this.Pr.type == 1) ? "\\above" : "\\below";
 		if (strFuncName === 'lim' ||
 			strFuncName === 'log' ||
 			strFuncName === 'max' ||
 			strFuncName === 'min' ||
 			strFuncName === 'ln')
-        {
-            strFuncName = '\\' + strFuncName;
+		{
+			strFuncName = '\\' + strFuncName;
 		}
 	}
-    else
-    {
+	else
+	{
 		strLimitSymbol = (this.Pr.type == 1) ? "┴" : "┬";
 	}
 
-	if (strArgument.length > 1 || isLaTeX)
-		strArgument = strStartBracet + strArgument + strCloseBracet;
-
 	strTemp = strFuncName + strLimitSymbol+ strArgument;
+
+	if (!isLaTeX)
+	{
+		if (this.IsNextIsSameCharType(strTemp[strTemp.length - 1]))
+			strTemp += " ";
+	}
+
 	return strTemp;
 };
 
@@ -448,17 +450,14 @@ CMathFunc.prototype.fillContent = function()
     this.elements[0][1] = this.getArgument();
 };
 CMathFunc.prototype.GetTextOfElement = function(isLaTeX) {
-	var strTemp = "";
-	var strFuncName = this.getFName().GetMultipleContentForGetText(isLaTeX, true);
-	var strArgument = this.getArgument().GetMultipleContentForGetText(isLaTeX, true);
+	let strTemp = "";
+	let strFuncName = this.getFName().GetMultipleContentForGetText(isLaTeX, undefined, true);
+	let strArgument = this.getArgument().GetMultipleContentForGetText(isLaTeX, undefined, true);
 
 	if (!isLaTeX)
 	{
 		let strFuncApply = String.fromCharCode(8289);
-		if (this.getArgument().haveMixedContent())
-			strArgument = strFuncApply + "〖" + strArgument + "〗";
-		else
-			strArgument = strFuncApply + strArgument;
+		strArgument = strFuncApply + strArgument;
 	}
 	if (isLaTeX)
 	{
@@ -468,6 +467,12 @@ CMathFunc.prototype.GetTextOfElement = function(isLaTeX) {
 	}
 
 	strTemp = strFuncName + strArgument;
+
+	if (!isLaTeX)
+	{
+		if (this.IsNextIsSameCharType(strTemp[strTemp.length - 1]))
+			strTemp += " ";
+	}
 	return strTemp;
 };
 

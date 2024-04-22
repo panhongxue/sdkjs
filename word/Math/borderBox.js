@@ -560,16 +560,24 @@ CBorderBox.prototype.Get_InterfaceProps = function()
     return new CMathMenuBorderBox(this);
 };
 CBorderBox.prototype.GetTextOfElement = function(isLaTeX) {
-	var strTemp = "";
-	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX, true);
-	var strStartBracet = (strBase.length > 1 || isLaTeX) ? this.GetStartBracetForGetTextContent(isLaTeX) : "";
-	var strCloseBracet = (strBase.length > 1 || isLaTeX) ? this.GetEndBracetForGetTextContent(isLaTeX) : "";
+	let strTemp = "";
+	let strBase = this.getBase().GetMultipleContentForGetText(isLaTeX, true);
+	let strStartBracet = (strBase.length > 1 || isLaTeX) ? this.GetStartBracetForGetTextContent(isLaTeX) : "";
+	let strCloseBracet = (strBase.length > 1 || isLaTeX) ? this.GetEndBracetForGetTextContent(isLaTeX) : "";
 	
 	if (true === isLaTeX)
 		strTemp = '\\rect' + strStartBracet + strBase + strCloseBracet;
 	else
-		strTemp = "▭" + strStartBracet + strBase + strCloseBracet;
+	{
+		if (this.getBase().haveMixedContent())
+		{
+			strBase = strStartBracet + strBase + strCloseBracet
+		}
+		strTemp = "▭" + strBase;
 
+		if (this.IsNextIsSameCharType(strTemp[strTemp.length - 1]))
+			strTemp += " ";
+	}
 	return strTemp;
 };
 
@@ -959,14 +967,17 @@ CBox.prototype.Apply_ForcedBreak = function(Props)
         Props.Action ^= c_oMathMenuAction.DeleteForcedBreak;
 };
 CBox.prototype.GetTextOfElement = function(isLaTeX) {
-	var strTemp = "";
-	var strSymbol = (true === isLaTeX) ? "\\box" : "□";
-	var Base = this.getBase().GetMultipleContentForGetText(isLaTeX);
+	let strTemp = "";
+	let strSymbol = (true === isLaTeX) ? "\\box" : "□";
+	let strBase = this.getBase().GetMultipleContentForGetText(isLaTeX);
 
-	strTemp =
-		strSymbol
-		+ Base
+	strTemp = strSymbol + strBase
 
+	if (!isLaTeX)
+	{
+		if (this.IsNextIsSameCharType(strTemp[strTemp.length - 1]))
+			strTemp += " ";
+	}
 	return strTemp;
 };
 
@@ -1107,24 +1118,26 @@ CBar.prototype.raw_SetLinePos = function(Value)
     this.ApplyProperties();
 };
 CBar.prototype.GetTextOfElement = function(isLaTeX) {
-	var strTemp = "",
-        strSymbol,
-        strBase,
-        strStartBracket = this.GetStartBracetForGetTextContent(isLaTeX),
-        strCloseBracket = this.GetEndBracetForGetTextContent(isLaTeX);
+	let strTemp = "",
+		strSymbol,
+		strBase,
+		strStartBracket = this.GetStartBracetForGetTextContent(isLaTeX),
+		strCloseBracket = this.GetEndBracetForGetTextContent(isLaTeX);
 
-    if (!isLaTeX)
-        strSymbol = (this.Pr.pos) ? "▁" : "¯";
-    else
-        strSymbol = (this.Pr.pos) ? "\\underline" : "\\overline";
+	if (!isLaTeX)
+		strSymbol = (this.Pr.pos) ? "▁" : "¯";
+	else
+		strSymbol = (this.Pr.pos) ? "\\underline" : "\\overline";
 
-	strBase = this.getBase().GetMultipleContentForGetText(isLaTeX, true);
+	strBase = this.getBase().GetMultipleContentForGetText(isLaTeX);
 	
-	strTemp =
-		strSymbol
-		+ strStartBracket
-		+ strBase
-		+ strCloseBracket;
+	strTemp = strSymbol + strBase;
+
+	if (!isLaTeX)
+	{
+		if (this.IsNextIsSameCharType(strTemp[strTemp.length - 1]))
+			strTemp += " ";
+	}
 
 	return strTemp;
 }

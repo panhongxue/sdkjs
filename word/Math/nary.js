@@ -817,15 +817,14 @@ CNary.prototype.Can_ModifyArgSize = function()
 };
 CNary.prototype.GetTextOfElement = function(isLaTeX)
 {
-	var strTemp = "";
+	let strTemp = "";
+	let strStartCode = String.fromCharCode(this.Pr.chr || this.getSign().chrCode);
+	let strSupContent = this.getSupMathContent().GetMultipleContentForGetText(isLaTeX);
+	let strSubContent = this.getSubMathContent().GetMultipleContentForGetText(isLaTeX);
+	let strBase = this.getBase().GetMultipleContentForGetText(isLaTeX, undefined, true);
 
-	var strStartCode = String.fromCharCode(this.Pr.chr || this.getSign().chrCode);
-	var strSupContent = this.getSupMathContent().GetMultipleContentForGetText(isLaTeX, undefined, true);
-	var strSubContent = this.getSubMathContent().GetMultipleContentForGetText(isLaTeX, undefined, true);
-	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX, true);
-
-    if (isLaTeX)
-    {
+	if (isLaTeX)
+	{
         switch (strStartCode.codePointAt())
         {
             case 8747:	strStartCode = '\\int';			break;
@@ -855,15 +854,16 @@ CNary.prototype.GetTextOfElement = function(isLaTeX)
             strStartCode += " ";
         }
     }
-    else if (!isLaTeX && strBase.length > 0)
-    {
-        strBase = '▒' + strBase;
+
+	if (!isLaTeX && strBase.length > 0)
+	{
+		strBase = '▒' + strBase;
 	}
 
 	strTemp += strStartCode;
 
 	if (strSupContent.length > 0)
-    {
+	{
 		strTemp += "^" + strSupContent;
 	}
 	if (strSubContent.length > 0)
@@ -871,6 +871,12 @@ CNary.prototype.GetTextOfElement = function(isLaTeX)
 		strTemp += "_" + strSubContent;
 	}
 	strTemp += strBase;
+
+	if (!isLaTeX)
+	{
+		if (this.IsNextIsSameCharType(strTemp[strTemp.length - 1]))
+			strTemp += " ";
+	}
 
 	return strTemp;
 };

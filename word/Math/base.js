@@ -2808,18 +2808,69 @@ CMathBase.prototype.GetTextOfElement = function()
 	return "";
 };
 
-CMathBase.prototype.GetStartBracetForGetTextContent = function(isLaTeX) {
+CMathBase.prototype.GetStartBracetForGetTextContent = function(isLaTeX)
+{
 	if (isLaTeX) 
 		return '{';
 	else
 		return '(';
 };
-CMathBase.prototype.GetEndBracetForGetTextContent = function(isLaTeX) {
+CMathBase.prototype.GetEndBracetForGetTextContent = function(isLaTeX)
+{
 	if (isLaTeX) 
 		return '}';
 	else
 		return ')';
 };
+CMathBase.prototype.IsNextIsSameCharType = function(lastChar)
+{
+	let nPosInParent;
+	let oParent = this.Parent;
+	let arrParentContent = oParent.Content;
+
+	for (let i = 0; i < arrParentContent.length; i++)
+	{
+		let oCurrentEl = arrParentContent[i];
+		if (this === oCurrentEl)
+		{
+			nPosInParent = i;
+			break;
+		}
+	}
+
+	if (nPosInParent === undefined)
+		return false;
+
+	if (arrParentContent.length >= nPosInParent + 1)
+	{
+		let oNext = arrParentContent[nPosInParent + 1];
+		if (!oNext || (oNext instanceof ParaRun && oNext.Content.length === 0))
+			return false;
+		let strNext = oNext.GetTextOfElement();
+
+		let strResult = lastChar + strNext;
+
+		let oTokenizer = new AscMath.Tokenizer();
+		oTokenizer.Init(strResult);
+
+		let isSimpleClass = function (oClass)
+		{
+			return oClass === AscMath.oNamesOfLiterals.charLiteral[0]
+				|| oClass === AscMath.oNamesOfLiterals.spaceLiteral[0]
+				|| oClass === AscMath.oNamesOfLiterals.numberLiteral[0]
+				|| oClass === AscMath.oNamesOfLiterals.otherLiteral[0]
+		}
+
+		let oFirst = oTokenizer.GetNextToken();
+		let oSecond = oTokenizer.GetNextToken();
+		if (!(isSimpleClass(oFirst.class) && isSimpleClass(oSecond.class)))
+			return false;
+
+		return true;
+	}
+
+	return false;
+}
 
 function CMathBasePr()
 {

@@ -542,10 +542,10 @@ CDegree.prototype.Can_ModifyArgSize = function()
     return this.CurPos == 1 && false === this.Is_SelectInside(); // находимся в итераторе
 };
 CDegree.prototype.GetTextOfElement = function(isLaTeX) {
-	var strTemp = "";
-	var strTypeOfScript = this.Pr.type === 1 ? '^' : '_';
-	var strBase = this.getBase().GetMultipleContentForGetText(isLaTeX, true);
-	var strIterator = this.getIterator().GetMultipleContentForGetText(isLaTeX);
+	let strTemp = "";
+	let strTypeOfScript = this.Pr.type === 1 ? '^' : '_';
+	let strBase = this.getBase().GetMultipleContentForGetText(isLaTeX, undefined, true);
+	let strIterator = this.getIterator().GetMultipleContentForGetText(isLaTeX);
 
 	if (isLaTeX)
 	{
@@ -586,10 +586,10 @@ CDegree.prototype.GetTextOfElement = function(isLaTeX) {
 	}
 	else
 	{
-		let oBase = this.getBase();
-		if (oBase.haveMixedContent())
-			strBase = "〖" + strBase + "〗";
-		strTemp = strBase + strTypeOfScript + strIterator + " ";
+		strTemp = strBase + strTypeOfScript + strIterator;
+
+		if (this.IsNextIsSameCharType(strTemp[strTemp.length - 1]))
+			strTemp += " ";
 	}
 	return strTemp;
 };
@@ -1250,10 +1250,10 @@ CDegreeSubSup.prototype.Can_ModifyArgSize = function()
 CDegreeSubSup.prototype.GetTextOfElement = function(isLaTeX)
 {
 	let strTemp = "";
-	let Base = this.getBase().GetMultipleContentForGetText(isLaTeX, true);
+	debugger
+	let strBase = this.getBase().GetMultipleContentForGetText(isLaTeX, undefined, true);
 	let strLower = this.getLowerIterator().GetMultipleContentForGetText(isLaTeX);
 	let strUpper = this.getUpperIterator().GetMultipleContentForGetText(isLaTeX);
-
 	let isPreScript = this.Pr.type === -1;
 	
 	if (isLaTeX)
@@ -1264,22 +1264,25 @@ CDegreeSubSup.prototype.GetTextOfElement = function(isLaTeX)
 			strUpper = '{}'
 
 		if (true === isPreScript)
-			strTemp = '{' + '_' + strLower + '^' + strUpper + '}' + Base;
+			strTemp = '{' + '_' + strLower + '^' + strUpper + '}' + strBase;
 		else
-			strTemp = Base + '_' + strLower + '^' + strUpper;
+			strTemp = strBase + '_' + strLower + '^' + strUpper;
 	}
 	else
 	{
 		if (true === isPreScript)
 		{
-			strTemp = '(' + '_' + strLower + '^' + strUpper + ')' + Base + " ";
+			strTemp = '(' + '_' + strLower + '^' + strUpper + ')' + strBase;
+
+			if (this.IsNextIsSameCharType(strTemp[strTemp.length - 1]))
+				strTemp += " ";
 		}
 		else
 		{
-			let oBase = this.getBase();
-			if (oBase.haveMixedContent())
-				Base = "〖" + Base + "〗";
-			strTemp = Base + '_' + strLower + '^' + strUpper + " ";
+			strTemp = strBase + '_' + strLower + '^' + strUpper;
+
+			if (this.IsNextIsSameCharType(strTemp[strTemp.length - 1]))
+				strTemp += " ";
 		}
 	}
 	return strTemp;

@@ -4050,10 +4050,10 @@ CDelimiter.prototype.GetTextOfElement = function(isLaTeX) {
 	//	if end bracket doesn't show:	(...┤ => (...
 	//	else:							(...) => (...)
 	//if start and close braketets non-standart add \open, \close
-	var strTemp = "";
-	var strStartSymbol = this.Pr.begChr === -1 ? "" : String.fromCharCode((this.begOper.code || this.Pr.begChr) || 40);
-	var strEndSymbol = this.Pr.endChr === -1 ? "" : String.fromCharCode((this.endOper.code || this.Pr.endChr) || 41);
-	var strSeparatorSymbol = isLaTeX ? "\\mid" : "∣";
+	let strTemp = "";
+	let strStartSymbol = this.Pr.begChr === -1 ? "" : String.fromCharCode((this.begOper.code || this.Pr.begChr) || 40);
+	let strEndSymbol = this.Pr.endChr === -1 ? "" : String.fromCharCode((this.endOper.code || this.Pr.endChr) || 41);
+	let strSeparatorSymbol = isLaTeX ? "\\mid" : "∣";
 
 	if ((!AscMath.MathLiterals.lBrackets.IsIncludes(strStartSymbol) && !AscMath.MathLiterals.lrBrackets.IsIncludes(strStartSymbol)) || isLaTeX)
 	{
@@ -4558,10 +4558,10 @@ CGroupCharacter.prototype.Can_ChangePos = function()
     return this.Pr.chr == 0x23DC || this.Pr.chr == 0x23DD || this.Pr.chr == 0x23DE || this.Pr.chr == 0x23DF;
 };
 CGroupCharacter.prototype.GetTextOfElement = function(isLaTeX) {
-	var strTemp = "";
-	var intStartCode = this.Pr.chr || this.operator.Get_CodeChr();
-	var strStart = String.fromCharCode(intStartCode);
-	var Base = this.getBase().GetMultipleContentForGetText(isLaTeX);
+	let strTemp = "";
+	let intStartCode = this.Pr.chr || this.operator.Get_CodeChr();
+	let strStart = String.fromCharCode(intStartCode);
+	let strBase = this.getBase().GetMultipleContentForGetText(isLaTeX);
 
 	if (true === isLaTeX)
 	{
@@ -4575,16 +4575,20 @@ CGroupCharacter.prototype.GetTextOfElement = function(isLaTeX) {
 		}
 
 		strTemp = strStart;
-		if (Base)
-			strTemp += Base;
+		if (strBase)
+			strTemp += strBase;
 	}
-    else
-    {
-        let pos = this.Pr.pos === 1 ? "┴" : "┬";
-        if (intStartCode !== 9182 && intStartCode !== 9183)
-            strStart += pos;
-        strTemp = strStart + Base;
-    }
+	else
+	{
+		let pos = this.Pr.pos === 1 ? "┴" : "┬";
+		if (intStartCode !== 9182 && intStartCode !== 9183)
+			strStart += pos;
+
+		strTemp = strStart + strBase;
+
+		if (this.IsNextIsSameCharType(strTemp[strTemp.length - 1]))
+			strTemp += " ";
+	}
 	return strTemp;
 };
 

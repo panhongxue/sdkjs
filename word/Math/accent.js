@@ -717,7 +717,7 @@ CAccent.prototype.GetTextOfElement = function(isLaTeX) {
 			case 8417:	strAccent = '\\tvec';				break;
 			default:	strAccent = '\\hat';				break;
 		}
-		strTemp = strAccent + strStartBracet + strBase + strCloseBracet
+		strTemp = strAccent + strBase;
 
 		if (intAccentCode === 831)
 			strTemp += "}";
@@ -725,7 +725,8 @@ CAccent.prototype.GetTextOfElement = function(isLaTeX) {
 	else
 	{
 		if (strBase.length === 0)
-		strBase = "()";
+			strBase = "()";
+
 		strTemp = strStartBracet + strBase + strCloseBracet + strAccent;
 	}
 	return strTemp;

@@ -531,8 +531,13 @@ $(function () {
 	Test("\\mu", 1, [["ParaRun", "\\mu"]], true, "Check LaTeX words");
 	Test("\\Phi", 1, [["ParaRun", "\\Phi"]], true, "Check LaTeX words");
 
-	Test("\\cos(2\\theta ) ", 2, [["ParaRun", ""], ["CMathFunc", "\\cos { (2θ)}"], ["ParaRun", ""]], true, "Check LaTeX function");
+	Test("\\cos(2\\theta ) ", 2, [["ParaRun", ""], ["CMathFunc", "\\cos{\\left(2\\theta\\right)}"], ["ParaRun", ""]], true, "Check LaTeX function");
 	Test("\\lim_{x\\to \\infty }\\exp(x) ", 2, [["ParaRun", ""], ["CMathFunc", "\\lim_{x→∞} { \\exp { (x)}}"], ["ParaRun", ""]], true, "Check LaTeX function");
+	Test("k^{n+1} ", 2, [["ParaRun", ""], ["CDegree", "k^{n+1}"], ["ParaRun", ""]], true, "Check LaTeX degree");
+	Test("n^2 ", 2, [["ParaRun", ""], ["CDegree", "n^2"], ["ParaRun", ""]], true, "Check LaTeX degree");
+	Test("n^{2} ", 2, [["ParaRun", ""], ["CDegree", "n^2"], ["ParaRun", ""]], true, "Check LaTeX degree");
+	Test("n^(2) ", 2, [["ParaRun", ""], ["CDegree", "n^{\\left(2\\right)}"], ["ParaRun", ""]], true, "Check LaTeX degree");
+
 
 	QUnit.module( "Check bug #61007" );
 

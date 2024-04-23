@@ -769,7 +769,7 @@ CRadical.prototype.GetTextOfElement = function(isLaTeX)
     {
         if (strDegree.length > 0)
             strDegree = '[' + strDegree + ']';
-        strTemp = '\\sqrt' + strDegree + "{" + strBase + "}";
+        strTemp = '\\sqrt' + strDegree + strBase;
     }
 	else
 	{

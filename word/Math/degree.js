@@ -582,7 +582,10 @@ CDegree.prototype.GetTextOfElement = function(isLaTeX) {
 			case 'exp': strBase = '\\'+ strBase; break;
 			default: break;
 		}
-		strTemp = strBase + strTypeOfScript + strIterator;
+		strTemp = strBase;
+
+		if (strIterator !== "")
+			strTemp += strTypeOfScript + strIterator
 	}
 	else
 	{

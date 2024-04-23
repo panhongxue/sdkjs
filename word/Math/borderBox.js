@@ -569,7 +569,7 @@ CBorderBox.prototype.GetTextOfElement = function(isLaTeX) {
 		strTemp = '\\rect' + strStartBracet + strBase + strCloseBracet;
 	else
 	{
-		if (this.getBase().haveMixedContent())
+		if (this.getBase().haveMixedContent(undefined, isLaTeX))
 		{
 			strBase = strStartBracet + strBase + strCloseBracet
 		}

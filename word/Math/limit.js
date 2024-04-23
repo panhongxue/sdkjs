@@ -338,7 +338,12 @@ CLimit.prototype.GetTextOfElement = function(isLaTeX) {
 		strLimitSymbol = (this.Pr.type == 1) ? "┴" : "┬";
 	}
 
-	strTemp = strFuncName + strLimitSymbol+ strArgument;
+
+	strTemp = strFuncName ;
+	if (strArgument !== "")
+	{
+		strTemp += strLimitSymbol + strArgument
+	}
 
 	if (!isLaTeX)
 	{
@@ -451,7 +456,7 @@ CMathFunc.prototype.fillContent = function()
 };
 CMathFunc.prototype.GetTextOfElement = function(isLaTeX) {
 	let strTemp = "";
-	let strFuncName = this.getFName().GetMultipleContentForGetText(isLaTeX, undefined, true);
+	let strFuncName = this.getFName().GetMultipleContentForGetText(isLaTeX, isLaTeX == true ? true : undefined, true);
 	let strArgument = this.getArgument().GetMultipleContentForGetText(isLaTeX, undefined, true);
 
 	if (!isLaTeX)
@@ -461,7 +466,6 @@ CMathFunc.prototype.GetTextOfElement = function(isLaTeX) {
 	}
 	if (isLaTeX)
 	{
-		strArgument = "{" + strArgument + "}";
 		if (AscMath.LimitFunctions.includes(strFuncName) || AscMath.functionNames.includes(strFuncName))
 			strFuncName = '\\'+ strFuncName;
 	}

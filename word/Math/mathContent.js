@@ -3308,7 +3308,7 @@ CMathContent.prototype.Add_Text = function(text, paragraph, mathStyle)
 	if (!text)
 		return;
 	
-	if (this.IsAddTextInLastParaRun(mathStyle) || this.IsLastElementParaRun() && mathStyle === undefined)
+	if ( this.IsLastElementParaRun() && (this.IsAddTextInLastParaRun(mathStyle) || mathStyle === undefined))
 	{
 		this.Add_ToPrevParaRun(text);
 		return;
@@ -3379,7 +3379,7 @@ CMathContent.prototype.IsLastElementParaRun = function()
 	if (this.Content.length > 0)
 	{
 		let oLastContent = this.Content[this.Content.length - 1];
-		if (oLastContent instanceof ParaRun && !oLastContent.IsPlaceholder())
+		if (oLastContent instanceof ParaRun && !oLastContent.IsPlaceholder() && !oLastContent.Is_Empty())
 			return true;
 	}
 }
@@ -7070,18 +7070,32 @@ CMathContent.prototype.GetMultipleContentForGetText = function(isLaTeX, isNotBra
 	{
 		if (isLaTeX)
 		{
-			if (this.haveMixedContent(isSpecial))
+			let strLaTeX = this.GetTextOfElement(isLaTeX);
+
+			let strStartLeft = strLaTeX.length > 5
+				? strLaTeX.slice(0, 5)
+				: "";
+			let strEndRight =strStartLeft.length > 7
+				? strLaTeX.slice(strLaTeX.length - 7, strLaTeX.length - 1)
+				: "";
+
+			if ((strStartLeft === "\\left" && strEndRight === "\\right"))
 			{
-				return "{" + this.GetTextOfElement(isLaTeX) + "}";
+				return strLaTeX;
+			}
+
+			if (this.haveMixedContent(isSpecial, isLaTeX) && (strLaTeX[0] !== "{" || strLaTeX[strLaTeX.length] !== "}"))
+			{
+				return "{" + strLaTeX + "}";
 			}
 			else
 			{
-				return this.GetTextOfElement(isLaTeX)
+				return strLaTeX;
 			}
 		}
 		else
 		{
-			if (this.haveMixedContent(isSpecial))
+			if (this.haveMixedContent(isSpecial, isLaTeX))
 			{
 				if (isSpecial)
 					return "〖" + this.GetTextOfElement(isLaTeX) + "〗";
@@ -7094,7 +7108,6 @@ CMathContent.prototype.GetMultipleContentForGetText = function(isLaTeX, isNotBra
 			}
 		}
 	}
-
 	//
     // if (this.IsOneElementInContentForGetText() || this.IsFirstLetterIsBracket(isLaTeX))
     // {
@@ -7129,7 +7142,7 @@ CMathContent.prototype.GetMultipleContentForGetText = function(isLaTeX, isNotBra
 	//
     // return this.CheckIsEmpty(str);
 };
-CMathContent.prototype.haveMixedContent = function(isSpecial)
+CMathContent.prototype.haveMixedContent = function(isSpecial, isLaTeX)
 {
 	let isOperator = 0;
 	let isNormalText = 0;
@@ -7148,11 +7161,18 @@ CMathContent.prototype.haveMixedContent = function(isSpecial)
 		}
 		else
 		{
-			if (isCustomContent
-				|| oCurrentContent instanceof CNary
-				|| oCurrentContent instanceof CFraction && !isSpecial)
+			if (isLaTeX)
+			{
 				return true;
-			
+			}
+			else
+			{
+				if (isCustomContent
+					|| oCurrentContent instanceof CNary
+					|| oCurrentContent instanceof CFraction && !isSpecial)
+					return true;
+			}
+
 			isCustomContent = 1;
 		}
 		

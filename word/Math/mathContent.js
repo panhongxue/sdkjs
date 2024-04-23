@@ -6849,6 +6849,7 @@ CMathContent.prototype.CheckAutoCorrectionRules = function(nInputType)
 	}
 	else if (oLastSpace || oLastOperator)
 		this.AddToLastRun(oLastOperator ? oLastOperator : oLastSpace);
+	
 	return true
 };
 CMathContent.prototype.GetLastRun = function ()

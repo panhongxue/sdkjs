@@ -232,11 +232,21 @@
 	 * @constructor
     */
     CAnnotationFreeText.prototype.CheckInnerShapesProps = function() {
-        let oStrokeColor    = this.GetStrokeColor();
+        let oStrokeColor = this.GetStrokeColor();
         if (oStrokeColor) {
-            let oRGB            = this.GetRGBColor(oStrokeColor);
-            let oFill           = AscFormat.CreateSolidFillRGBA(oRGB.r, oRGB.g, oRGB.b, 255);
-            for (let i = 0; i < this.spTree.length; i++) {
+            let oRGB    = this.GetRGBColor(oStrokeColor);
+            let oFill   = AscFormat.CreateSolidFillRGBA(oRGB.r, oRGB.g, oRGB.b, 255);
+
+            let oTxBoxShape = this.GetTextBoxShape();
+            let oLine = oTxBoxShape.spPr.ln;
+            if (this.GetWidth() == 0) {
+                oLine.setFill(AscFormat.CreateNoFillUniFill());
+            }
+            else {
+                oLine.setFill(oFill);
+            }
+
+            for (let i = 1; i < this.spTree.length; i++) {
                 let oLine = this.spTree[i].spPr.ln;
                 oLine.setFill(oFill);
             }
@@ -253,7 +263,7 @@
 
         let nWidthPt = this.GetWidth();
         nWidthPt = nWidthPt > 0 ? nWidthPt : 0.5;
-        for (let i = 0; i < this.spTree.length; i++) {
+        for (let i = 1; i < this.spTree.length; i++) {
             let oLine = this.spTree[i].spPr.ln;
             oLine.setW(nWidthPt * g_dKoef_pt_to_mm * 36000.0);
         }
@@ -294,10 +304,9 @@
     CAnnotationFreeText.prototype.SetWidth = function(nWidthPt) {
         this._width = nWidthPt; 
 
-        nWidthPt = nWidthPt > 0 ? nWidthPt : 0.5;
-        for (let i = 0; i < this.spTree.length; i++) {
+        for (let i = 1; i < this.spTree.length; i++) {
             let oLine = this.spTree[i].spPr.ln;
-            oLine.setW(nWidthPt * g_dKoef_pt_to_mm * 36000.0);
+            oLine.setW((nWidthPt || 0.5) * g_dKoef_pt_to_mm * 36000.0);
         }
     };
     CAnnotationFreeText.prototype.SetStrokeColor = function(aColor) {
@@ -306,7 +315,17 @@
         let oRGB    = this.GetRGBColor(aColor);
         let oFill   = AscFormat.CreateSolidFillRGBA(oRGB.r, oRGB.g, oRGB.b, 255);
 
-        for (let i = 0; i < this.spTree.length; i++) {
+        let oTxBoxShape = this.GetTextBoxShape();
+        let oLine = oTxBoxShape.spPr.ln;
+        if (this.GetWidth() == 0) {
+            oLine.setFill(AscFormat.CreateNoFillUniFill());
+        }
+        else {
+            oLine.setFill(oFill);
+        }
+        
+
+        for (let i = 1; i < this.spTree.length; i++) {
             let oLine = this.spTree[i].spPr.ln;
             oLine.setFill(oFill);
         }
@@ -793,7 +812,13 @@
             }
         }
         else {
-            oDoc.SelectionSetStart(x, y, e);
+            if (e.shiftKey) {
+                this.GetDocContent().StartSelectionFromCurPos();
+                oDoc.SelectionSetEnd(x, y, e);
+            }
+            else {
+                oDoc.SelectionSetStart(x, y, e);
+            }
         }
     };
     CAnnotationFreeText.prototype.SelectionSetStart = function(X, Y, e) {
@@ -924,7 +949,7 @@
         let oContent    = this.GetDocContent();
 
         oContent.SetApplyToAll(true);
-		let sText = oContent.GetSelectedText(false, {NewLineParagraph: true}).replace(/\r\n$/, '');
+		let sText = oContent.GetSelectedText(false, {NewLineParagraph: true, ParaSeparator: '\r'}).replace(/\r\n$/, '');
 		oContent.SetApplyToAll(false);
 
         this.SetInTextBox(false);
@@ -972,7 +997,7 @@
             let nCalloutExitPos = this.GetCalloutExitPos(aNewTextBoxRect);
 
             // пересчитываем callout
-            let aNewCallout = this.GetCallout().slice();
+            let aNewCallout = this.GetCallout() ? this.GetCallout().slice() : null;
             switch (nCalloutExitPos) {
                 case AscPDF.CALLOUT_EXIT_POS.left: {
                     // точка выхода (x3, y3)
@@ -1011,6 +1036,10 @@
             }
 
             function findBoundingRectangle(points) {
+                if (!points) {
+                    return null;
+                }
+
                 let minX = points[0];
                 let minY = points[1];
                 let maxX = points[0];
@@ -1027,7 +1056,7 @@
             }
 
             // находим рект стрелки, учитывая окончание линии
-            let aArrowRect = this.GetArrowRect([aNewCallout[2], aNewCallout[3], aNewCallout[0], aNewCallout[1]])
+            let aArrowRect = aNewCallout ? this.GetArrowRect([aNewCallout[2], aNewCallout[3], aNewCallout[0], aNewCallout[1]]) : null;
 
             // находим результирующий rect аннотации
             let aNewRect = AscPDF.unionRectangles([aArrowRect, aNewTextBoxRect, findBoundingRectangle(aNewCallout)]).map(function(measure, idx) {
@@ -1042,7 +1071,7 @@
                 aNewRect[3] / nScaleY - yMax
             ];
 
-            this.SetCallout(aNewCallout);
+            aNewCallout && this.SetCallout(aNewCallout);
             this.SetRectangleDiff(aNewRD);
             this.SetRect(aNewRect);
         }

@@ -849,9 +849,9 @@ var CPresentation = CPresentation || function(){};
         }
         
 
-        if (!oViewer.MouseHandObject && !this.mouseDownLinkObject) {
+        if (oViewer.canSelectPageText()) {
             oViewer.isMouseMoveBetweenDownUp = true;
-            oViewer.onMouseDownEpsilon();
+            oViewer.onMouseDownEpsilon(e);
         }
         else if (this.mouseDownAnnot) {
             oViewer.onUpdateOverlay();
@@ -936,12 +936,24 @@ var CPresentation = CPresentation || function(){};
         this.Viewer.onUpdateOverlay();
     };
     CPDFDoc.prototype.SetMouseDownObject = function(oObject) {
+        this.Viewer.file.Selection = {
+			Page1 : 0,
+			Line1 : 0,
+			Glyph1 : 0,
+
+			Page2 : 0,
+			Line2 : 0,
+			Glyph2 : 0,
+
+			IsSelection : false
+		}
+        
         if (!oObject) {
             this.BlurActiveObject();
 
             this.mouseDownField         = null;
             this.mouseDownAnnot         = null;
-            this.activeDrawing        = null;
+            this.activeDrawing          = null;
             this.mouseDownLinkObject    = null;
             return;
         }
@@ -954,7 +966,7 @@ var CPresentation = CPresentation || function(){};
 
             this.mouseDownField         = oObject;
             this.mouseDownAnnot         = null;
-            this.activeDrawing        = null;
+            this.activeDrawing          = null;
             this.mouseDownLinkObject    = null;
         }
         else if (oObject.IsAnnot && oObject.IsAnnot()) {
@@ -964,7 +976,7 @@ var CPresentation = CPresentation || function(){};
 
             this.mouseDownField         = null;
             this.mouseDownAnnot         = oObject;
-            this.activeDrawing        = null;
+            this.activeDrawing          = null;
             this.mouseDownLinkObject    = null;
         }
         else if (oObject.IsDrawing && oObject.IsDrawing()) {
@@ -974,14 +986,14 @@ var CPresentation = CPresentation || function(){};
 
             this.mouseDownField         = null;
             this.mouseDownAnnot         = null;
-            this.activeDrawing        = oObject;
+            this.activeDrawing          = oObject;
             this.mouseDownLinkObject    = null;
         }
         // значит Link object
         else {
             this.mouseDownField         = null;
             this.mouseDownAnnot         = null;
-            this.activeDrawing        = null;
+            this.activeDrawing          = null;
             this.mouseDownLinkObject    = oObject;
         }
     };
@@ -2683,7 +2695,8 @@ var CPresentation = CPresentation || function(){};
         }
         
         let oTargetDocContent = oController.getTargetDocContent(undefined, true);
-        
+        let oTargetTextObject = AscFormat.getTargetTextObject(oController);
+
         this.UpdateUndoRedo();
         this.UpdateCommentPos();
         this.UpdateMathTrackPos();
@@ -2692,7 +2705,9 @@ var CPresentation = CPresentation || function(){};
         this.UpdateParagraphProps();
         this.UpdateTextProps();
         this.UpdateCanAddHyperlinkState();
-        oTargetDocContent && oTargetDocContent.Document_UpdateInterfaceState();
+        if (oTargetTextObject && (!oTargetTextObject.group || !oTargetTextObject.group.IsAnnot())) {
+            oTargetDocContent && oTargetDocContent.Document_UpdateInterfaceState();
+        }
         this.Api.sync_EndCatchSelectedElements();
         
         Asc.editor.CheckChangedDocument();
@@ -3092,7 +3107,7 @@ var CPresentation = CPresentation || function(){};
 
         let oActiveObj = this.GetActiveObject();
         if (oParaItem.Type === para_Math) {
-			if (oActiveObj.IsAnnot() || !(oController.selection.textSelection || (oController.selection.groupSelection && oController.selection.groupSelection.selection.textSelection))) {
+			if (!oActiveObj || oActiveObj.IsAnnot() || !(oController.selection.textSelection || (oController.selection.groupSelection && oController.selection.groupSelection.selection.textSelection))) {
 				oController.resetSelection();
                 oController.resetTrackState();
 
@@ -3133,7 +3148,14 @@ var CPresentation = CPresentation || function(){};
         let oController     = this.GetController();
         let oObjectsByType	= oController.getSelectedObjectsByTypes(true);
         
+        let oActiveObj      = this.GetActiveObject();
+        
         let aObjects = [];
+        
+        if (oActiveObj.IsAnnot() && oActiveObj.IsFreeText()) {
+            aObjects.push(oActiveObj);
+        }
+        
         Object.values(oObjectsByType).forEach(function(arr) {
             arr.forEach(function(drawing) {
                 aObjects.push(drawing);
@@ -3146,6 +3168,11 @@ var CPresentation = CPresentation || function(){};
         aObjects.forEach(function(drawing) {
             drawing.SetNeedRecalc(true);
         });
+
+        if (oActiveObj.IsAnnot() && oActiveObj.IsFreeText()) {
+            oActiveObj.SetNeedUpdateRC(true);
+            oActiveObj.FitTextBox();
+        }
 
         this.TurnOffHistory();
     };
@@ -4353,10 +4380,24 @@ var CPresentation = CPresentation || function(){};
 		return false;
 	};
     CPDFDoc.prototype.GetSelectionState = function() {
-        return null;
+        const oSelectionState = {};
+
+        oSelectionState.CurPage = this.Viewer.currentPage;
+        let oController = this.GetController();
+        oSelectionState.activeObject = this.GetActiveObject();
+        oSelectionState.drawingSelection = oController.getSelectionState();
+        oSelectionState.HistoryIndex = this.History.Index;
+
+        return oSelectionState;
     };
     CPDFDoc.prototype.SetSelectionState = function(oState) {
-        return;
+        let oController = this.GetController();
+
+        this.SetMouseDownObject(oState.activeObject);
+        oController.setSelectionState(oState.drawingSelection);
+
+        if (oState.CurPage != -1 && oState.CurPage != this.Viewer.currentPage)
+	        this.Viewer.navigateToPage(oState.CurPage);
     };
     CPDFDoc.prototype.IsSelectionLocked = function() {};
     

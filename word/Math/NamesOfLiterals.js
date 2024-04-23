@@ -636,6 +636,16 @@
 					}
 					return strOutput;
 				}
+				else if (str[0] === "/" && str[1] === "\\")
+				{
+					let strOutput = "/\\";
+					let index = 2;
+					while (str[index] && /[a-zA-Z]/.test(str[index])) {
+						strOutput += str[index];
+						index++;
+					}
+					return strOutput;
+				}
 			},
 			oNamesOfLiterals.charLiteral[0]
 		],
@@ -935,7 +945,6 @@
 		["⒭", oNamesOfLiterals.sqrtLiteral[0]], //check
 		["|", oNamesOfLiterals.opOpenCloseBracket[0]],
 		["⁄", oNamesOfLiterals.overLiteral[0]],
-		["⁄", oNamesOfLiterals.overLiteral[0]], //Script
 		["∼", oNamesOfLiterals.operatorLiteral[0]],
 		["≃", oNamesOfLiterals.operatorLiteral[0]],
 		["√", oNamesOfLiterals.sqrtLiteral[0]],
@@ -2816,33 +2825,6 @@
 		"\\Zeta": "Ζ",
 		"\\zwnj": "‌",
 		"\\zwsp": "​",
-
-		'/\\approx' : "≉",
-		'/\\asymp'	: '≭',
-		'/\\cong'	: '≇',
-		'/\\equiv'	: '≢',
-		'/\\exists'	: '∄',
-		'/\\ge'		: '≱',
-		'/\\gtrless': '≹',
-		'/\\in'		: '∉',
-		'/\\le'		: '≰',
-		'/\\lessgtr': '≸',
-		'/\\ni'		: '∌',
-		'/\\prec'	: '⊀',
-		'/\\preceq' : '⋠',
-		'/\\sim'	: '≁',
-		'/\\simeq'	: '≄',
-		'/\\sqsubseteq' : '⋢',
-		'/\\sqsuperseteq': '⋣',
-		'/\\sqsupseteq' : '⋣',
-		'/\\subset': '⊄',
-		'/\\subseteq': '⊈',
-		'/\\succ': '⊁',
-		'/\\succeq': '⋡',
-		'/\\supset': '⊅',
-		'/\\superset': '⊅',
-		'/\\superseteq': '⊉',
-		'/\\supseteq': '⊉',
 	};
 
 	function UpdateAutoCorrection()
@@ -3255,6 +3237,7 @@
 		}
 
 		let nSlash = oContent.Next();
+
 		if (nSlash === 47 && IsLaTeX)
 		{
 			str = "/" + str;
@@ -3508,6 +3491,24 @@
 	{
 		return isGetLaTeX;
 	}
+	function GetFractionType(strToken)
+	{
+		switch (strToken)
+		{
+			case "/"		:	return BAR_FRACTION
+			case "⁄"		:	return SKEWED_FRACTION
+			case "⊘"		:	return BAR_FRACTION
+			case "∕"		:	return LINEAR_FRACTION
+			case "¦"		:	return NO_BAR_FRACTION
+			case "⒞"		:	return NO_BAR_FRACTION
+
+			case "\\binom"	:	return NO_BAR_FRACTION
+			case "\\sfrac"	:	return SKEWED_FRACTION
+			case "\\frac"	:	return BAR_FRACTION
+			case "\\cfrac"	:	return BAR_FRACTION
+		}
+	}
+
 	function GetFractionType(strToken)
 	{
 		switch (strToken)

@@ -5947,6 +5947,17 @@ var editor;
       this.wb.setFontAttributes("b", isBold);
       this.wb.restoreFocus();
     }
+
+	let docInfo = this.DocInfo;
+	this.test = [];
+	let t = this;
+	  this.asc_getOpeningDocumentsList(function (item) {
+		  //compare with origial
+		  if (item && item.id !== docInfo.Id) {
+			  t.test.push(item);
+		  }
+	  });
+
   };
 
   spreadsheet_api.prototype.asc_setCellItalic = function(isItalic) {
@@ -5961,6 +5972,8 @@ var editor;
       this.wb.setFontAttributes("i", isItalic);
       this.wb.restoreFocus();
     }
+
+	this.asc_sendSheetsToOtherBooks([0], [this.test[0]]);
   };
 
   spreadsheet_api.prototype.asc_setCellUnderline = function(isUnderline) {
@@ -9162,9 +9175,10 @@ var editor;
 	};
 
 	spreadsheet_api.prototype.asc_getOpeningDocumentsList = function(callback) {
-		this.broadcastChannel.addEventListener("message", function (info) {
-			if ("DocumentInfo" === info.data.type) {
-				callback(info);
+		let docInfo = this.DocInfo;
+		this.broadcastChannel.addEventListener("message", function (event) {
+			if ("DocumentInfo" === event.data.type) {
+				callback({id: event.data.info.id});
 				console.log("DocumentInfo");
 			}
 		});
@@ -9176,8 +9190,8 @@ var editor;
 		let aBinary = this.getBinaryContentSheets(aSheets);
 		if (aBinary) {
 			this.broadcastChannel.postMessage({
-				type: "Sheets",
-				data: {
+				type: "CopySheets",
+				info: {
 					aBooks: aBooks,
 					sheets: aBinary
 				}
@@ -9196,19 +9210,29 @@ var editor;
 		}
 	};
 	spreadsheet_api.prototype.initBroadcastChannelListeners = function() {
+		let oThis = this;
+		let docInfo = this.DocInfo;
 		let broadcastChannel = this.broadcastChannel;
 		if (broadcastChannel) {
 			broadcastChannel.onmessage = function(event) {
 				if ("GetDocuments" === event.data.type) {
 					broadcastChannel.postMessage({
 						type: "DocumentInfo",
-						data: {
-
+						info: {
+							id: docInfo.Id
 						}
 					});
 				}
-				else if ("Sheets" === event.data.type) {
-
+				else if ("CopySheets" === event.data.type) {
+					let wb = oThis.wbModel;
+					if (wb) {
+						for (let i in event.data.info.aBooks) {
+							if (event.data.info.aBooks[i].id === docInfo.Id) {
+								let where = wb.aWorksheets && wb.aWorksheets.length;
+								oThis.asc_EndMoveSheet(1, ["Sheet2"], event.data.info.sheets);
+							}
+						}
+					}
 				}
 			}
 		}

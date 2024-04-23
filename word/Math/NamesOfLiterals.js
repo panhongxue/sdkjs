@@ -3509,24 +3509,6 @@
 		}
 	}
 
-	function GetFractionType(strToken)
-	{
-		switch (strToken)
-		{
-			case "/"		:	return BAR_FRACTION
-			case "⁄"		:	return SKEWED_FRACTION
-			case "⊘"		:	return BAR_FRACTION
-			case "∕"		:	return LINEAR_FRACTION
-			case "¦"		:	return NO_BAR_FRACTION
-			case "⒞"		:	return NO_BAR_FRACTION
-
-			case "\\binom"	:	return NO_BAR_FRACTION
-			case "\\sfrac"	:	return SKEWED_FRACTION
-			case "\\frac"	:	return BAR_FRACTION
-			case "\\cfrac"	:	return BAR_FRACTION
-		}
-	}
-
 	//--------------------------------------------------------export----------------------------------------------------
 	window["AscMath"] = window["AscMath"] || {};
 	window["AscMath"].oNamesOfLiterals 				= oNamesOfLiterals;

@@ -3284,21 +3284,8 @@ var editor;
 		}
 		//this.asc_Resize(); // Убрал, т.к. сверху приходит resize (http://bugzilla.onlyoffice.com/show_bug.cgi?id=14680)
 
-		this.broadcastChannel = new BroadcastChannel("testChannel");
-		let broadcastChannel = this.broadcastChannel;
-		broadcastChannel.onmessage = function(event) {
-			if ("GetDocuments" === event.data.type) {
-				broadcastChannel.postMessage({
-					type: "DocumentInfo",
-					data: {
-						
-					}
-				});
-			}
-			else if ("Sheets" === event.data.type) {
-
-			}
-		}
+		this.initBroadcastChannel();
+		this.initBroadcastChannelListeners();
 	};
 
 	// Переход на диапазон в листе
@@ -9197,6 +9184,40 @@ var editor;
 			})
 		}
 	};
+	spreadsheet_api.prototype.initBroadcastChannel = function() {
+		if (!this.broadcastChannel) {
+			this.broadcastChannel = new BroadcastChannel("testChannel");
+		}
+	};
+	spreadsheet_api.prototype.closeBroadcastChannel = function() {
+		if (this.broadcastChannel) {
+			this.broadcastChannel.close();
+			this.broadcastChannel = null;
+		}
+	};
+	spreadsheet_api.prototype.initBroadcastChannelListeners = function() {
+		let broadcastChannel = this.broadcastChannel;
+		if (broadcastChannel) {
+			broadcastChannel.onmessage = function(event) {
+				if ("GetDocuments" === event.data.type) {
+					broadcastChannel.postMessage({
+						type: "DocumentInfo",
+						data: {
+
+						}
+					});
+				}
+				else if ("Sheets" === event.data.type) {
+
+				}
+			}
+		}
+	};
+
+
+
+
+
 
   /*
    * Export

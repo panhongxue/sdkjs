@@ -1773,16 +1773,12 @@
 	};
 
 
-    // Проверяет, есть ли числовые значения в диапазоне
-    WorksheetView.prototype._hasNumberValueInActiveRange = function () {
+	// Проверяет, есть ли значения в диапазоне
+    WorksheetView.prototype._getValuesPositionsInRange = function (onlyNumbers) {
+		/* флаг onlyNumbers делает проверку только числовых значений */
         let cell, cellType, exist = false, setCols = {}, setRows = {};
-        // ToDo multiselect
         let selection = this.model.getSelection();
         let selectionRange = selection.getLast();
-        if (selectionRange.isOneCell()) {
-            // Для одной ячейки не стоит ничего делать
-            return null;
-        }
         let mergedRange = this.model.getMergedByCell(selectionRange.r1, selectionRange.c1);
         if (mergedRange && mergedRange.isEqual(selectionRange)) {
             // Для одной ячейки не стоит ничего делать
@@ -1801,13 +1797,31 @@
                 if (cell) {
                     // Нашли не пустую ячейку, проверим формат
                     cellType = cell.cellType;
-                    if (null == cellType || CellValueType.Number === cellType || CellValueType.Bool === cellType || CellValueType.Error === cellType) {
-						exist = setRows[r] = setCols[c] = true;
-                    }
+
+					if ((null == cellType || CellValueType.Number === cellType || CellValueType.Bool === cellType || CellValueType.Error === cellType || CellValueType.String === cellType)) {
+						if (!(onlyNumbers && CellValueType.String === cellType)) {
+							exist = setRows[r] = setCols[c] = true;
+						}
+					}
+
+					// if (onlyNumbers && (null == cellType || CellValueType.Number === cellType || CellValueType.Bool === cellType || CellValueType.Error === cellType)) {
+					// 	exist = setRows[r] = setCols[c] = true;
+					// } else if (!onlyNumbers && (null == cellType || CellValueType.Number === cellType || CellValueType.Bool === cellType || CellValueType.Error === cellType || CellValueType.String === cellType)) {
+					// 	exist = setRows[r] = setCols[c] = true;
+					// }
+
+                    // if (null == cellType || CellValueType.Number === cellType || CellValueType.Bool === cellType || CellValueType.Error === cellType || CellValueType.String === cellType) {
+					// 	// exist = setRows[r] = setCols[c] = true;
+					// 	if (null == cellType || CellValueType.Number === cellType || CellValueType.Bool === cellType || CellValueType.Error === cellType) {
+					// 		exist = true;
+					// 	}
+					// 	setRows[r] = setCols[c] = cellType;
+					// 	// setCols[c] = cellType;
+                    // }
                 }
             }
         }
-        if (exist) {
+		if (exist) {
             // Делаем массивы уникальными и сортируем
             let i, arrCols = [], arrRows = [];
             for(i in setCols) {
@@ -1820,6 +1834,8 @@
         } else {
             return null;
         }
+
+		// return {rows: setRows, amountCols: Object.keys(setRows).length, cols: setCols, amountRows: Object.keys(setCols).length};
     };
 
     // Автодополняет формулу диапазоном, если это возможно
@@ -1842,8 +1858,23 @@
         let cell, cellType, isNumberFormat;
         let result = {};
         // Проверим, есть ли числовые значения в диапазоне
-        let hasNumber = this._hasNumberValueInActiveRange();
+		let hasNumber = this._getValuesPositionsInRange(true);
+		// Получаем все не пустые значения в диапазоне
+		let realValues = this._getValuesPositionsInRange();
         let val, text;
+
+		/*
+			If the first value in the select is a string, then:
+			if there are numeric values ​​and there are more than 1, then cut the select to the first value in the column/row
+			if there is one numeric value, then we do not change the select and perform the same actions as when selecting one numeric cell (empty SUM)
+
+			If the last value in the select exists (non empty), then move the select +1 from the current one (column or row),
+
+			We write the autosum only in empty cells of the select (right or left)
+			If there are none, then expand the select down or to the right
+			By default, the select expands downwards, except in cases where one line is selected (r2 - r1 === 0)
+			or the number of numeric values ​​in the column is 1
+		*/
 
         let firstCell = this._getCellTextCache(ar.c1, ar.r1, true);
         let lastCell = this._getCellTextCache(ar.c2, ar.r2, true);
@@ -1853,9 +1884,15 @@
             // Есть ли значения в последней строке и столбце
             let hasNumberInLastColumn = (ar.c2 === hasNumber.arrCols[hasNumber.arrCols.length - 1]);
             let hasNumberInLastRow = (ar.r2 === hasNumber.arrRows[hasNumber.arrRows.length - 1]);
-            let realElementsInCol = hasNumber.arrRows.length;
-            let realElementsInRow = hasNumber.arrCols.length;
-            let bIsVertical = (ar.c2 - ar.c1) === 0;
+			let numberElementsInCol = hasNumber.arrRows.length;
+			let numberElementsInRow = hasNumber.arrCols.length;
+
+			// Есть ли не пустые значения в последней строке и столбце
+			let hasRealElementInLastCol = (ar.c2 === realValues.arrCols[realValues.arrCols.length - 1]);
+            let hasRealElementInLastRow = (ar.r2 === realValues.arrRows[realValues.arrRows.length - 1]);
+            let realElementsInCol = realValues.arrRows.length;
+            let realElementsInRow = realValues.arrCols.length;
+
             // Нужно ли прервать выполнение
             let breakExec;
 
@@ -1877,7 +1914,7 @@
 
             if (firstCell && firstCell.cellType === CellValueType.String) {
                 // если первая ячейка строка, обрезаем select до первого не пустого значения
-                if (hasNumberInLastColumn && hasNumberInLastRow && (realElementsInRow === 1 && realElementsInCol === 1)) {
+                if (hasNumberInLastColumn && hasNumberInLastRow && (numberElementsInCol === 1 && numberElementsInRow === 1)) {
                     // Последнее значение - число
                     bIsUpdate = false;
                     // set active cell to the end of the select
@@ -1895,11 +1932,12 @@
                 startRow = ar.r1;
                 startCol = ar.c1;
                 bIsUpdate = true;
-            }
-
+            } else if (hasRealElementInLastRow && hasRealElementInLastCol) {
+				bIsUpdate = true;
+			}
 
             if (bIsUpdate) {
-                this.cleanSelection();
+				this.cleanSelection();
                 ar.c1 = startCol;
                 ar.r1 = startRow;
                 if (false === ar.contains(activeCell.col, activeCell.row)) {
@@ -1907,14 +1945,25 @@
                     activeCell.col = startCol;
                     activeCell.row = startRow;
                 }
-                if (true === hasNumberInLastRow && true === hasNumberInLastColumn) {
+				let newRealValues = this._getValuesPositionsInRange();
+				
+				hasRealElementInLastCol = (ar.c2 === newRealValues.arrCols[newRealValues.arrCols.length - 1]);
+				hasRealElementInLastRow = (ar.r2 === newRealValues.arrRows[newRealValues.arrRows.length - 1]);
+
+                if ((true === hasRealElementInLastCol || true === hasRealElementInLastRow)) {
                     // Мы расширяем диапазон
-                    if (1 === hasNumber.arrRows.length && (ar.c2 - startColOld) > 0) {
+                    if (1 === hasNumber.arrRows.length && (ar.c2 - ar.c1 /*startColOld*/) > 0) {
                         // Увеличиваем вправо только если выделенный диапазон по столбцам больше 1 ячейки и только в одной строке есть значения
-                        ar.c2 += 1;
-                    } else {
-                        // Иначе вводим в строку вниз
-                        ar.r2 += 1;
+						if ((newRealValues.arrCols[newRealValues.arrCols.length - 1] === ar.c2)) {
+							ar.c2 += 1;
+						}
+                    } 
+					// else
+					if (hasRealElementInLastRow && (ar.r2 - ar.r1 /*startRowOld*/) > 0) {
+						// Если селект по строкам больше 1 ячейки и в последней строке нет свободного места для формулы, увеличиваем вниз
+						if ((newRealValues.arrRows[newRealValues.arrRows.length - 1] === ar.r2)) {
+							ar.r2 += 1;
+						}
                     }
                 }
                 this._drawSelection();

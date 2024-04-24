@@ -1773,9 +1773,9 @@
 	};
 
 
-	// Checks if there are non-empty values ​​in a range
+    // Checks if there are non-empty values ​​in a range
     WorksheetView.prototype._getValuesPositionsInRange = function (onlyNumbers) {
-		/* The onlyNumbers flag checks all values ​​except string values */
+        /* The onlyNumbers flag checks all values ​​except string values */
         let cell, cellType, exist = false, setCols = {}, setRows = {};
         let selection = this.model.getSelection();
         let selectionRange = selection.getLast();
@@ -1785,9 +1785,9 @@
             return null;
         }
 
-		if (c_oAscSelectionType.RangeMax === selectionRange.getType()) {
-			return null;
-		}
+        if (c_oAscSelectionType.RangeMax === selectionRange.getType()) {
+            return null;
+        }
 
         let c2 = Math.min(selectionRange.c2, this.nColsCount - 1);
         let r2 = Math.min(selectionRange.r2, this.nRowsCount - 1);
@@ -1798,24 +1798,24 @@
                     // We found a non-empty cell, let's check the format
                     cellType = cell.cellType;
 
-					// When performing autocomplete formula, all data types except string are treated as numeric
-					if ((null == cellType || CellValueType.Number === cellType || CellValueType.Bool === cellType || CellValueType.Error === cellType || CellValueType.String === cellType)) {
-						if (!(onlyNumbers && CellValueType.String === cellType)) {
+                    // When performing autocomplete formula, all data types except string are treated as numeric
+                    if ((null == cellType || CellValueType.Number === cellType || CellValueType.Bool === cellType || CellValueType.Error === cellType || CellValueType.String === cellType)) {
+                        if (!(onlyNumbers && CellValueType.String === cellType)) {
 							exist = setRows[r] = setCols[c] = true;
-						}
-					}
+                        }
+                    }
                 }
             }
         }
-		if (exist) {
+        if (exist) {
             // Making arrays unique and sorting
             let i, arrCols = [], arrRows = [];
             for(i in setCols) {
-				arrCols.push(+i);
+                arrCols.push(+i);
             }
-			for(i in setRows) {
-				arrRows.push(+i);
-			}
+            for(i in setRows) {
+                arrRows.push(+i);
+            }
             return {arrCols: arrCols.sort(fSortAscending), arrRows: arrRows.sort(fSortAscending)};
         } else {
             return null;
@@ -1842,23 +1842,23 @@
         let cell, cellType, isNumberFormat;
         let result = {};
         // Get all numeric values ​​in the range
-		let hasNumber = this._getValuesPositionsInRange(true);
-		// Get all non-empty values ​​in the range
-		let realValues = this._getValuesPositionsInRange();
+        let hasNumber = this._getValuesPositionsInRange(true);
+        // Get all non-empty values ​​in the range
+        let realValues = this._getValuesPositionsInRange();
         let val, text;
 
-		/*
-			If the first value in the select is a string, then:
-			if there are numeric values ​​and there are more than 1, then cut the select to the first value in the column/row
-			if there is one numeric value, then we do not change the select and perform the same actions as when selecting one numeric cell (empty SUM)
+        /*
+            If the first value in the select is a string, then:
+            if there are numeric values ​​and there are more than 1, then cut the select to the first value in the column/row
+            if there is one numeric value, then we do not change the select and perform the same actions as when selecting one numeric cell (empty SUM)
 
-			If the last value in the select exists (non empty), then move the select +1 from the current one (column or row),
+            If the last value in the select exists (non empty), then move the select +1 from the current one (column or row),
 
-			We write the autosum only in empty cells of the select (right or left)
-			If there are none, then expand the select down or to the right
-			By default, the select expands downwards, except in cases where one line is selected (r2 - r1 === 0)
-			or the number of numeric values ​​in the column is 1
-		*/
+            We write the autosum only in empty cells of the select (right or left)
+            If there are none, then expand the select down or to the right
+            By default, the select expands downwards, except in cases where one line is selected (r2 - r1 === 0)
+            or the number of numeric values ​​in the column is 1
+        */
 
         let firstCell = this._getCellTextCache(ar.c1, ar.r1, true);
         let lastCell = this._getCellTextCache(ar.c2, ar.r2, true);
@@ -1868,11 +1868,11 @@
             // Are there numeric values ​​in the last row and column
             let hasNumberInLastColumn = (ar.c2 === hasNumber.arrCols[hasNumber.arrCols.length - 1]);
             let hasNumberInLastRow = (ar.r2 === hasNumber.arrRows[hasNumber.arrRows.length - 1]);
-			let numberElementsInCol = hasNumber.arrRows.length;
-			let numberElementsInRow = hasNumber.arrCols.length;
+            let numberElementsInCol = hasNumber.arrRows.length;
+            let numberElementsInRow = hasNumber.arrCols.length;
 
-			// Are there any non-empty values ​​in the last row and column
-			let hasRealElementInLastCol = (ar.c2 === realValues.arrCols[realValues.arrCols.length - 1]);
+            // Are there any non-empty values ​​in the last row and column
+            let hasRealElementInLastCol = (ar.c2 === realValues.arrCols[realValues.arrCols.length - 1]);
             let hasRealElementInLastRow = (ar.r2 === realValues.arrRows[realValues.arrRows.length - 1]);
             let realElementsInCol = realValues.arrRows.length;
             let realElementsInRow = realValues.arrCols.length;
@@ -1919,11 +1919,11 @@
                 startCol = ar.c1;
                 bIsUpdate = true;
             } else if (hasRealElementInLastRow && hasRealElementInLastCol) {
-				bIsUpdate = true;
-			}
+                bIsUpdate = true;
+            }
 
             if (bIsUpdate) {
-				this.cleanSelection();
+                this.cleanSelection();
                 ar.c1 = startCol;
                 ar.r1 = startRow;
                 if (false === ar.contains(activeCell.col, activeCell.row)) {
@@ -1931,25 +1931,25 @@
                     activeCell.col = startCol;
                     activeCell.row = startRow;
                 }
-				let newRealValues = this._getValuesPositionsInRange();
-				
-				hasRealElementInLastCol = (ar.c2 === newRealValues.arrCols[newRealValues.arrCols.length - 1]);
-				hasRealElementInLastRow = (ar.r2 === newRealValues.arrRows[newRealValues.arrRows.length - 1]);
+                let newRealValues = this._getValuesPositionsInRange();
+                
+                hasRealElementInLastCol = (ar.c2 === newRealValues.arrCols[newRealValues.arrCols.length - 1]);
+                hasRealElementInLastRow = (ar.r2 === newRealValues.arrRows[newRealValues.arrRows.length - 1]);
 
                 if ((true === hasRealElementInLastCol || true === hasRealElementInLastRow)) {
                     // Expanding the range
                     if (1 === hasNumber.arrRows.length && (ar.c2 - ar.c1 /*startColOld*/) > 0) {
                         // We increase to the right, only if the selected range in columns is more than 1 cell and only one row contains values
-						if ((newRealValues.arrCols[newRealValues.arrCols.length - 1] === ar.c2)) {
-							ar.c2 += 1;
-						}
+                        if ((newRealValues.arrCols[newRealValues.arrCols.length - 1] === ar.c2)) {
+                            ar.c2 += 1;
+                        }
                     } 
-					// else
-					if (hasRealElementInLastRow && (ar.r2 - ar.r1 /*startRowOld*/) > 0) {
-						// If selecting by rows is more than 1 cell and there is no free space for the formula in the last row, increase down
-						if ((newRealValues.arrRows[newRealValues.arrRows.length - 1] === ar.r2)) {
-							ar.r2 += 1;
-						}
+                    // else
+                    if (hasRealElementInLastRow && (ar.r2 - ar.r1 /*startRowOld*/) > 0) {
+                        // If selecting by rows is more than 1 cell and there is no free space for the formula in the last row, increase down
+                        if ((newRealValues.arrRows[newRealValues.arrRows.length - 1] === ar.r2)) {
+                            ar.r2 += 1;
+                        }
                     }
                 }
                 this._drawSelection();

@@ -9174,14 +9174,21 @@ var editor;
 		return wb.customFunctionEngine && wb.customFunctionEngine.getFunc(sName, !bIgnoreLocal);
 	};
 
+
 	spreadsheet_api.prototype.asc_getOpeningDocumentsList = function(callback) {
 		let docInfo = this.DocInfo;
-		this.broadcastChannel.addEventListener("message", function (event) {
-			if ("DocumentInfo" === event.data.type) {
-				callback({id: event.data.info.id});
-				console.log("DocumentInfo");
-			}
-		});
+
+		if (!window.fBroadcastChannelDocumentInfo) {
+			window.fBroadcastChannelDocumentInfo = function (event) {
+				if ("DocumentInfo" === event.data.type) {
+					callback([event.data.info.name, event.data.info.id]);
+					console.log(event.data.info.name)
+				}
+			};
+
+			this.broadcastChannel.addEventListener("message", window.fBroadcastChannelDocumentInfo);
+		}
+
 		this.broadcastChannel.postMessage({
 			type: "GetDocuments"
 		})
@@ -9219,7 +9226,8 @@ var editor;
 					broadcastChannel.postMessage({
 						type: "DocumentInfo",
 						info: {
-							id: docInfo.Id
+							id: docInfo.Id,
+							name: docInfo.Title
 						}
 					});
 				}

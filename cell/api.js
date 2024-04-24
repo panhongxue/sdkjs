@@ -5953,7 +5953,7 @@ var editor;
 	let t = this;
 	  this.asc_getOpeningDocumentsList(function (item) {
 		  //compare with origial
-		  if (item && item.id !== docInfo.Id) {
+		  if (item && item[1] !== docInfo[1]) {
 			  t.test.push(item);
 		  }
 	  });
@@ -5973,7 +5973,7 @@ var editor;
       this.wb.restoreFocus();
     }
 
-	this.asc_sendSheetsToOtherBooks([0], [this.test[0]]);
+	this.asc_sendSheetsToOtherBooks([0], [this.test[0][1]]);
   };
 
   spreadsheet_api.prototype.asc_setCellUnderline = function(isUnderline) {
@@ -9235,7 +9235,7 @@ var editor;
 					let wb = oThis.wbModel;
 					if (wb) {
 						for (let i in event.data.info.aBooks) {
-							if (event.data.info.aBooks[i].id === docInfo.Id) {
+							if (event.data.info.aBooks[i] === docInfo.Id) {
 								let where = wb.aWorksheets && wb.aWorksheets.length;
 								oThis.asc_EndMoveSheet(1, ["Sheet2"], event.data.info.sheets);
 							}

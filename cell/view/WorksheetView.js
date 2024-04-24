@@ -1773,15 +1773,15 @@
 	};
 
 
-	// Проверяет, есть ли значения в диапазоне
+	// Checks if there are non-empty values ​​in a range
     WorksheetView.prototype._getValuesPositionsInRange = function (onlyNumbers) {
-		/* флаг onlyNumbers делает проверку только числовых значений */
+		/* The onlyNumbers flag checks all values ​​except string values */
         let cell, cellType, exist = false, setCols = {}, setRows = {};
         let selection = this.model.getSelection();
         let selectionRange = selection.getLast();
         let mergedRange = this.model.getMergedByCell(selectionRange.r1, selectionRange.c1);
         if (mergedRange && mergedRange.isEqual(selectionRange)) {
-            // Для одной ячейки не стоит ничего делать
+            // There is no need to do anything for one cell
             return null;
         }
 
@@ -1795,34 +1795,20 @@
             for (let r = selectionRange.r1; r <= r2; ++r) {
                 cell = this._getCellTextCache(c, r, true);
                 if (cell) {
-                    // Нашли не пустую ячейку, проверим формат
+                    // We found a non-empty cell, let's check the format
                     cellType = cell.cellType;
 
+					// When performing autocomplete formula, all data types except string are treated as numeric
 					if ((null == cellType || CellValueType.Number === cellType || CellValueType.Bool === cellType || CellValueType.Error === cellType || CellValueType.String === cellType)) {
 						if (!(onlyNumbers && CellValueType.String === cellType)) {
 							exist = setRows[r] = setCols[c] = true;
 						}
 					}
-
-					// if (onlyNumbers && (null == cellType || CellValueType.Number === cellType || CellValueType.Bool === cellType || CellValueType.Error === cellType)) {
-					// 	exist = setRows[r] = setCols[c] = true;
-					// } else if (!onlyNumbers && (null == cellType || CellValueType.Number === cellType || CellValueType.Bool === cellType || CellValueType.Error === cellType || CellValueType.String === cellType)) {
-					// 	exist = setRows[r] = setCols[c] = true;
-					// }
-
-                    // if (null == cellType || CellValueType.Number === cellType || CellValueType.Bool === cellType || CellValueType.Error === cellType || CellValueType.String === cellType) {
-					// 	// exist = setRows[r] = setCols[c] = true;
-					// 	if (null == cellType || CellValueType.Number === cellType || CellValueType.Bool === cellType || CellValueType.Error === cellType) {
-					// 		exist = true;
-					// 	}
-					// 	setRows[r] = setCols[c] = cellType;
-					// 	// setCols[c] = cellType;
-                    // }
                 }
             }
         }
 		if (exist) {
-            // Делаем массивы уникальными и сортируем
+            // Making arrays unique and sorting
             let i, arrCols = [], arrRows = [];
             for(i in setCols) {
 				arrCols.push(+i);
@@ -1834,11 +1820,9 @@
         } else {
             return null;
         }
-
-		// return {rows: setRows, amountCols: Object.keys(setRows).length, cols: setCols, amountRows: Object.keys(setCols).length};
     };
 
-    // Автодополняет формулу диапазоном, если это возможно
+    // Autocomplete formula with range if possible
     WorksheetView.prototype.autoCompleteFormula = function (functionName) {
         const t = this;
         // ToDo autoComplete with multiselect
@@ -1848,18 +1832,18 @@
         let arCopy = null;
         let arHistorySelect = ar.clone(true);
         let vr = this.visibleRange;
-        // Первая верхняя не числовая ячейка
+        // First top cell
         let topCell = null;
-        // Первая левая не числовая ячейка
+        // First left cell
         let leftCell = null;
 
         let r = activeCell.row - 1;
         let c = activeCell.col - 1;
         let cell, cellType, isNumberFormat;
         let result = {};
-        // Проверим, есть ли числовые значения в диапазоне
+        // Get all numeric values ​​in the range
 		let hasNumber = this._getValuesPositionsInRange(true);
-		// Получаем все не пустые значения в диапазоне
+		// Get all non-empty values ​​in the range
 		let realValues = this._getValuesPositionsInRange();
         let val, text;
 
@@ -1881,28 +1865,30 @@
 
         if (hasNumber) {
             let i;
-            // Есть ли значения в последней строке и столбце
+            // Are there numeric values ​​in the last row and column
             let hasNumberInLastColumn = (ar.c2 === hasNumber.arrCols[hasNumber.arrCols.length - 1]);
             let hasNumberInLastRow = (ar.r2 === hasNumber.arrRows[hasNumber.arrRows.length - 1]);
 			let numberElementsInCol = hasNumber.arrRows.length;
 			let numberElementsInRow = hasNumber.arrCols.length;
 
-			// Есть ли не пустые значения в последней строке и столбце
+			// Are there any non-empty values ​​in the last row and column
 			let hasRealElementInLastCol = (ar.c2 === realValues.arrCols[realValues.arrCols.length - 1]);
             let hasRealElementInLastRow = (ar.r2 === realValues.arrRows[realValues.arrRows.length - 1]);
             let realElementsInCol = realValues.arrRows.length;
             let realElementsInRow = realValues.arrCols.length;
 
-            // Нужно ли прервать выполнение
+            // Should execution be stopped
             let breakExec;
 
-            // Нужно уменьшить зону выделения (если она реально уменьшилась)
+            // Is necessary to reduce the selection area (if it has actually decreased)
             let startRow = (ar.c2 - ar.c1) > 0 ? hasNumber.arrRows[0] : ar.r1;
             let startCol = hasNumber.arrRows.length === 1 ? ar.c1 : hasNumber.arrCols[0];
-            // Старые границы диапазона
+
+            // Old range borders
             let startColOld = ar.c1;
             let startRowOld = ar.r1;
-            // Нужно ли перерисовывать
+
+            // Need to update and redraw Selection
             let bIsUpdate = false;
 
             if (startColOld !== startCol || startRowOld !== startRow) {
@@ -1913,9 +1899,9 @@
             }
 
             if (firstCell && firstCell.cellType === CellValueType.String) {
-                // если первая ячейка строка, обрезаем select до первого не пустого значения
+                // If the first cell is a string, cut the select to the first non-empty value
                 if (hasNumberInLastColumn && hasNumberInLastRow && (numberElementsInCol === 1 && numberElementsInRow === 1)) {
-                    // Последнее значение - число
+                    // Last value is number
                     bIsUpdate = false;
                     // set active cell to the end of the select
                     activeCell.row = ar.r2;
@@ -1928,7 +1914,7 @@
                     bIsUpdate = true;
                 }
             } else if ((realElementsInRow === 1 && realElementsInCol === 1) && (hasNumberInLastColumn && hasNumberInLastRow)) {
-                // Последняя ячейка - число, нужно расширить селект
+                // The last cell is a number - need to expand the select
                 startRow = ar.r1;
                 startCol = ar.c1;
                 bIsUpdate = true;
@@ -1941,7 +1927,7 @@
                 ar.c1 = startCol;
                 ar.r1 = startRow;
                 if (false === ar.contains(activeCell.col, activeCell.row)) {
-                    // Передвинуть первую ячейку в выделении
+                    // Move the active cell in the selection
                     activeCell.col = startCol;
                     activeCell.row = startRow;
                 }
@@ -1951,16 +1937,16 @@
 				hasRealElementInLastRow = (ar.r2 === newRealValues.arrRows[newRealValues.arrRows.length - 1]);
 
                 if ((true === hasRealElementInLastCol || true === hasRealElementInLastRow)) {
-                    // Мы расширяем диапазон
+                    // Expanding the range
                     if (1 === hasNumber.arrRows.length && (ar.c2 - ar.c1 /*startColOld*/) > 0) {
-                        // Увеличиваем вправо только если выделенный диапазон по столбцам больше 1 ячейки и только в одной строке есть значения
+                        // We increase to the right, only if the selected range in columns is more than 1 cell and only one row contains values
 						if ((newRealValues.arrCols[newRealValues.arrCols.length - 1] === ar.c2)) {
 							ar.c2 += 1;
 						}
                     } 
 					// else
 					if (hasRealElementInLastRow && (ar.r2 - ar.r1 /*startRowOld*/) > 0) {
-						// Если селект по строкам больше 1 ячейки и в последней строке нет свободного места для формулы, увеличиваем вниз
+						// If selecting by rows is more than 1 cell and there is no free space for the formula in the last row, increase down
 						if ((newRealValues.arrRows[newRealValues.arrRows.length - 1] === ar.r2)) {
 							ar.r2 += 1;
 						}

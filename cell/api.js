@@ -9193,7 +9193,11 @@ var editor;
 			window.fBroadcastChannelDocumentInfo = function (event) {
 				let docId = docInfo.Id + AscCommon.g_oIdCounter.m_sUserId;
 				if ("DocumentInfo" === event.data.type && event.data.info.id !== docId) {
-					callback([[event.data.info.name, event.data.info.id, event.data.info.sheets]]);
+					let val = new AscCommonExcel.CWorkbookInfo(event.data.info.name, event.data.info.id);
+					for (let i in event.data.info.sheets) {
+						val.addSheet(event.data.info.sheets.name, event.data.info.sheets.index);
+					}
+					callback([val]);
 					console.log(event.data.info.name)
 				}
 			};
@@ -9241,7 +9245,7 @@ var editor;
 					let sheets = [];
 					if (wb) {
 						wb.forEach(function (_ws, _index) {
-							sheets.push([ _ws.sName, _index]);
+							sheets.push({name: _ws.sName, index: _index});
 						});
 					}
 					broadcastChannel.postMessage({

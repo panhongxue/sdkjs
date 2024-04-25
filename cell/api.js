@@ -9181,7 +9181,7 @@ var editor;
 		if (!window.fBroadcastChannelDocumentInfo) {
 			window.fBroadcastChannelDocumentInfo = function (event) {
 				if ("DocumentInfo" === event.data.type) {
-					callback([event.data.info.name, event.data.info.id]);
+					callback([event.data.info.name, event.data.info.id, event.data.info.sheets]);
 					console.log(event.data.info.name)
 				}
 			};
@@ -9193,14 +9193,15 @@ var editor;
 			type: "GetDocuments"
 		})
 	};
-	spreadsheet_api.prototype.asc_sendSheetsToOtherBooks = function(aSheets, aBooks) {
+	spreadsheet_api.prototype.asc_sendSheetsToOtherBooks = function(where, aNames, aSheets, aBooks) {
 		let aBinary = this.getBinaryContentSheets(aSheets);
 		if (aBinary) {
 			this.broadcastChannel.postMessage({
 				type: "CopySheets",
 				info: {
 					aBooks: aBooks,
-					sheets: aBinary
+					sheets: aBinary,
+					where: where
 				}
 			})
 		}
@@ -9219,25 +9220,32 @@ var editor;
 	spreadsheet_api.prototype.initBroadcastChannelListeners = function() {
 		let oThis = this;
 		let docInfo = this.DocInfo;
+		let wb = oThis.wbModel;
 		let broadcastChannel = this.broadcastChannel;
 		if (broadcastChannel) {
 			broadcastChannel.onmessage = function(event) {
 				if ("GetDocuments" === event.data.type) {
+					let sheets = [];
+					if (wb) {
+						wb.forEach(function (_ws, _index) {
+							sheets.push([ _ws.sName, _index]);
+						});
+					}
 					broadcastChannel.postMessage({
 						type: "DocumentInfo",
 						info: {
 							id: docInfo.Id,
-							name: docInfo.Title
+							name: docInfo.Title,
+							sheets: sheets
 						}
 					});
 				}
 				else if ("CopySheets" === event.data.type) {
-					let wb = oThis.wbModel;
 					if (wb) {
 						for (let i in event.data.info.aBooks) {
 							if (event.data.info.aBooks[i] === docInfo.Id) {
 								let where = wb.aWorksheets && wb.aWorksheets.length;
-								oThis.asc_EndMoveSheet(1, ["Sheet2"], event.data.info.sheets);
+								oThis.asc_EndMoveSheet(event.data.info.where, event.data.info.aNames, event.data.info.sheets);
 							}
 						}
 					}

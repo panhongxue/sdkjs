@@ -5973,7 +5973,7 @@ var editor;
       this.wb.restoreFocus();
     }
 
-	this.asc_sendSheetsToOtherBooks([0], [this.test[0][1]]);
+	this.asc_sendSheetsToOtherBooks(0, [this.test[0][2][0][0]],[this.test[0][2][0][1]], [this.test[0][1]]);
   };
 
   spreadsheet_api.prototype.asc_setCellUnderline = function(isUnderline) {
@@ -9201,7 +9201,8 @@ var editor;
 				type: "CopySheets",
 				info: {
 					aBooks: aBooks,
-					sheets: aBinary,
+					aSheets: aBinary,
+					aNames: aNames,
 					where: where
 				}
 			})
@@ -9246,8 +9247,8 @@ var editor;
 						let docId = docInfo.Id + AscCommon.g_oIdCounter.m_sUserId;
 						for (let i in event.data.info.aBooks) {
 							if (event.data.info.aBooks[i] === docId) {
-								let where = wb.aWorksheets && wb.aWorksheets.length;
-								oThis.asc_EndMoveSheet(event.data.info.where, event.data.info.aNames, event.data.info.sheets);
+								let where = event.data.info.where != null ? event.data.info.where : (wb.aWorksheets && wb.aWorksheets.length);
+								oThis.asc_EndMoveSheet(event.data.info.where, event.data.info.aNames, event.data.info.aSheets);
 							}
 						}
 					}

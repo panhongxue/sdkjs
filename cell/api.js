@@ -3819,8 +3819,13 @@ var editor;
     return true;
   };
 
-  spreadsheet_api.prototype.asc_moveWorksheet = function (where, arrSheets) {
-    // Проверка глобального лока
+  spreadsheet_api.prototype.asc_moveWorksheet = function (where, arrSheets, arrNames, arrBooks) {
+  	if (arrBooks) {
+  		this.asc_sendSheetsToOtherBooks(where, arrNames, arrSheets, arrBooks);
+  		return;
+	}
+
+  	// Проверка глобального лока
     if (this.collaborativeEditing.getGlobalLock() || !this.canEdit()) {
       return false;
     }
@@ -3877,8 +3882,14 @@ var editor;
     return true;
   };
 
-  spreadsheet_api.prototype.asc_copyWorksheet = function (where, arrNames, arrSheets) {
-    // Проверка глобального лока
+  spreadsheet_api.prototype.asc_copyWorksheet = function (where, arrNames, arrSheets, arrBooks) {
+
+	  if (arrBooks) {
+		  this.asc_sendSheetsToOtherBooks(where, arrNames, arrSheets, arrBooks);
+		  return;
+	  }
+
+	  // Проверка глобального лока
     if (this.collaborativeEditing.getGlobalLock() || !this.canEdit()) {
       return false;
     }
@@ -9194,15 +9205,15 @@ var editor;
 			type: "GetDocuments"
 		})
 	};
-	spreadsheet_api.prototype.asc_sendSheetsToOtherBooks = function(where, aNames, aSheets, aBooks) {
-		let aBinary = this.getBinaryContentSheets(aSheets);
-		if (aBinary) {
+	spreadsheet_api.prototype.asc_sendSheetsToOtherBooks = function(where, arrNames, arrSheets, arrBooks) {
+		let arrBinary = this.getBinaryContentSheets(arrSheets);
+		if (arrBinary) {
 			this.broadcastChannel.postMessage({
 				type: "CopySheets",
 				info: {
-					aBooks: aBooks,
-					aSheets: aBinary,
-					aNames: aNames,
+					aBooks: arrBooks,
+					aSheets: arrBinary,
+					aNames: arrNames,
 					where: where
 				}
 			})

@@ -365,13 +365,28 @@
 		}
 	}
 
+	function getForEachPresNode(smartartAlgorithm) {
+		const currentNode = smartartAlgorithm.getCurrentNode();
+		const presNode = createPresNode("", "", currentNode);
+		const algorithm = new CompositeAlgorithm();
+		algorithm.setParentNode(presNode);
+		algorithm.initParams([]);
+		presNode.algorithm = algorithm;
+		presNode.initPresShape();
+		return presNode;
+	}
 	ForEach.prototype.executeAlgorithm = function (smartartAlgorithm) {
 		const refForEach = smartartAlgorithm.getForEach(this.ref);
 		if (refForEach) {
 			refForEach.executeAlgorithm(smartartAlgorithm);
 			return;
 		}
+
 		const currentNode = smartartAlgorithm.getCurrentNode();
+		const parentPresNode = smartartAlgorithm.getCurrentPresNode();
+		const curPresNode = getForEachPresNode(smartartAlgorithm);
+		parentPresNode.addChild(curPresNode);
+		smartartAlgorithm.addCurrentPresNode(curPresNode);
 
 		let isHideLastTrans2 = this.getHideLastTrans(0);
 		if (!isHideLastTrans2) {
@@ -390,6 +405,7 @@
 			}
 			smartartAlgorithm.removeCurrentNode();
 		}
+		smartartAlgorithm.removeCurrentPresNode(curPresNode);
 	};
 
 	Alg.prototype.getAlgorithm = function (smartartAlgorithm) {
@@ -5621,8 +5637,19 @@ function PresNode(presPoint, contentNode) {
 		heightConstr: null,
 		heightRef: null
 	}
-	this.equalRelations = [];
-	this.adaptEqualRelations = [];
+	this.equationRelations = {
+		adapt: {},
+		nonAdapt: {}
+	};
+
+	this.equationRelations.nonAdapt[AscFormat.Constr_op_equ] = {};
+	this.equationRelations.nonAdapt[AscFormat.Constr_op_gte] = {};
+	this.equationRelations.nonAdapt[AscFormat.Constr_op_lte] = {};
+	this.equationRelations.nonAdapt[AscFormat.Constr_op_none] = {};
+	this.equationRelations.adapt[AscFormat.Constr_op_equ] = {};
+	this.equationRelations.adapt[AscFormat.Constr_op_gte] = {};
+	this.equationRelations.adapt[AscFormat.Constr_op_lte] = {};
+	this.equationRelations.adapt[AscFormat.Constr_op_none] = {};
 	this.parentScale = {};
 	this.moveWith = null;
 	this._isTxXfrm = null;
@@ -5782,7 +5809,7 @@ PresNode.prototype.getNamedNode = function (name) {
 			this.isTxXfrm() ||
 			!this.algorithm ||
 			(this.algorithm instanceof SpaceAlgorithm &&
-				!(this.parent && this.parent.algorithm instanceof CompositeAlgorithm) &&
+				!(this.parent && (this.parent.algorithm instanceof CompositeAlgorithm)) &&
 				(this.layoutInfo.shape.hideGeom || !this.isRealShapeType()));
 	};
 	PresNode.prototype.isSibNode = function () {
@@ -5819,6 +5846,17 @@ PresNode.prototype.getNamedNode = function (name) {
 		});
 		shapes.push.apply(shapes, tempShapes);
 	};
+	PresNode.prototype.getZOrderOff = function () {
+		let zOrderOff = this.layoutInfo.shape.zOrderOff;
+/*		if (zOrderOff === 0 && (this.algorithm instanceof SpaceAlgorithm)) {
+			let child = this.childs[0];
+			while (child && child.algorithm instanceof SpaceAlgorithm) {
+				zOrderOff += child.layoutInfo.shape.zOrderOff;
+				child = child.childs[0];
+			}
+		}*/
+		return zOrderOff;
+	};
 	PresNode.prototype.getShadowShapesByZOrder = function () {
 		const shapes = [];
 		const elements = [this];
@@ -5837,14 +5875,8 @@ PresNode.prototype.getNamedNode = function (name) {
 					tempElements.push(child);
 				}
 				tempElements.sort(function (a, b) {
-					let aIndex = 0;
-					let bIndex = 0;
-					if (a.shape) {
-						aIndex = a.shape.shape.zOrderOff;
-					}
-					if (b.shape) {
-						bIndex = b.shape.shape.zOrderOff;
-					}
+					const aIndex = a.getZOrderOff();
+					const bIndex = b.getZOrderOff();
 					return aIndex - bIndex;
 				});
 				elements.push.apply(elements, tempElements);
@@ -6151,9 +6183,7 @@ PresNode.prototype.addChild = function (ch, pos) {
 	PresNode.prototype.setConstraintByNode = function (constr, refNode, calcValue, isAdapt) {
 		const constrNode = this.getConstraintNode(constr.forName, constr.ptType.getVal());
 		if (constrNode) {
-			if (constr.op === AscFormat.Constr_op_equ) {
-				constrNode.addEqualRelation(refNode, constr, isAdapt);
-			}
+			constrNode.addEqualRelation(refNode, constr, isAdapt);
 			const isSettingConstraint = constrNode.setConstraint(constr, calcValue, isAdapt);
 			constrNode.setParamConstraint(constr, refNode);
 			if (isSettingConstraint) {
@@ -6174,16 +6204,14 @@ PresNode.prototype.addChild = function (ch, pos) {
 	}
 
 	PresNode.prototype.addEqualRelation = function (refNode, constr, isAdapt) {
-		if (isAdapt) {
-			this.adaptEqualRelations.push({constr: constr, ref: refNode});
-		} else {
-			this.equalRelations.push({constr: constr, ref: refNode});
-		}
+		const relations = isAdapt ? this.equationRelations.adapt : this.equationRelations.nonAdapt;
+		relations[constr.op][constr.type] = {constr: constr, ref: refNode};
 	};
 	PresNode.prototype.applyEqualRelations = function (isAdapt) {
-		const relations = isAdapt ? this.adaptEqualRelations : this.equalRelations;
-		for (let i = 0; i < relations.length; i += 1) {
-			const rel = relations[i];
+		const relations = isAdapt ? this.equationRelations.adapt : this.equationRelations.nonAdapt;
+		const equRelations = relations[AscFormat.Constr_op_equ];
+		for (let constrType in equRelations) {
+			const rel = equRelations[constrType];
 			const constr = rel.constr;
 			const refNode = rel.ref;
 
@@ -6196,7 +6224,7 @@ PresNode.prototype.addChild = function (ch, pos) {
 			}
 			if (refConstrObject[constr.refType]) {
 				if ( refNode === this && refConstrObject[constr.refType] * factor !== curConstrObject[constr.type]) {
-					refConstrObject[constr.refType] = curConstrObject[constr.type]
+					refConstrObject[constr.refType] = curConstrObject[constr.type];
 				} else {
 					curConstrObject[constr.type] = refConstrObject[constr.refType] * factor;
 				}
@@ -6251,6 +6279,11 @@ PresNode.prototype.addChild = function (ch, pos) {
 		}
 	}
 
+	PresNode.prototype.skipScaleCoefficient = function (type) {
+		return !!(this.equationRelations.nonAdapt[AscFormat.Constr_op_equ][type] ||
+			this.equationRelations.nonAdapt[AscFormat.Constr_op_lte][type] ||
+			this.equationRelations.nonAdapt[AscFormat.Constr_op_gte][type]);
+	};
 	PresNode.prototype.setConstraint = function (constr, value, isAdapt) {
 		if (!this.isCanAdapt(constr, isAdapt)) {
 			return false;
@@ -6629,6 +6662,9 @@ PresNode.prototype.addChild = function (ch, pos) {
 				const childs = this.parent.childs;
 				for (let i = 0; i < childs.length; i++) {
 					const child = childs[i];
+					if (this.node !== child.node) {
+						continue;
+					}
 					const spaceShape = child.getShape(true);
 					const spaceBounds = spaceShape.getBounds(true);
 					const spaceWidth = spaceBounds.r - spaceBounds.l;
@@ -6659,7 +6695,7 @@ PresNode.prototype.addChild = function (ch, pos) {
 			const node = this.childs[i];
 			const childShape = node.getShape(isCalculateCoefficients);
 			// todo: check this
-			if (childShape.width <= 0 && childShape.height <= 0 || (node.algorithm instanceof ConnectorAlgorithm) || ((node.algorithm instanceof TextAlgorithm) && !node.isRealShapeType()) || node.isTxXfrm()) {
+			if (node.isSkipShape(isCalculateCoefficients)) {
 				continue;
 			}
 			if (shapeBounds) {

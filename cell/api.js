@@ -9193,7 +9193,7 @@ var editor;
 			window.fBroadcastChannelDocumentInfo = function (event) {
 				let docId = docInfo.Id + AscCommon.g_oIdCounter.m_sUserId;
 				if ("DocumentInfo" === event.data.type && event.data.info.id !== docId) {
-					callback([event.data.info.name, event.data.info.id, event.data.info.sheets]);
+					callback([[event.data.info.name, event.data.info.id, event.data.info.sheets]]);
 					console.log(event.data.info.name)
 				}
 			};

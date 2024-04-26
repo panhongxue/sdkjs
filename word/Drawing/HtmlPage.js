@@ -172,7 +172,7 @@ function CEditorPage(api)
 
 	this.ScrollsWidthPx = 14;
 
-	this.m_oDrawingDocument = new AscCommon.CDrawingDocument();
+	this.m_oDrawingDocument = Asc.editor.isPdfEditor() ? new AscPDF.CDrawingDocument() : new AscCommon.CDrawingDocument();
 	this.m_oLogicDocument   = null;
 
 	this.m_oDrawingDocument.m_oWordControl   = this;
@@ -1878,6 +1878,8 @@ function CEditorPage(api)
 		}
 
 		oWordControl.EndUpdateOverlay();
+
+		oWordControl.m_oDrawingDocument.isHideTargetBeforeFirstClick = false;
 	};
 
 	this.onMouseMove  = function(e, isTouch)
@@ -2616,7 +2618,7 @@ function CEditorPage(api)
 		 return;
 		 }
 		 */
-		if (null == oWordControl.m_oLogicDocument)
+		if (Asc.editor.isPdfEditor())
 		{
 			var bIsPrev = (oWordControl.m_oDrawingDocument.m_oDocumentRenderer.OnKeyDown(global_keyboardEvent) === true) ? false : true;
 			if (false === bIsPrev)
@@ -3218,15 +3220,17 @@ function CEditorPage(api)
 		this.m_oBody.Resize(this.Width * g_dKoef_pix_to_mm, this.Height * g_dKoef_pix_to_mm, this);
 		this.onButtonTabsDraw();
 
+		let areaParent = "id_main_view";
 		if (this.m_oApi.isUseNativeViewer)
 		{
+			areaParent = "id_main";
 			var oViewer = this.m_oDrawingDocument.m_oDocumentRenderer;
 			if (oViewer)
 				oViewer.resize();
 		}
 
 		if (AscCommon.g_inputContext)
-			AscCommon.g_inputContext.onResize("id_main_view");
+			AscCommon.g_inputContext.onResize(areaParent);
 
 		if (this.TextBoxBackground != null)
 		{

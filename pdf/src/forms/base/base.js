@@ -223,6 +223,9 @@
     CBaseField.prototype.IsForm = function() {
         return true;
     };
+    CBaseField.prototype.IsDrawing = function() {
+        return false;
+     };
     CBaseField.prototype.SetApIdx = function(nIdx) {
         this.GetDocument().UpdateApIdx(nIdx);
         this._apIdx = nIdx;
@@ -239,7 +242,7 @@
 	 * @memberof CBaseField
 	 * @typeofeditors ["PDF"]
 	 */
-    CBaseField.prototype.IsEditable = function() {
+    CBaseField.prototype.IsCanEditText = function() {
         return false;
     };
 	/**
@@ -291,7 +294,7 @@
 
 
         let oViewer = editor.getDocumentRenderer();
-        let nCurIdxOnPage = oViewer.pagesInfo.pages[nCurPage].fields ? oViewer.pagesInfo.pages[nCurPage].fields.indexOf(this) : -1;
+        let nCurIdxOnPage = oViewer.pagesInfo.pages[nCurPage] && oViewer.pagesInfo.pages[nCurPage].fields ? oViewer.pagesInfo.pages[nCurPage].fields.indexOf(this) : -1;
         if (oViewer.pagesInfo.pages[nPage]) {
             if (oViewer.pagesInfo.pages[nPage].fields == null) {
                 oViewer.pagesInfo.pages[nPage].fields = [];
@@ -319,10 +322,35 @@
 	 */
     CBaseField.prototype.AddKid = function(oField) {
         this._kids.push(oField);
+        AscCommon.History.Add(new CChangesPDFFormAddKid(this, this._kids.length - 1, [oField]))
         oField._parent = this;
     };
     CBaseField.prototype.GetKids = function() {
         return this._kids;
+    };
+    CBaseField.prototype.GetKid = function(nPos, bStrict) {
+        if (this.IsWidget() && bStrict != true)
+            return this;
+
+        return this._kids[nPos];
+    };
+    /**
+	 * Removes field from kids.
+	 * @memberof CBaseField
+	 * @typeofeditors ["PDF"]
+     * @param {CBaseField} oField - the field to remove.
+	 * @returns {boolean} - returns false if field isn't in the field kids.
+	 */
+    CBaseField.prototype.RemoveKid = function(oField) {
+        let nIndex = this._kids.indexOf(oField);
+        if (nIndex != -1) {
+            this._kids.splice(nIndex, 1);
+            AscCommon.History.Add(new CChangesPDFFormRemoveKid(this, nIndex, [oField]))
+            oField._parent = null;
+            return true;
+        }
+
+        return false;
     };
     
     /**
@@ -335,86 +363,32 @@
         if (this.IsWidget())
             return [];
 
-        let aWidgets = [];
-        let aFullNames = [];
-        for (let i = 0; i < this._kids.length; i++) {
-            let sFullName = this._kids[i].GetFullName();
-            if (this._kids[i].IsWidget()) {
-                if (aFullNames.indexOf(sFullName) == -1) {
-                    aWidgets.push(this._kids[i]);
-                    aFullNames.push(sFullName);
-                }
+        let aWidgets    = [];
+        let aKids       = this.GetKids();
+        for (let i = 0; i < aKids.length; i++) {
+            if (aKids[i].IsWidget()) {
+                aWidgets.push(aKids[i]);
             }
             else
-                aWidgets = aWidgets.concat(this._kids[i].GetAllWidgets());
+                aWidgets = aWidgets.concat(aKids[i].GetAllWidgets());
         }
 
         return aWidgets;
     };
 
     CBaseField.prototype.Recalculate = function() {};
-    /**
-	 * Removes field from kids.
-	 * @memberof CBaseField
-	 * @typeofeditors ["PDF"]
-     * @param {CBaseField} oField - the field to remove.
-	 * @returns {boolean} - returns false if field isn't in the field kids.
-	 */
-    CBaseField.prototype.RemoveKid = function(oField) {
-        let nIndex = this._kids.indexOf(oField);
-        if (nIndex != -1) {
-            this._kids.splice(nIndex, 1);
-            oField._parent = null;
-            return true;
-        }
-
-        return false;
+    
+    CBaseField.prototype.GetDocContent = function(bFormatContent) {
+        return bFormatContent ? this.contentFormat : this.content;
     };
 
-    CBaseField.prototype.GetDocContent = function() {
-        return this.content;
-    };
-
-    CBaseField.prototype.getFormRelRect = function()
-    {
+    CBaseField.prototype.getFormRelRect = function() {
         return this.contentRect;
     };
-    CBaseField.prototype.getFormRect = function()
-    {
+    CBaseField.prototype.getFormRect = function() {
         return this._formRect;
     };
     
-    CBaseField.prototype.IntersectWithRect = function(X, Y, W, H)
-    {
-        let oViewer     = editor.getDocumentRenderer();
-        var arrRects    = [];
-        var oBounds     = this.getFormRelRect();
-
-        let nPage = this.GetPage();
-        let oPage = oViewer.pageDetector.pages.find(function(page) {
-            return page.num == nPage;
-        });
-        
-        let nPageIndX = oPage.x / AscCommon.AscBrowser.retinaPixelRatio * g_dKoef_pix_to_mm;
-        let nPageIndY = oPage.y / AscCommon.AscBrowser.retinaPixelRatio * g_dKoef_pix_to_mm;
-
-        var nLeft   = Math.max(X, oBounds.X) + nPageIndX / oViewer.zoom;
-        var nRight  = Math.min(X + W, oBounds.X + oBounds.W) + nPageIndX / oViewer.zoom;
-        var nTop    = Math.max(Y, oBounds.Y) + nPageIndY / oViewer.zoom;
-        var nBottom = Math.min(Y + H, oBounds.Y + oBounds.H) + nPageIndY / oViewer.zoom;
-
-        if (nLeft < nRight && nTop < nBottom)
-        {
-            arrRects.push({
-                X : nLeft,
-                Y : nTop,
-                W : nRight - nLeft,
-                H : nBottom - nTop
-            });
-        }
-
-        return arrRects;
-    };
     CBaseField.prototype.GetFullName = function() {
         if (this._parent)
         {
@@ -579,6 +553,19 @@
     };
 
     /**
+	 * Sets a flag that we have entered the field.
+     * This is not the same as an doc.activeField.
+	 * @memberof CBaseField
+     * @param {boolean} bInField
+	 */
+    CBaseField.prototype.SetInForm = function(bInField) {
+        this.isInForm = bInField;
+    };
+    CBaseField.prototype.IsInForm = function() {
+        return !!this.isInForm;
+    };
+    
+    /**
 	 * Gets the JavaScript action of the field for a given trigger.
 	 * @memberof CBaseField
      * @param {number} nType - A string that sets the trigger for the action. (FORMS_TRIGGERS_TYPES)
@@ -697,7 +684,7 @@
 	 */
     CBaseField.prototype.SetApiValue = function(value) {
         let oParent = this.GetParent();
-        if (oParent && this.IsWidget() && oParent.IsAllChildsSame())
+        if (oParent && this.IsWidget() && oParent.IsAllKidsWidgets())
             oParent.SetApiValue(value);
         else {
             this.SetWasChanged(true);
@@ -706,15 +693,20 @@
     };
 
     /**
-	 * Checks if all clilds have same names.
+	 * Checks if all kids are widgets (and have same names).
 	 * @memberof CBaseField
 	 * @typeofeditors ["PDF"]
 	 */
-    CBaseField.prototype.IsAllChildsSame = function() {
-        if (this._kids.length > 0) {
-            let sFullName = this._kids[0].GetFullName();
-            for (let i = 1; i < this._kids.length; i++) {
-                if (sFullName != this._kids[i].GetFullName())
+    CBaseField.prototype.IsAllKidsWidgets = function() {
+        let aKids = this.GetKids();
+
+        if (aKids.length > 0) {
+            if (aKids[0].IsWidget() == false)
+                return false;
+
+            let sFullName = aKids[0].GetFullName();
+            for (let i = 1; i < aKids.length; i++) {
+                if (sFullName != aKids[i].GetFullName() || aKids[i].IsWidget() == false)
                     return false;
             }
 
@@ -1226,23 +1218,7 @@
 
         return oColor;
     };
-    /**
-	 * Creates new history point for cur field.
-	 * @memberof CComboBoxField
-	 * @typeofeditors ["PDF"]
-     * @param {boolean} isCanUnion - is it possible to union a point with others
-     * @returns {object}
-	 */
-    CBaseField.prototype.CreateNewHistoryPoint = function(isCanUnion) {
-        if (isCanUnion == null)
-            isCanUnion = false;
-
-        if (AscCommon.History.IsOn() == false)
-            AscCommon.History.TurnOn();
-        AscCommon.History.Create_NewPoint();
-        AscCommon.History.SetAdditionalFormFilling(this);
-        AscCommon.History.Points[AscCommon.History.Points.length - 1].Additional.CanUnion = isCanUnion;
-    };
+    
     CBaseField.prototype.DrawSelected = function() {
         return;
         /*
@@ -1274,6 +1250,9 @@
             this._needRecalc = false;
         }
         else {
+            if ([AscPDF.FIELD_TYPES.text, AscPDF.FIELD_TYPES.combobox].includes(this.GetType())) {
+                this.GetDocument().SetNeedUpdateTarget(true);
+            }
             this._needRecalc = true;
             if (bSkipAddToRedraw != true)
                 this.AddToRedraw();
@@ -1290,6 +1269,17 @@
             this.IsWidget() && this.SetDrawFromStream(!isChanged);
         }
     };
+
+    CBaseField.prototype.UndoNotAppliedChanges = function() {
+        let isChanged = this.IsChanged();
+        this.SetValue(this.GetApiValue());
+        this.SetNeedRecalc(true);
+        this.SetNeedCommit(false);
+
+        if (!isChanged)
+            this.SetWasChanged(false);
+    };
+
     CBaseField.prototype.ClearCache = function() {
         this._originView.normal     = null;
         this._originView.mouseDown  = null;
@@ -1323,11 +1313,11 @@
 
     CBaseField.prototype.AddToRedraw = function() {
         let oViewer = editor.getDocumentRenderer();
-        let _t      = this;
+        let nPage   = this.GetPage();
         
         function setRedrawPageOnRepaint() {
-            if (oViewer.pagesInfo.pages[_t.GetPage()])
-                oViewer.pagesInfo.pages[_t.GetPage()].needRedrawForms = true;
+            if (oViewer.pagesInfo.pages[nPage])
+                oViewer.pagesInfo.pages[nPage].needRedrawForms = true;
         }
 
         oViewer.paint(setRedrawPageOnRepaint);
@@ -1372,20 +1362,27 @@
     };
     
     CBaseField.prototype.SetRequired = function(bRequired) {
-        if (this.GetType() != AscPDF.FIELD_TYPES.button)
+        if (this.GetType() != AscPDF.FIELD_TYPES.button && this.IsRequired() != bRequired) {
             this._required = bRequired;
+            this.SetWasChanged(true);
+            this.AddToRedraw();
+        }
     };
     CBaseField.prototype.IsRequired = function() {
         return this._required;
     };
     CBaseField.prototype.SetBorderColor = function(aColor) {
         this._strokeColor = this._borderColor = aColor;
+        this.SetWasChanged(true);
+        this.SetNeedRecalc(true);
     };
     CBaseField.prototype.GetBorderColor = function() {
         return this._strokeColor;
     };
     CBaseField.prototype.SetBackgroundColor = function(aColor) {
         this._fillColor = this._bgColor = aColor;
+        this.SetWasChanged(true);
+        this.AddToRedraw();
     };
     CBaseField.prototype.GetBackgroundColor = function() {
         return this._fillColor;
@@ -1405,6 +1402,8 @@
     };
     CBaseField.prototype.SetDisplay = function(nType) {
         this._display = nType;
+        this.SetWasChanged(true);
+        this.AddToRedraw();
     };
     CBaseField.prototype.GetDisplay = function() {
         return this._display;
@@ -1417,6 +1416,7 @@
     };
     CBaseField.prototype.SetDefaultValue = function(value) {
         this._defaultValue = value;
+        this.SetWasChanged(true);
     };
 	
 	CBaseField.prototype.canBeginCompositeInput = function() {
@@ -1433,7 +1433,9 @@
 		if (!this.canBeginCompositeInput() || this.compositeInput)
 			return;
 		
-		this.CreateNewHistoryPoint(true);
+        let oDoc = this.GetDocument();
+            
+		oDoc.CreateNewHistoryPoint({objects: [this]});
 		this.beforeCompositeInput();
 		let run = this.getRunForCompositeInput();
 		if (!run) {
@@ -1468,7 +1470,9 @@
 		if (!this.compositeInput)
 			return;
 		
-		this.CreateNewHistoryPoint(true);
+        let oDoc = this.GetDocument();
+
+		oDoc.CreateNewHistoryPoint({objects: [this]});
 		this.compositeReplaceCount++;
 		this.compositeInput.add(codePoint);
 		this.SetNeedRecalc(true);
@@ -1478,7 +1482,9 @@
 		if (!this.compositeInput)
 			return;
 		
-		this.CreateNewHistoryPoint(true);
+        let oDoc = this.GetDocument();
+
+		oDoc.CreateNewHistoryPoint({objects: [this]});
 		this.compositeReplaceCount++;
 		this.compositeInput.remove(count);
 		this.SetNeedRecalc(true);
@@ -1488,7 +1494,9 @@
 		if (!this.compositeInput)
 			return;
 		
-		this.CreateNewHistoryPoint(true);
+        let oDoc = this.GetDocument();
+
+		oDoc.CreateNewHistoryPoint({objects: [this]});
 		this.compositeReplaceCount++;
 		this.compositeInput.replace(codePoints);
 		this.SetNeedRecalc(true);
@@ -1518,10 +1526,10 @@
     CBaseField.prototype.Reset = function() {
         let defValue = this.GetDefaultValue() || "";
         if (this.GetValue() != defValue) {
-            
             this.SetValue(defValue);
             this.SetApiValue(defValue);
-            this.AddToRedraw();
+            this.SetWasChanged(true);
+            this.SetNeedRecalc(true);
         }
     };
 
@@ -1721,15 +1729,12 @@
         if (this._borderStyle != nStyle) {
             this._borderStyle = nStyle;
             this.SetWasChanged(true);
-
+            this.SetNeedRecalc(true);
             if (this.IsComb && this.IsComb() == true) {
-                this.SetNeedRecalc(true);
                 this.content.GetElement(0).Content.forEach(function(run) {
                     run.RecalcInfo.Measure = true;
                 });
             }
-
-            this.AddToRedraw();
         }
     };
     CBaseField.prototype.GetBorderStyle = function() {
@@ -1741,8 +1746,7 @@
             this._lineWidth = nWidth;
 
             this.SetWasChanged(true);
-
-            this.AddToRedraw();
+            this.SetNeedRecalc(true);
         }
     };
     CBaseField.prototype.GetBorderWidth = function() {
@@ -1981,7 +1985,7 @@
         }
         
         this.SetWasChanged(true);
-        this.AddToRedraw();
+        this.SetNeedRecalc(true);
     };
     CBaseField.prototype.GetTextColor = function() {
         return this._textColor;
@@ -1993,14 +1997,6 @@
         this._textFont = sFontName;
         this.SetWasChanged(true);
         this.AddToRedraw();
-    };
-    CBaseField.prototype.IsInField = function() {
-        let oDoc = this.GetDocument();
-        if (oDoc.activeForm == this) {
-            if (!this.IsNeedDrawHighlight() || this.GetType() == AscPDF.FIELD_TYPES.button)
-                return true;
-        }
-        return false;
     };
     CBaseField.prototype.SetFontKey = function(sKey) {
         this._fontKey = sKey;
@@ -2061,7 +2057,7 @@
         }
         
         this.SetWasChanged(true);
-        this.AddToRedraw();
+        this.SetNeedRecalc();
     };
     CBaseField.prototype.GetTextSize = function() {
         return this._textSize;
@@ -2133,12 +2129,19 @@
 	 */
     CBaseField.prototype.Blur = function() {
         let oDoc = this.GetDocument();
+        oDoc.SetGlobalHistory();
+
+        this.SetInForm(false);
+
+        if (this.content && this.content.IsSelectionUse()) {
+            this.content.RemoveSelection();
+        }
+        
         if (oDoc.activeForm == this) {
             oDoc.activeForm = null;
             this.onBlur();
         }
     };
-
     // export
     CBaseField.prototype["getType"] = function() {
         return this.type;
@@ -2461,7 +2464,7 @@
      * @param {Number} x
      * @param {Number} y
      * @param {Number} nPage
-     * @param {boolean} isNotMM - coordinates in millimeters or not 
+     * @param {boolean} [isNotMM = false] - coordinates in millimeters or not 
 	 * @typeofeditors ["PDF"]
 	 */
     function GetPageCoordsByGlobalCoords(x, y, nPage, isNotMM) {

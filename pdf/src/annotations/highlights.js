@@ -69,8 +69,14 @@
     };
     CAnnotationTextMarkup.prototype.AddToRedraw = function() {
         let oViewer = editor.getDocumentRenderer();
-        if (oViewer.pagesInfo.pages[this.GetPage()])
-            oViewer.pagesInfo.pages[this.GetPage()].needRedrawHighlights = true;
+        let nPage   = this.GetPage();
+        
+        function setRedrawPageOnRepaint() {
+            if (oViewer.pagesInfo.pages[nPage])
+                oViewer.pagesInfo.pages[nPage].needRedrawHighlights = true;
+        }
+
+        oViewer.paint(setRedrawPageOnRepaint);
     };
     CAnnotationTextMarkup.prototype.IsInQuads = function(x, y) {
         let oOverlayCtx = editor.getDocumentRenderer().overlay.m_oContext;
@@ -198,10 +204,6 @@
         memory.Seek(nStartPos);
         memory.WriteLong(nEndPos - nStartPos);
         memory.Seek(nEndPos);
-
-        this._replies.forEach(function(reply) {
-            reply.WriteToBinary(memory); 
-        });
     };
     /**
 	 * Class representing a highlight annotation.
@@ -637,10 +639,6 @@
         memory.Seek(nStartPos);
         memory.WriteLong(nEndPos - nStartPos);
         memory.Seek(nEndPos);
-
-        this._replies.forEach(function(reply) {
-            reply.WriteToBinary(memory); 
-        });
     };
 
     function findMaxSideWithRotation(x1, y1, x2, y2, x3, y3, x4, y4) {

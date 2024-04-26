@@ -53,6 +53,9 @@
 	const FLAGS_GAPS                        = 0x00002000; // 13 бит
 	const FLAGS_HYPHEN_AFTER                = 0x00004000; // 14
 	const FLAGS_TEMPORARY_HYPHEN_AFTER      = 0x00008000; // 15
+	
+	// Temporary
+	const FLAGS_RTL = 0x02;
 
 	// 16-31 биты зарезервированы под FontSize
 
@@ -84,7 +87,7 @@
 	 * @param nCodePoint {number}
 	 * @returns {boolean}
 	 */
-	function IsCombinedMark(nCodePoint)
+	function isCombiningMark(nCodePoint)
 	{
 		return !!((0x0300 <= nCodePoint && nCodePoint <= 0x036F)
 			|| (0x0483 <= nCodePoint && nCodePoint <= 0x0487)
@@ -118,10 +121,11 @@
 		this.Grapheme = AscFonts.NO_GRAPHEME;
 
 		this.SetSpaceAfter(this.private_IsSpaceAfter());
-
+		this.updateRtlFlag();
+		
 		if (AscFonts.IsCheckSymbols)
 			AscFonts.FontPickerByCharacter.getFontBySymbol(this.Value);
-
+		
 	}
 	CRunText.prototype = Object.create(AscWord.CRunElementBase.prototype);
 	CRunText.prototype.constructor = CRunText;
@@ -131,9 +135,11 @@
 	{
 		this.Value = CharCode;
 		this.SetSpaceAfter(this.private_IsSpaceAfter());
-
+		this.updateRtlFlag();
+		
 		if (AscFonts.IsCheckSymbols)
 			AscFonts.FontPickerByCharacter.getFontBySymbol(this.Value);
+		
 	};
 	CRunText.prototype.GetCharCode = function()
 	{
@@ -170,15 +176,15 @@
 
 		if (undefined !== nFontSlot)
 		{
-			let nFS = FLAGS_ASCII;
-			if (nFontSlot & AscWord.fontslot_EastAsia)
-				nFS = FLAGS_EASTASIA;
-			else if (nFontSlot & AscWord.fontslot_HAnsi)
-				nFS = FLAGS_HANSI;
-			else if (nFontSlot & AscWord.fontslot_CS)
-				nFS = FLAGS_CS;
-
-			this.Flags = (this.Flags & 0xFFFFFFFC) | nFS;
+			// let nFS = FLAGS_ASCII;
+			// if (nFontSlot & AscWord.fontslot_EastAsia)
+			// 	nFS = FLAGS_EASTASIA;
+			// else if (nFontSlot & AscWord.fontslot_HAnsi)
+			// 	nFS = FLAGS_HANSI;
+			// else if (nFontSlot & AscWord.fontslot_CS)
+			// 	nFS = FLAGS_CS;
+			//
+			// this.Flags = (this.Flags & 0xFFFFFFFC) | nFS;
 			
 			if (oTextPr.Caps || oTextPr.SmallCaps)
 			{
@@ -280,6 +286,15 @@
 	CRunText.prototype.GetLigatureWidth = function()
 	{
 		return (AscFonts.GetGraphemeWidth(this.Flags & FLAGS_TEMPORARY ? this.TempGrapheme : this.Grapheme) * (((this.Flags >> 16) & 0xFFFF) / 64));
+	};
+	CRunText.prototype.getBidiType = function()
+	{
+		if (this.Flags & FLAGS_RTL || 0x060C <= this.Value && this.Value <= 0x074A)
+			return AscWord.BidiType.rtl;
+		else if (this.IsPunctuation())
+			return AscWord.BidiType.neutral;
+		
+		return AscWord.BidiType.ltr;
 	};
 	CRunText.prototype.SetWidth = function(nWidth)
 	{
@@ -511,6 +526,15 @@
 		else
 			this.Flags &= FLAGS_NON_SPACEAFTER;
 	};
+	CRunText.prototype.updateRtlFlag = function()
+	{
+		let isRtl = AscFonts.isRtlScript(this.Value);
+		
+		if (isRtl)
+			this.Flags |= FLAGS_RTL;
+		else
+			this.Flags &= ~FLAGS_RTL;
+	};
 	CRunText.prototype.IsNoBreakHyphen = function()
 	{
 		return (false === this.IsSpaceAfter() && this.Value === 0x002D);
@@ -632,7 +656,7 @@
 	};
 	CRunText.prototype.IsCombiningMark = function()
 	{
-		return (!!(this.Flags & FLAGS_TEMPORARY ? this.Flags & FLAGS_TEMPORARY_COMBINING_MARK : this.Flags & FLAGS_COMBINING_MARK) || IsCombinedMark(this.Value));
+		return (!!(this.Flags & FLAGS_TEMPORARY ? this.Flags & FLAGS_TEMPORARY_COMBINING_MARK : this.Flags & FLAGS_COMBINING_MARK) || isCombiningMark(this.Value));
 	};
 	CRunText.prototype.IsLigatureContinue = function()
 	{
@@ -734,5 +758,6 @@
 	window['AscWord'] = window['AscWord'] || {};
 	window['AscWord'].CRunText = CRunText;
 	window['AscWord'].CreateNonBreakingHyphen = CreateNonBreakingHyphen;
+	window['AscWord'].isCombiningMark = isCombiningMark;
 
 })(window);

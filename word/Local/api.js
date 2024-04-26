@@ -144,8 +144,8 @@ Asc['asc_docs_api'].prototype._saveLocalCheck = function()
 	return !this.isLongAction();
 };
 
-Asc['asc_docs_api'].prototype.asc_setCurrentPasswordBase = Asc['asc_docs_api'].prototype.asc_setCurrentPassword;
-Asc['asc_docs_api'].prototype.asc_setCurrentPassword = Asc['asc_docs_api'].prototype["asc_setCurrentPassword"] = function(password)
+AscCommon.baseEditorsApi.prototype.asc_setCurrentPasswordBase = AscCommon.baseEditorsApi.prototype.asc_setCurrentPassword;
+AscCommon.baseEditorsApi.prototype.asc_setCurrentPassword = AscCommon.baseEditorsApi.prototype["asc_setCurrentPassword"] = function(password)
 {
 	this.currentPasswordOld = this.currentPassword;
 	return this.asc_setCurrentPasswordBase(password);
@@ -169,7 +169,7 @@ Asc['asc_docs_api'].prototype.asc_Save = function (isNoUserSave, isSaveAs, isRes
 		var _isNaturalSave = this.IsUserSave;
 		this.canSave = false;
 		
-		if (this.WordControl.m_oLogicDocument != null)
+		if (!this.isPdfEditor())
 		{
 			var t = this;
 			this.CoAuthoringApi.askSaveChanges(function(e) {
@@ -182,7 +182,7 @@ Asc['asc_docs_api'].prototype.asc_Save = function (isNoUserSave, isSaveAs, isRes
 		else
 		{
 			// TODO:
-			if (this.isPdfEditor() && this.IsUserSave)
+			if (this.IsUserSave)
 			{
 				AscCommon.History.Reset_SavedIndex(this.IsUserSave);
 				this.IsUserSave = false;

@@ -88,7 +88,7 @@ ParaFieldChar.prototype.Measure = function(Context, TextPr)
 {
 	if (this.IsSeparate())
 	{
-		this.FontKoef = TextPr.Get_FontKoef();
+		this.FontKoef = TextPr.getFontCoef();
 		Context.SetFontSlot(AscWord.fontslot_ASCII, this.FontKoef);
 
 		for (var Index = 0; Index < 10; Index++)
@@ -607,7 +607,7 @@ CComplexField.prototype.private_CalculateSTYLEREF = function()
 CComplexField.prototype.private_InsertMessage = function(sMessage, oTextPr)
 {
 	var oSelectedContent = new AscCommonWord.CSelectedContent();
-	var oPara = new Paragraph(this.LogicDocument.GetDrawingDocument(), this.LogicDocument, false);
+	var oPara = new AscWord.Paragraph();
 	var oRun  = new ParaRun(oPara, false);
 	if(oTextPr)
 	{
@@ -674,7 +674,7 @@ CComplexField.prototype.private_CalculatePAGE = function()
 	var oParagraph = oRun.GetParagraph();
 	var nInRunPos  = oRun.GetElementPosition(this.BeginChar);
 	var nLine      = oRun.GetLineByPosition(nInRunPos);
-	var nPage      = oParagraph.GetPageByLine(nLine);
+	var nPage      = oParagraph.getPageByLine(nLine);
 
 	var oLogicDocument = oParagraph.LogicDocument;
 	return oLogicDocument.Get_SectionPageNumInfo2(oParagraph.Get_AbsolutePage(nPage)).CurPage;
@@ -994,7 +994,7 @@ CComplexField.prototype.private_UpdateTOC = function()
 			oApi.sendEvent("asc_onError", c_oAscError.ID.ComplexFieldEmptyTOC, c_oAscError.Level.NoCritical);
 		}
 
-		oPara = new Paragraph(this.LogicDocument.GetDrawingDocument(), this.LogicDocument, false);
+		oPara = new AscWord.Paragraph();
 		oRun  = new ParaRun(oPara, false);
 		oRun.SetBold(true);
 		oRun.AddText(sReplacementText);
@@ -1187,7 +1187,7 @@ CComplexField.prototype.private_CalculateREF = function()
 CComplexField.prototype.private_GetMessageContent = function(sMessage, oTextPr)
 {
 	var oSelectedContent = new AscCommonWord.CSelectedContent();
-	var oPara = new Paragraph(this.LogicDocument.GetDrawingDocument(), this.LogicDocument, false);
+	var oPara = new AscWord.Paragraph();
 	var oRun  = new ParaRun(oPara, false);
 	
 	if (this.Instruction && this.Instruction.isMergeFormat() && this.SeparateChar)
@@ -1380,7 +1380,7 @@ CComplexField.prototype.private_GetNOTEREFContent = function()
 	}
 	var oSelectedContent = new AscCommonWord.CSelectedContent();
 	var oTextPr;
-	var oPara = new Paragraph(this.LogicDocument.GetDrawingDocument(), this.LogicDocument, false);
+	var oPara = new AscWord.Paragraph();
 	var oParent = oParagraph.GetParent();
 	var oSrcParent = oSrcParagraph.GetParent();
 	if(!oParent || !oSrcParent)
@@ -1510,23 +1510,43 @@ CComplexField.prototype.GetFieldValueText = function()
 	
 	return result;
 };
-CComplexField.prototype.GetFieldValueTextPr = function()
+CComplexField.prototype.GetFieldValueTextPr = function(isCompiled)
 {
-	// TODO: Temporary. We select the first visible element in InstrText area and return its direct TextPr
-	let logicDocument = this.LogicDocument;
-	if (!logicDocument)
-		return new AscWord.CTextPr();
-	
-	let state = logicDocument.SaveDocumentState();
-	
-	let run = this.SeparateChar.GetRun();
-	run.Make_ThisElementCurrent(false);
-	run.SetCursorPosition(run.GetElementPosition(this.SeparateChar) + 1);
-	logicDocument.MoveCursorRight(true, false);
-	
-	let textPr = logicDocument.GetDirectTextPr();
-	logicDocument.LoadDocumentState(state);
-	return textPr;
+	if (isCompiled)
+	{
+		let run       = this.SeparateChar.GetRun();
+		let runParent = run.GetParent();
+		let runPos    = run.private_GetPosInParent(runParent);
+		
+		let inRunPos  = run.GetElementPosition(this.SeparateChar);
+		if (inRunPos >= run.GetElementsCount() - 1
+			&& runParent
+			&& runParent.GetElement
+			&& runParent.GetElement(runPos + 1) instanceof AscWord.CRun)
+		{
+			return runParent.GetElement(runPos + 1).getCompiledPr();
+		}
+		
+		return run.getCompiledPr();
+	}
+	else
+	{
+		// TODO: Temporary. We select the first visible element in InstrText area and return its direct TextPr
+		let logicDocument = this.LogicDocument;
+		if (!logicDocument)
+			return new AscWord.CTextPr();
+		
+		let state = logicDocument.SaveDocumentState();
+		
+		let run = this.SeparateChar.GetRun();
+		run.Make_ThisElementCurrent(false);
+		run.SetCursorPosition(run.GetElementPosition(this.SeparateChar) + 1);
+		
+		logicDocument.MoveCursorRight(true, false);
+		let textPr = logicDocument.GetDirectTextPr();
+		logicDocument.LoadDocumentState(state);
+		return textPr;
+	}
 };
 CComplexField.prototype.GetTopDocumentContent = function()
 {

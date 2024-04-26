@@ -69,6 +69,8 @@
 
         let oCircle = new CAnnotationCircle(AscCommon.CreateGUID(), this.GetPage(), this.GetOrigRect().slice(), oDoc);
 
+        oCircle.lazyCopy = true;
+
         oCircle._pagePos = {
             x: this._pagePos.x,
             y: this._pagePos.y,
@@ -154,7 +156,6 @@
         this.recalcGeometry();
         this.AddToRedraw();
         this.SetWasChanged(true);
-        this.SetDrawFromStream(false);
     };
     CAnnotationCircle.prototype.SetRectangleDiff = function(aDiff) {
         let oDoc = this.GetDocument();
@@ -248,10 +249,6 @@
         memory.Seek(nStartPos);
         memory.WriteLong(nEndPos - nStartPos);
         memory.Seek(nEndPos);
-
-        this._replies.forEach(function(reply) {
-            reply.WriteToBinary(memory); 
-        });
     };
     
     function TurnOffHistory() {

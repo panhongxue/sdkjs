@@ -118,7 +118,7 @@
 
         let oDoc    = this.GetDocument();
         let oViewer = Asc.editor.getDocumentRenderer();
-        let aFields = oViewer.IsOpenFormsInProgress == false ? oDoc.GetFields(this.GetFullName()) : [this];
+        let aFields = oViewer.IsOpenFormsInProgress == false ? oDoc.GetAllWidgets(this.GetFullName()) : [this];
 
         let aFonts = aFields.map(function(field) {
             return field.GetTextFontActual();
@@ -129,9 +129,7 @@
             return;
         }
 
-        if (oViewer.IsOpenFormsInProgress == false && oDoc.History.UndoRedoInProgress == false) {
-            oDoc.CreateNewHistoryPoint();
-        }
+        oDoc.CreateNewHistoryPoint({objects: [this]});
 
         aFields.forEach(function(field) {
             if (field.GetHeaderPosition() == position["textOnly"])
@@ -225,7 +223,8 @@
         let nContentW = 0;
         let nContentH = 0;
 
-        switch (this._buttonPosition) {
+        let nHeaderPos = this.GetHeaderPosition();
+        switch (nHeaderPos) {
             case position["textOnly"]:
                 return;
             case position["iconTextH"]:
@@ -307,7 +306,7 @@
         let oRunForImg;
         let oTargetPara;
         let oCaptionRun;
-        switch (this._buttonPosition) {
+        switch (nHeaderPos) {
             case position["iconOnly"]:
                 oRunForImg = this.content.GetElement(0).GetElement(0);
                 break;
@@ -523,7 +522,9 @@
 
         if (cCaption == "" || typeof(cCaption) != "string")
             return false;
-            
+        
+        AscFonts.FontPickerByCharacter.getFontsByString(cCaption);
+
         switch (nFace) {
             case 0:
                 this._buttonCaption = cCaption;
@@ -1207,14 +1208,30 @@
         this._hovered = bValue;
     };
 
-    CPushButtonField.prototype.onMouseDown = function() {
-        let oDoc = this.GetDocument();
+    CPushButtonField.prototype.onMouseDown = function(x, y, e) {
+        let oDoc            = this.GetDocument();
+        let oActionsQueue   = oDoc.GetActionsQueue();
+
         this.DrawPressed();
 
-        this.AddActionsToQueue(AscPDF.FORMS_TRIGGERS_TYPES.MouseDown);
-        if (oDoc.activeForm != this)
-            this.AddActionsToQueue(AscPDF.FORMS_TRIGGERS_TYPES.OnFocus);
+        let isInFocus   = oDoc.activeForm === this;
         oDoc.activeForm = this;
+
+        function callbackAfterFocus() {
+            this.SetInForm(true);
+        }
+        
+        let oOnFocus = this.GetTrigger(AscPDF.FORMS_TRIGGERS_TYPES.OnFocus);
+        // вызываем выставление курсора после onFocus. Если уже в фокусе, тогда сразу.
+        if (false == isInFocus && oOnFocus && oOnFocus.Actions.length > 0)
+            oActionsQueue.callbackAfterFocus = callbackAfterFocus.bind(this);
+        else
+            callbackAfterFocus.bind(this)();
+
+        this.AddActionsToQueue(AscPDF.FORMS_TRIGGERS_TYPES.MouseDown);
+        if (false == isInFocus) {
+            this.onFocus();
+        }
     };
     CPushButtonField.prototype.onMouseUp = function() {
         this.SetPressed(false); // флаг что нужно рисовать нажатие
@@ -1243,7 +1260,7 @@
             oActionsQueue.bContinueAfterEval = false;
         
         Api.oSaveObjectForAddImage = this;
-        if (window["AscDesktopEditor"]) {
+        if (window["AscDesktopEditor"] && window["AscDesktopEditor"]["IsLocalFile"]()) {
             window["AscDesktopEditor"]["OpenFilenameDialog"]("images", false, function(_file) {
                 var file = _file;
                 if (Array.isArray(file))
@@ -1260,7 +1277,7 @@
             });
         }
         else {
-            AscCommon.ShowImageFileDialog(Api.documentId, Api.documentUserId, undefined, Api.documentShardKey, function(error, files)
+            AscCommon.ShowImageFileDialog(Api.documentId, Api.documentUserId, undefined, Api.documentShardKey, Api.documentWopiSrc, function(error, files)
             {
                 if (error.canceled == true) {
                     let oDoc            = oThis.GetDocument();
@@ -1504,7 +1521,7 @@
                 oPara1.Remove_FromContent(nPosInPara, 1, true);
             }
 
-            let oNewPara = new AscCommonWord.Paragraph(oPara1.DrawingDocument, this.content, false);
+            let oNewPara = new AscWord.Paragraph(this.content, false);
             oNewPara.CorrectContent();
             this.content.AddToContent(1, oNewPara);
             oNewPara.Set_Align(align_Center);
@@ -1562,7 +1579,7 @@
                 oPara1.Remove_FromContent(nPosInPara, 1, true);
             }
 
-            let oNewPara = new AscCommonWord.Paragraph(oPara1.DrawingDocument, this.content, false);
+            let oNewPara = new AscWord.Paragraph(this.content, false);
             oNewPara.CorrectContent();
             this.content.AddToContent(0, oNewPara);
             oNewPara.Set_Align(align_Center);
@@ -1749,7 +1766,7 @@
      * @typeofeditors ["PDF"]
      */
     CPushButtonField.prototype.SyncField = function() {
-        let aFields = this._doc.GetFields(this.GetFullName());
+        let aFields = this.GetDocument().GetAllWidgets(this.GetFullName());
         
         TurnOffHistory();
 
@@ -1794,14 +1811,10 @@
      * @typeofeditors ["PDF"]
      */
     CPushButtonField.prototype.Commit = function() {
-        let aFields = this._doc.GetFields(this.GetFullName());
+        let aFields = this.GetDocument().GetAllWidgets(this.GetFullName());
         let oThisPara = this.content.GetElement(0);
         
         TurnOffHistory();
-
-        if (true != editor.getDocumentRenderer().isOnUndoRedo) {
-            this.UnionLastHistoryPoints();
-        }
 
         if (aFields.length == 1)
             this.SetNeedCommit(false);

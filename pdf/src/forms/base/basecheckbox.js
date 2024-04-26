@@ -54,6 +54,7 @@
         this._exportValue   = "Yes";
         this._chStyle       = CHECKBOX_STYLES.check;
         this._checked       = false;
+        this._options       = undefined; // используется для храненния export values дочерних полей
 
         // states
         this._pressed = false;
@@ -121,7 +122,8 @@
         oGraphicsPDF.SetLineWidth(1);
         oGraphicsPDF.SetLineDash([]);
 
-        switch (this._chStyle) {
+        let nStyle = this.GetStyle();
+        switch (nStyle) {
             case CHECKBOX_STYLES.circle: {
                 let centerX = X + nWidth / 2;
                 let centerY = Y + nHeight / 2;
@@ -340,20 +342,33 @@
 
         return canvas;
     };
-    CBaseCheckBoxField.prototype.onMouseDown = function() {
-        let oDoc = this.GetDocument();
-        this.DrawPressed();
-                
-        let bHighlight = this.IsNeedDrawHighlight();
-        this.SetDrawHighlight(false);
+    CBaseCheckBoxField.prototype.onMouseDown = function(x, y, e) {
+        let oDoc            = this.GetDocument();
+        let oDrDoc          = oDoc.GetDrawingDocument();
+        let oActionsQueue   = oDoc.GetActionsQueue();
 
-        if (bHighlight)
-            this.AddToRedraw();
+        oDrDoc.TargetEnd();
+        this.SetDrawHighlight(false);
+        this.DrawPressed();
+        
+        let isInFocus = oDoc.activeForm === this;
+        oDoc.activeForm = this;
+        
+        function callbackAfterFocus() {
+            this.SetInForm(true);
+        }
+
+        let oOnFocus = this.GetTrigger(AscPDF.FORMS_TRIGGERS_TYPES.OnFocus);
+        // вызываем выставление курсора после onFocus. Если уже в фокусе, тогда сразу.
+        if (false == isInFocus && oOnFocus && oOnFocus.Actions.length > 0)
+            oActionsQueue.callbackAfterFocus = callbackAfterFocus.bind(this);
+        else
+            callbackAfterFocus.bind(this)();
 
         this.AddActionsToQueue(AscPDF.FORMS_TRIGGERS_TYPES.MouseDown);
-        if (oDoc.activeForm != this)
-            this.AddActionsToQueue(AscPDF.FORMS_TRIGGERS_TYPES.OnFocus);
-        oDoc.activeForm = this;
+        if (false == isInFocus) {
+            this.onFocus();
+        }
     };
     CBaseCheckBoxField.prototype.GetFontSizeAP = function() {
         return 12;
@@ -377,7 +392,9 @@
         editor.getDocumentRenderer()._paint();
     };
     CBaseCheckBoxField.prototype.onMouseUp = function() {
-        this.CreateNewHistoryPoint();
+        let oDoc = this.GetDocument();
+
+        oDoc.CreateNewHistoryPoint({objects: [this]});
         if (this.IsChecked()) {
             if (this._noToggleToOff == false) {
                 this.SetChecked(false);
@@ -385,12 +402,18 @@
             }
         }
         else {
+            let oParent = this.GetParent();
+            let aOpt    = oParent ? oParent.GetOptions() : undefined;
+            let aKids   = oParent ? oParent.GetKids() : undefined;
             this.SetChecked(true);
-            this.SetApiValue(this.GetExportValue());
+            if (aOpt && aKids) {
+                this.SetApiValue(String(aKids.indexOf(this)));
+            }
+            else {
+                this.SetApiValue(this.GetExportValue());
+            }
         }
         
-        this.DrawUnpressed();
-
         if (AscCommon.History.Is_LastPointEmpty())
             AscCommon.History.Remove_LastPoint();
         else {
@@ -398,6 +421,8 @@
             this.Commit2();
         }
 
+        this.DrawUnpressed();
+        
         let oOverlay        = editor.getDocumentRenderer().overlay;
         oOverlay.max_x      = 0;
         oOverlay.max_y      = 0;
@@ -406,8 +431,18 @@
         editor.getDocumentRenderer().onUpdateOverlay();
         this.AddActionsToQueue(AscPDF.FORMS_TRIGGERS_TYPES.MouseUp);
     };
+    /**
+	 * The value application logic for all fields with the same name has been changed for this field type.
+     * The method was left for compatibility.
+	 * @memberof CRadioButtonField
+	 * @typeofeditors ["PDF"]
+	 */
+    CBaseCheckBoxField.prototype.Commit = function() {
+        this.SetNeedCommit(false);
+    };
     CBaseCheckBoxField.prototype.SetExportValue = function(sValue) {
         this._exportValue = sValue;
+        this.SetWasChanged(true);
     };
     CBaseCheckBoxField.prototype.GetExportValue = function() {
         return this._exportValue;
@@ -426,23 +461,42 @@
      */
     CBaseCheckBoxField.prototype.SetStyle = function(nType) {
         this._chStyle = nType;
+        this.SetWasChanged(true);
+        this.AddToRedraw(true);
     };
     CBaseCheckBoxField.prototype.GetStyle = function() {
         return this._chStyle;
     };
-    CBaseCheckBoxField.prototype.SetValue = function(sValue) {
-        if (this._exportValue == sValue)
+    CBaseCheckBoxField.prototype.SetValue = function(value) {
+        let oParent     = this.GetParent();
+        let aParentOpt  = oParent ? oParent.GetOptions() : undefined;
+
+        let sExportValue;
+        if (aParentOpt && aParentOpt[value]) {
+            sExportValue = aParentOpt[value];
+        }
+        else {
+            sExportValue = value;
+        }
+
+        if (this.GetExportValue() == sExportValue)
             this.SetChecked(true);
         else
             this.SetChecked(false);
         
         if (editor.getDocumentRenderer().IsOpenFormsInProgress && this.GetParent() == null)
-            this.SetApiValue(sValue);
+            this.SetApiValue(value);
     };
     CBaseCheckBoxField.prototype.GetValue = function() {
-        return this.IsChecked() ? this._exportValue : "Off";
+        return this.IsChecked() ? this.GetExportValue() : "Off";
     };
     CBaseCheckBoxField.prototype.SetDrawFromStream = function() {
+    };
+    CBaseCheckBoxField.prototype.SetOptions = function(aOpt) {
+        this._options = aOpt;
+    };
+    CBaseCheckBoxField.prototype.GetOptions = function() {
+        return this._options;
     };
 
     /**
@@ -458,11 +512,11 @@
         this.AddToRedraw();
 
         if (bChecked) {
-            !editor.getDocumentRenderer().isOnUndoRedo && AscCommon.History.Add(new CChangesPDFFormValue(this, this.GetValue(), this._exportValue));
+            AscCommon.History.Add(new CChangesPDFFormValue(this, this.GetValue(), this._exportValue));
             this._checked = true;
         }
         else {
-            !editor.getDocumentRenderer().isOnUndoRedo && AscCommon.History.Add(new CChangesPDFFormValue(this, this.GetValue(), "Off"));
+            AscCommon.History.Add(new CChangesPDFFormValue(this, this.GetValue(), "Off"));
             this._checked = false;
         }
     };
@@ -481,7 +535,7 @@
         // не пишем значение, если есть родитель с такими же видджет полями,
         // т.к. значение будет хранить родитель
         let oParent = this.GetParent();
-        if (oParent == null || oParent.IsAllChildsSame() == false) {
+        if (oParent == null || oParent.IsAllKidsWidgets() == false) {
             memory.fieldDataFlags |= (1 << 9);
             if (isChecked) {
                 memory.WriteString("Yes");

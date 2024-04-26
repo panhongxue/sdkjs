@@ -14599,14 +14599,14 @@
 	 * Method finds a start cell index of recursion formula.
 	 * Uses for only with enabled iterative calculations setting.
 	 * @param {Cell} [oPrevCell] - Previous cell in recursion.
+	 * @param {Cell} [oFirstCell] - First cell in recursion.
 	 * @memberof Cell
 	 */
-	Cell.prototype.initStartCellForIterCalc = function (oPrevCell) {
+	Cell.prototype.initStartCellForIterCalc = function (oPrevCell, oFirstCell) {
 		if(g_cCalcRecursion.getRecursionCounter() >= g_cCalcRecursion.getMaxRecursion()) {
 			g_cCalcRecursion.resetRecursionCounter();
 			return;
 		}
-
 		const nCellIndex = getCellIndex(this.nRow, this.nCol);
 		const oCellListeners = this.getListeners();
 		if (!oCellListeners) {
@@ -14616,6 +14616,8 @@
 		const oListeners = oCellListeners.listeners;
 		let oCellFromListener = null;
 		let nPrevCellIndex = oPrevCell ? getCellIndex(oPrevCell.nRow, oPrevCell.nCol) : null;
+		oFirstCell = oFirstCell || this;
+		let nFirstCellIndex = getCellIndex(oFirstCell.nRow, oFirstCell.nCol);
 		_foreachListeners(function (nListenerCellIndex, oListenerCell, oThis) {
 			if (nCellIndex === nListenerCellIndex && oThis.ws.getName() === oListenerCell.ws.getName()) {
 				g_cCalcRecursion.setStartCellIndex({cellId: nCellIndex, wsName: oThis.ws.getName().toLowerCase()});
@@ -14633,14 +14635,20 @@
 				}
 				g_cCalcRecursion.resetRecursionCounter();
 				return true;
+			} else if (nFirstCellIndex === nListenerCellIndex && oFirstCell.ws.getName() === oListenerCell.ws.getName()) {
+				g_cCalcRecursion.setStartCellIndex({cellId: nFirstCellIndex, wsName: oFirstCell.ws.getName().toLowerCase()});
+				g_cCalcRecursion.resetRecursionCounter();
+				return true;
 			} else {
 				let oWs = oListenerCell.ws;
 				oWs._getCell(oListenerCell.nRow, oListenerCell.nCol, function (oCell) {
 					oCellFromListener = oCell;
 				});
 				g_cCalcRecursion.incRecursionCounter();
-				oCellFromListener.initStartCellForIterCalc(oThis);
-				return true;
+				oCellFromListener.initStartCellForIterCalc(oThis, oFirstCell);
+				if (g_cCalcRecursion.getStartCellIndex() != null) {
+					return true;
+				}
 			}
 		}, this, oListeners);
 	};
@@ -14667,34 +14675,18 @@
 
 		return aRefElements;
 	}
+
 	/**
-	 * Method checks is cell has recursive formula.
-	 * @param {CCellWithFormula} oCellWithFormula
-	 * @returns {boolean}
+	 * Iterative extract reference elements from outStack attribute of parserFormula class.
+	 * @param {Function} fAction - Action with reference element
+	 * @param {[]} aRefElements
+	 * @private
 	 */
-	Cell.prototype.checkRecursiveFormula = function (oCellWithFormula) {
-		if (oCellWithFormula == null) {
-			return false;
-		}
-
-		const nCellIndexFromOperand = getCellIndex(this.nRow, this.nCol);
-		const nCellIndexFromFormula = getCellIndex(oCellWithFormula.nRow, oCellWithFormula.nCol);
-		if (isNaN(nCellIndexFromFormula)) {
-			return false;
-		}
-		if (nCellIndexFromOperand === nCellIndexFromFormula && this.ws.getName() === oCellWithFormula.ws.getName()) {
-			return true;
-		}
-
-		if (!this.isFormula()) {
-			return false;
-		}
-		const oFormulaParsed = this.getFormulaParsed();
-		const aRefElements = _getRefElements(oFormulaParsed);
-		let bRecursiveFormula = false;
+	function _foreachRefElements (fAction, aRefElements) {
 		if (!aRefElements.length) {
-			return false;
+			return;
 		}
+		let nLastIndex = aRefElements.length - 1;
 		for (let i = 0; i < aRefElements.length; i++) {
 			let oRefElement = aRefElements[i];
 			let nRefType = oRefElement.type;
@@ -14705,7 +14697,7 @@
 				const oElemType = oElemValue.type;
 				let aRef = [cElementType.cell, cElementType.cell3D, cElementType.cellsRange, cElementType.cellsRange3D];
 				if (!aRef.includes(oElemType)) {
-					return false;
+					return;
 				}
 				oRange = oElemValue.getRange();
 			} else if (nRefType === cElementType.table) {
@@ -14714,20 +14706,123 @@
 			} else {
 				oRange = oRefElement.getRange();
 			}
+			let oRes = fAction(oRange, nLastIndex, i);
+			if (oRes != null) {
+				return;
+			}
+		}
+	}
+
+	/**
+	 * Changes ca flag of cell from listener.
+	 * Function is recursive.
+	 * @param {Cell} oSourceCell
+	 * @private
+	 */
+	function _changeCellsFromListener (oSourceCell) {
+		if (g_cCalcRecursion.getRecursionCounter() >= g_cCalcRecursion.getMaxRecursion()) {
+			g_cCalcRecursion.resetRecursionCounter();
+			return;
+		}
+		const oCellListeners = oSourceCell.getListeners();
+		if (!oCellListeners) {
+			g_cCalcRecursion.resetRecursionCounter();
+			return;
+		}
+		const oListeners = oCellListeners.listeners;
+		_foreachListeners(function (nListenerCellId, oListenerCellWithFormula, oCell) {
+			const oWs = oCell.ws;
+			let oListenerCell = null;
+			oWs._getCell(oListenerCellWithFormula.nRow, oListenerCellWithFormula.nCol, function (oCell) {
+				oListenerCell = oCell;
+			})
+			if (!oListenerCell.isFormula()) {
+				return;
+			}
+			const oFormulaParsed = oListenerCell.getFormulaParsed();
+			if (oFormulaParsed.ca) {
+				return;
+			}
+			oFormulaParsed.ca = true;
+			if (oListenerCell.getListeners()) {
+			g_cCalcRecursion.incRecursionCounter();
+			_changeCellsFromListener(oListenerCell);
+			}
+		}, oSourceCell, oListeners);
+		g_cCalcRecursion.resetRecursionCounter();
+	}
+	/**
+	 * Method checks is cell has recursive formula.
+	 * Recursion method
+	 * @param {CCellWithFormula} oCellWithFormula
+	 * @param {Cell[]} [aPassedCell]
+	 * @returns {boolean}
+	 */
+	Cell.prototype.checkRecursiveFormula = function (oCellWithFormula, aPassedCell) {
+		if (g_cCalcRecursion.getRecursionCounter() >= g_cCalcRecursion.getMaxRecursion()) {
+			g_cCalcRecursion.resetRecursionCounter();
+			return false;
+		}
+		if (oCellWithFormula == null) {
+			g_cCalcRecursion.resetRecursionCounter();
+			return false;
+		}
+
+		const nCellIndexFromOperand = getCellIndex(this.nRow, this.nCol);
+		const nCellIndexFromFormula = getCellIndex(oCellWithFormula.nRow, oCellWithFormula.nCol);
+		if (isNaN(nCellIndexFromFormula)) {
+			g_cCalcRecursion.resetRecursionCounter();
+			return false;
+		}
+		if (nCellIndexFromOperand === nCellIndexFromFormula && this.ws.getName() === oCellWithFormula.ws.getName()) {
+			g_cCalcRecursion.resetRecursionCounter();
+			return true;
+		}
+
+		if (!this.isFormula()) {
+			g_cCalcRecursion.resetRecursionCounter();
+			return false;
+		}
+		const oFormulaParsed = this.getFormulaParsed();
+		const aRefElements = _getRefElements(oFormulaParsed);
+		const oThis = this;
+		let bRecursiveFormula = false;
+		aPassedCell = aPassedCell || [];
+		_foreachRefElements(function (oRange) {
 			oRange._foreachNoEmpty(function (oCell) {
 				let nCellIndex = getCellIndex(oCell.nRow, oCell.nCol);
+				let bCellIsPassed = aPassedCell.some(function (oElem) {
+					let nElemIndex = getCellIndex(oElem.nRow, oElem.nCol);
+					return nCellIndex === nElemIndex && oElem.ws.getName() === oCell.ws.getName();
+				});
 				if (nCellIndexFromFormula === nCellIndex && oCell.ws.getName() === oCellWithFormula.ws.getName()) {
 					bRecursiveFormula = true;
+					return true; // break loop
+				} else if (!bRecursiveFormula && oCell.isFormula() && !bCellIsPassed) {
+					g_cCalcRecursion.incRecursionCounter();
+					aPassedCell.push(oCell);
+					bRecursiveFormula = oCell.checkRecursiveFormula(oCellWithFormula, aPassedCell);
+				}
+				if (bRecursiveFormula) {
 					return true; // break loop
 				}
 			});
 			if (bRecursiveFormula) {
+				if (g_cCalcRecursion.getRecursionCounter() === 0) {
+					const oWs = oThis.ws;
+					let oSourceCell = null;
+					oWs._getCell(oCellWithFormula.nRow, oCellWithFormula.nCol, function (oCell) {
+						oSourceCell = oCell;
+					});
+					_changeCellsFromListener(oSourceCell);
+				}
 				oFormulaParsed.ca = true;
 				return true;
 			}
-		}
+		}, aRefElements);
 
-		return false;
+		g_cCalcRecursion.resetRecursionCounter();
+		return bRecursiveFormula;
 	};
 	/**
 	 * Method modifies linked cell.
@@ -14750,30 +14845,7 @@
 		}
 
 		const aRefElements = _getRefElements(oFormulaParsed);
-		if (!aRefElements.length) {
-			g_cCalcRecursion.resetRecursionCounter();
-			return;
-		}
-		const nLastRefElemIndex = aRefElements.length - 1;
-		for (let index = 0, length = aRefElements.length; index < length; index++) {
-			const oRefElement = aRefElements[index];
-			const nElemType = oRefElement.type;
-			const b3D = nElemType === cElementType.cell3D || nElemType === cElementType.cellsRange3D;
-			const bArea = nElemType === cElementType.cellsRange;
-			const bDefName = nElemType === cElementType.name || nElemType === cElementType.name3D;
-			let oRange = null;
-
-			if (nElemType === cElementType.cell || bArea || b3D) {
-				oRange = oRefElement.getRange();
-			} else if (bDefName) {
-				const oElemValue = oRefElement.getValue();
-				// If definition name was delete.
-				if (oElemValue.type === cElementType.error) {
-					g_cCalcRecursion.setStartCellIndex(null);
-					return;
-				}
-				oRange = oElemValue.getRange();
-			}
+		_foreachRefElements(function (oRange, nLastRefElemIndex, nIndex) {
 			oRange._foreachNoEmpty(function(oCell) {
 				let nCellIndex = AscCommonExcel.getCellIndex(oCell.nRow, oCell.nCol);
 				let sCellWsName = oCell.ws.getName().toLowerCase();
@@ -14790,7 +14862,7 @@
 						g_cCalcRecursion.incRecursionCounter();
 						oCell.changeLinkedCell(fAction, true);
 					}
-				} else if (index === nLastRefElemIndex && nCellIndex === nThisIndex && sCellWsName === sThisWsName) {
+				} else if (nIndex === nLastRefElemIndex && nCellIndex === nThisIndex && sCellWsName === sThisWsName) {
 					// Try to find listener with linked cell.
 					const oCellListeners = oCell.getListeners();
 					if (!oCellListeners) {
@@ -14819,7 +14891,7 @@
 					}, oCell, oListeners);
 				}
 			});
-		}
+		}, aRefElements);
 		g_cCalcRecursion.resetRecursionCounter();
 	};
 	Cell.prototype._checkDirty = function() {

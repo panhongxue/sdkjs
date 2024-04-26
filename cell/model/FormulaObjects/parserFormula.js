@@ -8903,7 +8903,7 @@ function parserFormula( formula, parent, _ws ) {
 		return this.bIsForceBacktracking;
 	};
 	/**
-	 * Method increases recursion level. Uses for tracking a level of recursion.
+	 * Method increases recursion level. Uses for tracking a level of recursion in _checkDirty method.
 	 * @memberof CalcRecursion
 	 */
 	CalcRecursion.prototype.incLevel = function () {
@@ -8911,14 +8911,14 @@ function parserFormula( formula, parent, _ws ) {
 	};
 	/**
 	 * Method decreases recursion level. Uses for actualizes a level of recursion
-	 * in case when one of recursion is finished.
+	 * in case when one of recursion is finished. Uses in _checkDirty method.
 	 * @memberof CalcRecursion
 	 */
 	CalcRecursion.prototype.decLevel = function () {
 		this.nLevel--;
 	};
 	/**
-	 * Method returns level of recursion.
+	 * Method returns level of recursion in _checkDirty method.
 	 * @memberof CalcRecursion
 	 * @returns {number}
 	 */
@@ -8927,6 +8927,7 @@ function parserFormula( formula, parent, _ws ) {
 	};
 	/**
 	 * Method checks the level of recursion exceeds max level or not.
+	 * Uses in _checkDirty method.
 	 * @memberof CalcRecursion
 	 * @returns {boolean}
 	 */
@@ -8973,13 +8974,21 @@ function parserFormula( formula, parent, _ws ) {
 		this.nRecursionCounter++;
 	};
 	/**
+	 * Method decrements recursion counter.
+	 * Uses for control recursion level of initStartCellForIterCalc and enableCalcFormulas method of Cell class.
+	 * @memberof CalcRecursion
+	 */
+	CalcRecursion.prototype.decRecursionCounter = function () {
+		this.nRecursionCounter--;
+	}
+	/**
 	 * Method resets recursion counter.
 	 * Uses for control recursion level of initStartCellForIterCalc method.
 	 * @memberof CalcRecursion
 	 */
 	CalcRecursion.prototype.resetRecursionCounter = function () {
 		if (this.getRecursionCounter() > 0) {
-			this.nRecursionCounter = 0;
+			this.decRecursionCounter();
 		}
 	}
 	/**

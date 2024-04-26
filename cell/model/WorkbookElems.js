@@ -17602,7 +17602,7 @@ function RangeDataManagerElem(bbox, data)
 		if (!this.sheets) {
 			this.sheets = [];
 		}
-		let newObj = new CWorksheetInfo();
+		let newObj = new CWorksheetInfo(name, index);
 		this.sheets.push(newObj);
 	};
 	CWorkbookInfo.prototype.asc_getName = function () {

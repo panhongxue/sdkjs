@@ -9195,7 +9195,7 @@ var editor;
 				if ("DocumentInfo" === event.data.type && event.data.info.id !== docId) {
 					let val = new AscCommonExcel.CWorkbookInfo(event.data.info.name, event.data.info.id);
 					for (let i in event.data.info.sheets) {
-						val.addSheet(event.data.info.sheets.name, event.data.info.sheets.index);
+						val.addSheet(event.data.info.sheets[i].name, event.data.info.sheets[i].index);
 					}
 					callback([val]);
 					console.log(event.data.info.name)

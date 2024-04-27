@@ -3669,13 +3669,7 @@
 	};
 	Workbook.prototype.needSkipChange = function(change){
 		var res = false;
-		var aSkipChanges = [[
-			AscCommonExcel.g_oUndoRedoWorkbook.getClassType(),
-			AscCH.historyitem_Workbook_Date1904,
-			AscCH.historyitem_Workbook_CalcPr_iterate,
-			AscCH.historyitem_Workbook_CalcPr_iterateCount,
-			AscCH.historyitem_Workbook_CalcPr_iterateDelta
-		]];
+		var aSkipChanges = [[AscCommonExcel.g_oUndoRedoWorkbook.getClassType(), AscCH.historyitem_Workbook_Date1904]];
 
 		//при десериализации пропускаем изменение, если такое же есть в списке текущих у данного юзера
 		var isNeededChange = function (_change, _actionType, _classType) {

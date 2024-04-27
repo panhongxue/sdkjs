@@ -71,6 +71,17 @@
 			}
 		};
 
+		LineInfo.prototype.initStartX = function (lineWidth ,x, maxWidth, align) {
+			var x_ = x;
+			if (align === AscCommon.align_Right) {
+				x_ = x + maxWidth - lineWidth - 1/*px*/;
+			} else if (align === AscCommon.align_Center) {
+				x_ = x + 0.5 * (maxWidth - lineWidth);
+			}
+			this.startX = x_;
+			return x_;
+		};
+
 		/** @constructor */
 		function lineMetrics() {
 			this.th = 0;
@@ -1150,7 +1161,7 @@
 			var ppiy = ctx.getPPIY();
 			var align = this.flags ? this.flags.textAlign : null;
 			var i, j, p, p_, strBeg;
-			var n = 0, l = this.lines[0], x1 = l ? initX(0) : 0, y1 = y, dx = l ? computeWordDeltaX() : 0;
+			var n = 0, l = this.lines[0], x1 = l ? this.initStartX(0, l, x, maxWidth) : 0, y1 = y, dx = l ? computeWordDeltaX() : 0;
 			
 			ctx.setTextRotated(!!this.angle);
 			
@@ -1286,7 +1297,7 @@
 						// begin new line
 						y1 += asc_round(l.th * zoom);
 						l = self.lines[++n];
-						x1 = initX(i);
+						x1 = self.initStartX(i, l, x, maxWidth);
 						dx = computeWordDeltaX();
 					}
 				}
@@ -1295,6 +1306,11 @@
 				// render text remainder
 				renderFragment(strBeg, i, p_, this.angle);
 			}
+		};
+
+		StringRender.prototype.initStartX = function (startPos, l, x, maxWidth) {
+			let align = this.flags ? this.flags.textAlign : null;
+			return l.initStartX(this._calcLineWidth(startPos), x, maxWidth, align);
 		};
 
 		StringRender.prototype.getInternalState = function () {

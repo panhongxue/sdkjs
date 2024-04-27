@@ -1518,6 +1518,9 @@ function (window, undefined) {
 
 		if (window.LOCK_DRAW)
 		{
+			if (this.textRender.lines && this.textRender.lines[0]) {
+				this.textRender.initStartX(0, this.textRender.lines[0], this._getContentLeft(), this._getContentWidth());
+			}
 			window.TEXT_DRAW_INSTANCE = this;
 			window.TEXT_DRAW_INSTANCE_POS = dy;
 			return;

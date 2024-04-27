@@ -17106,19 +17106,6 @@ function RangeDataManagerElem(bbox, data)
 		this.iterateDelta = nIterateDelta;
 	};
 	/**
-	 * Method compares calculation properties
-	 * @memberOf CCalcPr
-	 * @param {CCalcPr} oCalcPr
-	 * @returns {boolean}
-	 */
-	CCalcPr.prototype.isEqual = function (oCalcPr) {
-		const bIterateEqual = this.getIterate() === oCalcPr.getIterate();
-		const nIterateCountEqual = this.getIterateCount() === oCalcPr.getIterateCount();
-		const nIterateDeltaEqual = this.getIterateDelta() === oCalcPr.getIterateDelta();
-
-		return bIterateEqual && nIterateCountEqual && nIterateDeltaEqual;
-	}
-	/**
 	 * Method updates calcPr attributes
 	 * @memberOf CCalcPr
 	 * @param {asc_CCalcSettings} oCalcSettings
@@ -17132,7 +17119,10 @@ function RangeDataManagerElem(bbox, data)
 		let bIterativeCalc = oCalcSettings.asc_getIterativeCalc();
 		let nMaxIterations = oCalcSettings.asc_getMaxIterations();
 		let nMaxChange = oCalcSettings.asc_getMaxChange();
-		let oOldValue = this.clone();
+
+		let bOldIterate = this.getIterate();
+		let nOldIterateCount = this.getIterateCount();
+		let nOldIterateDelta = this.getIterateDelta();
 
 		if (bIterativeCalc !== DEFAULT_ITERATE) {
 			this.setIterate(bIterativeCalc);
@@ -17143,12 +17133,23 @@ function RangeDataManagerElem(bbox, data)
 		if (nMaxChange !== DEFAULT_ITER_DELTA) {
 			this.setIterateDelta(nMaxChange);
 		}
-		if (History.Is_On() && !this.isEqual(oOldValue)) {
+
+		if (History.Is_On()) {
 			let oUpdateSheet = oWbModel.getActiveWs();
 			let oUpdateRange = new Asc.Range(0, 0, oUpdateSheet.getColsCount(), oUpdateSheet.getRowsCount());
 
-			History.Add(AscCommonExcel.g_oUndoRedoWorkbook, AscCH.historyitem_Workbook_CalcPr,
-				oUpdateSheet.getId(), oUpdateRange, new UndoRedoData_FromTo(oOldValue, this));
+			if (this.getIterate() !== bOldIterate) {
+				History.Add(AscCommonExcel.g_oUndoRedoWorkbook, AscCH.historyitem_Workbook_CalcPr_iterate,
+					oUpdateSheet.getId(), oUpdateRange, new UndoRedoData_FromTo(bOldIterate, this.getIterate()));
+			}
+			if (this.getIterateCount() !== nOldIterateCount) {
+				History.Add(AscCommonExcel.g_oUndoRedoWorkbook, AscCH.historyitem_Workbook_CalcPr_iterateCount,
+					oUpdateSheet.getId(), oUpdateRange, new UndoRedoData_FromTo(nOldIterateCount, this.getIterateCount()));
+			}
+			if (this.getIterateDelta() !== nOldIterateDelta) {
+				History.Add(AscCommonExcel.g_oUndoRedoWorkbook, AscCH.historyitem_Workbook_CalcPr_iterateDelta,
+					oUpdateSheet.getId(), oUpdateRange, new UndoRedoData_FromTo(nOldIterateDelta, this.getIterateDelta()));
+			}
 		}
 	};
 

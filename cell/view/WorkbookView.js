@@ -5774,8 +5774,6 @@
 			g_cCalcRecursion.initCalcProperties(oCalcPr);
 			History.EndTransaction();
 
-			AscCommon.oNumFormatCache.cleanCache();
-
 			ws._updateRange(new Asc.Range(0, 0, ws.model.getColsCount(), ws.model.getRowsCount()), true);
 			ws.draw();
 		};

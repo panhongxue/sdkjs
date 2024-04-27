@@ -2566,13 +2566,10 @@ function (window, undefined) {
 			}
 		} else if (AscCH.historyitem_Workbook_CalcPr_iterate === Type) {
 			wb.calcPr.setIterate(bUndo ? Data.from : Data.to);
-			AscCommon.oNumFormatCache.cleanCache();
 		} else if (AscCH.historyitem_Workbook_CalcPr_iterateCount === Type) {
 			wb.calcPr.setIterateCount(bUndo ? Data.from : Data.to);
-			AscCommon.oNumFormatCache.cleanCache();
 		} else if (AscCH.historyitem_Workbook_CalcPr_iterateDelta === Type) {
 			wb.calcPr.setIterateDelta(bUndo ? Data.from : Data.to);
-			AscCommon.oNumFormatCache.cleanCache();
 		}
 	};
 	UndoRedoWorkbook.prototype.forwardTransformationIsAffect = function (Type) {
